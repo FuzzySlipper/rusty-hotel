@@ -1,0 +1,46 @@
+{
+  "runFamily": "hotel-expedition-recorder-01",
+  "sourcePrompt": "request.json",
+  "imageProducer": "built-in image_gen",
+  "imageAttempt": 1,
+  "meshProducer": "asset-pipeline tools/tripo/tripo.py generate",
+  "provider": "Tripo",
+  "providerTaskId": "d511d5d2-5be0-47b5-abf2-5ed947f60543",
+  "status": "succeeded",
+  "model": "P2-20260801",
+  "topology": "quad",
+  "targetFaces": 5000,
+  "paidGenerationCount": 1,
+  "creditCharge": null,
+  "creditChargeNote": "Exact charged credits not reported in retained result; no estimate asserted.",
+  "conversion": "Local Blender 5.2.2 LTS; prepare.py; no paid conversion",
+  "decision": "Retain for static desk dressing: recognizable at ordinary player distance in Hotel lighting; not a close-up hero prop. No paid retry. See independent image and mesh critiques and follow-up addenda.",
+  "limitations": [
+    "Tape color and paint wear simplified from source.",
+    "Rear controls extrapolated from unseen side; underside recess detail uncertain.",
+    "No rig, animation, pickup or interaction behavior."
+  ],
+  "files": [
+    {
+      "path": "art/expedition-recorder-01/source-01.png",
+      "sha256": "ee8729484540aaf5222c64ebe07f1635585b13861f8a5634b11f51dbd5000be7"
+    },
+    {
+      "path": "art/expedition-recorder-01/native-01.fbx",
+      "sha256": "224ab59ab059d6ee9033ca1b816ebeafe06f080b8156873ded3b943379265aa9"
+    },
+    {
+      "path": "art/expedition-recorder-01/recorder.blend",
+      "sha256": "be7831a0cf6251115b48daf986bd95f80d980884254ddda04754abb5de9b1cc5"
+    },
+    {
+      "path": "art/expedition-recorder-01/prepare.py",
+      "sha256": "acae13db0d576c241544305e7fd9a02e38c09107f8332ce24eafe43ddc3268e5"
+    },
+    {
+      "path": "content/models/recorder.glb",
+      "sha256": "d9095e224dd9d7ed24eba485517f6ba0df8a354a6da0ed28546de3faf5e80975"
+    }
+  ],
+  "meshReport": "mesh-01.json"
+}

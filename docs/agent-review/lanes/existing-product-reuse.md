@@ -4,9 +4,10 @@
 introduce competing state or behavior?
 
 Start with `AGENTS.md` and `docs/architecture.md`, then search the implementation
-and callers. The template's counter domain owns its value; the product entry
-owns lifecycle composition; the DOM only displays facts. Customize those owner
-pointers as the product grows.
+and callers. HotelPlayer owns player policy over the Engine entity store;
+HotelScene owns static scene resources; HotelProduct owns lifecycle composition.
+The DOM owns presentation and semantic UI actions. Extend these owners as the
+product grows.
 
 An actionable finding names the existing type/member, the new duplicate at
 file/line, the overlapping authority, and the callers or invariant that now

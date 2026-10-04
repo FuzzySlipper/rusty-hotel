@@ -1,0 +1,10 @@
+{
+ "humanRequest":"Add a few representative analog expedition props to the hotel; paid Tripo generation authorized if helpful.",
+ "goal":"A static portable reel-to-reel field recorder resting on an expedition table, viewed in first person from 0.7 to 4 metres, matching a muted stylized 1970s hotel.",
+ "runFamily":"hotel-expedition-recorder-01",
+ "imageAttemptCap":3,
+ "paidMeshAllowance":"One initial P2 native quad generation at 5000 faces; inspect before any further paid generation. Local Blender conversion to GLB if available.",
+ "triangleBudget":12000,
+ "rigging":false,
+ "prompt":"Use case: stylized-concept. Single isolated game prop concept for image-to-mesh: a compact 1970s portable reel-to-reel expedition tape recorder, complete object in a clear three-quarter view slightly from above, showing its front, right side and top. A low rectangular dark olive and charcoal hard case, two large ivory tape reels lying horizontally side by side on the upward-facing deck, visible brown tape on the reels, chunky silver knobs and a small amber analog meter along the near edge. Broad sturdy parts, slightly rounded case edges, subtle worn paint, restrained details. Painterly matte game-asset material finish with medium detail, cohesive with faded teal wallpaper and dark burgundy carpet. No cord, no strap, no separate accessories, no floating elements, no thin antenna. Entire complete object centered with margin, plain light gray background, neutral even studio illumination, no dramatic shadows or reflections. No labels, text, logos, people, tabletop, room, or collage. Square image."
+}

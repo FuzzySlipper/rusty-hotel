@@ -1,0 +1,44 @@
+[
+  {
+    "path": "content/materials/angular.png",
+    "sha256": "e3f21fd5c947244b0603c8e3f3444a33ea70016568939a8c00f68dad6c1d38d5",
+    "source": "art/hotel-kit-01/angular-source.png",
+    "sourceSha256": "c73f9d6d012cd3a0232a861cf7fa04792857caf2ea8563894079821a4c8d176b",
+    "producer": "built-in image_gen",
+    "promptKey": "angular",
+    "attempt": 1,
+    "size": [
+      1254,
+      1254
+    ],
+    "derivative": "ffmpeg RGBA8 PNG re-encoding for pinned Engine admission; RGB values unchanged; no resizing or artistic image edits."
+  },
+  {
+    "path": "content/materials/carpet.png",
+    "sha256": "402edca7f40c4f5f119a7834868bbf19d12c2cb03abaf88868f9d9744fffa8a7",
+    "source": "art/hotel-kit-01/carpet-source.png",
+    "sourceSha256": "424d432deae632a386eaabfb3e34a4a63ad9a46749673e6b1fcc18daf8e16358",
+    "producer": "built-in image_gen",
+    "promptKey": "carpet",
+    "attempt": 1,
+    "size": [
+      1254,
+      1254
+    ],
+    "derivative": "ffmpeg RGBA8 PNG re-encoding for pinned Engine admission; RGB values unchanged; no resizing or artistic image edits."
+  },
+  {
+    "path": "content/materials/medallion.png",
+    "sha256": "35138675dcda55891525ee3aa919d0935d994cbefe221ebe46964a089a2879f4",
+    "source": "art/hotel-kit-01/medallion-source.png",
+    "sourceSha256": "2db56467dd7d1fdbff0ca95028e82d8317a9a84516c91e4d90b3528ec07a81d0",
+    "producer": "built-in image_gen",
+    "promptKey": "medallion",
+    "attempt": 1,
+    "size": [
+      1254,
+      1254
+    ],
+    "derivative": "ffmpeg RGBA8 PNG re-encoding for pinned Engine admission; RGB values unchanged; no resizing or artistic image edits."
+  }
+]

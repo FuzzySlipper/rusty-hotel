@@ -1,0 +1,126 @@
+.hotel-ui { --ink:#eee3ce; --muted:#b8ad97; --paper:#25251f; --edge:#776c51; --accent:#98b3a5; position:fixed; inset:0; pointer-events:none; color:var(--ink); font:14px/1.5 system-ui,sans-serif; }
+.hotel-ui * { box-sizing:border-box; }
+.hotel-ui [hidden] { display:none !important; }
+.hotel-ui h1,.hotel-ui h2,.hotel-ui h3,.hotel-ui p { margin:0; }
+.hotel-ui :where(button:not(.rusty-live-debug-panel button)) { font:inherit; color:inherit; cursor:pointer; }
+.hotel-ui :where(button:not(.rusty-live-debug-panel button)) { background:#34372e; border:1px solid var(--edge); padding:10px 16px; }
+.hotel-ui button:hover:not(.rusty-live-debug-panel button) { background:#41483d; border-color:var(--accent); }
+.hotel-ui button:focus-visible { outline:2px solid #dfcda6; outline-offset:3px; }
+.hotel-ui kbd { margin-left:14px; color:var(--muted); font:11px/1.3 system-ui,sans-serif; border:1px solid #877b6166; border-radius:2px; padding:2px 5px; }
+.hotel-ui .eyebrow { display:block; font-size:10px; letter-spacing:.17em; text-transform:uppercase; color:var(--muted); }
+.hotel-ui .muted { color:var(--muted); font-size:12px; }
+.hotel-ui .hotel-title { position:absolute; top:28px; left:32px; text-shadow:0 1px 4px #000; }
+.hotel-ui .hotel-title .eyebrow { letter-spacing:.35em; }
+.hotel-ui h1 { font:400 34px/1.1 Georgia,serif; letter-spacing:.045em; }
+.hotel-ui .wing { display:block; margin-top:10px; font-size:11px; letter-spacing:.1em; }
+.hotel-ui .hud-nav { position:absolute; top:28px; right:32px; display:flex; gap:8px; pointer-events:auto; }
+.hotel-ui .hud-nav button { background:#25251fe8; }
+.hotel-ui .reticle { position:absolute; top:50%; left:50%; width:3px; height:3px; background:var(--ink); border-radius:50%; box-shadow:0 0 3px #000; }
+.hotel-ui .travel-hint { position:absolute; bottom:116px; left:50%; transform:translateX(-50%); display:flex; gap:18px; font-size:10px; white-space:nowrap; color:#e0d6c3; text-shadow:0 1px 4px #000; }
+.hotel-ui .hud-bottom { position:absolute; bottom:24px; left:32px; right:32px; display:flex; justify-content:space-between; align-items:flex-end; gap:24px; }
+.hotel-ui .condition,.hotel-ui .held-status { min-width:185px; background:#20231de8; border-top:1px solid var(--edge); padding:12px 16px; }
+.hotel-ui .condition .muted { display:block; margin-top:5px; }
+.hotel-ui .held-status { display:flex; gap:28px; }
+.hotel-ui .held-status>div { display:grid; gap:4px; }
+.hotel-ui .held-status>div>span:last-child { font:16px Georgia,serif; }
+.hotel-ui .quick-access { display:grid; gap:7px; text-align:center; }
+.hotel-ui .quick-pockets { display:flex; gap:6px; }
+.hotel-ui .quick-pocket { width:48px; height:46px; display:grid; place-items:center; color:#a7987c; background:#22261ee8; border:1px solid #8a7d61; box-shadow:inset 0 0 0 4px #121a142b; }
+.hotel-ui .foreground { position:absolute; inset:0; background:#141712bd; display:grid; place-items:center; pointer-events:auto; padding:24px; }
+.hotel-ui .hotel-screen { width:min(940px,100%); max-height:calc(100dvh - 48px); display:flex; flex-direction:column; background:var(--paper); border:1px solid var(--edge); box-shadow:0 20px 80px #0009; }
+.hotel-ui .screen-heading { flex:none; display:flex; align-items:center; justify-content:space-between; gap:20px; padding:22px 28px; border-bottom:1px solid #776c5155; }
+.hotel-ui h2 { font:400 30px/1.2 Georgia,serif; margin-top:3px; }
+.hotel-ui h3 { font:400 20px Georgia,serif; }
+.hotel-ui .screen-footer,.hotel-ui .live-note { font-size:11px; color:var(--muted); }
+.hotel-ui .screen-footer { flex:none; border-top:1px solid #776c5155; padding:12px 28px; }
+.hotel-ui .menu-screen { width:min(400px,100%); }
+.hotel-ui .menu-actions { display:grid; gap:8px; padding:24px 28px; }
+.hotel-ui .menu-actions button { display:flex; justify-content:space-between; align-items:center; text-align:left; }
+.hotel-ui .menu-screen .live-note { padding:0 28px 22px; }
+.hotel-ui .controls-screen { width:min(580px,100%); overflow:auto; }
+.hotel-ui .control-list { display:grid; grid-template-columns:1fr auto; gap:16px; margin:24px 28px; }
+.hotel-ui .control-list dd { margin:0; color:var(--accent); letter-spacing:.12em; }
+.hotel-ui .controls-screen>p { margin:0 28px 22px; }
+.hotel-ui .field-case { overflow:auto; min-height:0; }
+.hotel-ui .case-tabs { display:flex; gap:24px; padding:0 28px; border-bottom:1px solid #776c5155; }
+.hotel-ui .case-tabs button { padding:16px 0; background:none; border:0; border-bottom:2px solid transparent; color:var(--muted); }
+.hotel-ui .case-tabs button[aria-selected=true] { border-bottom-color:var(--accent); color:var(--ink); }
+.hotel-ui .case-tabs button span { margin-left:14px; font-size:11px; }
+.hotel-ui .case-collection { display:grid; grid-template-columns:1.6fr 1fr; min-height:360px; }
+.hotel-ui .case-contents { padding:24px 28px; }
+.hotel-ui .collection-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
+.hotel-ui .pocket-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.hotel-ui .pocket-grid .pocket { position:relative; height:64px; padding:0; background:#1c221b; color:#93846b; border:1px solid #6e685055; }
+.hotel-ui .pocket-grid .pocket[aria-pressed=true] { border-color:var(--accent); box-shadow:inset 0 0 0 2px #98b3a533; background:#2c3529; }
+.hotel-ui .pocket-number { position:absolute; top:6px; left:8px; font:10px ui-monospace,monospace; }
+.hotel-ui .case-quick { margin-top:20px; display:grid; grid-template-columns:auto 1fr; gap:10px 20px; align-items:center; }
+.hotel-ui .case-quick h3 { font:12px system-ui,sans-serif; color:var(--muted); }
+.hotel-ui .case-quick p { grid-column:2; }
+.hotel-ui .item-detail { display:flex; flex-direction:column; padding:26px; background:#1e221c; border-left:1px solid #776c5155; }
+.hotel-ui .empty-emblem { flex:1; min-height:110px; display:grid; place-items:center; font:40px Georgia,serif; color:#75684f; }
+.hotel-ui .item-detail p { margin-top:12px; color:var(--muted); }
+.hotel-ui .spirit-empty { min-height:255px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:14px; color:var(--muted); }
+.hotel-ui .pact-mark { font:70px/1 Georgia,serif; color:#899b8e; }
+.hotel-ui .console-screen { align-self:start; width:min(1120px,100%); }
+.hotel-ui .console-help { flex:none; padding:12px 24px; color:var(--muted); font-size:12px; }
+.hotel-ui .console-host { min-height:0; overflow:auto; padding:0 20px 18px; }
+.hotel-ui .console-host .rusty-live-debug-panel { max-width:100%; }
+/* Bound Engine-owned lists so command results remain beside the input. */
+.hotel-ui .console-host .rusty-live-debug-panel__completions { max-height:18vh; overflow:auto; }
+.hotel-ui .console-host .rusty-live-debug-panel__transcript { max-height:24vh; }
+@media (max-width:760px) {
+  .hotel-ui .condition { display:none; }
+  .hotel-ui .hud-bottom { left:20px; right:20px; }
+  .hotel-ui .hotel-title { left:20px; top:20px; }
+  .hotel-ui .hud-nav { right:20px; top:20px; }
+  .hotel-ui .travel-hint { gap:10px; font-size:9px; }
+  .hotel-ui .case-collection { grid-template-columns:1.4fr 1fr; min-height:0; }
+  .hotel-ui .case-contents,.hotel-ui .item-detail { padding:18px; }
+  .hotel-ui .screen-heading { padding:18px; }
+  .hotel-ui .foreground { padding:12px; }
+  .hotel-ui .hotel-screen { max-height:calc(100dvh - 24px); }
+  .hotel-ui .case-quick { grid-template-columns:1fr; }
+  .hotel-ui .case-quick p { grid-column:auto; }
+}
+@media (max-height:600px) {
+  .hotel-ui .screen-heading { padding:12px 20px; }
+  .hotel-ui h2 { font-size:24px; }
+  .hotel-ui .case-tabs button { padding:9px 0; }
+  .hotel-ui .screen-footer { padding:8px 20px; }
+}
+
+.focus-prompt { position:absolute; top:56%; left:50%; transform:translateX(-50%); padding:.6rem 1rem; border:1px solid #baa97666; background:#141913e8; color:#e7ddbc; font-size:.9rem; text-align:center; max-width:32rem; }
+.hotel-ui .reading-screen { width:min(740px,100%); }
+.hotel-ui .reading-text { white-space:pre-line; line-height:1.75; font-size:1.05rem; color:#e1d9c1; padding:24px 28px; overflow:auto; min-height:0; }
+
+.hotel-ui .supply-notice { position:absolute; left:50%; bottom:150px; transform:translateX(-50%); padding:8px 16px; background:#24281fea; border:1px solid var(--edge); font-size:13px; text-align:center; max-width:34rem; }
+.hotel-ui .pocket.occupied { color:var(--ink); background:#353b30; }
+.hotel-ui [data-detail-body] { white-space:pre-line; }
+
+.hotel-ui .hurt-screen { position:absolute; inset:0; box-shadow:inset 0 0 70px 15px #9b382777; }
+.hotel-ui .reticle.hit::after { content:'×'; position:absolute; top:-15px; left:-8px; color:#fff1c8; font:24px system-ui; }
+.hotel-ui [data-combat-action] { margin-top:4px; letter-spacing:.08em; }
+.hotel-ui .travel-hint { flex-wrap:wrap; max-width:75%; }
+
+/* A single pact card and its relevant equip action within the existing field case. */
+.spirit-card { width: 100%; min-height: 12rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; background: #304137; }
+.spirit-card small { color: #ceba89; text-transform: uppercase; letter-spacing: .12em; }
+.moth-emblem { font-size: 5rem; line-height: 1; color: #d2b875; }
+.spirit-result { font-size: .88rem; color: #d6c79e; }
+.spirit-state { display: block; max-width: 12rem; font-size: .72rem; color: #c4b999; }
+[data-equip-spirit] { margin-top: .8rem; }
+[data-equip-spirit]:disabled { opacity: .55; }
+
+.hotel-ui .held-status .spirit-state { font:11px/1.35 system-ui,sans-serif; }
+[data-collection="spirits"] .empty-emblem { display:none; }
+[data-collection="spirits"] .item-detail p { font-size:13px; }
+
+.hotel-ui .supply-actions { display:grid; gap:8px; margin-top:16px; }
+.hotel-ui .supply-actions button:disabled { opacity:.5; cursor:default; }
+.hotel-ui .supply-result { font-size:12px; min-height:36px; }
+.hotel-ui .pocket-grid .pocket { touch-action:none; user-select:none; }
+.hotel-ui .pocket-grid .occupied { cursor:grab; }
+.hotel-ui .pocket-grid.moving .pocket { border-color:var(--accent); cursor:crosshair; }
+.hotel-ui .quick-pocket { position:relative; padding-top:8px; color:var(--ink); font-size:12px; }
+.hotel-ui .quick-pocket small { position:absolute; top:1px; left:5px; color:var(--muted); font:10px ui-monospace,monospace; }
+.hotel-ui [data-collection="supplies"] .empty-emblem { min-height:40px; }

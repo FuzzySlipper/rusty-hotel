@@ -1,0 +1,17 @@
+{
+  "producer": "tools/author-ambience.py",
+  "assets": [
+    {
+      "path": "content/audio/tape-room.wav",
+      "sha256": "c1c44d1a6ccf647afa4cf71d8fdc332c245d7741f263fc05275f602db74a04cf",
+      "loopBoundaryDeltaPcm16": -715,
+      "maxAdjacentDeltaPcm16": 919
+    },
+    {
+      "path": "content/audio/ventilation.wav",
+      "sha256": "5fd596f056eb19044cc65daf5a4c87067a532730999b187abcaa10fcfa6c3acd",
+      "loopBoundaryDeltaPcm16": -30,
+      "maxAdjacentDeltaPcm16": 805
+    }
+  ]
+}

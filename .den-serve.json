@@ -1,0 +1,23 @@
+{
+  "project": "rusty-hotel",
+  "serve": {
+    "command": "rusty dev --bind-host {host} --port {port} --live-debug --diagnostics-log {session_dir}/rusty-engine-diagnostics.ndjson",
+    "preferredPort": 0,
+    "healthUrl": "/product-bootstrap.json",
+    "readyText": "rusty-hotel",
+    "reusePolicy": "broker_owned",
+    "startupTimeout": "180s",
+    "instanceArgs": "--instance {instance} --label {label}",
+    "keepArgs": "--keep",
+    "stopCommand": "rusty dev stop --project src/Hotel.Game/Hotel.Game.csproj --instance {instance}"
+  },
+  "playtest": {
+    "startPath": "/",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "headed": false,
+    "recordVideo": false
+  }
+}

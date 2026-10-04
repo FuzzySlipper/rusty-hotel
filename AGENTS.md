@@ -1,7 +1,11 @@
-# Rusty Template agent guidance
+# Hotel Endless agent guidance
 
-Rusty Template is a minimal C# counter product and starting point for downstream
-Rusty Engine projects. Keep it small enough to understand and customize.
+Hotel Endless is a first-person exploration and scavenging game in an impossible
+1970s hotel, with brief demon summons. The implementation currently provides a
+walkable, dressed first-person hotel section. Read [docs/design.md](docs/design.md) for product
+direction and [docs/reuse.md](docs/reuse.md) before borrowing sibling code.
+Den project `rusty-hotel` owns tasks and progress. Keep the product small and
+explicit; proposed game systems are not implemented owners yet.
 
 > The product decides. The Engine guarantees.
 
@@ -22,8 +26,34 @@ and pause only decisions that need unavailable authority.
 
 ## Ownership and source
 
-- `src/RustyTemplate.Game/` owns counter state, application policy, semantic
-  input interpretation, and UI facts. Organize additions by product domain;
+- `src/Hotel.Game/` owns Hotel composition, player policy, scene definitions,
+  semantic input interpretation, and UI facts. `Player/HotelPlayer.cs` owns the
+  player body and camera; `Scene/HotelScene.cs` owns scene resources and paired
+  door appearance/collision poses. `Route/HotelRoute.cs` owns door/latch state,
+  readings and the Engine world-interaction adapter. Extend that owner for world
+  actions; do not add a second ray/focus or interaction registry.
+  `Supplies/HotelSupplies.cs` owns carried stacks, collected finds and resource
+  values. UI and developer actions share its capacity, eligibility and revision
+  checks; room entry and case navigation must not reset it. Route inventory claims
+  through HandleIntents during both running and paused admission. Quick access
+  mirrors the first three saved pockets; never add a second inventory in the DOM.
+  `Combat/HotelCombat.cs` owns weapon commitment, damage and resident behavior;
+  `Combat/CombatView.cs` supplies poses to the existing scene snapshot. Keep
+  resource mutations in Supplies, physical input in Engine FPS, and hits/body
+  collision in Engine spatial services. Do not add a combat loop or local ray solver.
+  `Spirits/HotelSpirit.cs` owns the one pact, equipped choice and manifestation;
+  `Spirits/SpiritView.cs` contributes the articulated creature to the same scene.
+  Equip claims use the Engine paused-intent callback and the same domain rule as
+  running claims; summons use admitted physical Q input. Keep charges in Supplies
+  and enemy interruption in Combat. Never add follower AI or a second clock.
+  `Expedition/HotelExpedition.cs` owns the refuge checkpoint across those domains.
+  Extend their capture/validate/restore methods when adding meaningful save state;
+  persist one complete value through Engine ProductStateStore. Decode/validate
+  before restore, settle deposits only after successful save, and never replace
+  a present invalid save with initial state. Pause/quit must not save an excursion.
+  `Interface/HotelHud.cs` publishes UI facts; `Interface/HotelDebugCommands.cs`
+  adapts the generated command catalog to the existing owners.
+  Organize additions by product domain;
   keep the product entry focused on explicit composition and lifecycle.
 - `Rusty.Engine` owns named Engine mechanisms: lifecycle/update admission,
   input delivery, rendering/resources, spatial queries, content delivery,
@@ -32,6 +62,13 @@ and pause only decisions that need unavailable authority.
 - `src/ui/` is a DOM companion. It observes Engine projections and submits
   semantic intents. Gameplay state, game rendering, canvas, transport, and
   scheduling stay with their C#/Engine owners.
+  `main.js` owns the one foreground-screen/focus flow; `field-case.js` owns
+  collection presentation; `developer.js` owns the optional Engine panel lifetime.
+  `pause.js` requests/observes the Engine lifecycle port. Foreground screens pause
+  simulation; nested navigation retains pause and the final exit resumes before
+  restoring gameplay focus. Never infer success from a clicked button.
+  Player inventory actions require Engine-owned delivery while paused. Do not
+  temporarily resume gameplay or use the developer transport to deliver them.
 - `content/` holds product-authored data. Interpret it in typed C# through
   Engine content services. Keep authored definitions, live state, and transient
   presentation distinct.
@@ -41,6 +78,36 @@ and pause only decisions that need unavailable authority.
 
 There is one Engine-admitted update path. Use its time/input facts; do not add
 another loop, clock, scheduler, renderer, or state authority downstream.
+
+## Player UI and developer access
+
+Read [docs/ui.md](docs/ui.md) before adding any player-facing interaction or
+developer hook. Establish and extend the curated Hotel interface early.
+
+- Give every player-facing feature a deliberate home: an ordinary world
+  interaction, the compact HUD, a focused inventory/spirit screen, contextual
+  reading/refuge UI, or the pause menu. Design its entry, action, feedback, and
+  return to play. Extend the relevant screen instead of appending controls.
+- Do not complete tasks by adding a button to a long scrolling panel, generic
+  action list, debug dashboard, or pile of collapsible sections. Hiding that
+  panel in a tab does not make it a designed player flow.
+- Use the opt-in **Engine-owned command console and generated command catalog**
+  for agent hooks, inspection, fixture setup, cheats, and temporary feature
+  triggers. Reuse its panel/client/transport and C# registration; do not build
+  a Hotel console, command parser, transport, or per-feature test buttons.
+- Keep the console out of the normal HUD, clearly labeled as developer access,
+  and closed/inert until opted into. All command mutations go through existing
+  C# domain owners. Distinguish normal semantic actions from explicitly named
+  developer overrides; do not quietly bypass ordinary eligibility checks.
+- Console support is legitimate scoped deliverable work. If a task promises a
+  player feature, console-only access is an intermediate result, not completion.
+  Keep its ordinary UI/world integration in the active task or an explicit Den
+  follow-up; do not silently reduce the parent acceptance criteria.
+- Verify player-facing claims with the console closed and ordinary controls.
+  Record command setup/testing separately from the visible player path. Check
+  input focus, pointer-lock handoff, close/resume, and relevant viewport sizes.
+  Long notes, inventory collections, and console transcripts may scroll inside
+  their designed surfaces; the prohibition is on accumulating unrelated controls.
 
 ## Product style
 
@@ -99,7 +166,7 @@ original task. Review is not an extra user-approval gate.
 `rusty build` builds the default project `Directory.Build.props` names
 and stages the ordinary CoreCLR product; `--aot` additionally publishes NativeAOT. Use focused
 semantic or interaction evidence only when it answers the changed behavior;
-do not add broad test gates to this small template. Distinguish build/staging,
+do not add broad test gates to this small product. Distinguish build/staging,
 host launch, and visible interaction claims. Repeat passed checks only after
 material changes or an unresolved failure.
 

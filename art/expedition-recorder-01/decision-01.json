@@ -1,0 +1,15 @@
+{
+  "source": "source-01.png",
+  "imageAttemptsUsed": 1,
+  "critics": [
+    "image-critic-a.md",
+    "image-critic-b.md"
+  ],
+  "decision": "Proceed with one static reconstruction. Both critics find the major forms suitable; inspect tape/reel separation, backside and surface detail on the actual mesh. No rig or working tape mechanism required.",
+  "meshPlanJob": "c73908cbc8b713e3af50a294",
+  "faceTarget": 5000,
+  "topology": "quad",
+  "textureQuality": "standard",
+  "model": "P2-20260801",
+  "convertGlb": "local Blender derivative"
+}

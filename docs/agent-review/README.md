@@ -28,6 +28,13 @@ reviewer count, or turn optional interactive testing into a universal gate.
 Engine reuse asks whether the mechanism belongs upstream; product reuse asks
 whether this repository already has its owner. Keep those findings distinct.
 
+For Hotel player-facing changes, apply [the UI contract](../ui.md): identify the
+designed surface and check its entry, action, feedback, exit and focus handling.
+A command-only feature or appended test button does not complete player-facing
+acceptance. Scoped command-hook work is valid when reported as such and its
+remaining player integration stays explicit in Den. Do not require a player UI
+for a task whose agreed scope is solely a developer command.
+
 ## Reviewer packet
 
 Give each reviewer this guide and its selected lane, plus:
