@@ -17,7 +17,17 @@ internal sealed record SuppliesDefinition(SupplyResources Resources, ItemDefinit
         }
         SupplyMessages text = Authored.Read(engine, SupplyMessages.Path, ContentJson.Default.SupplyMessages);
         text.Validate();
-        return new(Authored.Read(engine, SupplyResources.Path, ContentJson.Default.SupplyResources), items, text);
+        for (int i = 0; i < items.Length; i++)
+        {
+            Authored.AtLeast(ItemCatalog.Path, $"items[{i}].stackLimit", items[i].StackLimit, 1);
+            Authored.AtLeast(ItemCatalog.Path, $"items[{i}].amount", items[i].Amount, 0);
+        }
+        SupplyResources resources = Authored.Read(engine, SupplyResources.Path, ContentJson.Default.SupplyResources);
+        Authored.AtLeast(SupplyResources.Path, "maximumHealth", resources.MaximumHealth, 1);
+        Authored.Within(SupplyResources.Path, "initialHealth", resources.InitialHealth, 1, resources.MaximumHealth);
+        Authored.AtLeast(SupplyResources.Path, "maximumAmmo", resources.MaximumAmmo, 0);
+        Authored.AtLeast(SupplyResources.Path, "maximumSummon", resources.MaximumSummon, 0);
+        return new(resources, items, text);
     }
 }
 

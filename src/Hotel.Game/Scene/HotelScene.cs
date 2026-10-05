@@ -57,10 +57,8 @@ internal sealed class HotelScene : IDisposable
             }
             foreach (RoomBox box in geometry.Boxes)
             {
+                // Shape and size were validated when the geometry file loaded.
                 Vector3 min = Authored.Vector(box.Min), max = Authored.Vector(box.Max);
-                Vector3 size = max - min;
-                if (size.X <= 0 || size.Y <= 0 || size.Z <= 0)
-                    throw new InvalidOperationException($"Hotel box '{box.Name}' must have positive dimensions.");
                 SurfaceDefinition surface = surfaceDefinitions.First(surface => surface.Id == box.Material);
                 MeshResource mesh = RoomGeometry.Box(engine, surfaces[box.Material], min, max, new(surface.TileWidth, surface.TileHeight));
                 meshes.Add(mesh);

@@ -75,7 +75,29 @@ internal static class ContentChecks
             ("combat/residents.json", root => root["residents"]![0]!["eyeHeight"] = 5, "content/combat/residents.json residents[0].eyeHeight"),
             ("combat/messages.json", root => root["ready"] = "Ready {resident}", "content/combat/messages.json ready"),
             ("supplies/messages.json", root => root["emptyPocket"] = "Empty {pocket}.", "content/supplies/messages.json emptyPocket"),
-            ("spirits/hushwing.json", root => root["text"]!["callHint"] = "Q · {verb}", "content/spirits/hushwing.json text.callHint") })
+            ("spirits/hushwing.json", root => root["text"]!["callHint"] = "Q · {verb}", "content/spirits/hushwing.json text.callHint"),
+            // Shapes and ranges local to one domain's file are rejected before any owner sees them.
+            ("excursions/west-wing/placements.json", root => root["arrival"]!["position"] = new JsonArray(0, 1),
+                "content/excursions/west-wing/placements.json arrival.position"),
+            ("excursions/west-wing/placements.json", root => root["finds"]![0]!["count"] = 0,
+                "content/excursions/west-wing/placements.json finds[0].count"),
+            ("excursions/west-wing/placements.json", root => root["finds"]![0]!["count"] = 1000,
+                "content/excursions/west-wing/placements.json finds[0].count"),
+            ("excursions/west-wing/geometry.json", root => root["boxes"]![0]!["max"] = new JsonArray(-5, 0, 1),
+                "content/excursions/west-wing/geometry.json boxes[0].max"),
+            ("excursions/west-wing/route.json", root => root["doors"]![0]!["hinge"] = new JsonArray(1, 2, 3, 4),
+                "content/excursions/west-wing/route.json doors[0].hinge"),
+            ("excursions/west-wing/ambience.json", root => root["voices"]![0]!["volume"] = 3,
+                "content/excursions/west-wing/ambience.json voices[0].volume"),
+            ("player/tuning.json", root => root["radius"] = 2, "content/player/tuning.json radius"),
+            ("supplies/resources.json", root => root["initialHealth"] = 500, "content/supplies/resources.json initialHealth"),
+            ("supplies/items.json", root => root["items"]![0]!["stackLimit"] = 0, "content/supplies/items.json items[0].stackLimit"),
+            ("combat/weapons.json", root => root["weapons"]![0]!["range"] = 0, "content/combat/weapons.json weapons[0].range"),
+            ("combat/residents.json", root => root["residents"]![0]!["health"] = 0, "content/combat/residents.json residents[0].health"),
+            ("spirits/hushwing.json", root => root["range"] = -1, "content/spirits/hushwing.json range"),
+            ("scene/surfaces.json", root => root["surfaces"]![0]!["roughness"] = 2, "content/scene/surfaces.json surfaces[0].roughness"),
+            ("route/interaction.json", root => root["releaseAngle"] = 0.01, "content/route/interaction.json releaseAngle"),
+            ("interface/tuning.json", root => root["supplyPockets"] = 0, "content/interface/tuning.json supplyPockets") })
         {
             var invalid = Authored();
             invalid[file] = Json(invalid[file], change);
@@ -110,6 +132,6 @@ internal static class ContentChecks
                     { Kind = InputEventKind.Key, Edge = InputEdge.Pressed, Keyboard = KeyboardControl.Digit6, X = 1 }));
                 Check(Supply() == Owners.Content(engine).Supplies.Text.EmptyPocket, "the authored fourth quick key reaches the fourth pocket");
             });
-        Console.WriteLine("Content checks passed: unknown fields, missing values, cross-file references, template placeholders in every text field, moved tuning ranges and control references name their file and field; a quick pocket is added by content alone.");
+        Console.WriteLine("Content checks passed: unknown fields, missing values, cross-file references, template placeholders in every text field, moved tuning ranges, local shapes and ranges in every domain file, and control references name their file and field; a quick pocket is added by content alone.");
     }
 }

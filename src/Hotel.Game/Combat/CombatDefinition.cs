@@ -14,6 +14,16 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
         WeaponDefinition[] weapons = Authored.Read(engine, WeaponCatalog.Path, ContentJson.Default.WeaponCatalog).Weapons;
         Authored.Require(weapons.Any(w => w.AmmoCost == 0), WeaponCatalog.Path, "weapons", "one weapon must need no ammunition, as the fallback.");
         for (int i = 0; i < weapons.Length; i++)
+        {
+            WeaponDefinition w = weapons[i];
+            Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].damage", w.Damage, 0);
+            Authored.Positive(WeaponCatalog.Path, $"weapons[{i}].range", w.Range);
+            Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].windup", w.Windup, 0);
+            Authored.Positive(WeaponCatalog.Path, $"weapons[{i}].commit", w.Commit);
+            Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].recovery", w.Recovery, 0);
+            Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].ammoCost", w.AmmoCost, 0);
+        }
+        for (int i = 0; i < weapons.Length; i++)
             Template.Plain(WeaponCatalog.Path, ($"weapons[{i}].name", weapons[i].Name), ($"weapons[{i}].shortName", weapons[i].ShortName),
                 ($"weapons[{i}].windupLabel", weapons[i].WindupLabel), ($"weapons[{i}].commitLabel", weapons[i].CommitLabel));
         CombatTuning tuning = Authored.Read(engine, CombatTuning.Path, ContentJson.Default.CombatTuning);
@@ -21,7 +31,19 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
         ResidentKind[] residents = Authored.Read(engine, ResidentCatalog.Path, ContentJson.Default.ResidentCatalog).Residents;
         for (int i = 0; i < residents.Length; i++)
         {
-            Template.Plain(ResidentCatalog.Path, ($"residents[{i}].name", residents[i].Name));
+            ResidentKind r = residents[i];
+            Template.Plain(ResidentCatalog.Path, ($"residents[{i}].name", r.Name));
+            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].health", r.Health, 1);
+            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].damage", r.Damage, 0);
+            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].speed", r.Speed, 0);
+            Authored.Positive(ResidentCatalog.Path, $"residents[{i}].sightRange", r.SightRange);
+            Authored.Positive(ResidentCatalog.Path, $"residents[{i}].attackRange", r.AttackRange);
+            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].windup", r.Windup, 0);
+            Authored.Positive(ResidentCatalog.Path, $"residents[{i}].commit", r.Commit);
+            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].recovery", r.Recovery, 0);
+            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].leash", r.Leash, 0);
+            Authored.Positive(ResidentCatalog.Path, $"residents[{i}].radius", r.Radius);
+            Authored.Positive(ResidentCatalog.Path, $"residents[{i}].height", r.Height);
             // The eye sits within the upper half of the body, measured from its centre.
             Authored.Within(ResidentCatalog.Path, $"residents[{i}].eyeHeight", residents[i].EyeHeight, 0, residents[i].Height / 2);
         }

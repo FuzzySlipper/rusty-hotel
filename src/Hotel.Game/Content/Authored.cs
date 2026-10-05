@@ -48,6 +48,19 @@ internal static partial class Authored
         Require(float.IsFinite(value) && value >= minimum && value <= maximum, path, field,
             $"must be between {minimum} and {maximum}; found {value}.");
 
+    internal static void AtLeast(string path, string field, float value, float minimum) =>
+        Require(float.IsFinite(value) && value >= minimum, path, field, $"must be at least {minimum}; found {value}.");
+
+    /// <summary>A world position or direction: exactly three finite components.</summary>
+    internal static void Point(string path, string field, float[] value) =>
+        Require(value.Length == 3 && value.All(float.IsFinite), path, field,
+            $"must be [x, y, z] with three finite numbers; found {value.Length} component(s).");
+
+    /// <summary>A linear RGB colour: three finite, non-negative components.</summary>
+    internal static void Colour(string path, string field, float[] value) =>
+        Require(value.Length == 3 && value.All(c => float.IsFinite(c) && c >= 0), path, field,
+            "must be [r, g, b] with three non-negative numbers.");
+
     internal static void Finite(string path, string field, float value) =>
         Require(float.IsFinite(value), path, field, $"must be a finite number; found {value}.");
 

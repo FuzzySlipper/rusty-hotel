@@ -83,7 +83,13 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         for (int i = 0; i < placed.SpiritBells.Length; i++)
             Template.Plain(placements, ($"spiritBells[{i}].place", placed.SpiritBells[i].Place));
         for (int i = 0; i < placed.Finds.Length; i++)
-            Authored.Require(Supplies.Items.Any(item => item.Id == placed.Finds[i].Item), placements, $"finds[{i}].item", $"unknown item '{placed.Finds[i].Item}'.");
+        {
+            ItemDefinition? item = Supplies.Items.FirstOrDefault(item => item.Id == placed.Finds[i].Item);
+            Authored.Require(item is not null, placements, $"finds[{i}].item", $"unknown item '{placed.Finds[i].Item}'.");
+            // A find is admitted whole, so it must fit in an empty field case.
+            Authored.Require(placed.Finds[i].Count <= item!.StackLimit * Interface.SupplyPockets, placements, $"finds[{i}].count",
+                $"{placed.Finds[i].Count} exceeds what an empty field case holds ({item.StackLimit} per pocket × {Interface.SupplyPockets}).");
+        }
         for (int i = 0; i < placed.Residents.Length; i++)
             Authored.Require(Combat.Residents.Any(kind => kind.Id == placed.Residents[i].Kind), placements, $"residents[{i}].kind",
                 $"unknown resident kind '{placed.Residents[i].Kind}'.");
@@ -104,15 +110,38 @@ internal sealed record ExcursionDefinition(string Id, ExcursionGeometry Geometry
     internal string RoutePath => Folder(Id) + "route.json";
     internal string PlacementsPath => Folder(Id) + "placements.json";
 
-    internal static ExcursionDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys) => new(id,
-        Authored.Read(engine, Folder(id) + "geometry.json", ContentJson.Default.ExcursionGeometry),
-        Authored.Read(engine, Folder(id) + "route.json", ContentJson.Default.ExcursionRoute, keys),
-        Authored.Read(engine, Folder(id) + "placements.json", ContentJson.Default.ExcursionPlacements),
-        Authored.Read(engine, Folder(id) + "ambience.json", ContentJson.Default.AmbienceDefinition).Voices);
+    internal static ExcursionDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys)
+    {
+        string folder = Folder(id);
+        ExcursionGeometry geometry = Authored.Read(engine, folder + "geometry.json", ContentJson.Default.ExcursionGeometry);
+        geometry.Validate(folder + "geometry.json");
+        ExcursionRoute route = Authored.Read(engine, folder + "route.json", ContentJson.Default.ExcursionRoute, keys);
+        route.Validate(folder + "route.json");
+        ExcursionPlacements placements = Authored.Read(engine, folder + "placements.json", ContentJson.Default.ExcursionPlacements);
+        placements.Validate(folder + "placements.json");
+        AmbienceDefinition ambience = Authored.Read(engine, folder + "ambience.json", ContentJson.Default.AmbienceDefinition);
+        ambience.Validate(folder + "ambience.json");
+        return new(id, geometry, route, placements, ambience.Voices);
+    }
 
     private static string Folder(string id) => $"excursions/{id}/";
 }
 
 /// <summary>Where one excursion puts the player, refuge, finds, residents and spirit bells.</summary>
 internal sealed record ExcursionPlacements(ArrivalPlacement Arrival, RefugeDefinition Refuge, FindDefinition[] Finds,
-    ResidentPlacement[] Residents, SpiritBellPlacement[] SpiritBells);
+    ResidentPlacement[] Residents, SpiritBellPlacement[] SpiritBells)
+{
+    // Shapes and ranges local to this file; references to other files are checked by HotelContent.
+    internal void Validate(string path)
+    {
+        Arrival.Validate(path);
+        Authored.Point(path, "refuge.point", Refuge.Point);
+        for (int i = 0; i < Finds.Length; i++)
+        {
+            Authored.AtLeast(path, $"finds[{i}].count", Finds[i].Count, 1);
+            Authored.Point(path, $"finds[{i}].point", Finds[i].Point);
+        }
+        for (int i = 0; i < Residents.Length; i++) Authored.Point(path, $"residents[{i}].position", Residents[i].Position);
+        for (int i = 0; i < SpiritBells.Length; i++) Authored.Point(path, $"spiritBells[{i}].point", SpiritBells[i].Point);
+    }
+}

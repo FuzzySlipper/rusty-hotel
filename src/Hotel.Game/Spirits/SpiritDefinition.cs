@@ -18,6 +18,12 @@ internal sealed record SpiritDefinition(string Id, string Name, string Descripti
             ("text.holding", spirit.Text.Holding), ("text.departing", spirit.Text.Departing));
         Template.Check(path, "description", spirit.Description, "place", "range", "cost", "interrupt");
         Template.Check(path, "text.callResult", spirit.Text.CallResult, "spirit", "resident", "cost");
+        Authored.AtLeast(path, "welcomeCharges", spirit.WelcomeCharges, 0);
+        Authored.AtLeast(path, "cost", spirit.Cost, 0);
+        Authored.Positive(path, "range", spirit.Range);
+        Authored.Positive(path, "arrival", spirit.Arrival);
+        Authored.Positive(path, "hold", spirit.Hold);
+        Authored.Positive(path, "departure", spirit.Departure);
         ManifestationTuning at = spirit.Manifestation;
         Authored.Finite(path, "manifestation.approach", at.Approach);
         Authored.Finite(path, "manifestation.side", at.Side);

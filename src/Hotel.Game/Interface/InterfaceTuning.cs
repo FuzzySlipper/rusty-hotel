@@ -7,5 +7,11 @@ namespace Hotel.Game.Interface;
 internal sealed record InterfaceTuning(int SupplyPockets, int QuickPockets)
 {
     internal const string Path = "interface/tuning.json";
-    internal static InterfaceTuning Load(IEngineContext engine) => Authored.Read(engine, Path, ContentJson.Default.InterfaceTuning);
+    internal static InterfaceTuning Load(IEngineContext engine)
+    {
+        InterfaceTuning t = Authored.Read(engine, Path, ContentJson.Default.InterfaceTuning);
+        Authored.AtLeast(Path, "supplyPockets", t.SupplyPockets, 1);
+        Authored.Within(Path, "quickPockets", t.QuickPockets, 1, t.SupplyPockets);
+        return t;
+    }
 }

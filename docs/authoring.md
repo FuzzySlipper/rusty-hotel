@@ -8,9 +8,13 @@ There is no executable content scripting or second scene/state authority in the 
 
 Files are strict. An unknown member, a missing required value, a null in a
 non-nullable field or a reference to an unknown id stops loading, with a message
-naming `content/<file>` and the field. Each domain's loader also range-checks its
-tuning: durations must be positive, fractions must stay within 0–1, and offsets must
-be finite. When you add a tuning value, add its check beside the others. Fix the
+naming `content/<file>` and the field. Each domain's loader also checks its own
+file's shapes and ranges before any owner sees them: positions and directions are
+three finite numbers, boxes and rooms have max above min, counts, stack limits and
+health are at least 1, durations are positive, fractions stay within 0–1, volumes
+within 0–1. Checks that span files, such as known ids or a find fitting an empty
+field case, run afterwards in `HotelContent`. When you add an authored value, add
+its check beside the others. Fix the
 data; there are no silent defaults.
 
 ## Where a change belongs
