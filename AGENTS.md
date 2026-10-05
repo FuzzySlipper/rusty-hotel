@@ -1,8 +1,8 @@
 # Hotel Endless agent guidance
 
 Hotel Endless is a first-person exploration and scavenging game in an impossible
-1970s hotel, with brief demon summons. The implementation currently provides a
-walkable, dressed first-person hotel section. Read [docs/design.md](docs/design.md) for product
+1970s hotel, with brief demon summons. The implementation provides an authored excursion with scavenging,
+combat, one spirit pact, a return shortcut and a whole-refuge checkpoint. Read [docs/design.md](docs/design.md) for product
 direction and [docs/reuse.md](docs/reuse.md) before borrowing sibling code.
 Den project `rusty-hotel` owns tasks and progress. Keep the product small and
 explicit; proposed game systems are not implemented owners yet.
@@ -91,6 +91,14 @@ developer hook. Establish and extend the curated Hotel interface early.
 - Do not complete tasks by adding a button to a long scrolling panel, generic
   action list, debug dashboard, or pile of collapsible sections. Hiding that
   panel in a tab does not make it a designed player flow.
+- The exploration HUD has a fixed budget (docs/ui.md "HUD budget"). A new fact
+  joins an existing cluster or replaces something; it does not add a
+  persistent element. Prefer contextual facts that appear when relevant and
+  expire. One notice slot, chosen by priority, never stacked toasts. Full
+  references (all controls, all resources) live on their screens, not the HUD.
+- Each foreground screen is its own `src/ui/` module with its own markup;
+  `main.js` composes navigation and focus only. Do not grow one template
+  literal or one draw function across screens.
 - Use the opt-in **Engine-owned command console and generated command catalog**
   for agent hooks, inspection, fixture setup, cheats, and temporary feature
   triggers. Reuse its panel/client/transport and C# registration; do not build
@@ -118,9 +126,49 @@ reflection discovery, generic bus, or service locator for hypothetical needs.
 
 Use nullable types, file-scoped namespaces, and `internal`/`sealed` defaults
 where the public product contract does not require otherwise. Keep structural
-constants beside their algorithm; give meaningful identities names. Put
-adjustable gameplay values and authored definitions in domain-owned content
-when the product needs tuning, rather than hiding them in call sites.
+constants beside their algorithm; give meaningful identities names. Gameplay
+values and authored definitions live in domain-owned content, not call sites;
+see the next section.
+
+## Content and code organization
+
+Hotel Endless is content-focused. Organize ahead of need: agents and people
+extend the shape they find, so an ad hoc catch-all becomes the pattern every
+later change follows. Put an addition where its future siblings will live. If
+the file, class or module you are extending is already a catch-all, split it
+along domain lines first, as its own change, rather than adding to it. Do not
+defer organization until "features demand it". Organization means folders,
+files, typed records and named owners, not a framework, generic registry, rule
+engine or plugin system.
+
+- **Authored data is a domain-organized tree.** `content/` has directories and
+  files named for what they hold (supplies items, weapons, resident kinds,
+  spirits, readings, interface text, excursion geometry and placements). A
+  product-named or catch-all file (`hotel.json`, `data.json`, `config.json`)
+  is a smell. Keep reusable definitions (an item, weapon, resident kind or
+  spirit) apart from where one excursion places them. Keep geometry apart from
+  tuning. Each domain loads and validates its own typed records; do not funnel
+  all content through one record that every owner reads.
+- **No player-facing prose in C# or JS.** Names, prompts, notices, refusal
+  reasons, receipts and control labels belong in content as templates filled
+  from definition values. Never repeat a definition's name or number inside a
+  literal (`"Hushwing"`, `"six paces"`, `"pry bar"`). Code composes text; it
+  does not author it.
+- **Gameplay values are tuning.** Timings, notice and flash durations, ranges,
+  offsets, damage, costs and limits go in content. A C# `const` is not tuning
+  support. Missing or invalid authored values fail validation naming the file
+  and field; no silent defaults.
+- **Variants are typed.** A behavior, kind or mode is an enum or typed record in
+  its definition, dispatched by the owning domain. Do not compare strings in
+  views.
+- **One table per vocabulary.** Key bindings and their labels, interactable
+  kinds, HUD facts and saved fields each have one declaration that every
+  consumer (C# input, HUD, UI, playtest actions) reads. A feature should not
+  have to be added in several places that must be kept in step by hand.
+- **Size signals prompt a split.** A C# owner growing past roughly 300 lines, a
+  method interleaving several domains, a JS module holding more than one
+  screen, or a JSON file spanning several domains is the cue to divide it
+  before extending. These are prompts to look, not gates.
 
 Trust first-party runtime state and Engine-admitted data. Preserve concrete
 eligibility rules, current-data errors, and resource lifetime/disposal. Do not
@@ -153,6 +201,52 @@ behavior and upstream owner, and file/link one narrow Engine request when
 that is authorized. Distinguish a missing mechanism or binding from a helper
 or documentation gap. Stop that dependent slice; continue independent work.
 Do not conceal the gap with a local substitute, fake success, or proof-only path.
+
+## Durable documentation
+
+Repository Markdown is for settled, permanently useful information: product
+intent, implemented ownership, contracts, authoring recipes, repeatable commands,
+and incorporated code/asset provenance. Read [docs/authoring.md](docs/authoring.md)
+when changing content or save identities and [docs/development.md](docs/development.md)
+for checks and developer access.
+
+Den owns campaign plans, task status, handoffs, reviews, investigations, dated
+measurements and playtest timelines/captures. Do not append a session diary or
+milestone checklist to repository docs. Update the canonical document rather
+than creating another competing overview. Preserve historical records in Den
+and verify the stored content before removing their repository copies. Retain
+original art, editable sources, prompts, hashes and final use constraints here;
+asset critique rounds and execution incidents belong in Den.
+
+Never book the same fact in both places. Repository files, this one included,
+describe what the product is and the rules for changing it. They do not say
+what is planned, in flight, next or left over: no Den task IDs, campaign or
+phase status, "current state" or "remaining work" sections, roadmaps,
+not-yet-implemented lists, or TODO/FIXME comments that carry a plan. Design
+may state the intended direction; whether a part of it exists is visible from
+the code and from architecture's implemented owners. When a pending fact
+seems to need a home in the repo, it belongs in a Den task, document, board
+post or `known-limitations` entry. Point from Den to the repo, not back.
+
+When a change settles a durable rule, update its owning document in the same
+work. Keep the README an entry point, architecture the owner/data-flow map,
+design the product direction, and UI the player-flow contract. Record temporary
+blockers and evidence limits in Den's `known-limitations` instead of freezing
+them into build instructions. Do not claim an ephemeral capture path or link
+has archived its bytes; report retention limits separately from durable text.
+
+### Work longer than a turn
+
+Architecture and organization work often outlasts one session. Continuity
+lives in Den, not in a smaller scope or a repo note. Shape a long effort as a
+Den campaign whose children each land complete and leave the repo coherent.
+When you stop or narrow a task, move every deferred requirement into a named
+receiving task (its behavior and verification, existing or new) and point the
+source task at it; a remark that the scope shrank does not carry the
+requirement. Write the handoff on the task thread: what changed, checks run,
+what the next agent must know. Do not shrink acceptance to fit a turn, and do
+not leave half-moved structure (two content layouts, an old and a new path)
+without a Den task that owns finishing it.
 
 ## Review and evidence
 

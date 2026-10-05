@@ -4,10 +4,11 @@
 introduce competing state or behavior?
 
 Start with `AGENTS.md` and `docs/architecture.md`, then search the implementation
-and callers. HotelPlayer owns player policy over the Engine entity store;
-HotelScene owns static scene resources; HotelProduct owns lifecycle composition.
-The DOM owns presentation and semantic UI actions. Extend these owners as the
-product grows.
+and callers. The architecture map names the current Player, Scene, Route, Supplies, Combat,
+Spirit and Expedition owners. HotelProduct composes their lifecycle; HotelHud
+projects their facts. The DOM owns presentation and semantic UI actions.
+Extend those owners rather than placing new game state in the entry point,
+a parallel interaction registry, or the browser.
 
 An actionable finding names the existing type/member, the new duplicate at
 file/line, the overlapping authority, and the callers or invariant that now

@@ -86,11 +86,9 @@ expanding menu were not incorporated. The packaged Engine panel supplies the
 console catalog, dispatch, transport and transcript; its implementation is not
 copied.
 
-`src/ui/slots.ts` was consulted for authoritative drag/drop and stack-splitting
-semantics (SHA-256 `636906660aa93ad39945b0926cfb49b1567592540c51096a374251858b07d99d`).
-The field case observes real supply stacks. Active drag/drop handlers need the
-Engine's paused-menu action delivery before adaptation into Hotel's paused case.
-Quick pockets here are an empty presentation, not an implemented selectable/equippable hotbar.
+The completed supplies interaction adapts `slots.ts` as recorded under
+[Supplies interaction](#supplies-interaction). Quick access mirrors the first
+three saved pockets; it has no independent assignment or inventory state.
 
 ## Incorporated room presentation patterns
 
@@ -110,8 +108,9 @@ in Hotel. No donor artwork was copied.
 | `rusty-rifles/src/Rifles.Game/Presentation/MusketeerArt.cs` | Safe Engine Animation GLB resource/appearance path for static props; no rig, animation instance or attachment state |
 
 These APIs were checked against Hotel's installed package and compiled there.
-In this pin, `CreateStaticMeshFromContentReference` admits a different mesh
-format; GLB uses `OpenAnimatedMeshFromContent` even for an unrigged prop.
+Hotel uses `OpenAnimatedMeshFromContent` for GLB, including its unrigged prop;
+`CreateStaticMeshFromContentReference` admits a different mesh format. Recheck
+these content contracts against the selected package when changing that path.
 Engine retains PNG/GLB/WAV decoding, graphics/audio resources, camera listening,
 light rendering, collision and scheduling. Hotel supplies authored boxes and
 world-metre UVs, not a renderer or spatial solver. Offline Blender conversion
@@ -127,8 +126,7 @@ mode/focus only after resume. The installed pair's public UI types confirm the
 contract. Hotel adapts it into its existing single-screen navigation rather than
 copying the fixture's floating button. `pause.js` adds only pending-request,
 failure and disposal handling. No Engine transport, runtime state owner or clock
-is copied. The intervening release notes were read; their navigation/voxel/font
-and viewport additions require no Hotel gameplay migration.
+is copied.
 
 ## Incorporated world-interaction adapter
 
@@ -165,8 +163,7 @@ item effects and collected-find state. The DOM only projects these facts.
 
 ## Incorporated combat API patterns
 
-Hotel refreshed Doom's working-tree files directly (the code index was not
-available). These are API and settlement examples, not pacing or enemy-design
+Hotel consulted Doom's working-tree files directly. These are API and settlement examples, not pacing or enemy-design
 references; no Doom content or assets were copied.
 
 | Donor file under `rusty-doom/csharp/LoadingBay.Game/` | Hotel adaptation | SHA-256 |
@@ -190,8 +187,7 @@ The spirit's pact, bell-headed moth, intervention and phases are Hotel-authored.
 They extend the existing route, supplies, combat, scene and HUD owners. No donor
 summoning system, follower/pathfinding state or timer was copied.
 
-CraftSurvive's semantic UI flow was consulted directly because Codebase Memory
-was unavailable. `src/ui/screens.ts` → `PlayerActionModule.Update` →
+CraftSurvive's semantic UI flow supplies a consultation pattern. `src/ui/screens.ts` → `PlayerActionModule.Update` →
 `PlayerAction.Parse` showed the claim/contract/owner/projection boundary. Hotel
 adapts that boundary with one typed equip choice and pact revision; it rejects
 the donor's broad action catalog, survival/build rules and UI timer machinery.
@@ -208,8 +204,7 @@ spatial targeting extends the already-consulted Doom-style Engine ray flow.
 
 ## Refuge persistence
 
-Dungeon source was refreshed directly (the indexed Codebase Memory surface was
-unavailable). `DelveSaveStore` and `DelveProduct.Start`, level-change saving,
+Dungeon supplies the persistence consultation pattern. `DelveSaveStore` and `DelveProduct.Start`, level-change saving,
 `Pause`, `Restart`, `Shutdown` and `FinishRun` establish the explicit caller →
 ProductStateStore / source-generated JsonProductStateCodec boundary. Hotel adapts
 that small boundary into one whole refuge checkpoint. It rejects Dungeon's two
@@ -232,7 +227,7 @@ dependency is copied.
 CraftSurvive `slots.ts` (SHA-256
 `636906660aa93ad39945b0926cfb49b1567592540c51096a374251858b07d99d`)
 and the `screens.ts` → `PlayerActionModule` → `PlayerAction` snapshots above
-were refreshed directly; the indexed Codebase Memory surface was unavailable.
+supply the consulted interaction pattern.
 Hotel adapts the pointer threshold, projected slot contents and semantic move/use
 boundary. It retains its existing Engine ledger and revision-checked supplies
 owner, adds a keyboard destination alternative, and uses the first three case

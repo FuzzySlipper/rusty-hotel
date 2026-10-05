@@ -7,83 +7,42 @@ The [UI contract](docs/ui.md) separates curated player flows from the opt-in
 Engine developer console.
 Tasks and implementation progress live in Den project `rusty-hotel`.
 
-## Current implementation
+## Play
 
-A walkable first-person hotel loop: a refuge, corridor, two side rooms, a survey room and a service return
-with solid walls, floors and doorways. Teal medallion and angular wallpaper,
-dark carpet, wood trim, warm lamps and analog expedition props establish its
-visual direction. Quiet ventilation and a nearby tape-machine loop supply
-ambience. [Asset sources and authoring](art/README.md) retain the generated
-originals, prompts and editable recorder model.
-C# composes Engine FPS input, character
-collision and camera services. A compact HUD, Supplies/Spirits field case, menu
-and opt-in Engine command console establish the interface. The case starts
-empty. E collects dressings, cartridges, binding incense and the survey reel;
-the field case shows their stacks and selected details. Health and resource
-reserves come from the C# supplies owner. Select a pocket to use its supply, drag a stack to another pocket, or choose
-Move stack and activate a destination with the keyboard. Matching stacks merge;
-different supplies swap. The first three pockets also appear on the HUD: keys
-3–5 use their contents during exploration. Case actions run through Engine
-paused-intent delivery, so arranging or using supplies does not advance the world.
-The pry bar and survey pistol have committed windups and recovery. A porter in
-the west room closes distance and raises its hammer before swinging; the survey
-room's Lamplighter charges a shot along a fixed direction. Retreat, sidestep or
-use a doorway for cover. Encounters are sparse and the pry bar needs no ammunition.
-The notice beside the refuge exit introduces the missing survey reel, nearby
-supplies and the return notebook. E opens it in the same focused reading screen
-as the survey-room field log. The survey-room door opens with E.
-Follow the service passage and unlatch the return door from the far side to open
-a shorter route back. Collected finds stay removed as part of the refuge checkpoint.
+The authored excursion connects a refuge, patterned corridor, two side rooms,
+a survey room and a service shortcut. Read the notice beside the refuge exit,
+scrounge supplies, face the porter and Lamplighter, free Hushwing from the linen
+room bell, and bring the survey reel back to the west desk's notebook.
+Teal wallpaper, burgundy carpet, warm lamps and quiet analog ambience establish
+the direction. [Design](docs/design.md) describes the larger game; current
+acceptance, limitations and next work live in Den, not this feature description.
 
-Click the world to capture the mouse, use WASD to walk and the mouse to look.
-E uses the focused door or object. I opens the field case. Escape closes the active screen or opens the pause menu.
-Left click or Ctrl attacks once per press; 1 selects the pry bar, 2 the pistol.
-Collect a cartridge packet with E, then R loads it while in the world. The east
-refuge table holds a starter packet. When overwhelmed, R restores the whole previous refuge checkpoint. Before your
-first return this is the initial excursion state.
-In the linen room, E frees Hushwing from its bell and grants two summon charges.
-Open I → Spirits to equip the pact. Aim at a living resident within six paces
-and press Q: the bell-headed moth interrupts it for three seconds, then departs.
-Each accepted call costs one charge; invalid calls cost nothing. You can attack
-or retreat during its intervention. Pausing freezes its presence, and defeat
-ends it. Recovery restores the pact and charges recorded at the checkpoint.
+Click the hotel view to capture the mouse. Menu → Controls also lists bindings.
 
-At the refuge, aim at the notebook on the west desk and press E to record a
-checkpoint. Carried expedition finds move into the refuge ledger; the return
-receipt confirms what was secured and saved. Close it to resume exploring.
-Saving retains current health and resources; it does not refill them. The pause
-menu shows the current checkpoint status. Defeat recovery and reopening the
-hotel restore its supplies, pocket arrangement, pact, selected weapon, doors,
-collected finds and resident health/positions together. Recovery starts at the
-authored refuge arrival with no unfinished attacks or summons. Changes after
-the last refuge return are discarded; pausing or quitting does not save them.
-A missing save establishes an initial checkpoint. A present unreadable or invalid
-save reports a load error and is never silently replaced. Engine owns storage;
-ordinary dev saves live in its disposable `.runtime/persistence` area.
+| Control | Action |
+| --- | --- |
+| WASD / mouse | Walk / look |
+| E | Use the focused object, collect a find, read or open a door |
+| Left click / left Ctrl | Commit one attack per press |
+| 1 / 2 | Select pry bar / survey pistol |
+| R | Use carried cartridges while exploring; recover the checkpoint when downed |
+| Q | Call the equipped spirit toward a living resident in range |
+| 3 / 4 / 5 | Use the first three field-case pockets |
+| I | Open the field case |
+| Escape | Close the foreground screen or open the menu |
 
-Foreground screens request a real Engine pause and release the mouse; their
-status follows the Engine's answer. Closing a child returns to its previous
-screen while paused. Resume hotel or closing the final screen resumes the Engine
-before restoring gameplay focus. The product clears held input in its Engine
-pause/resume callbacks. Failed transitions remain visible in the screen.
+In the field case, select a supply to use it. Drag between pockets, or choose
+Move stack then activate a destination with the keyboard. Matching stacks merge;
+different supplies swap. Spirits contains the acquired pact and its equip action.
+Hushwing interrupts a resident briefly; an accepted call spends one charge.
+Foreground screens pause the world, and their status follows the Engine response.
 
-The focused native smoke check runs with
-`dotnet run --project tests/Hotel.Smoke/Hotel.Smoke.csproj`. It exercises real
-Engine collision and product input/lifecycle callbacks; it does not establish
-browser focus behavior or player-facing pause.
-`node --test tests/ui/*.test.mjs` checks console loading/cleanup and lifecycle
-request rejection, superseded replies and disposal during a pending resume.
-
-For developer access, launch `rusty dev --live-debug` and append `#developer=1`
-to the printed URL. Open Developer console from the menu or press F2. The
-packaged Engine console discovers `hotel.inspect` and
-`hotel.dev.return-to-entrance`. The latter is an explicit developer position
-and route reset. Engine `interaction.inspect` and `interaction.use` expose the same
-world interactions; targeted use assists aim but still checks reach, visibility,
-revision and Hotel eligibility. `hotel.dev.give-supply`, `hotel.dev.set-health`
-and `hotel.dev.use-supply` provide explicit developer fixtures over the same
-supplies rules; they use the same supplies rules as player controls. Without host debug enabled, the panel reports that it is unavailable.
-The normal HUD has no debug traffic or telemetry panel.
+Use the refuge notebook to save and secure expedition finds. Saving keeps current
+health and resources; it does not refill them. Defeat recovery and relaunch restore
+the whole checkpoint at the refuge, including pockets, pact, doors, loot and
+residents. Before the first return, recovery restores the initial excursion.
+**Pausing or quitting does not save changes after the last refuge return.**
+An invalid existing save reports an error rather than silently starting over.
 
 ## Setup
 
@@ -139,25 +98,26 @@ NativeAOT fidelity/release check:
 rusty build --aot
 ```
 
-## Repository shape
+## Development and documentation
 
-| Path | Responsibility |
+| Read | Purpose |
 | --- | --- |
-| `src/Hotel.Game/` | Safe C# composition, player body/camera, scene and product metadata |
-| `src/ui/main.js` | DOM presentation and semantic input |
-| `content/hotel.json` | Authored layout, materials, lights, props, ambience and player tuning |
-| `content/materials/`, `content/models/`, `content/audio/` | Runtime assets loaded by Engine content services |
-| `art/` | Source assets, generation provenance and offline model preparation |
-| `Directory.Build.props` | Matched Engine SDK/runtime pin and default product project |
-| `docs/architecture.md` | Current ownership and data flow |
-| `docs/ui.md` | DOM companion contract |
-| `docs/agent-review/` | Reusable review workflow and lane packets |
+| [AGENTS.md](AGENTS.md) | Agent ownership, UI and workflow rules |
+| [Design](docs/design.md) | Accepted direction, first-excursion scope and deliberately open choices |
+| [Architecture](docs/architecture.md) | Implemented owners, admitted update path and checkpoint contract |
+| [UI](docs/ui.md) | Curated player surfaces, focus, pause and semantic actions |
+| [Authoring](docs/authoring.md) | Content fields, stable identities, assets and save compatibility |
+| [Development](docs/development.md) | Focused checks, developer console and isolated playtesting |
+| [Reuse](docs/reuse.md) | One-time donor provenance and adaptation boundaries |
+| [Art sources](art/README.md) | Original images, prompts, editable models and offline preparation |
+| [Review](docs/agent-review/README.md) | Proportional review questions and evidence boundaries |
 
-The SDK generates the product's bind entry point inside its ordinary build;
-there is no composition project. The Engine runtime supplies the host and
-browser shell. Product metadata, input intents, content/UI
-roots, and projection identity live in the ordinary `.csproj`.
+`src/Hotel.Game/` owns the safe C# game; `src/ui/` presents its facts and submits
+semantic intents; `content/` holds authored definitions and runtime assets.
+`art/` holds source assets and provenance. Engine supplies the host, browser shell,
+rendering and generated bind entry under ignored build output.
 
-Read [AGENTS.md](AGENTS.md) before extending the product. Keep instructions
-about current behavior and ownership; exact dependency identities belong in
-configuration, and task status belongs in the task system.
+Den project `rusty-hotel` owns tasks, progress, reviews and playtest records. Start
+with its `project-entry` and `known-limitations` documents and the active task's
+canonical context. Keep settled contracts and repeatable instructions here;
+exact dependency versions belong in `Directory.Build.props`.

@@ -21,7 +21,7 @@ Engine services. Inspect repeats from player eye height after changing scale.
 
 `expedition-recorder-01/request.json` fixes the goal, source prompt, attempt
 allowance and triangle budget. `source-01.png` is the original generated image;
-the image critiques precede reconstruction. `native-01.fbx` is Tripo's native
+the image was critiqued before reconstruction. `native-01.fbx` is Tripo's native
 download. `recorder.blend` is the local editable master, and
 `content/models/recorder.glb` is its runtime derivative. `provenance.json` records
 the provider task, source/derivative hashes and bounded use decision.
@@ -41,8 +41,7 @@ are inspection labels, not assertions about the recorder's semantic front.
 
 The mesh has 8,735 triangles and is used as static desk dressing. It preserves
 the reel/case/meter silhouette but simplifies tape, paint wear and small controls.
-Its unseen rear is an extrapolation. The independent mesh critiques and Hotel
-lighting addenda preserve those limits. It is not a pickup or close-up hero prop.
+Its unseen rear is an extrapolation. The final use limits are retained in `provenance.json`. It is not a pickup or close-up hero prop.
 Raw provider receipts with temporary signed URLs remain ignored; the portable
 receipt contains no credentials or signed URLs. Queue execution diagnostics and
 player-view evidence belong in Den, not the source-asset ledger.
@@ -60,3 +59,12 @@ Trim, doors, lights, furniture, field cases, notebook, pencil and abstract frame
 pictures are product-authored box compositions in `hotel.json`. They introduce
 no external art dependency. The owner-supplied historical screenshots remain in
 `docs/references/` as direction rather than runtime textures or interface art.
+
+## Source history and reviews
+
+The six original image/mesh critique reports, including the Hotel-lighting
+follow-ups, are preserved verbatim with their source hashes in Den document
+`[doc: rusty-hotel/repository-docs-archive-2026-10-04]`. `decision-01.json` and
+`provenance.json` point to that archive. Those reports describe a particular
+review round; the retained source files and final use limits are the authoring
+authority. Playtest captures, queue incidents and task progress remain in Den.

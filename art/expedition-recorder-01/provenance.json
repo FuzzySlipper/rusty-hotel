@@ -14,7 +14,7 @@
   "creditCharge": null,
   "creditChargeNote": "Exact charged credits not reported in retained result; no estimate asserted.",
   "conversion": "Local Blender 5.2.2 LTS; prepare.py; no paid conversion",
-  "decision": "Retain for static desk dressing: recognizable at ordinary player distance in Hotel lighting; not a close-up hero prop. No paid retry. See independent image and mesh critiques and follow-up addenda.",
+  "decision": "Retain for static desk dressing: recognizable at ordinary player distance in Hotel lighting; not a close-up hero prop. No paid retry.",
   "limitations": [
     "Tape color and paint wear simplified from source.",
     "Rear controls extrapolated from unseen side; underside recess detail uncertain.",
@@ -42,5 +42,16 @@
       "sha256": "d9095e224dd9d7ed24eba485517f6ba0df8a354a6da0ed28546de3faf5e80975"
     }
   ],
-  "meshReport": "mesh-01.json"
+  "meshReport": "mesh-01.json",
+  "reviewArchive": {
+    "document": "[doc: rusty-hotel/repository-docs-archive-2026-10-04]",
+    "sourceReports": [
+      "image-critic-a.md",
+      "image-critic-b.md",
+      "mesh-critic-a.md",
+      "mesh-critic-b.md",
+      "mesh-critic-a-followup.md",
+      "mesh-critic-b-followup.md"
+    ]
+  }
 }

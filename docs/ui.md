@@ -42,6 +42,32 @@ facts and Close/Back controls in view. Scroll or paginate bounded collections an
 long text when appropriate; do not make the game viewport an endlessly scrolling
 document. Resource feedback must not rely on color alone.
 
+## HUD budget
+
+The exploration HUD is a fixed set of regions. A new fact joins one of them or
+displaces something; adding a region is a design decision recorded here first.
+
+| Region | Holds |
+| --- | --- |
+| Top left | Location: product mark and current wing/room |
+| Top right | Field case and Menu entries, only while the pointer is not captured |
+| Centre | Reticle, hit marker, and the one Engine-selected focus prompt |
+| Notice slot | One brief result notice, chosen by priority and expiring on admitted time; never a stack or log |
+| Lower band | At most three clusters: condition (left), quick access (centre), held status (right: reserves, hands, spirit) |
+| Viewport edge | Transient damage accent only |
+
+Prefer contextual over persistent. A control hint appears when it applies (a
+focus prompt, a refusal, an early-play reminder) and then goes away. The complete
+controls reference lives on the Controls screen, and full resource and inventory
+detail lives in the field case. A cluster shows its current value and state, not
+explanations. When a cluster outgrows its region, move the detail to the screen
+that owns it rather than widening the band.
+
+Each foreground screen is its own module in `src/ui/` with its own markup and
+draw function. `main.js` owns only screen presence, navigation, focus and the
+lifecycle flow. Labels shown to the player come from C# facts or authored
+content, not from literals repeated in DOM templates.
+
 ## Developer console
 
 The Engine command console is the standard home for developer and agent hooks.
@@ -149,8 +175,10 @@ entry and F2 shortcut. The host independently requires `--live-debug`. The
 `developer.js` adapter lazily imports and mounts the packaged Engine dock inside
 the bounded console screen, disposes it on close, and disposes stale async mounts.
 It owns no parser, transport, polling or command state. The generated C# catalog
-exposes `hotel.inspect` and the explicit developer position reset
-`hotel.dev.return-to-entrance`, both over existing product owners.
+exposes `hotel.inspect` and the explicit developer excursion reset
+`hotel.dev.return-to-entrance`, both over existing product owners. The latter
+resets live player, supplies, combat, pact and route state to the initial excursion;
+it does not replace the stored checkpoint. See [development.md](development.md).
 
 `pause.js` owns only request lifetime and presentation errors. It subscribes to
 the Engine lifecycle port rather than mirroring runtime state. A pause made
@@ -172,7 +200,7 @@ when the host unmounts the UI.
 
 The exploration HUD presents the Engine-selected action beside the reticle:
 E to use, a move-closer hint, or the return door's far-side latch reason. Occluded
-objects do not advertise an actionable prompt. Using a field log
+objects do not advertise an actionable prompt. Using the refuge notice or a field log
 opens one reading surface with authored title/text and Put down / Escape. It
 uses the same real Engine pause and final resume/focus flow as the field case.
 The UI only observes reading facts; it does not acquire items or own door state.

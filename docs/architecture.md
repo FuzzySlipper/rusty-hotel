@@ -1,6 +1,6 @@
 # Product architecture
 
-Hotel is a safe C# product with a walkable authored hotel section. The intended game is
+Hotel is a safe C# product with an authored, checkpointed excursion. The intended game is
 in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenance.
 
 > The product decides. The Engine guarantees.
@@ -24,12 +24,12 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Scene/RoomGeometry.cs` | Authored mesh vertices with world-metre texture coordinates, used by presentation and static collision |
 | `src/Hotel.Game/Audio/HotelAmbience.cs` | Authored ambient clips and looping voices; Engine owns playback, spatialization and mixing |
 | `src/Hotel.Game/Interface/HotelHud.cs` | One Engine UI stream publishing location, focus, readings, supply stacks, use eligibility and resource facts |
-| `src/Hotel.Game/Interface/HotelDebugCommands.cs` | Generated Hotel inspection and explicit developer return-to-entrance commands over existing owners |
+| `src/Hotel.Game/Interface/HotelDebugCommands.cs` | Generated Hotel inspection and explicit developer initial-excursion reset commands over existing owners |
 | `src/Hotel.Game/Interface/SuppliesDebugCommands.cs` | Explicit developer supply, health and consumption fixtures over the supplies owner |
 | `src/Hotel.Game/Hotel.Game.csproj` | Product identity, entry, content/UI roots and host defaults |
 | `content/hotel.json` | Refuge/corridor/rooms, metre-scale material repeats, props, lights, ambient cues and player tuning |
 | `src/ui/main.js` | HUD, single foreground screen navigation, focus containment and Engine input-mode handoff |
-| `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, pact selection/equip claims and empty quick-access presentation |
+| `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, pact selection/equip claims and quick-pocket presentation |
 | `src/ui/developer.js` | Lazy packaged Engine console mount, disposal and stale-mount cleanup |
 | `src/ui/pause.js` | Foreground lifecycle request lifetime and error presentation; Engine port owns actual lifecycle state |
 | `src/ui/hotel.css` | Product-authored responsive screen/HUD styling |
@@ -55,8 +55,8 @@ Engine clear events clear FPS held/pending input. Pause and resume callbacks
 also clear it; restart resets the player to the authored spawn and cuts the
 camera to the new pose. Pending use, attack, selection and reload edges clear at
 these same boundaries. No jump action is implemented. Restart restores the established refuge checkpoint
-and clears readings. Physical Q calls the equipped spirit. Shutdown first
-removes combat appearances, then releases ambient voices before their clips, the UI stream,
+and clears readings. Physical Q calls the equipped spirit. Shutdown releases the checkpoint store and spirit/combat appearances,
+then ambient voices before their clips, the UI stream,
 camera, collision session, lights, appearances, meshes, materials, model/texture
 resources and entity store in ownership order.
 
@@ -87,7 +87,9 @@ bindings and bounded look assistance. These inspect or call the same player
 owner and are available only through a live-debug-enabled host. They are not a
 player UI or a replacement input path. `HotelDebugCommands` also exposes
 `hotel.inspect` and `hotel.dev.return-to-entrance`; the latter calls the existing
-route/player reset path, clears held input and republishes the camera/HUD.
+unsaved initial-excursion reset across player, supplies, combat, spirit and
+route, clears held input and republishes the camera/HUD. It leaves the established
+checkpoint unchanged; it is not a teleport or checkpoint recovery.
 
 `HotelRoute` supplies current candidates to Engine `WorldInteraction`, and uses
 `InteractionVisibilityQuery` against the same retained spatial session as movement.
@@ -209,10 +211,11 @@ can create mixed checkpoints.
 
 Startup distinguishes missing from present. Missing creates the valid initial
 checkpoint; a present value is decoded and validated against the current content
-before any owner is mutated. Incomplete/malformed or semantically invalid state
+before any owner is restored. Incomplete/malformed or semantically invalid state
 fails startup with a checkpoint error and is not replaced. Save failures produce
 a failed refuge receipt, preserving carried finds and the previous checkpoint.
-There is no migration or silent fallback. The schema version is product policy.
+There is no migration or silent fallback. The schema version is product policy. Content identities and validation limits
+affect compatibility; see [authoring.md](authoring.md).
 
 Recovery restores that entire checkpoint, including loot availability and
 resident positions/health, then places the player at the authored refuge spawn.

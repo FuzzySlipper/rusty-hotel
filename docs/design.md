@@ -211,7 +211,7 @@ the enemy is gone? Keep original captures and the action sequence in Den.
 
 ## Implementation boundaries and references
 
-Use the template's safe C# product and packaged Rusty Engine. Engine owns input
+Use the safe C# product and packaged Rusty Engine. Engine owns input
 delivery, admitted updates, camera/rendering resources, spatial mechanisms,
 content delivery, and persistence primitives. Hotel owns its authored rooms,
 rules, inventory, encounters, spirit behavior, and expedition state.

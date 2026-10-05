@@ -1,6 +1,6 @@
 # Agent review workflow
 
-These packets are a starting point for any downstream Rusty Engine product.
+These packets guide proportional review of Hotel changes.
 Review the requested change and its real callers. Findings are claims for the
 implementer to reconcile, not instructions to broaden the task or request
 another user approval.
@@ -75,11 +75,10 @@ The lead resolves disagreements against evidence and user/task scope. Record
 each substantive finding as fixed, declined with a reason, or deferred to a
 named receiving task when authorized. Reviewers cannot amend acceptance criteria.
 
-## Customize for a new repository
+## Keep guidance current
 
-Keep these questions generic. Add product owner pointers to the architecture
-map and relevant lane, and link genuine donor/provenance or task-system policy
-only when it exists. Set a product-specific trust boundary if the product adds
-untrusted inputs or multiplayer requirements. Add review triggers only for
-concrete risks. Do not copy another product's campaigns, temporary migration
-rules, task IDs, fixed reviewer roster, or game vocabulary.
+Keep actual owner pointers in [architecture](../architecture.md) and durable
+contracts in their owning docs. Record review rounds, verdicts, captures and
+exact checked revisions in Den. A documentation change needs link/claim checks
+and the two reuse questions; it does not require another gameplay run unless it
+changes executable behavior or exposes an unresolved behavior claim.
