@@ -26,8 +26,10 @@ internal sealed class HotelDeveloper(HotelProduct product)
         if (room is null)
             return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"Unknown space '{space}'. Spaces: {string.Join(", ", rooms.Select(r => r.Id))}.");
         product.ClearActions();
-        World.Player.Place(new((room.Min[0] + room.Max[0]) / 2, World.Player.Tuning.Height / 2, (room.Min[2] + room.Max[2]) / 2),
-            World.Player.LookState.YawRadians * 180 / MathF.PI);
+        // A space's first post is clear floor by authoring; its middle may hold furniture or a flight of stairs.
+        float[] at = World.Excursion.Plan.Spaces.FirstOrDefault(s => s.Id == space)?.Posts?.Values.FirstOrDefault()
+            ?? [(room.Min[0] + room.Max[0]) / 2, (room.Min[2] + room.Max[2]) / 2];
+        World.Player.Place(new(at[0], World.Player.Tuning.Height / 2, at[1]), World.Player.LookState.YawRadians * 180 / MathF.PI);
         product.Publish();
         return Observe();
     }
