@@ -52,8 +52,32 @@ internal sealed record ModuleCatalog(float Cell, AmbientLighting Lighting, Doorw
     private static void Validate(ModuleDefinition module, string path, ModuleCatalog catalog)
     {
         bool OnLattice(float value) => MathF.Abs(value / catalog.Cell - MathF.Round(value / catalog.Cell)) < 1e-3f;
-        Authored.Require(module.Size.Length == 2 && module.Size.All(v => v > 0 && OnLattice(v)), path, "size",
+        bool Pair(float[]? xz) => xz is { Length: 2 } && xz.All(float.IsFinite);
+        Authored.Require(Pair(module.Size) && module.Size.All(v => v > 0 && OnLattice(v)), path, "size",
             $"must be [width, depth], positive and on the {catalog.Cell} m lattice.");
+        // Shapes and references first: placing a module transforms these before the kit builder sees them.
+        HashSet<string> spaces = module.Spaces.Select(s => s.Id).ToHashSet(StringComparer.Ordinal);
+        for (int i = 0; i < module.Spaces.Length; i++)
+        {
+            Authored.Require(Pair(module.Spaces[i].Min), path, $"spaces[{i}].min", "must be [x, z].");
+            Authored.Require(Pair(module.Spaces[i].Max), path, $"spaces[{i}].max", "must be [x, z].");
+            foreach (var (post, point) in module.Spaces[i].Posts ?? [])
+                Authored.Require(Pair(point), path, $"spaces[{i}].posts.{post}", "must be [x, z].");
+        }
+        for (int i = 0; i < module.Links.Length; i++)
+        {
+            LinkDefinition link = module.Links[i];
+            Authored.Require(link.Between.Length == 2, path, $"links[{i}].between", "must name two spaces.");
+            for (int j = 0; j < 2; j++)
+                Authored.Require(spaces.Contains(link.Between[j]), path, $"links[{i}].between[{j}]", $"unknown space '{link.Between[j]}'.");
+        }
+        for (int i = 0; i < module.Fixtures.Length; i++)
+        {
+            FixturePlacement f = module.Fixtures[i];
+            if (f.At is not null) Authored.Require(Pair(f.At), path, $"fixtures[{i}].at", "must be [x, z].");
+            if (f.Space is not null) Authored.Require(spaces.Contains(f.Space), path, $"fixtures[{i}].space", $"unknown space '{f.Space}'.");
+            if (f.Edge is not null) Authored.Require(f.Space is not null, path, $"fixtures[{i}].space", "a wall fixture names its space.");
+        }
         for (int i = 0; i < module.Spaces.Length; i++)
         {
             SpaceDefinition s = module.Spaces[i];
