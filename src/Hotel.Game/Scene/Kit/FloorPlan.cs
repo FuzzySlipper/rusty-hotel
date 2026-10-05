@@ -4,10 +4,11 @@ namespace Hotel.Game.Scene.Kit;
 
 /// <summary>
 /// One floor authored in the kit's terms: spaces on wall centrelines, the links between adjoining spaces, and
-/// the fixtures placed in them. The kit builder turns it into boxes, lights, sockets and named rooms.
+/// the fixtures placed in them, dressed in one of the kit's trim styles. The kit builder turns it into boxes, mouldings, lights,
+/// sockets and named rooms.
 /// </summary>
 internal sealed record FloorPlan(SpaceDefinition[] Spaces, LinkDefinition[] Links, FixturePlacement[] Fixtures,
-    AmbientLighting Lighting, ModelDefinition[] Models);
+    AmbientLighting Lighting, ModelDefinition[] Models, string TrimStyle);
 
 /// <summary>
 /// A room or corridor. <see cref="Min"/> and <see cref="Max"/> are [x, z] on the wall centrelines; walls are built

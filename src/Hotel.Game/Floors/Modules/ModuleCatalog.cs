@@ -10,7 +10,8 @@ namespace Hotel.Game.Floors.Modules;
 /// The room modules generated floors are assembled from, each in its own file under <c>floors/modules/</c>, with the
 /// lattice they are authored on and how each doorway kind is built. Every module passes its isolated self-check.
 /// </summary>
-internal sealed record ModuleCatalog(float Cell, AmbientLighting Lighting, DoorwayStyle[] Doorways, ModuleDefinition[] Modules)
+/// <param name="TrimStyle">The trim style a module is built in when it stands alone: its self-check and developer view.</param>
+internal sealed record ModuleCatalog(float Cell, AmbientLighting Lighting, string TrimStyle, DoorwayStyle[] Doorways, ModuleDefinition[] Modules)
 {
     internal const string Path = "floors/modules.json";
     internal static string ModulePath(string id) => $"floors/modules/{id}.json";
@@ -24,6 +25,7 @@ internal sealed record ModuleCatalog(float Cell, AmbientLighting Lighting, Doorw
         Authored.Positive(Path, "cell", file.Cell);
         Authored.Colour(Path, "lighting.ambientColor", file.Lighting.AmbientColor);
         Authored.AtLeast(Path, "lighting.ambientIntensity", file.Lighting.AmbientIntensity, 0);
+        Authored.Require(kit.TrimStyles.ContainsKey(file.TrimStyle), Path, "trimStyle", $"unknown trim style '{file.TrimStyle}'.");
         for (int i = 0; i < file.Doorways.Length; i++)
         {
             DoorwayStyle style = file.Doorways[i];
@@ -35,7 +37,7 @@ internal sealed record ModuleCatalog(float Cell, AmbientLighting Lighting, Doorw
             Authored.Require(file.Doorways.Count(d => d.Kind == kind) == 1, Path, "doorways", $"exactly one style for '{kind}'.");
         string? repeated = file.Modules.GroupBy(m => m).FirstOrDefault(g => g.Count() > 1)?.Key;
         Authored.Require(repeated is null, Path, "modules", $"'{repeated}' appears more than once.");
-        ModuleCatalog catalog = new(file.Cell, file.Lighting, file.Doorways, []);
+        ModuleCatalog catalog = new(file.Cell, file.Lighting, file.TrimStyle, file.Doorways, []);
         ModuleDefinition[] modules = file.Modules.Select(id =>
         {
             string path = ModulePath(id);

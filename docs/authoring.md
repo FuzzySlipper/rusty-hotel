@@ -40,7 +40,7 @@ its own folder. Geometry is kept apart from tuning.
 | `spirits/<id>.json` | One spirit's pact terms, cost/range, manifestation timing and placement offsets, its description and its own wording (call hint and result, phase names); `HotelSpirit` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}` and `{place}`; `HotelSpirit` |
 | `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
-| `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim sets, door frames and space styles (surface sets); `KitBuilder` |
+| `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim styles (bands, moulding profiles and architraves), door frames and space styles (surface sets); `KitBuilder` |
 | `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, packets, frames, pictures. Each is boxes in its own frame, plus lights and named sockets; `KitBuilder` |
 | `excursions/<id>/plan.json` | The floor plan: spaces, the links between them, the fixtures placed in them, ambient light and GLB props; built by `KitBuilder` |
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, stairs (direction and the fixture socket they are used at), and the fallback location label; `HotelRoute` |
@@ -84,7 +84,7 @@ centre, not feet or eyes. Fields named `Degrees` are degrees.
 
 **Spaces.** A space is a room or corridor. `min`/`max` give `[x, z]` on its *wall centrelines*, and `style` names
 a surface set in the kit, which `floor`, `wall` or `ceiling` may override. Spaces that touch share the wall
-between them. Each space builds the half of every wall on its own side, in its own wallpaper, with the trim set
+between them. Each space builds the half of every wall on its own side, in its own wallpaper, with its floor's trim style
 on its face. Spaces never overlap. Every space is also a named room for the HUD location. A space's `posts` are
 named `[x, z]` floor points inside it, addressed as `"space.post"`; residents stand on them.
 
@@ -118,8 +118,20 @@ everything on it. A resident's body centre stands half its kind's height above i
 (`Start` is the opening's lower coordinate), the space they open into, and for a latch the space it opens from.
 The kit derives the leaf's pose, size and use prompt from the opening.
 
+**Trim styles.** A floor plan names its `trimStyle`, one of `scene/kit.json`'s `trimStyles`. A style gives the bands for
+each trim role a space style names (`dressed` rooms and corridors, `plain` service spaces), and every style must
+dress every role. A band is a plain box `depth` proud, or, with a `profile`, a moulding: `[out, up]` points from the
+wall face at the band's foot round to the wall face at its head, swept along every wall run. A style's `architraves`
+dress door frames by frame id with a `[out, across]` profile swept up both jambs and across the head on both wall
+faces. The west wing names its style in `plan.json`; a generated floor draws one of `floors/layout.json`'s
+`trimStyles` and keeps it through every shift, and the module catalog names the style a module is built in alone.
+
+**Fixture models.** A fixture may show authored GLB `models` at an `offset` in its frame, turned with it; a model
+never collides and is not mirrored, so give a mirrored fixture a symmetric model and keep a solid part where it must
+block. A fixture needs at least one part or model.
+
 A new kind of furnishing goes into `scene/fixtures.json` once, then is placed wherever it is wanted. A new
-surface set or trim goes into `scene/kit.json`. One-off geometry has no place in a plan; make it a fixture.
+surface set or trim style goes into `scene/kit.json`. One-off geometry has no place in a plan; make it a fixture.
 Inspect a built floor with the developer command `hotel.dev.goto <space>`.
 
 **Lighting.** Hotel lights itself: the Engine's default world light rig is off and shadows are on

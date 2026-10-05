@@ -30,7 +30,7 @@ internal sealed record SurfaceDefinition(string Id, float[] Color, string? Textu
     float TileWidth = 1, float TileHeight = 1, float Roughness = .9f, float Emission = 0, string? NormalMap = null, float? NormalScale = null);
 
 /// <summary>One excursion's static boxes, props and lights.</summary>
-internal sealed record ExcursionGeometry(RoomBox[] Boxes, ModelDefinition[] Models, LightingDefinition Lighting)
+internal sealed record ExcursionGeometry(RoomBox[] Boxes, Moulding[] Mouldings, ModelDefinition[] Models, LightingDefinition Lighting)
 {
     internal void Validate(string path)
     {
@@ -61,6 +61,13 @@ internal sealed record ExcursionGeometry(RoomBox[] Boxes, ModelDefinition[] Mode
     }
 }
 internal sealed record RoomBox(string Name, float[] Min, float[] Max, string Material, bool Solid = true, string? Find = null);
+
+/// <summary>
+/// A straight moulding run: its [out, across] profile swept from <see cref="Start"/> to <see cref="End"/> (on the wall
+/// face, at the profile's edge), standing out along <see cref="Outward"/> and spreading along <see cref="Across"/>:
+/// up the wall for a trim band, away from the opening for an architrave. Presentation only; it does not collide.
+/// </summary>
+internal sealed record Moulding(string Name, string Material, float[] Start, float[] End, float[] Outward, float[] Across, float[][] Profile);
 internal sealed record LightingDefinition(float[] AmbientColor, float AmbientIntensity, PointLightDefinition[] Points);
 internal sealed record PointLightDefinition(float[] Position, float[] Color, float Intensity, float Range, bool Shadow,
     LightFlicker? Flicker = null);

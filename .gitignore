@@ -11,3 +11,6 @@ target/
 src/ui/generated/
 playwright-report/
 test-results/
+
+# Blender save backups.
+*.blend1

@@ -85,7 +85,7 @@ internal static class FloorExcursion
         ExcursionPlacements placements = new(arrival, null, finds, residents, bells, arrival);
 
         LightingDefinition lighting = new(sources.Modules.Lighting.AmbientColor, sources.Modules.Lighting.AmbientIntensity, built.Lights);
-        return new(Id(depth), plan, new(built.Boxes, [], lighting), route, placements, []);
+        return new(Id(depth), plan, new(built.Boxes, built.Mouldings, built.Models, lighting), route, placements, []);
     }
 
     // The display fixture's own id: the find's, marked so it cannot be mistaken for a module fixture.

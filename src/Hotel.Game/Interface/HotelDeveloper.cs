@@ -107,7 +107,7 @@ internal sealed class HotelDeveloper(HotelProduct product)
             return new LinkInspection(l.Id, l.Between, [(x0 + x1) / 2, (z0 + z1) / 2]);
         }).ToArray();
         return DebugCommandResult.Success(JsonSerializer.Serialize(new FloorInspection(floors.RunSeed, floors.Depth, World.Excursion.Id,
-            floor?.Identity.PlanHash, floor?.Candidate, floor?.Attempt, places, spaces, links,
+            World.Excursion.Plan.TrimStyle, floor?.Identity.PlanHash, floor?.Candidate, floor?.Attempt, places, spaces, links,
             floor?.Layout.Placements.Length, floor?.Content.Finds.Length, floor?.Content.Residents.Length,
             floor?.Confirmation?.Routes.Length, floors.LastRefusals, floors.LastMilliseconds), DeveloperJson.Default.FloorInspection));
     }
@@ -146,7 +146,7 @@ internal sealed record EnemyObservation(string Id, float[] Position, int Health,
 internal sealed record PlaceInspection(string Place, string Placement, string Module, float[] Centre, float[]? Door);
 internal sealed record SpaceInspection(string Id, string Label, float[] Min, float[] Max);
 internal sealed record LinkInspection(string Id, string[] Between, float[] Point);
-internal sealed record FloorInspection(ulong RunSeed, int Depth, string Excursion, string? PlanHash, int? Candidate, int? Attempt,
+internal sealed record FloorInspection(ulong RunSeed, int Depth, string Excursion, string TrimStyle, string? PlanHash, int? Candidate, int? Attempt,
     PlaceInspection[]? Places, SpaceInspection[]? Spaces, LinkInspection[]? Links, int? Modules, int? Finds, int? Residents, int? PromisedRoutes, string[] LastRefusals, double LastMilliseconds);
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]

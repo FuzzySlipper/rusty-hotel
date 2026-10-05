@@ -38,7 +38,7 @@ internal static class ModuleCheck
             links.Add(ModuleRealizer.Link(doorway, id, $"porch-link/{doorway.Doorway.Id}"));
             stands.Add((doorway, doorway.Point + outward * (PorchDepth - 0.4f)));
         }
-        FloorPlan plan = ModuleRealizer.Plan([placed], catalog, porches, links);
+        FloorPlan plan = ModuleRealizer.Plan([placed], catalog, catalog.TrimStyle, porches, links);
         return (KitBuilder.Build(plan, path, kit, fixtures), [.. stands]);
     }
 

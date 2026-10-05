@@ -141,7 +141,7 @@ internal sealed record ExcursionDefinition(string Id, FloorPlan Plan, ExcursionG
         Authored.Colour(folder + "plan.json", "lighting.ambientColor", plan.Lighting.AmbientColor);
         Authored.AtLeast(folder + "plan.json", "lighting.ambientIntensity", plan.Lighting.AmbientIntensity, 0);
         BuiltFloor floor = KitBuilder.Build(plan, folder + "plan.json", kit, fixtures);
-        ExcursionGeometry geometry = new(floor.Boxes, plan.Models,
+        ExcursionGeometry geometry = new(floor.Boxes, floor.Mouldings, [.. plan.Models, .. floor.Models],
             new(plan.Lighting.AmbientColor, plan.Lighting.AmbientIntensity, floor.Lights));
         // The kit's own output is checked like authored geometry, so a builder fault cannot reach the scene.
         geometry.Validate(folder + "plan.json (built)");

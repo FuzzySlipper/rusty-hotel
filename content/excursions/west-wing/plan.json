@@ -637,5 +637,6 @@
       "scale": 1,
       "yawDegrees": 0
     }
-  ]
+  ],
+  "trimStyle": "hotel"
 }

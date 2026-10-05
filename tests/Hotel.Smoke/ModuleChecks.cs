@@ -19,7 +19,7 @@ internal static class ModuleChecks
                 ModuleCheck.Require(module, ModuleCatalog.ModulePath(module.Id), catalog, content.Kit, content.Fixtures, body, turn);
                 ModuleTransform t = new(module, new(10, 20), turn);
                 PlacedModule placed = new("p", t);
-                FloorPlan plan = ModuleRealizer.Plan([placed], catalog);
+                FloorPlan plan = ModuleRealizer.Plan([placed], catalog, catalog.TrimStyle);
                 float minX = plan.Spaces.Min(s => s.Min[0]), minZ = plan.Spaces.Min(s => s.Min[1]);
                 float maxX = plan.Spaces.Max(s => s.Max[0]), maxZ = plan.Spaces.Max(s => s.Max[1]);
                 Check(MathF.Abs(minX - 10) < 1e-3f && MathF.Abs(minZ - 20) < 1e-3f && MathF.Abs(maxX - 10 - t.Footprint.X) < 1e-3f &&
@@ -38,7 +38,7 @@ internal static class ModuleChecks
         PlacedModule guest = new("g", new(room, new(corridor.Width, east.Point.Y - 2), 1));
         PlacedDoorway door = ModuleRealizer.Doorways(guest, catalog).Single();
         Check(door.Mates(east) && east.Mates(door), $"the turned room's door meets the corridor's east door ({door.Point} / {east.Point}, {door.Edge})");
-        BuiltFloor built = KitBuilder.Build(ModuleRealizer.Plan([hall, guest], catalog), "mated", content.Kit, content.Fixtures);
+        BuiltFloor built = KitBuilder.Build(ModuleRealizer.Plan([hall, guest], catalog, catalog.TrimStyle), "mated", content.Kit, content.Fixtures);
         Check(built.Openings.Values.Count(o => o.Link.Kind == LinkKind.Door) == 1 && built.Sockets.ContainsKey("g/table.top"),
             "mated doorways build one door between the modules, and the room's sockets are addressable under its placement");
         Console.WriteLine($"Module checks passed: {catalog.Modules.Length} modules self-check at every quarter turn, fill their turned footprints, keep doorways on their outer walls, and mate into one floor.");

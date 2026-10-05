@@ -69,12 +69,26 @@ internal sealed class HotelScene : IDisposable
                 this.surfaceDefinitions.Add(surface.Id, surface);
             }
             AddBoxes(geometry.Boxes, 0, meshes, appearances, placed, assets, instances, findFacts);
+            foreach (Moulding moulding in geometry.Mouldings)
+            {
+                MeshResource mesh = RoomGeometry.Moulding(engine, surfaces[moulding.Material], moulding);
+                meshes.Add(mesh);
+                Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
+                appearances.Add(appearance);
+                placed.Add(new AppearanceFact(Entities.Create().Value, false, 0, new(Vector3.Zero, Quaternion.Identity, Vector3.One),
+                    appearance, true, RenderLayer.Scene));
+            }
+            Dictionary<string, RenderResource> opened = new(StringComparer.Ordinal);
             foreach (ModelDefinition model in geometry.Models)
             {
-                using ContentReference content = engine.Content.OpenReference(new(model.Path));
-                // The pinned SDK admits GLB through Animation even for a static, unrigged prop.
-                RenderResource resource = engine.Animation.OpenAnimatedMeshFromContent(new(content));
-                models.Add(resource);
+                if (!opened.TryGetValue(model.Path, out RenderResource? resource))
+                {
+                    using ContentReference content = engine.Content.OpenReference(new(model.Path));
+                    // The pinned SDK admits GLB through Animation even for a static, unrigged prop.
+                    resource = engine.Animation.OpenAnimatedMeshFromContent(new(content));
+                    models.Add(resource);
+                    opened.Add(model.Path, resource);
+                }
                 Appearance appearance = engine.Animation.CreateAnimatedMeshAppearance(new(resource));
                 appearances.Add(appearance);
                 EntityId entity = Entities.Create();

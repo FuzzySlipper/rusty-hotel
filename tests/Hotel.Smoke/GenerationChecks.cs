@@ -22,6 +22,7 @@ internal static class GenerationChecks
 
         Dictionary<string, int> refused = new(StringComparer.Ordinal);
         int floors = 0, accepted = 0, firstTry = 0, routes = 0, locks = 0, finds = 0, residents = 0;
+        HashSet<string> styles = new(StringComparer.Ordinal);
         GeneratedFloor? hazardous = null;
         double milliseconds = 0;
         for (int depth = 1; depth <= 3; depth++)
@@ -32,6 +33,7 @@ internal static class GenerationChecks
                 foreach (string why in result.Refusals) { string key = why.Split(' ')[1].TrimEnd(':') + " " + why.Split(' ')[2].TrimEnd(':'); refused[key] = refused.GetValueOrDefault(key) + 1; }
                 if (result.Floor is not { } floor) continue;
                 accepted++;
+                styles.Add(floor.Layout.TrimStyle);
                 if (floor.Candidate == 0 && floor.Attempt == 0) firstTry++;
                 Confirmation confirmed = floor.Confirmation ?? throw new InvalidOperationException("a generated floor carries its confirmation");
                 routes += confirmed.Routes.Length;
@@ -104,7 +106,13 @@ internal static class GenerationChecks
             "a dressing behind a door whose key the resident guards is not recovery before it");
 
         FloorSeed seed = FloorSeed.Current(run: 3, depth: 2, shift: 0);
-        Check(Generate(seed).Floor!.Identity == Generate(seed).Floor!.Identity, "the same seed generates the same confirmed floor");
+        GeneratedFloor same = Generate(seed).Floor!;
+        Check(same.Identity == Generate(seed).Floor!.Identity, "the same seed generates the same confirmed floor");
+        // A floor's trim style is part of what it is, and new floors are drawn in every style the layout names.
+        string other = tunings.Layout.TrimStyles.First(s => s != same.Layout.TrimStyle);
+        Check(FloorGenerator.Identity(same.Identity.Seed, same.Candidate, same.Attempt, same.Graph, same.Layout with { TrimStyle = other }, same.Content).PlanHash
+            != same.Identity.PlanHash, "a floor's trim style is part of its identity");
+        Check(styles.SetEquals(tunings.Layout.TrimStyles), $"floors are drawn in every trim style: {string.Join(", ", styles)}");
 
         // A corridor door narrower than the body: rooms cannot be entered, and the refusal names the doorway.
         ModuleCatalog narrow = content.Modules with

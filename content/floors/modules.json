@@ -52,5 +52,6 @@
     "landmark-lounge",
     "corridor-fire-door",
     "service-vestibule"
-  ]
+  ],
+  "trimStyle": "hotel"
 }

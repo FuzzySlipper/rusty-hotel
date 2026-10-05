@@ -47,4 +47,4 @@ internal sealed record DoorwayStyle(DoorwayKind Kind, LinkKind Link, float Width
 /// The module catalog's own file: the authoring lattice, generated floors' ambient light, how each doorway kind is
 /// built, and which module files exist.
 /// </summary>
-internal sealed record ModuleCatalogFile(float Cell, AmbientLighting Lighting, DoorwayStyle[] Doorways, string[] Modules);
+internal sealed record ModuleCatalogFile(float Cell, AmbientLighting Lighting, string TrimStyle, DoorwayStyle[] Doorways, string[] Modules);

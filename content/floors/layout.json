@@ -177,5 +177,9 @@
   },
   "tries": 6,
   "branchOneIn": 3,
-  "hazardDistance": 12
+  "hazardDistance": 12,
+  "trimStyles": [
+    "hotel",
+    "deco"
+  ]
 }

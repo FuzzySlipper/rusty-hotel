@@ -23,6 +23,17 @@ wallpapers, seeded nap modulated by the weave for the carpet, all differentiated
 with wrap-around operations so each map tiles like its source. It needs numpy
 and Pillow and runs offline only. `surfaces.json` sets each map's strength.
 
+## Light fittings
+
+`fittings-01/build.py` builds the sconce, ceiling lamp, pendant and service-lamp
+meshes parametrically in Blender (no images, prompts or provider calls) and
+saves an editable `.blend` master for each beside it; `provenance.json` records
+hashes. Run from the repository root:
+
+```text
+blender -b --python art/fittings-01/build.py
+```
+
 ## Expedition recorder
 
 `expedition-recorder-01/request.json` fixes the goal, source prompt, attempt
@@ -61,8 +72,9 @@ bed is global and the tape-machine loop is spatial, with volumes and range in
 `content/excursions/west-wing/ambience.json`. Engine owns all playback and listener motion. Later interactive
 audio must be balanced against these quiet beds.
 
-Trim, doors, lights, furniture, field cases, notebook, pencil and abstract framed
-pictures are product-authored box compositions: fixtures in
+Doors, furniture, field cases, notebook, pencil and abstract framed
+pictures are product-authored box compositions; trim is built from the kit's
+trim styles in `content/scene/kit.json`, and light fittings are the models above: fixtures in
 `content/scene/fixtures.json`, placed by `content/excursions/west-wing/plan.json`. They introduce
 no external art dependency. The owner-supplied historical screenshots remain in
 `docs/references/` as direction rather than runtime textures or interface art.

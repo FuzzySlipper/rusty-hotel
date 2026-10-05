@@ -16,7 +16,7 @@ internal sealed record FixtureCatalog(FixtureDefinition[] Fixtures)
         {
             FixtureDefinition fixture = catalog.Fixtures[i];
             string at = $"fixtures[{i}]";
-            Authored.Require(fixture.Parts.Length > 0, Path, $"{at}.parts", "a fixture needs at least one part.");
+            Authored.Require(fixture.Parts.Length > 0 || (fixture.Models ?? []).Length > 0, Path, $"{at}.parts", "a fixture needs at least one part or model.");
             for (int p = 0; p < fixture.Parts.Length; p++)
             {
                 FixturePart part = fixture.Parts[p];
@@ -34,6 +34,13 @@ internal sealed record FixtureCatalog(FixtureDefinition[] Fixtures)
                 Authored.Positive(Path, $"{at}.lights[{l}].range", light.Range);
             }
             foreach (var (name, point) in fixture.Sockets ?? []) Authored.Point(Path, $"{at}.sockets.{name}", point);
+            for (int m = 0; m < (fixture.Models ?? []).Length; m++)
+            {
+                FixtureModel model = fixture.Models![m];
+                Authored.Require(model.Path.EndsWith(".glb", StringComparison.Ordinal), Path, $"{at}.models[{m}].path", "must be a GLB content path.");
+                Authored.Point(Path, $"{at}.models[{m}].offset", model.Offset);
+                Authored.Positive(Path, $"{at}.models[{m}].scale", model.Scale);
+            }
         }
         string? repeated = catalog.Fixtures.GroupBy(f => f.Id).FirstOrDefault(g => g.Count() > 1)?.Key;
         Authored.Require(repeated is null, Path, "fixtures", $"id '{repeated}' appears more than once.");
@@ -50,7 +57,13 @@ internal enum FixtureMount { Floor, Wall, Ceiling, Socket }
 /// into the room. <see cref="Sockets"/> name points other fixtures and placements can attach to.
 /// </summary>
 internal sealed record FixtureDefinition(string Id, FixtureMount Mount, FixturePart[] Parts,
-    FixtureLight[]? Lights = null, Dictionary<string, float[]>? Sockets = null);
+    FixtureLight[]? Lights = null, Dictionary<string, float[]>? Sockets = null, FixtureModel[]? Models = null);
+
+/// <summary>
+/// An authored mesh (GLB content path) shown at <see cref="Offset"/> in the fixture's frame, turned with it. Presentation
+/// only: a model never collides, so a fixture that blocks keeps a solid part for that.
+/// </summary>
+internal sealed record FixtureModel(string Path, float[] Offset, float Scale);
 
 /// <param name="Find">The part shows a collectable find and disappears when it is taken.</param>
 internal sealed record FixturePart(string Name, string Material, float[] Min, float[] Max, bool Solid = false, bool Find = false);

@@ -11,7 +11,7 @@ namespace Hotel.Game.Scene.Kit;
 internal sealed record BuiltOpening(LinkDefinition Link, Vector3 Start, Vector3 End, Vector3 Normal, float Bottom, float Height);
 
 /// <summary>A built floor: the boxes the scene meshes and collides, its lights, addressable sockets, rooms and openings.</summary>
-internal sealed record BuiltFloor(RoomBox[] Boxes, PointLightDefinition[] Lights, IReadOnlyDictionary<string, Vector3> Sockets,
+internal sealed record BuiltFloor(RoomBox[] Boxes, Moulding[] Mouldings, ModelDefinition[] Models, PointLightDefinition[] Lights, IReadOnlyDictionary<string, Vector3> Sockets,
     RoomDefinition[] Rooms, IReadOnlyDictionary<string, BuiltOpening> Openings);
 
 /// <summary>
@@ -79,6 +79,8 @@ internal static class KitBuilder
     private sealed class Builder(FloorPlan plan, string path, KitDefinition kit, FixtureCatalog catalog)
     {
         private readonly List<RoomBox> boxes = [];
+        private readonly List<Moulding> mouldings = [];
+        private readonly List<ModelDefinition> models = [];
         private readonly List<PointLightDefinition> lights = [];
         private readonly Dictionary<string, Vector3> sockets = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Space> socketSpaces = new(StringComparer.Ordinal);
@@ -89,8 +91,12 @@ internal static class KitBuilder
 
         internal List<Space> Spaces { get; } = [];
 
+        // The floor's trim style, checked when the floor builds.
+        private TrimStyle Trim => kit.TrimStyles[plan.TrimStyle];
+
         internal void ValidateSpaces()
         {
+            Authored.Require(kit.TrimStyles.ContainsKey(plan.TrimStyle), path, "trimStyle", $"unknown trim style '{plan.TrimStyle}'.");
             for (int i = 0; i < plan.Spaces.Length; i++)
             {
                 SpaceDefinition s = plan.Spaces[i];
@@ -210,9 +216,20 @@ internal static class KitBuilder
             string name = $"{space.Definition.Id} {edge.ToString().ToLowerInvariant()} {piece}";
             (Vector3 min, Vector3 max) = Slab(space, edge, line, from, to, bottom, top, Half);
             Add(name, min, max, space.Wall, true);
-            foreach (TrimBand band in kit.TrimSets[space.Style.Trim])
+            foreach (TrimBand band in Trim.Bands[space.Style.Trim])
             {
                 if (band.From < bottom - Tolerance || band.From >= top) continue;
+                if (band.Profile is { } profile && band.To <= top + Tolerance)
+                {
+                    // Swept along the wall face, out into this space.
+                    Vector3 outward = -Space.Outward(edge);
+                    Vector3 Face(float along) => edge is WallEdge.North or WallEdge.South
+                        ? new Vector3(along, band.From, line) + outward * Half : new Vector3(line, band.From, along) + outward * Half;
+                    Vector3 a = Face(from), b = Face(to);
+                    mouldings.Add(new($"{name} {band.Name}", band.Material, [a.X, a.Y, a.Z], [b.X, b.Y, b.Z], [outward.X, outward.Y, outward.Z],
+                        [0, 1, 0], profile));
+                    continue;
+                }
                 (min, max) = Slab(space, edge, line, from, to, band.From, Math.Min(band.To, top), Half + band.Depth);
                 Add($"{name} {band.Name}", min, max, band.Material, false);
             }
@@ -260,6 +277,21 @@ internal static class KitBuilder
                 Piece("jamb", hi - frame.Inset, hi + outer, foot, head);
                 Piece("head", lo - outer, hi + outer, head, top + frame.HeadHeight);
                 if (bottom > 0) Piece("sill", lo - outer, hi + outer, Math.Max(0, bottom - frame.HeadHeight), foot);
+                // The floor's trim style may dress this frame with an architrave on both wall faces: up each jamb from the
+                // floor (or sill) and across the head, the head running past the jambs so the corners meet.
+                if (Trim.Architraves?.GetValueOrDefault(link.Frame!) is not { } architrave) continue;
+                float width = architrave.Profile.Max(p => p[1]), crown = top + frame.HeadHeight;
+                Vector3 alongAxis = alongX ? Vector3.UnitX : Vector3.UnitZ, normal = alongX ? Vector3.UnitZ : Vector3.UnitX;
+                Vector3 At(float along, float y, float side) => alongAxis * along + Vector3.UnitY * y + normal * (line + side * Half);
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    Vector3 outward = normal * side;
+                    void Run(string part, Vector3 a, Vector3 b, Vector3 across) => mouldings.Add(new($"{link.Id} {part}", architrave.Material,
+                        [a.X, a.Y, a.Z], [b.X, b.Y, b.Z], [outward.X, outward.Y, outward.Z], [across.X, across.Y, across.Z], architrave.Profile));
+                    Run("architrave", At(lo - outer, foot, side), At(lo - outer, crown, side), -alongAxis);
+                    Run("architrave", At(hi + outer, foot, side), At(hi + outer, crown, side), alongAxis);
+                    Run("architrave head", At(lo - outer - width, crown, side), At(hi + outer + width, crown, side), Vector3.UnitY);
+                }
             }
         }
 
@@ -293,6 +325,12 @@ internal static class KitBuilder
                     Authored.Require(space.Inside(min.X, min.Z, inset) && space.Inside(max.X, max.Z, inset), path, field,
                         $"'{placed.Kind}' part '{part.Name}' reaches {min.X}..{max.X}, {min.Z}..{max.Z}, outside '{space.Definition.Id}'.");
                     Add($"{label} {part.Name}", min, max, part.Material, part.Solid, part.Find ? placed.Find : null);
+                }
+                // A model turns with its fixture; mirroring does not flip it, so a mirrored fixture's model should be symmetric.
+                foreach (FixtureModel model in fixture.Models ?? [])
+                {
+                    Vector3 position = KitTransform.Point(model.Offset, origin, turn, placed.Mirror);
+                    models.Add(new(model.Path, [position.X, position.Y, position.Z], model.Scale, turn * 90));
                 }
                 foreach (FixtureLight light in fixture.Lights ?? [])
                 {
@@ -339,7 +377,7 @@ internal static class KitBuilder
             socketSpaces[name] = space;
         }
 
-        internal BuiltFloor Result() => new(boxes.ToArray(), lights.ToArray(), sockets, Spaces.Select(s => new RoomDefinition(
+        internal BuiltFloor Result() => new(boxes.ToArray(), mouldings.ToArray(), models.ToArray(), lights.ToArray(), sockets, Spaces.Select(s => new RoomDefinition(
             s.Definition.Id, s.Definition.Label, [s.MinX, 0, s.MinZ], [s.MaxX, s.Height, s.MaxZ])).ToArray(), openings);
 
         private Space Find(string id, string field)

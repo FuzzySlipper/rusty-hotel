@@ -3,56 +3,13 @@
     {
       "id": "sconce",
       "mount": "Wall",
-      "parts": [
-        {
-          "name": "backplate",
-          "material": "trim",
-          "min": [
-            -0.18,
-            1.65,
-            0.0
-          ],
-          "max": [
-            0.18,
-            2.2,
-            0.08
-          ]
-        },
-        {
-          "name": "glass",
-          "material": "lamp",
-          "min": [
-            -0.13,
-            1.79,
-            0.04
-          ],
-          "max": [
-            0.13,
-            2.1,
-            0.21
-          ]
-        },
-        {
-          "name": "cap",
-          "material": "brass",
-          "min": [
-            -0.17,
-            2.08,
-            0.015
-          ],
-          "max": [
-            0.17,
-            2.15,
-            0.235
-          ]
-        }
-      ],
+      "parts": [],
       "lights": [
         {
           "offset": [
-            0.0,
-            1.95,
-            0.36
+            0,
+            1.92,
+            0.18
           ],
           "color": [
             1,
@@ -62,6 +19,17 @@
           "intensity": 3.36,
           "range": 5,
           "shadow": true
+        }
+      ],
+      "models": [
+        {
+          "path": "models/sconce.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
         }
       ]
     },
@@ -303,22 +271,7 @@
     {
       "id": "ceiling-lamp",
       "mount": "Ceiling",
-      "parts": [
-        {
-          "name": "shade",
-          "material": "lamp",
-          "min": [
-            -0.45,
-            -0.07,
-            -0.22
-          ],
-          "max": [
-            0.45,
-            0.0,
-            0.22
-          ]
-        }
-      ],
+      "parts": [],
       "lights": [
         {
           "offset": [
@@ -335,26 +288,23 @@
           "range": 5.5,
           "shadow": true
         }
+      ],
+      "models": [
+        {
+          "path": "models/ceiling-lamp.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
       ]
     },
     {
       "id": "service-lamp",
       "mount": "Ceiling",
       "parts": [
-        {
-          "name": "shade",
-          "material": "lamp",
-          "min": [
-            -0.3,
-            -0.13,
-            -0.13
-          ],
-          "max": [
-            0.3,
-            -0.06,
-            0.13
-          ]
-        },
         {
           "name": "pipe",
           "material": "brass",
@@ -386,27 +336,23 @@
           "range": 5.3,
           "shadow": true
         }
+      ],
+      "models": [
+        {
+          "path": "models/service-lamp.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
       ]
     },
     {
       "id": "pendant",
       "mount": "Ceiling",
-      "parts": [
-        {
-          "name": "shade",
-          "material": "lamp",
-          "min": [
-            -0.35,
-            -0.13,
-            -0.1
-          ],
-          "max": [
-            0.35,
-            -0.06,
-            0.1
-          ]
-        }
-      ],
+      "parts": [],
       "lights": [
         {
           "offset": [
@@ -422,6 +368,17 @@
           "intensity": 3.4,
           "range": 5.5,
           "shadow": true
+        }
+      ],
+      "models": [
+        {
+          "path": "models/pendant.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
         }
       ]
     },

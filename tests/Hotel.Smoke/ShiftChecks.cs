@@ -56,6 +56,7 @@ internal static class ShiftChecks
                     Check(shifted.Layout.Latch == kept.Latch && shifted.Layout.Passage.Select(s => s.Id).SequenceEqual(kept.Passage.Select(s => s.Id)) &&
                         floors.Memory(first.Id)?.OpenDoors.Contains($"{first.Id}/latch") == true, $"run {run} shift {k} keeps its unlatched shortcut");
                 Check(shifted.Confirmation is { Confirmed: true }, $"run {run} shift {k} is Engine-confirmed");
+                Check(shifted.Layout.TrimStyle == original.Layout.TrimStyle, $"run {run} shift {k} keeps the floor's trim style");
                 if (held.Length > 0)
                 {
                     KeptDoor locked = kept.Doors.Single();

@@ -1,0 +1,43 @@
+{
+ "runFamily": "hotel-fittings-01",
+ "producer": "art/fittings-01/build.py (Blender, parametric; no source images, prompts or provider calls)",
+ "files": [
+  {
+   "path": "art/fittings-01/build.py",
+   "sha256": "70c327cad0eabaa82458c3e50f255a642cf846ff6e8f388761a76dd114c06c0d"
+  },
+  {
+   "path": "art/fittings-01/sconce.blend",
+   "sha256": "b24e54f3a4472e1a310116074522d0d0d8b8422ce6e715ad297e5034d96a1c30"
+  },
+  {
+   "path": "art/fittings-01/ceiling-lamp.blend",
+   "sha256": "499006fd77dfa079bbb9bf8bb0a10582ccb0e49ce7a5b277bc97b0a5f06e79c8"
+  },
+  {
+   "path": "art/fittings-01/pendant.blend",
+   "sha256": "44458d8879bee42e02370191d47ee90b14d3bbdcd4c574aa8abb72860cf84eeb"
+  },
+  {
+   "path": "art/fittings-01/service-lamp.blend",
+   "sha256": "ef64bfe1020668f91c0150fcefa7e6367bc56009e72299114ae7a66cca510e0f"
+  },
+  {
+   "path": "content/models/sconce.glb",
+   "sha256": "ecdf0058613b1bd4ee84ffabebc8b33ae6c46c3085c9c000cec89aa2c4f82833"
+  },
+  {
+   "path": "content/models/ceiling-lamp.glb",
+   "sha256": "335273bf774ee3d7c73cf79eefd26ad25bd77e998659136ec4b0442deb5870df"
+  },
+  {
+   "path": "content/models/pendant.glb",
+   "sha256": "62ce33609f26ea356baccf7b1fc134c6a80a042624bcf661cf90e7d8ba525452"
+  },
+  {
+   "path": "content/models/service-lamp.glb",
+   "sha256": "4a96761baeb248a649b034dfc5d97dd1c6554ad13bbaa690c2b4569e2616e508"
+  }
+ ],
+ "use": "Product-authored; unrestricted within Hotel Endless."
+}

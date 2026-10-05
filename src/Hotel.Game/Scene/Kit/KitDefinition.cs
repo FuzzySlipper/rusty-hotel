@@ -4,11 +4,11 @@ using Rusty.Engine;
 namespace Hotel.Game.Scene.Kit;
 
 /// <summary>
-/// The hotel's architectural kit: how thick its walls, floors and ceilings are, which trim runs along a wall,
-/// how door frames are cut, and the surface sets a space can be styled with.
+/// The hotel's architectural kit: how thick its walls, floors and ceilings are, the trim styles a floor can be dressed
+/// in, how door frames are cut, and the surface sets a space can be styled with.
 /// </summary>
 internal sealed record KitDefinition(float WallThickness, float FloorThickness, float CeilingThickness, DoorLeafTuning DoorLeaf,
-    Dictionary<string, TrimBand[]> TrimSets, Dictionary<string, FrameDefinition> Frames, Dictionary<string, SpaceStyle> Styles)
+    Dictionary<string, TrimStyle> TrimStyles, Dictionary<string, FrameDefinition> Frames, Dictionary<string, SpaceStyle> Styles)
 {
     internal const string Path = "scene/kit.json";
 
@@ -22,13 +22,17 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
         Authored.Within(Path, "doorLeaf.thickness", kit.DoorLeaf.Thickness, 0, kit.WallThickness);
         Authored.AtLeast(Path, "doorLeaf.clearance", kit.DoorLeaf.Clearance, 0);
         Authored.Positive(Path, "doorLeaf.focusHeight", kit.DoorLeaf.FocusHeight);
-        foreach (var (id, bands) in kit.TrimSets)
-            for (int i = 0; i < bands.Length; i++)
+        foreach (var (styleId, style) in kit.TrimStyles)
+        {
+            foreach (var (role, bands) in style.Bands)
+                for (int i = 0; i < bands.Length; i++) ValidateBand($"trimStyles.{styleId}.bands.{role}[{i}]", bands[i]);
+            foreach (var (frame, architrave) in style.Architraves ?? [])
             {
-                Authored.AtLeast(Path, $"trimSets.{id}[{i}].from", bands[i].From, 0);
-                Authored.Require(bands[i].To > bands[i].From, Path, $"trimSets.{id}[{i}].to", "must be above from.");
-                Authored.AtLeast(Path, $"trimSets.{id}[{i}].depth", bands[i].Depth, 0);
+                string at = $"trimStyles.{styleId}.architraves.{frame}";
+                Authored.Require(kit.Frames.ContainsKey(frame), Path, at, $"unknown frame '{frame}'.");
+                ValidateProfile($"{at}.profile", architrave.Profile, float.MaxValue, float.MaxValue);
             }
+        }
         foreach (var (id, frame) in kit.Frames)
         {
             Authored.Positive(Path, $"frames.{id}.jambWidth", frame.JambWidth);
@@ -38,7 +42,10 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
         }
         foreach (var (id, style) in kit.Styles)
         {
-            Authored.Require(kit.TrimSets.ContainsKey(style.Trim), Path, $"styles.{id}.trim", $"unknown trim set '{style.Trim}'.");
+            // Every trim style dresses every role a space style names, so any floor can take any style.
+            foreach (var (styleId, trim) in kit.TrimStyles)
+                Authored.Require(trim.Bands.ContainsKey(style.Trim), Path, $"trimStyles.{styleId}.bands",
+                    $"has no '{style.Trim}' role, which styles.{id}.trim names.");
             if (style.Seams is { } seams)
             {
                 Authored.Positive(Path, $"styles.{id}.seams.spacing", seams.Spacing);
@@ -49,11 +56,36 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
         return kit;
     }
 
+    private static void ValidateBand(string at, TrimBand band)
+    {
+        Authored.AtLeast(Path, $"{at}.from", band.From, 0);
+        Authored.Require(band.To > band.From, Path, $"{at}.to", "must be above from.");
+        Authored.AtLeast(Path, $"{at}.depth", band.Depth, 0);
+        if (band.Profile is { } profile) ValidateProfile($"{at}.profile", profile, band.Depth, band.To - band.From);
+    }
+
+    // A swept cross-section: [out, along-the-face] points from the wall face round to the wall face.
+    private static void ValidateProfile(string at, float[][] profile, float maxOut, float maxAcross)
+    {
+        Authored.Require(profile.Length >= 3 && profile.All(p => p.Length == 2), Path, at, "needs at least three [out, across] points.");
+        for (int p = 0; p < profile.Length; p++)
+        {
+            Authored.Within(Path, $"{at}[{p}][0]", profile[p][0], 0, maxOut);
+            Authored.Within(Path, $"{at}[{p}][1]", profile[p][1], 0, maxAcross);
+        }
+        Authored.Require(profile[0][0] == 0 && profile[^1][0] == 0, Path, at, "must start and end on the wall face (out 0).");
+    }
+
     /// <summary>Every surface id the kit itself names, with the field that names it.</summary>
     internal IEnumerable<(string Field, string Surface)> Surfaces()
     {
-        foreach (var (id, bands) in TrimSets)
-            for (int i = 0; i < bands.Length; i++) yield return ($"trimSets.{id}[{i}].material", bands[i].Material);
+        foreach (var (styleId, style) in TrimStyles)
+        {
+            foreach (var (role, bands) in style.Bands)
+                for (int i = 0; i < bands.Length; i++) yield return ($"trimStyles.{styleId}.bands.{role}[{i}].material", bands[i].Material);
+            foreach (var (frame, architrave) in style.Architraves ?? [])
+                yield return ($"trimStyles.{styleId}.architraves.{frame}.material", architrave.Material);
+        }
         foreach (var (id, frame) in Frames) yield return ($"frames.{id}.material", frame.Material);
         foreach (var (id, style) in Styles)
         {
@@ -68,8 +100,25 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
 /// <summary>A gameplay door leaf: its thickness, the gap left below the opening's head, and the height its use prompt aims at.</summary>
 internal sealed record DoorLeafTuning(float Thickness, float Clearance, float FocusHeight);
 
+/// <summary>
+/// A floor's trim style: for each trim role a space style names (a dressed room, a plain service space), the bands
+/// that run along its walls, and for door frames, the architrave swept around their openings on both faces.
+/// </summary>
+internal sealed record TrimStyle(Dictionary<string, TrimBand[]> Bands, Dictionary<string, ArchitraveDefinition>? Architraves = null);
+
+/// <summary>
+/// An architrave: its cross-section as [out, across] points, swept up both jambs and across the head, out from the
+/// wall face and across away from the opening, starting at the frame's outer edge.
+/// </summary>
+internal sealed record ArchitraveDefinition(string Material, float[][] Profile);
+
 /// <summary>One horizontal trim run (skirting, picture rail, cornice): its height band and how far it stands proud.</summary>
-internal sealed record TrimBand(string Name, float From, float To, float Depth, string Material);
+/// <param name="Profile">
+/// The moulding's cross-section as [out, up] points in metres (the same [out, across] shape as an architrave's), from the wall face at the band's foot round to the wall
+/// face at its head: out from the wall face (0 to <see cref="Depth"/>), up from <see cref="From"/> (0 to To - From). A
+/// band with a profile is built as an extruded moulding; one without is a plain box.
+/// </param>
+internal sealed record TrimBand(string Name, float From, float To, float Depth, string Material, float[][]? Profile = null);
 
 /// <summary>
 /// A door frame: jambs <see cref="JambWidth"/> wide, overlapping the opening by <see cref="Inset"/>, standing
@@ -77,7 +126,7 @@ internal sealed record TrimBand(string Name, float From, float To, float Depth, 
 /// </summary>
 internal sealed record FrameDefinition(string Material, float JambWidth, float Inset, float Proud, float HeadHeight);
 
-/// <summary>A space's surface set and trim. Spaces may override any surface.</summary>
+/// <summary>A space's surface set and the trim role it takes from its floor's trim style. Spaces may override any surface.</summary>
 internal sealed record SpaceStyle(string Wall, string Floor, string Ceiling, string Trim, SeamDefinition? Seams = null);
 
 /// <summary>Ceiling joints every <see cref="Spacing"/> metres along a space's long axis.</summary>
