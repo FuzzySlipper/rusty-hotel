@@ -16,8 +16,10 @@ internal sealed record LayoutLock(string Edge, string Link, string Item);
 /// A floor's resolved layout: every module placement, the generated service passage, which placement each mission
 /// place became, the doors its locks became, and the latch the shortcut opens. Pure data; realizing it draws nothing.
 /// </summary>
+/// <param name="Beyond">Spaces that stand in another region than their placement: a gate's far half, behind its door.</param>
 internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition[] Passage, LinkDefinition[] PassageLinks,
-    FixturePlacement[] PassageFixtures, IReadOnlyDictionary<string, string> Places, LayoutLock[] Locks, string? Latch)
+    FixturePlacement[] PassageFixtures, IReadOnlyDictionary<string, string> Places, LayoutLock[] Locks, string? Latch,
+    IReadOnlyDictionary<string, string> Beyond)
 {
     internal PlacedModule[] Placed(ModuleCatalog catalog) => Placements.Select(p =>
         new PlacedModule(p.Id, new(catalog.Find(p.Module)!, new(p.X, p.Z), p.Turn))).ToArray();
@@ -28,6 +30,7 @@ internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition
     /// <summary>The region a realized space stands in.</summary>
     internal string RegionOf(string space)
     {
+        if (Beyond.TryGetValue(space, out string? beyond)) return beyond;
         string placement = space.Split('/')[0];
         return Placements.FirstOrDefault(p => p.Id == placement)?.Region ?? PassageRegion;
     }
@@ -47,6 +50,7 @@ internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition
         foreach (var (node, placement) in Places.OrderBy(p => p.Key, StringComparer.Ordinal)) text.Line("layout.place", node, placement);
         foreach (LayoutLock l in Locks.OrderBy(l => l.Edge, StringComparer.Ordinal)) text.Line("layout.lock", l.Edge, l.Link, l.Item);
         text.Line("layout.latch", Latch ?? "");
+        foreach (var (space, region) in Beyond.OrderBy(b => b.Key, StringComparer.Ordinal)) text.Line("layout.beyond", space, region);
     }
 }
 

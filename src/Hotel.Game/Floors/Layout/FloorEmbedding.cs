@@ -72,12 +72,13 @@ internal static class FloorEmbedding
         // A gate's placement and the locked edge its inner door stands for.
         private readonly Dictionary<string, string> behind = new(StringComparer.Ordinal), gated = new(StringComparer.Ordinal);
         private readonly List<LayoutLock> locks = [];
+        private readonly Dictionary<string, string> beyond = new(StringComparer.Ordinal);
         private ServicePassage.Route? passage;
         private string? latch;
 
         internal FloorLayout Layout() => new(
             placed.Select(p => new LayoutPlacement(p.Id, p.Module.Id, Corner(p).X, Corner(p).Y, p.Transform.Turn, placedRegions[p.Id])).ToArray(),
-            passage?.Spaces ?? [], passage?.Links ?? [], passage?.Fixtures ?? [], places, [.. locks], latch);
+            passage?.Spaces ?? [], passage?.Links ?? [], passage?.Fixtures ?? [], places, [.. locks], latch, beyond);
 
         private static Vector2 Corner(PlacedModule p) => p.Transform.Corner;
 
@@ -121,12 +122,12 @@ internal static class FloorEmbedding
                     if (door is not null)
                     {
                         gated[id] = door.Id;
-                        string beyond = door.To;
-                        Retag(module, regions[beyond]);
+                        Retag(module, regions[door.To]);
                         if (open.FirstOrDefault(o => o.Doorway.Placement == module) is { } far)
                         {
+                            this.beyond[far.Doorway.Space] = regions[door.To];
                             var (min, max) = Porch(far.Doorway, WayOnDepth);
-                            reserved.Add((min, max, regions[beyond], far.Doorway));
+                            reserved.Add((min, max, regions[door.To], far.Doorway));
                         }
                         locks.Add(new(door.Id, module.Name(module.Module.Links.Single(l => l.Kind == LinkKind.Door).Id), door.Item!));
                     }

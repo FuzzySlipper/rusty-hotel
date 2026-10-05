@@ -144,15 +144,32 @@ internal static class ContentPlacement
     internal static bool ArrivalClear(Vector3 post, Vector3 arrival, ResidentKind kind, float margin) =>
         Vector2.Distance(new(post.X, post.Z), new(arrival.X, arrival.Z)) > Math.Max(kind.SightRange, kind.AttackRange) + kind.Leash + margin;
 
-    /// <summary>The first space within a resident's leash of its post that lies outside its region, or null.</summary>
+    /// <summary>
+    /// The first space a resident could follow the player into that lies outside its region: walking from its post's
+    /// space through links that are not locks or the latch, into spaces within its leash of the post. Null when none.
+    /// </summary>
     internal static string? LeashCrossing(PlacedResident resident, FloorLayout layout, FloorPlan plan, BuiltFloor floor, float leash)
     {
         Vector3 post = floor.Sockets[resident.Socket];
-        foreach (SpaceDefinition space in plan.Spaces)
+        float Distance(SpaceDefinition s)
         {
-            float dx = MathF.Max(0, MathF.Max(space.Min[0] - post.X, post.X - space.Max[0]));
-            float dz = MathF.Max(0, MathF.Max(space.Min[1] - post.Z, post.Z - space.Max[1]));
-            if (MathF.Sqrt(dx * dx + dz * dz) <= leash && layout.RegionOf(space.Id) != resident.Region) return space.Id;
+            float dx = MathF.Max(0, MathF.Max(s.Min[0] - post.X, post.X - s.Max[0]));
+            float dz = MathF.Max(0, MathF.Max(s.Min[1] - post.Z, post.Z - s.Max[1]));
+            return MathF.Sqrt(dx * dx + dz * dz);
+        }
+        Dictionary<string, SpaceDefinition> spaces = plan.Spaces.ToDictionary(s => s.Id, StringComparer.Ordinal);
+        HashSet<string> shut = [.. layout.Locks.Select(l => l.Link), .. layout.Latch is { } latch ? [latch] : Array.Empty<string>()];
+        string start = plan.Spaces.First(s => Distance(s) == 0 && resident.Socket.StartsWith(s.Id.Split('/')[0] + "/", StringComparison.Ordinal)).Id;
+        HashSet<string> seen = new(StringComparer.Ordinal) { start };
+        Queue<string> open = new([start]);
+        while (open.TryDequeue(out string? at))
+        {
+            if (layout.RegionOf(at) != resident.Region) return at;
+            foreach (LinkDefinition link in plan.Links.Where(l => !shut.Contains(l.Id) && l.Between.Contains(at)))
+            {
+                string next = link.Between[0] == at ? link.Between[1] : link.Between[0];
+                if (Distance(spaces[next]) <= leash && seen.Add(next)) open.Enqueue(next);
+            }
         }
         return null;
     }

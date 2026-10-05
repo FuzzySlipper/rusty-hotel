@@ -27,7 +27,7 @@
     {
       "rule": "ResourceBeforeHazard",
       "weight": 3,
-      "limit": 3
+      "limit": 2
     }
   ],
   "finish": [
