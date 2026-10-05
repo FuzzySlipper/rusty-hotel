@@ -29,7 +29,9 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Interface/SuppliesDebugCommands.cs` | Explicit developer supply, health and consumption fixtures over the supplies owner |
 | `src/Hotel.Game/Hotel.Game.csproj` | Product identity, entry, content/UI roots and host defaults |
 | `content/` | Authored data by domain: player, route, interface, scene surfaces, supplies, combat, spirits, and one folder per excursion. See [authoring](authoring.md). |
-| `src/ui/main.js` | HUD, single foreground screen navigation, focus containment and Engine input-mode handoff |
+| `src/ui/main.js` | Composition, the single foreground-screen navigation, focus containment, lifecycle flow and Engine input-mode handoff |
+| `src/ui/hud.js` | Exploration HUD regions and their drawing from projected facts |
+| `src/ui/menu-screen.js`, `case-screen.js`, `controls-screen.js`, `reading-screen.js`, `console-screen.js` | One foreground screen each: its markup, drawing, and what happens on entering and leaving it; `screen.js` holds their shared helpers |
 | `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, pact selection/equip claims and quick-pocket presentation |
 | `src/ui/developer.js` | Lazy packaged Engine console mount, disposal and stale-mount cleanup |
 | `src/ui/pause.js` | Foreground lifecycle request lifetime and error presentation; Engine port owns actual lifecycle state |

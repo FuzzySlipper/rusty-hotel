@@ -140,7 +140,12 @@ an unrelated test-button list does not satisfy this contract.
 
 ## Current DOM companion
 
-`src/ui/main.js` exports `mountProductUi`. Exploration shows a compact title and
+`src/ui/main.js` exports `mountProductUi`. It composes `hud.js` and one module per
+foreground screen (`menu-screen.js`, `case-screen.js`, `controls-screen.js`,
+`reading-screen.js` for both readings and the refuge ledger, `console-screen.js`).
+Each module returns its element and `enter`/`leave` focus hooks, plus drawing
+where it needs it. Adding a screen means a new module and one entry in `main.js`'s
+screen list. Exploration shows a compact title and
 wing label, reticle, walking hints, quick pockets, hands and spirit status. C#
 `Interface/HotelHud.cs` publishes those facts through the Engine UI stream, along
 with the supplies owner's health, ammunition and summon reserves. Brief pickup
