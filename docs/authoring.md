@@ -46,6 +46,8 @@ its own folder. Geometry is kept apart from tuning.
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, and the fallback location label; `HotelRoute` |
 | `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id, kind and the post they stand on) and spirit bells (socket, and the `place` their text names) |
 | `floors/mission.json` | How generated floors' mission graphs grow: size budget, rule steps by depth, each rule's weight and per-floor limit, and the rules every floor finishes with; `MissionGenerator` |
+| `floors/content.json` | How generated floors are furnished: the bell's spirit, objective and supply item pools, finds per stop, loose supplies and extra residents by depth, which resident kinds stand in which module tags, and the pacing budgets (recovery before hazards, ammunition range by depth); `ContentPlacement`, `ContentPacing` |
+| `floors/readings.json` | Notices generated floors may show at reading sockets, each used at most once per floor |
 | `floors/generation.json` | How hard floor generation tries (layout attempts per mission graph, candidates per floor) and the navigation cell size and search budget floors are confirmed with; `FloorGenerator` |
 | `floors/layout.json` | How mission graphs become modules: floor extent, rooms by depth, the modules that may stand for each kind of place and the doorway they join by, spine and fill weights, the service passage, tries and branching; `FloorEmbedding` |
 | `floors/modules.json` | The room-module catalog: authoring lattice, generated floors' ambient light, the link, size and frame each doorway kind is built with, and the module files that exist; `ModuleCatalog` |
@@ -161,6 +163,10 @@ height, widened by the body radius, blocks. Every doorway must reach every other
 reached floor, and every other socket must be within interaction reach of it. A fixture that blocks a doorway fails
 naming the module file and that doorway. Add a module by writing its file and listing its id in `floors/modules.json`;
 view it with `hotel.dev.floor.module <id> <turn>`.
+
+Generated content takes its ids from where it stands: a find, resident or notice is `<placement>/<socket id>`
+(`p7/table`), so the same floor always names it the same way. A stair core needs one `Arrival` socket, where the
+player stands on entering the floor.
 
 ## Content identities and checkpoints
 

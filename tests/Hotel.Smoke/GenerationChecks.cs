@@ -1,26 +1,28 @@
 using Hotel.Game.Floors;
 using Hotel.Game.Floors.Confirm;
+using Hotel.Game.Floors.Content;
 using Hotel.Game.Floors.Layout;
 using Hotel.Game.Floors.Mission;
 using Hotel.Game.Floors.Modules;
 using Rusty.Engine;
 
-// Generated floors are confirmed by Engine navigation over their real collision for the player's own body: every
-// promised route both ways, every lock held shut. Refusals retry by attempt then candidate; a doorway too narrow for
-// the body is refused naming that doorway.
-internal static class ConfirmChecks
+// Generated floors are furnished within their pacing budgets and confirmed by Engine navigation over their real
+// collision for the player's own body: every promised route both ways, every lock held shut. Refusals retry by attempt
+// then candidate; a hazard with no recovery before it, and a doorway too narrow for the body, are refused with reasons.
+internal static class GenerationChecks
 {
     internal static void Run(IEngineContext engine)
     {
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
         var content = Owners.Content(engine);
-        FloorTunings tunings = FloorTunings.Load(engine, content.Modules, content.Kit);
+        FloorTunings tunings = FloorTunings.Load(engine, content.Modules, content.Kit, content.Supplies.Items, content.Combat.Residents);
         CharacterControllerConfig body = content.Player.Controller(engine.Spatial);
-        GenerationResult Generate(FloorSeed seed, ModuleCatalog? modules = null) =>
-            FloorGenerator.Generate(engine, seed, tunings, modules ?? content.Modules, content.Kit, content.Fixtures, body);
+        FloorSources sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, body);
+        GenerationResult Generate(FloorSeed seed) => FloorGenerator.Generate(engine, seed, tunings, sources);
 
         Dictionary<string, int> refused = new(StringComparer.Ordinal);
-        int floors = 0, confirmed = 0, firstTry = 0, routes = 0, locks = 0;
+        int floors = 0, confirmed = 0, firstTry = 0, routes = 0, locks = 0, finds = 0, residents = 0;
+        GeneratedFloor? hazardous = null;
         double milliseconds = 0;
         for (int depth = 1; depth <= 3; depth++)
             for (ulong run = 0; run < 12; run++)
@@ -35,8 +37,28 @@ internal static class ConfirmChecks
                 locks += floor.Confirmation.Locks.Length;
                 milliseconds += floor.Confirmation.Milliseconds;
                 Check(floor.Confirmation.Routes.Length >= 2 && floor.Confirmation.Confirmed, "a returned floor is confirmed both ways");
+                Check(ContentPacing.Check(floor.Content, floor.Graph, floor.Layout, floor.Plan, floor.Floor, tunings.Content, sources.Items, sources.Residents, depth) is null,
+                    "every pacing budget holds on an accepted floor");
+                Check(floor.Content.Finds.All(f => floor.Floor.Sockets.ContainsKey(f.Socket)) && floor.Content.Residents.All(r => floor.Floor.Sockets.ContainsKey(r.Socket)),
+                    "content stands at real sockets");
+                finds += floor.Content.Finds.Length;
+                residents += floor.Content.Residents.Length;
+                if (floor.Graph.Nodes.Any(n => n.Kind == MissionNodeKind.Hazard)) hazardous ??= floor;
             }
         Check(confirmed == floors, $"every seed yields a confirmed floor after retries; {confirmed} of {floors}: {string.Join(", ", refused)}");
+
+        // A hazard with no recovery before it: the stops reachable before it lose their dressings, and the floor is refused.
+        Check(hazardous is not null, "some floor has a hazard");
+        GeneratedFloor h = hazardous!;
+        MissionNode hazard = h.Graph.Nodes.First(n => n.Kind == MissionNodeKind.Hazard);
+        IReadOnlySet<string> before = MissionReach.From(h.Graph, MissionGraph.ArrivalId, blocked: hazard.Id).Reached;
+        HashSet<string> early = before.Select(n => h.Layout.Places[n]).ToHashSet();
+        FloorContent bare = h.Content with
+        {
+            Finds = h.Content.Finds.Select(f => early.Contains(f.Id.Split('/')[0]) && f.Item == tunings.Content.Pacing.RecoveryItem ? f with { Item = "incense" } : f).ToArray()
+        };
+        string? unprepared = ContentPacing.Check(bare, h.Graph, h.Layout, h.Plan, h.Floor, tunings.Content, sources.Items, sources.Residents, h.Identity.Seed.Depth);
+        Check(unprepared?.StartsWith("recovery:", StringComparison.Ordinal) == true, "a hazard placed before any recovery is refused: " + unprepared);
 
         FloorSeed seed = FloorSeed.Current(run: 3, depth: 2, shift: 0);
         Check(Generate(seed).Floor!.Identity == Generate(seed).Floor!.Identity, "the same seed generates the same confirmed floor");
@@ -54,8 +76,8 @@ internal static class ConfirmChecks
         RouteVerdict? blocked = verdict.Routes.FirstOrDefault(r => !r.Reached);
         Check(!verdict.Confirmed && blocked?.Blocking is { } at && at.StartsWith("doorway ", StringComparison.Ordinal) && at.Contains("/door"),
             $"a doorway too narrow for the body is refused naming it: {blocked}");
-        Console.WriteLine($"Confirm checks passed: {confirmed} of {floors} seeds Engine-confirmed ({firstTry} first try) with {routes} promised routes and " +
+        Console.WriteLine($"Generation checks passed: {confirmed} of {floors} seeds furnished within budget ({finds / confirmed} finds, {residents / confirmed} residents each) and Engine-confirmed ({firstTry} first try) with {routes} promised routes and " +
             $"{locks} shut-lock checks, {milliseconds / Math.Max(1, confirmed):0} ms navigation each; refusals before success {(refused.Count == 0 ? "none" : string.Join(", ", refused.Select(r => $"{r.Key} ×{r.Value}")))}; " +
-            $"narrow door refused: {blocked}.");
+            $"unprepared hazard refused ({unprepared}); narrow door refused: {blocked}.");
     }
 }

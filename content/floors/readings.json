@@ -1,0 +1,40 @@
+{
+  "readings": [
+    {
+      "id": "directory",
+      "label": "Floor directory",
+      "title": "Floor directory",
+      "text": "Rooms on this floor are numbered from the stairs. If the numbers do not run in order, return to the stairs and count again. Do not knock on doors whose numbers you did not count."
+    },
+    {
+      "id": "housekeeping",
+      "label": "Housekeeping card",
+      "title": "Housekeeping",
+      "text": "Linen is changed while guests are out. Guests are asked to be out between eleven and four. Staff will not answer a door that is answered from inside."
+    },
+    {
+      "id": "fire-notice",
+      "label": "Fire notice",
+      "title": "In case of fire",
+      "text": "Leave by the nearest stair. The service passage is for staff and is latched from the far side for your safety. Do not wait for the lift. The lift is not coming."
+    },
+    {
+      "id": "night-porter",
+      "label": "Night porter's notice",
+      "title": "Night porter",
+      "text": "The night porter makes his round on every floor at every hour. Should you meet him in the corridor, stand aside and do not ask him the time."
+    },
+    {
+      "id": "lost-property",
+      "label": "Lost property slip",
+      "title": "Lost property",
+      "text": "Items left in rooms are kept for thirty days. Items left in corridors are kept by the corridor. Please enquire at the desk, which is on another floor."
+    },
+    {
+      "id": "quiet-hours",
+      "label": "Quiet hours notice",
+      "title": "Quiet hours",
+      "text": "Quiet hours are observed on this floor at all hours. Guests who hear music from the lounge are asked to keep walking until it stops."
+    }
+  ]
+}

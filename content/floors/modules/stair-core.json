@@ -21,7 +21,13 @@
         4
       ],
       "height": 2.65,
-      "style": "corridor"
+      "style": "corridor",
+      "posts": {
+        "arrival": [
+          2,
+          2.5
+        ]
+      }
     }
   ],
   "links": [],
@@ -35,7 +41,8 @@
       ]
     },
     {
-      "kind": "pinned-frame",
+      "kind": "expedition-notice",
+      "id": "notice",
       "space": "landing",
       "edge": "West",
       "along": 2
@@ -64,5 +71,16 @@
       "at": 2
     }
   ],
-  "sockets": []
+  "sockets": [
+    {
+      "id": "arrival",
+      "kind": "Arrival",
+      "socket": "landing.arrival"
+    },
+    {
+      "id": "notice",
+      "kind": "Reading",
+      "socket": "notice.focus"
+    }
+  ]
 }

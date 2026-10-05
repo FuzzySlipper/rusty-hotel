@@ -3,8 +3,11 @@ using Hotel.Game.Scene.Kit;
 
 namespace Hotel.Game.Floors.Layout;
 
-/// <summary>One placed module: its stable placement id, which module, its turned north-west corner and its quarter turns.</summary>
-internal sealed record LayoutPlacement(string Id, string Module, float X, float Z, int Turn);
+/// <summary>
+/// One placed module: its stable placement id, which module, its turned north-west corner, its quarter turns, and the
+/// lock region it stands in.
+/// </summary>
+internal sealed record LayoutPlacement(string Id, string Module, float X, float Z, int Turn, string Region);
 
 /// <summary>The door a mission graph's locked edge became: the realized link, and the item that opens it.</summary>
 internal sealed record LayoutLock(string Edge, string Link, string Item);
@@ -19,13 +22,23 @@ internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition
     internal PlacedModule[] Placed(ModuleCatalog catalog) => Placements.Select(p =>
         new PlacedModule(p.Id, new(catalog.Find(p.Module)!, new(p.X, p.Z), p.Turn))).ToArray();
 
+    /// <summary>The service passage is its own region: it belongs to neither side of the latch.</summary>
+    internal const string PassageRegion = "passage";
+
+    /// <summary>The region a realized space stands in.</summary>
+    internal string RegionOf(string space)
+    {
+        string placement = space.Split('/')[0];
+        return Placements.FirstOrDefault(p => p.Id == placement)?.Region ?? PassageRegion;
+    }
+
     internal FloorPlan Realize(ModuleCatalog catalog) =>
         ModuleRealizer.Plan(Placed(catalog), catalog, Passage, PassageLinks, PassageFixtures);
 
     internal void Write(CanonicalText text)
     {
         foreach (LayoutPlacement p in Placements.OrderBy(p => p.Id, StringComparer.Ordinal))
-            text.Line("layout.module", p.Id, p.Module, CanonicalText.Number(p.X), CanonicalText.Number(p.Z), CanonicalText.Number(p.Turn));
+            text.Line("layout.module", p.Id, p.Module, CanonicalText.Number(p.X), CanonicalText.Number(p.Z), CanonicalText.Number(p.Turn), p.Region);
         foreach (SpaceDefinition s in Passage.OrderBy(s => s.Id, StringComparer.Ordinal))
             text.Line("layout.passage", s.Id, CanonicalText.Number(s.Min[0]), CanonicalText.Number(s.Min[1]),
                 CanonicalText.Number(s.Max[0]), CanonicalText.Number(s.Max[1]));

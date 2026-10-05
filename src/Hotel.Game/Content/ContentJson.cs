@@ -7,6 +7,7 @@ using Hotel.Game.Floors.Mission;
 using Hotel.Game.Floors.Modules;
 using Hotel.Game.Floors.Layout;
 using Hotel.Game.Floors;
+using Hotel.Game.Floors.Content;
 using Hotel.Game.Input;
 using Hotel.Game.Interface;
 using Hotel.Game.Player;
@@ -50,4 +51,6 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(ModuleDefinition))]
 [JsonSerializable(typeof(LayoutTuning))]
 [JsonSerializable(typeof(GenerationTuning))]
+[JsonSerializable(typeof(ContentTuning))]
+[JsonSerializable(typeof(FloorReadings))]
 internal sealed partial class ContentJson : JsonSerializerContext;

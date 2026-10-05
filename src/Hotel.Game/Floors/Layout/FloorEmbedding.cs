@@ -61,6 +61,7 @@ internal static class FloorEmbedding
         // A corridor piece must leave an archway with this much free floor beyond it, so the corridor can go on.
         private const float Tolerance = 1e-3f, PorchDepth = 0.5f, ReservedDepth = 2.5f, WayOnDepth = 4f;
         private readonly List<PlacedModule> placed = [];
+        private readonly Dictionary<string, string> placedRegions = new(StringComparer.Ordinal);
         private readonly List<(Vector2 Min, Vector2 Max)> taken = [];
         // Floor kept clear in front of a doorway something will need later; only modules of the owning region may use it.
         private readonly List<(Vector2 Min, Vector2 Max, string? Region, PlacedDoorway For)> reserved = [];
@@ -75,7 +76,7 @@ internal static class FloorEmbedding
         private string? latch;
 
         internal FloorLayout Layout() => new(
-            placed.Select(p => new LayoutPlacement(p.Id, p.Module.Id, Corner(p).X, Corner(p).Y, p.Transform.Turn)).ToArray(),
+            placed.Select(p => new LayoutPlacement(p.Id, p.Module.Id, Corner(p).X, Corner(p).Y, p.Transform.Turn, placedRegions[p.Id])).ToArray(),
             passage?.Spaces ?? [], passage?.Links ?? [], passage?.Fixtures ?? [], places, [.. locks], latch);
 
         private static Vector2 Corner(PlacedModule p) => p.Transform.Corner;
@@ -288,6 +289,7 @@ internal static class FloorEmbedding
         {
             PlacedModule module1 = new($"p{placed.Count}", new(module, corner, turn));
             placed.Add(module1);
+            placedRegions[module1.Id] = region;
             taken.Add((corner, corner + module1.Transform.Footprint));
             if (joined is not null)
             {

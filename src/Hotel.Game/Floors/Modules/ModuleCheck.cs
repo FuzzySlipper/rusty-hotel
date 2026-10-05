@@ -61,10 +61,11 @@ internal static class ModuleCheck
             ContentSocket socket = module.Sockets[i];
             Authored.Require(floor.Sockets.TryGetValue($"m/{socket.Socket}", out Vector3 point), path, $"sockets[{i}].socket",
                 $"unknown socket '{socket.Socket}'.");
-            bool ok = socket.Kind == ContentSocketKind.ResidentPost
+            bool standing = socket.Kind is ContentSocketKind.ResidentPost or ContentSocketKind.Arrival;
+            bool ok = standing
                 ? grid.Reached(reached, new(point.X, point.Z))
                 : grid.WithinReach(reached, point);
-            Authored.Require(ok, path, $"sockets[{i}]", socket.Kind == ContentSocketKind.ResidentPost
+            Authored.Require(ok, path, $"sockets[{i}]", standing
                 ? $"'{socket.Id}' is not on floor the doorways reach (turn {turn})."
                 : $"'{socket.Id}' is out of reach of any floor the doorways reach (turn {turn}).");
         }

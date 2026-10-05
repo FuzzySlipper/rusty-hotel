@@ -1,0 +1,87 @@
+using Hotel.Game.Combat;
+using Hotel.Game.Content;
+using Hotel.Game.Supplies;
+using Rusty.Engine;
+
+namespace Hotel.Game.Floors.Content;
+
+/// <summary>An item a find may hold, how many, and how often it is chosen.</summary>
+internal sealed record ItemWeight(string Item, int Count, int Weight);
+
+/// <summary>A resident kind, the module tags it may stand in, and how often it is chosen.</summary>
+internal sealed record ResidentWeight(string Kind, Floors.Modules.ModuleTag[] Tags, int Weight);
+
+/// <summary>
+/// The pacing budgets every generated floor must meet: the healing finds reachable before each hazard, the item that
+/// counts as recovery, and the ammunition the floor holds in all (scarce, with the no-ammunition weapon as the fallback).
+/// </summary>
+internal sealed record PacingTuning(string RecoveryItem, int RecoveryBeforeHazard, DepthCurve AmmoMinimum, DepthCurve AmmoMaximum);
+
+/// <summary>
+/// How a generated floor is furnished with content: the spirit its bell calls, the items objectives, stops and loose
+/// finds draw from, how many finds a stop and the floor's spare rooms get, which residents stand where and how many
+/// beyond the hazards, and the pacing budgets.
+/// </summary>
+internal sealed record ContentTuning(string Spirit, ItemWeight[] Objective, ItemWeight[] Supplies, int SuppliesPerStop, DepthCurve LooseSupplies,
+    ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing)
+{
+    internal const string Path = "floors/content.json";
+
+    internal static ContentTuning Load(IEngineContext engine, ItemDefinition[] items, ResidentKind[] residents)
+    {
+        ContentTuning t = Authored.Read(engine, Path, ContentJson.Default.ContentTuning);
+        void Items(string field, ItemWeight[] weights, SupplyKind[] kinds)
+        {
+            Authored.Require(weights.Any(w => w.Weight > 0), Path, field, "needs an item with a positive weight.");
+            for (int i = 0; i < weights.Length; i++)
+            {
+                ItemDefinition? item = items.FirstOrDefault(d => d.Id == weights[i].Item);
+                Authored.Require(item is not null, Path, $"{field}[{i}].item", $"unknown item '{weights[i].Item}'.");
+                Authored.Require(kinds.Contains(item!.Kind), Path, $"{field}[{i}].item", $"'{item.Id}' is not one of {string.Join(", ", kinds)}.");
+                Authored.Within(Path, $"{field}[{i}].count", weights[i].Count, 1, item.StackLimit);
+                Authored.AtLeast(Path, $"{field}[{i}].weight", weights[i].Weight, 0);
+            }
+        }
+        Items("objective", t.Objective, [SupplyKind.Expedition]);
+        Items("supplies", t.Supplies, [SupplyKind.Healing, SupplyKind.Ammo, SupplyKind.Summon]);
+        Authored.AtLeast(Path, "suppliesPerStop", t.SuppliesPerStop, 1);
+        t.LooseSupplies.Validate(Path, "looseSupplies");
+        t.ExtraResidents.Validate(Path, "extraResidents");
+        Authored.Require(t.Residents.Any(r => r.Weight > 0), Path, "residents", "needs a resident with a positive weight.");
+        for (int i = 0; i < t.Residents.Length; i++)
+        {
+            Authored.Require(residents.Any(k => k.Id == t.Residents[i].Kind), Path, $"residents[{i}].kind", $"unknown resident kind '{t.Residents[i].Kind}'.");
+            Authored.Require(t.Residents[i].Tags.Length > 0, Path, $"residents[{i}].tags", "names the module tags it may stand in.");
+            Authored.AtLeast(Path, $"residents[{i}].weight", t.Residents[i].Weight, 0);
+        }
+        Authored.Require(items.Any(i => i.Id == t.Pacing.RecoveryItem && i.Kind == SupplyKind.Healing), Path, "pacing.recoveryItem",
+            $"'{t.Pacing.RecoveryItem}' must be a healing item.");
+        Authored.AtLeast(Path, "pacing.recoveryBeforeHazard", t.Pacing.RecoveryBeforeHazard, 0);
+        t.Pacing.AmmoMinimum.Validate(Path, "pacing.ammoMinimum");
+        t.Pacing.AmmoMaximum.Validate(Path, "pacing.ammoMaximum");
+        Authored.Require(t.Pacing.AmmoMaximum.Base >= t.Pacing.AmmoMinimum.Base && t.Pacing.AmmoMaximum.Max >= t.Pacing.AmmoMinimum.Max,
+            Path, "pacing.ammoMaximum", "never below the minimum.");
+        return t;
+    }
+}
+
+/// <summary>Notices generated floors may show, each used at most once per floor.</summary>
+internal sealed record FloorReadings(FloorReading[] Readings)
+{
+    internal const string Path = "floors/readings.json";
+
+    internal static FloorReadings Load(IEngineContext engine)
+    {
+        FloorReadings readings = Authored.Read(engine, Path, ContentJson.Default.FloorReadings);
+        for (int i = 0; i < readings.Readings.Length; i++)
+        {
+            FloorReading r = readings.Readings[i];
+            Template.Plain(Path, ($"readings[{i}].label", r.Label), ($"readings[{i}].title", r.Title), ($"readings[{i}].text", r.Text));
+        }
+        string? repeated = readings.Readings.GroupBy(r => r.Id).FirstOrDefault(g => g.Count() > 1)?.Key;
+        Authored.Require(repeated is null, Path, "readings", $"id '{repeated}' appears more than once.");
+        return readings;
+    }
+}
+
+internal sealed record FloorReading(string Id, string Label, string Title, string Text);

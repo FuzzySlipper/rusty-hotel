@@ -35,6 +35,15 @@
       "stackLimit": 1,
       "amount": 0,
       "mark": "◎"
+    },
+    {
+      "id": "ledger-page",
+      "name": "Ledger page",
+      "description": "A page torn from the hotel register, the names on it still wet. Bring it back to the refuge.",
+      "kind": "Expedition",
+      "stackLimit": 1,
+      "amount": 0,
+      "mark": "▤"
     }
   ]
 }

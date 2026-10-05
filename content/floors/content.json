@@ -1,0 +1,73 @@
+{
+  "spirit": "hushwing",
+  "objective": [
+    {
+      "item": "ledger-page",
+      "count": 1,
+      "weight": 1
+    }
+  ],
+  "supplies": [
+    {
+      "item": "bandage",
+      "count": 1,
+      "weight": 3
+    },
+    {
+      "item": "rounds",
+      "count": 1,
+      "weight": 2
+    },
+    {
+      "item": "incense",
+      "count": 1,
+      "weight": 1
+    }
+  ],
+  "suppliesPerStop": 1,
+  "looseSupplies": {
+    "base": 2,
+    "perDepth": 0,
+    "max": 2
+  },
+  "residents": [
+    {
+      "kind": "porter",
+      "tags": [
+        "Corridor",
+        "Guest",
+        "Service"
+      ],
+      "weight": 2
+    },
+    {
+      "kind": "lamp",
+      "tags": [
+        "Corridor",
+        "Guest",
+        "Public",
+        "Landmark"
+      ],
+      "weight": 1
+    }
+  ],
+  "extraResidents": {
+    "base": 1,
+    "perDepth": 1,
+    "max": 4
+  },
+  "pacing": {
+    "recoveryItem": "bandage",
+    "recoveryBeforeHazard": 1,
+    "ammoMinimum": {
+      "base": 6,
+      "perDepth": 0,
+      "max": 6
+    },
+    "ammoMaximum": {
+      "base": 24,
+      "perDepth": 0,
+      "max": 24
+    }
+  }
+}

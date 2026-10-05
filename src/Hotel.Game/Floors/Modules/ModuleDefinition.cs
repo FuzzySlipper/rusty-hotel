@@ -11,9 +11,9 @@ namespace Hotel.Game.Floors.Modules;
 [JsonConverter(typeof(JsonStringEnumConverter<DoorwayKind>))]
 internal enum DoorwayKind { CorridorDoor, ServiceDoor, FireDoor, Archway, Stair }
 
-/// <summary>What a content socket offers to floor content placement.</summary>
+/// <summary>What a content socket offers to floor content placement. Arrival is where the player stands on entering a floor.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<ContentSocketKind>))]
-internal enum ContentSocketKind { Find, ResidentPost, Reading, Landmark, Bell, Notebook }
+internal enum ContentSocketKind { Find, ResidentPost, Reading, Landmark, Bell, Notebook, Arrival }
 
 /// <summary>What a module is, for the floor grammar choosing where it may go.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<ModuleTag>))]
