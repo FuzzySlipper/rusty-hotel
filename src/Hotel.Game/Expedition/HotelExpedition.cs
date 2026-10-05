@@ -20,6 +20,8 @@ internal sealed class HotelExpedition : IDisposable
     private readonly HotelCombat combat;
     private readonly HotelSpirit spirit;
     private readonly HotelRoute route;
+    // Captured at construction, while every owner still holds its authored starting values.
+    private readonly CheckpointState initial;
     private CheckpointState? checkpoint;
 
     internal HotelExpedition(IEngineContext engine, RefugeDefinition refuge, HotelPlayer player,
@@ -28,6 +30,7 @@ internal sealed class HotelExpedition : IDisposable
         this.refuge = refuge; this.player = player; this.supplies = supplies;
         this.combat = combat; this.spirit = spirit; this.route = route;
         store = new(engine, Scope, new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
+        initial = Capture(0);
     }
 
     internal int Returns => checkpoint?.Returns ?? 0;
@@ -45,7 +48,7 @@ internal sealed class HotelExpedition : IDisposable
             ProductStateLoad<CheckpointState> loaded = store.Load(Key);
             CheckpointState state = loaded.Present
                 ? loaded.State ?? throw new InvalidOperationException("Checkpoint has no state.")
-                : Capture(0);
+                : initial;
             Validate(state);
             if (!loaded.Present) Write(state);
             checkpoint = state;
@@ -64,8 +67,8 @@ internal sealed class HotelExpedition : IDisposable
         if (combat.Defeated || combat.Phase != AttackPhase.Ready || spirit.Active)
             return Receipt(false, "Finish your action before recording a checkpoint.");
         CheckpointState next = Capture(checked(Returns + 1));
-        Validate(next);
-        try { Write(next); }
+        // Live state that would not load again is refused here, before it can replace a good save.
+        try { Validate(next); Write(next); }
         catch (Exception error) when (error is PersistenceStorageException or InvalidOperationException)
         {
             return Receipt(false, "The checkpoint could not be saved. Your carried finds and previous checkpoint are unchanged.\n\n" + error.Message);
@@ -87,6 +90,9 @@ internal sealed class HotelExpedition : IDisposable
         ReceiptText = Status + "\n\nYour supplies, pact, doors, finds and residents have all been restored. Nothing spent after this checkpoint is permanently lost.";
         ReceiptSequence++;
     }
+
+    /// <summary>Developer override: live state returns to the excursion's start; the stored checkpoint is kept.</summary>
+    internal void ApplyInitial() => Apply(initial);
 
     private bool Receipt(bool saved, string text)
     {
@@ -121,6 +127,8 @@ internal sealed class HotelExpedition : IDisposable
             throw new InvalidOperationException("Checkpoint expedition deposit is inconsistent.");
     }
 
+    // The one restore path. Order matters: route restores find visibility from the supplies'
+    // collected set, so it runs after supplies; the player returns to the arrival point last of the bodies.
     private void Apply(CheckpointState state)
     {
         supplies.Restore(state.Supplies);

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.Json;
 using Hotel.Game;
+using Hotel.Game.Interface;
 using Rusty.Engine;
 using Rusty.Engine.Debugging;
 using Rusty.Engine.Testing;
@@ -156,6 +157,12 @@ host.Call(engine =>
     Advance(60);
     Check(MathF.Abs(reset.Z - 3.5f) < .01f && MathF.Abs(Position().Z - reset.Z) < .01f,
         "restart restores spawn and clears held input");
+    commands.Supplies!.Give("bandage", 1);
+    Advance(60, Key(KeyboardControl.KeyW));
+    commands.Hotel!.ReturnToEntrance();
+    using (JsonDocument fresh = JsonDocument.Parse(commands.Module!.Observe().Message))
+        Check(fresh.RootElement.GetProperty("occupiedPockets").GetInt32() == 0 && fresh.RootElement.GetProperty("health").GetInt32() == 70 &&
+            MathF.Abs(Position().Z - 3.5f) < .01f, "developer reset applies the initial excursion through the recovery path");
 });
 host.Call(RouteChecks.Run);
 host.Call(SuppliesChecks.Run);
@@ -175,9 +182,13 @@ static void Check(bool condition, string message)
 sealed class CaptureCommands : IDebugCommandModuleRegistrar
 {
     internal PlaytestDebugModule? Module { get; private set; }
+    internal HotelDebugCommands? Hotel { get; private set; }
+    internal SuppliesDebugCommands? Supplies { get; private set; }
     DebugCommandRegistrationResult IDebugCommandModuleRegistrar.Register<TModule>(TModule module)
     {
         if (module is PlaytestDebugModule playtest) Module = playtest;
+        if (module is HotelDebugCommands hotel) Hotel = hotel;
+        if (module is SuppliesDebugCommands supplies) Supplies = supplies;
         return new(DebugCommandRegistrationStatus.Registered, "Captured for product callback test");
     }
 }

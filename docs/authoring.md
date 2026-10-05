@@ -75,6 +75,20 @@ labels or art. Pocket count, stack/resource bounds, resident roster/health/leash
 and other validation rules also affect whether an existing save remains valid.
 There is no automatic migration or fallback to a new game for invalid data.
 
+### Adding saved state
+
+1. In the owning domain, extend its `Capture`, `Validate` and `Restore`. `Restore`
+   starts from `Reset`, so the authored starting value belongs in `Reset` too.
+2. Add the field to `Expedition/CheckpointState.cs`. Bump `Version` only for an
+   intentional incompatible change (see below).
+3. For a new owning domain only: call it from `HotelExpedition.Capture`, `Validate`
+   and `Apply`. `Apply` is the one restore path, used for loading, recovery and the
+   developer reset alike; place the call where its comment's ordering requires.
+4. Optionally expose it in `HotelObservation` (`HotelProduct.cs`) for inspection.
+
+Nothing else restores state. The initial excursion is captured once from the
+owners' starting values, so there is no separate reset list to keep in step.
+
 When adding meaningful persistent state, extend its existing owner's
 capture/validate/restore methods and the single complete checkpoint value.
 Validate before restore; save before settling expedition deposits. Keep native

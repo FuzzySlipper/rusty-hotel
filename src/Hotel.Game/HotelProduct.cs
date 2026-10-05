@@ -159,7 +159,8 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
 
     private void ResetExcursion()
     {
-        ClearActions(); player.Reset(); supplies.Reset(); combat.Reset(); spirit.Reset(); route.Reset();
+        ClearActions();
+        expedition.ApplyInitial();
         Publish();
     }
 

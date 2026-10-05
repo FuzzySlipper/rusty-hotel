@@ -53,6 +53,16 @@ internal static class CheckpointChecks
                     new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
                 saved = store.Load(HotelExpedition.Key).State!;
                 Check(saved.Supplies.Health == 57 && saved.Supplies.Ammo == 4 && saved.Supplies.Summon == 1 && saved.Supplies.Pockets[7]?.Item == "bandage", "durable checkpoint keeps resource and pocket values");
+                string Stored() => System.Text.Json.JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState);
+                string good = Stored();
+                HotelEnemy displaced = f.Combat.Enemies[1];
+                Vector3 post = displaced.Position;
+                f.Scene.Entities.Set(displaced.Entity, EngineComponentTypes.Transform, new(post + new Vector3(5, 0, 0), Quaternion.Identity, Vector3.One));
+                f.At(-1.1f, 2.85f, new(-2.33f, .93f, 2.85f));
+                f.Route.Use();
+                Check(f.Expedition.Returns == 1 && f.Expedition.ReceiptTitle == "Checkpoint not saved" && Stored() == good,
+                    "live state that fails validation is refused with a receipt and leaves the stored checkpoint intact");
+                f.Scene.Entities.Set(displaced.Entity, EngineComponentTypes.Transform, new(post, Quaternion.Identity, Vector3.One));
                 f.Supplies.Use(7, f.Supplies.Revision); f.Supplies.SpendAmmo(4); f.Supplies.SpendSummon(1);
                 f.Supplies.Pickup("portrait-dressing"); f.Spirit.Equip(false, f.Spirit.Revision);
                 f.Combat.Enemies[1].Health.SetCurrent(0); f.Supplies.Damage(1000); f.Route.Reset();
