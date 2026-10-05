@@ -15,7 +15,7 @@ export function mountMenuScreen(document, { developerEnabled }) {
     element,
     enter() { focusFirstButton(element); },
     leave() {},
-    draw(facts) { element.querySelector('[data-checkpoint-status]').textContent = facts.checkpointStatus || ''; },
+    draw(facts) { element.querySelector('[data-checkpoint-status]').textContent = facts.refuge.checkpointStatus; },
     drawLifecycle({ state, pending }) {
       element.querySelector('#menu-title').textContent = state === 'paused' ? 'Paused' : 'Menu';
       element.querySelector('[data-return]').textContent = state === 'paused' ? 'Resume hotel' : 'Return to hotel';

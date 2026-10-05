@@ -124,15 +124,15 @@ export function mountProductUi(root, context) {
     hud.draw(facts);
     menu.draw(facts);
     fieldCase.draw(facts);
-    if (readingSequence !== facts.readingSequence) {
-      readingSequence = facts.readingSequence;
-      reading.show(facts.readingTitle, facts.readingText);
-      if (facts.readingTitle) void show('reading', screen === null ? null : { screen, back: returnScreen });
+    if (readingSequence !== facts.reading.sequence) {
+      readingSequence = facts.reading.sequence;
+      reading.show(facts.reading.title, facts.reading.text);
+      if (facts.reading.title) void show('reading', screen === null ? null : { screen, back: returnScreen });
     }
-    if (refugeSequence !== facts.refugeSequence) {
-      refugeSequence = facts.refugeSequence;
-      refuge.show(facts.refugeTitle, facts.refugeText);
-      if (facts.refugeTitle) void show('refuge');
+    if (refugeSequence !== facts.refuge.sequence) {
+      refugeSequence = facts.refuge.sequence;
+      refuge.show(facts.refuge.title, facts.refuge.text);
+      if (facts.refuge.title) void show('refuge');
     }
   };
   pause = createPauseFlow(context.lifecycle, drawLifecycle);

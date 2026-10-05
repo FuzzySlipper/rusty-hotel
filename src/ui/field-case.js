@@ -25,13 +25,14 @@ export function mountFieldCase(host, intents) {
   let pockets = 0;
   let selected = 0;
   let items = [];
+  let supplyFacts = {};
   let spiritFacts = {};
   let moving = null;
   let dragging = null;
   const use = host.querySelector('[data-use-supply]');
   const move = host.querySelector('[data-move-supply]');
   const supplyResult = host.querySelector('[data-supply-result]');
-  const claim = (action, from, to, revision = spiritFacts.inventoryRevision) => {
+  const claim = (action, from, to, revision = supplyFacts.revision) => {
     try { intents.claim('hotel.supplies', { kind: 'product-payload', contract: 'hotel.supplies.v1',
       data: { action, from, ...(to === undefined ? {} : { to }), revision } }); }
     catch { supplyResult.textContent = 'The choice could not be sent. Close and reopen the field case.'; }
@@ -43,7 +44,7 @@ export function mountFieldCase(host, intents) {
   move.addEventListener('click', () => {
     if (moving) { cancel(); selectPocket(selected); return; }
     if (!intents || !items[selected]?.id) return;
-    moving = { from: selected, revision: spiritFacts.inventoryRevision };
+    moving = { from: selected, revision: supplyFacts.revision };
     grid.classList.add('moving');
     move.textContent = 'Cancel move';
     supplyResult.textContent = 'Choose a destination pocket. Matching stacks merge; different supplies swap.';
@@ -60,10 +61,10 @@ export function mountFieldCase(host, intents) {
   const equip = host.querySelector('[data-equip-spirit]');
   const result = host.querySelector('[data-spirit-result]');
   equip.addEventListener('click', () => {
-    if (!intents || !spiritFacts.spiritCount || spiritFacts.spiritEquipReason) return;
+    if (!intents || !spiritFacts.acquired || spiritFacts.equipReason) return;
     try {
       intents.claim('hotel.spirit.equip', { kind: 'product-payload', contract: 'hotel.spirit.equip.v1',
-        data: { equipped: !spiritFacts.spiritEquipped, revision: spiritFacts.spiritRevision } });
+        data: { equipped: !spiritFacts.equipped, revision: spiritFacts.revision } });
     } catch { result.textContent = 'The choice could not be sent. Close and reopen the field case.'; }
   });
   const selectPocket = index => {
@@ -75,7 +76,7 @@ export function mountFieldCase(host, intents) {
     use.textContent = item?.id ? `Use ${item.name}` : 'Use supply';
     move.disabled = !intents || !item?.id;
     move.textContent = moving ? 'Cancel move' : 'Move stack';
-    supplyResult.textContent = moving ? 'Choose a destination pocket. Matching stacks merge; different supplies swap.' : spiritFacts.supplyMessage || '';
+    supplyResult.textContent = moving ? 'Choose a destination pocket. Matching stacks merge; different supplies swap.' : supplyFacts.message || '';
     host.querySelector('.empty-emblem').textContent = item?.mark || '—';
     host.querySelector('[data-detail-title]').textContent = item?.name || 'Empty pocket';
     host.querySelector('[data-detail-body]').textContent = item?.id
@@ -95,9 +96,9 @@ export function mountFieldCase(host, intents) {
     host.querySelector('.supply-actions').hidden = tab !== 'supplies';
     supplyResult.hidden = tab !== 'supplies';
     host.querySelector('.case-quick').hidden = tab !== 'supplies';
-    host.querySelector('.spirit-empty').hidden = tab !== 'spirits' || !!spiritFacts.spiritCount;
-    host.querySelector('[data-spirit-card]').hidden = tab !== 'spirits' || !spiritFacts.spiritCount;
-    equip.hidden = tab !== 'spirits' || !spiritFacts.spiritCount;
+    host.querySelector('.spirit-empty').hidden = tab !== 'spirits' || !!spiritFacts.acquired;
+    host.querySelector('[data-spirit-card]').hidden = tab !== 'spirits' || !spiritFacts.acquired;
+    equip.hidden = tab !== 'spirits' || !spiritFacts.acquired;
     result.hidden = tab !== 'spirits';
     host.querySelector('[data-collection-heading]').textContent = tab === 'supplies' ? 'Carried supplies' : 'Companions';
     host.querySelector('[data-load]').hidden = tab !== 'supplies';
@@ -106,16 +107,16 @@ export function mountFieldCase(host, intents) {
     if (tab === 'supplies') selectPocket(selected);
     else {
       host.querySelector('[data-detail-number]').textContent = 'Pacts';
-      host.querySelector('.empty-emblem').textContent = spiritFacts.spiritCount ? '⋈' : '◇';
-      if (spiritFacts.spiritCount) {
-        host.querySelector('[data-detail-title]').textContent = spiritFacts.spiritName;
-        host.querySelector('[data-detail-body]').textContent = spiritFacts.spiritDescription;
+      host.querySelector('.empty-emblem').textContent = spiritFacts.acquired ? '⋈' : '◇';
+      if (spiritFacts.acquired) {
+        host.querySelector('[data-detail-title]').textContent = spiritFacts.name;
+        host.querySelector('[data-detail-body]').textContent = spiritFacts.description;
       }
-      host.querySelector('[data-spirit-name]').textContent = spiritFacts.spiritName || '';
-      host.querySelector('[data-spirit-equipped]').textContent = spiritFacts.spiritEquipped ? 'Equipped' : 'Pact made';
-      equip.textContent = spiritFacts.spiritEquipped ? 'Let Hushwing rest' : 'Equip Hushwing';
-      equip.disabled = !intents || !!spiritFacts.spiritEquipReason;
-      result.textContent = spiritFacts.spiritEquipReason || spiritFacts.spiritMessage || '';
+      host.querySelector('[data-spirit-name]').textContent = spiritFacts.name || '';
+      host.querySelector('[data-spirit-equipped]').textContent = spiritFacts.equipped ? 'Equipped' : 'Pact made';
+      equip.textContent = spiritFacts.equipped ? 'Let Hushwing rest' : 'Equip Hushwing';
+      equip.disabled = !intents || !!spiritFacts.equipReason;
+      result.textContent = spiritFacts.equipReason || spiritFacts.message || '';
 
     }
   };
@@ -132,13 +133,14 @@ export function mountFieldCase(host, intents) {
   }
   return {
     draw(facts) {
-      items = facts.items || [];
-      spiritFacts = facts;
-      host.querySelector('[data-count="supplies"]').textContent = facts.supplyCount;
-      host.querySelector('[data-count="spirits"]').textContent = facts.spiritCount;
-      host.querySelector('[data-load]').textContent = `${facts.supplyCount} / ${facts.supplyPockets} pockets`;
-      if (pockets !== facts.supplyPockets) {
-        pockets = facts.supplyPockets;
+      supplyFacts = facts.supplies;
+      spiritFacts = facts.spirit;
+      items = supplyFacts.pockets;
+      host.querySelector('[data-count="supplies"]').textContent = supplyFacts.occupied;
+      host.querySelector('[data-count="spirits"]').textContent = spiritFacts.acquired ? 1 : 0;
+      host.querySelector('[data-load]').textContent = `${supplyFacts.occupied} / ${supplyFacts.capacity} pockets`;
+      if (pockets !== supplyFacts.capacity) {
+        pockets = supplyFacts.capacity;
         grid.replaceChildren(...Array.from({ length: pockets }, (_, index) => {
           const button = document.createElement('button');
           button.type = 'button';
@@ -149,7 +151,7 @@ export function mountFieldCase(host, intents) {
           button.addEventListener('click', () => choose(index));
           button.addEventListener('pointerdown', event => {
             if (event.button !== 0 || !intents || !items[index]?.id || moving) return;
-            dragging = { from: index, revision: spiritFacts.inventoryRevision, x: event.clientX, y: event.clientY, moved: false };
+            dragging = { from: index, revision: supplyFacts.revision, x: event.clientX, y: event.clientY, moved: false };
             button.setPointerCapture(event.pointerId);
           });
           button.addEventListener('pointermove', event => {
@@ -176,7 +178,7 @@ export function mountFieldCase(host, intents) {
         }));
         selected = 0;
       }
-      quick.replaceChildren(...quickPocketViews(document, facts));
+      quick.replaceChildren(...quickPocketViews(document, supplyFacts));
       for (const button of grid.children) {
         const item = items[Number(button.dataset.pocket)];
         button.classList.toggle('occupied', !!item?.id);
@@ -191,9 +193,9 @@ export function mountFieldCase(host, intents) {
 }
 
 /** These mirror the first case pockets; they do not own another inventory. */
-export function quickPocketViews(document, facts) {
-  return Array.from({ length: facts.quickPockets }, (_, index) => {
-    const item = facts.items?.[index];
+export function quickPocketViews(document, supplies) {
+  return Array.from({ length: supplies.quickPockets }, (_, index) => {
+    const item = supplies.pockets[index];
     const pocket = document.createElement('span');
     pocket.className = 'quick-pocket';
     pocket.setAttribute('aria-label', `Key ${index + 3}, ${item?.id ? `${item.name}, ${item.count}` : 'empty'}`);

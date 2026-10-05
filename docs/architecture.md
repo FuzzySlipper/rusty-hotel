@@ -24,7 +24,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Scene/HotelScene.cs` | Static appearances, paired door appearance/collision poses, GLB props, retained lights, collision placement and resource lifetimes |
 | `src/Hotel.Game/Scene/RoomGeometry.cs` | Authored mesh vertices with world-metre texture coordinates, used by presentation and static collision |
 | `src/Hotel.Game/Audio/HotelAmbience.cs` | Authored ambient clips and looping voices; Engine owns playback, spatialization and mixing |
-| `src/Hotel.Game/Interface/HotelHud.cs` | One Engine UI stream publishing location, focus, readings, supply stacks, use eligibility and resource facts |
+| `src/Hotel.Game/Interface/HotelHud.cs` | The `rusty.hotel.hud` projection: every UI fact written once, grouped by HUD region or screen |
+| `src/Hotel.Game/Interface/UiValueWriter.cs` | Writes the Engine `UiValue` node/edge/UTF-8 tree and compares two values; the pinned SDK has no builder |
 | `src/Hotel.Game/Interface/HotelDebugCommands.cs` | Generated Hotel inspection and explicit developer initial-excursion reset commands over existing owners |
 | `src/Hotel.Game/Interface/SuppliesDebugCommands.cs` | Explicit developer supply, health and consumption fixtures over the supplies owner |
 | `src/Hotel.Game/Hotel.Game.csproj` | Product identity, entry, content/UI roots and host defaults |
@@ -149,7 +150,13 @@ go below zero. Item definitions, stack limits, effects and find placements are
 authored in `content/supplies/` and each excursion's `placements.json`; pocket capacities are in `content/interface/`.
 Pickup notices expire using admitted simulation time.
 
-`HotelHud` publishes changed typed facts through one Engine UI stream. The field
+`HotelHud` writes each fact exactly once, straight from the owners, into groups:
+top-level `location`, `focusPrompt` and the single `notice` slot (priority spirit,
+then combat, then supplies), then `condition`, `held`, `supplies` (with its
+`pockets`), `spirit`, `reading` and `refuge`. A new fact is one line there plus its
+use in the screen module that shows it. A value identical to the last published
+one, compared node by node and byte by byte, is skipped, so no fact can be missed
+by a revision someone forgot to bump. The field
 case observes stacks, capacity and selected details. Browser selection is
 presentation only. Supplies use/movement and spirit equipping share Engine-owned
 paused semantic delivery. Never temporarily resume gameplay or dispatch

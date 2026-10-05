@@ -23,19 +23,20 @@ export function mountHud(document) {
     // The Field case / Menu entries show only while the pointer is free and no screen is open.
     setNavigationHidden(hidden) { find('.hud-nav').hidden = hidden; },
     draw(facts) {
+      const { condition, held } = facts;
       find('[data-location]').textContent = facts.location;
-      find('[data-weapon]').textContent = facts.weapon;
-      find('[data-spirit]').textContent = facts.spirit;
-      find('[data-spirit-state]').textContent = facts.spiritStatus || '';
-      find('[data-health]').textContent = `Health ${facts.health} / ${facts.maximumHealth}`;
-      find('[data-resources]').textContent = `Ammo ${facts.ammo} / ${facts.maximumAmmo} · Summon ${facts.summon} / ${facts.maximumSummon}`;
+      find('[data-weapon]').textContent = held.weapon;
+      find('[data-spirit]').textContent = held.spirit;
+      find('[data-spirit-state]').textContent = held.spiritStatus;
+      find('[data-health]').textContent = `Health ${condition.health} / ${condition.maximumHealth}`;
+      find('[data-resources]').textContent = `Ammo ${held.ammo} / ${held.maximumAmmo} · Summon ${held.summon} / ${held.maximumSummon}`;
       const notice = find('[data-supply-notice]');
-      notice.textContent = facts.spiritNotice || facts.combatNotice || facts.supplyNotice || '';
-      notice.hidden = !notice.textContent;
-      find('[data-combat-action]').textContent = facts.combatAction || '';
-      find('.hurt-screen').hidden = !facts.hurt;
-      find('.reticle').classList.toggle('hit', !!facts.hit);
-      find('[data-hud-pockets]').replaceChildren(...quickPocketViews(document, facts));
+      notice.textContent = facts.notice;
+      notice.hidden = !facts.notice;
+      find('[data-combat-action]').textContent = held.action;
+      find('.hurt-screen').hidden = !condition.hurt;
+      find('.reticle').classList.toggle('hit', !!held.hit);
+      find('[data-hud-pockets]').replaceChildren(...quickPocketViews(document, facts.supplies));
       const prompt = find('[data-focus-prompt]');
       prompt.textContent = facts.focusPrompt || '';
       prompt.hidden = !facts.focusPrompt;
