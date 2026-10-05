@@ -157,13 +157,17 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
 
     /// <summary>
     /// Leaves this floor for another: what the player carries comes along, this floor is remembered for the session,
-    /// and the new world is built and entered at its stairs.
+    /// and the new world is built and entered at its stairs. When a new run has just begun, a departing generated floor
+    /// belongs to the old run and is forgotten, not remembered under the new run's floor of the same depth.
     /// </summary>
-    internal void Enter(ExcursionDefinition excursion, int depth, StairDirection way)
+    internal void Enter(ExcursionDefinition excursion, int depth, StairDirection way, bool newRun = false)
     {
         WorldCarry carry = world.Carry();
-        foreach (string id in carry.Supplies.Collected) floors.Collected.Add(id);
-        floors.Remember(world.Excursion.Id, world.Remember());
+        if (!newRun || world.HasRefuge)
+        {
+            foreach (string id in carry.Supplies.Collected) floors.Collected.Add(id);
+            floors.Remember(world.Excursion.Id, world.Remember());
+        }
         // The old world releases its scene, lights and collision before the next claims theirs.
         HotelExpedition previous = world.Expedition;
         world.Dispose();

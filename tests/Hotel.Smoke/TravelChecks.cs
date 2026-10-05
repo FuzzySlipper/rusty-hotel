@@ -76,6 +76,15 @@ internal static class TravelChecks
             Check(Observe().GetProperty("occupiedPockets").GetInt32() == 1, "the developer floor command keeps what the player carries");
             JsonElement inspected = JsonDocument.Parse(commands.Hotel!.InspectFloor().Message).RootElement;
             Check(inspected.GetProperty("runSeed").GetUInt64() == 77 && inspected.GetProperty("places").GetArrayLength() > 5, "floor inspection reports the run and where its places are");
+            // A new run at the same depth starts fresh: the old run's residents, doors and finds do not leak into it.
+            var oldFind = product.World.Supplies.Finds.FirstOrDefault();
+            if (oldFind is not null) product.World.Supplies.Pickup(oldFind.Id);
+            foreach (var enemy in product.World.Combat.Enemies) enemy.Health.SetCurrent(0);
+            Check(commands.Hotel!.Floor(78, 2).Status == Rusty.Engine.Debugging.DebugCommandStatus.Success, "a new run at the same depth");
+            Check(product.World.Combat.Enemies.All(e => e.Alive) && product.World.Route.OpenDoors.Length == 0 &&
+                product.World.Supplies.Finds.All(f => !product.World.Supplies.Collected(f.Id)) && !product.Floors.Collected.Contains(oldFind?.Id ?? "-"),
+                "a new run's floor at the same depth keeps nothing of the old run's floor");
+            Check(Observe().GetProperty("occupiedPockets").GetInt32() >= 1, "while what the player carries comes along");
             product.Restart();
             Check(Observe().GetProperty("depth").GetInt32() == 0 && product.World.HasRefuge && Observe().GetProperty("occupiedPockets").GetInt32() == 0,
                 "defeat or restart on a generated floor returns to the refuge's checkpoint");

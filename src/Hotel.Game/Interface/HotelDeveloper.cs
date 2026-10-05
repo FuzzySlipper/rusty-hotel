@@ -66,7 +66,7 @@ internal sealed class HotelDeveloper(HotelProduct product)
         product.Floors.Begin(seed);
         if (product.Floors.Floor(depth) is not { } floor)
             return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"No floor at depth {depth}: {string.Join("; ", product.Floors.LastRefusals.Take(5))}");
-        product.Enter(floor, depth, StairDirection.Up);
+        product.Enter(floor, depth, StairDirection.Up, newRun: true);
         return Inspect();
     }
 

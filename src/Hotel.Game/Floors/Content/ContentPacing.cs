@@ -15,26 +15,31 @@ namespace Hotel.Game.Floors.Content;
 internal static class ContentPacing
 {
     /// <summary>
-    /// How many of the recovery item the player can reach before meeting a resident: walking from the stairs through
-    /// every link but the latch's way in, never entering the resident's space.
+    /// How many of the recovery item the player can reach before meeting a resident: walking from the stairs, never
+    /// entering the resident's space, picking up the keys found on the way, through a locked door only with its key,
+    /// and through the latch only from its passage side.
     /// </summary>
     internal static int RecoveryBefore(PlacedResident resident, IEnumerable<PlacedFind> finds, FloorLayout layout, FloorPlan plan, string item)
     {
         string Space(string placement) => plan.Spaces.First(s => s.Id.StartsWith(placement + "/", StringComparison.Ordinal)).Id;
         // A resident stands on a space post, named "<space>.<post>".
         string guarded = resident.Socket[..resident.Socket.LastIndexOf('.')];
-        string start = Space(layout.Places[MissionGraph.ArrivalId]);
-        HashSet<string> reached = new(StringComparer.Ordinal) { start };
+        PlacedFind[] all = [.. finds];
+        Dictionary<string, string> locked = layout.Locks.ToDictionary(l => l.Link, l => l.Item, StringComparer.Ordinal);
+        HashSet<string> reached = new(StringComparer.Ordinal) { Space(layout.Places[MissionGraph.ArrivalId]) }, held = new(StringComparer.Ordinal);
         for (bool changed = true; changed;)
         {
             changed = false;
+            foreach (PlacedFind key in all.Where(f => f.Grants is not null && reached.Contains(Space(f.Id.Split('/')[0]))))
+                changed |= held.Add(key.Grants!);
             foreach (LinkDefinition link in plan.Links)
             {
+                if (locked.TryGetValue(link.Id, out string? needs) && !held.Contains(needs)) continue;
                 if (reached.Contains(link.Between[0]) && link.Id != layout.Latch && link.Between[1] != guarded) changed |= reached.Add(link.Between[1]);
                 if (reached.Contains(link.Between[1]) && link.Between[0] != guarded) changed |= reached.Add(link.Between[0]);
             }
         }
-        return finds.Where(f => f.Item == item && reached.Contains(Space(f.Id.Split('/')[0]))).Sum(f => f.Count);
+        return all.Where(f => f.Item == item && reached.Contains(Space(f.Id.Split('/')[0]))).Sum(f => f.Count);
     }
 
     internal static string? Check(FloorContent content, MissionGraph graph, FloorLayout layout, FloorPlan plan, BuiltFloor floor,

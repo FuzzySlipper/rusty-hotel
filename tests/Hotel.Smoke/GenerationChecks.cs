@@ -80,6 +80,29 @@ internal static class GenerationChecks
         Check(firstEncounter?.StartsWith("recovery:", StringComparison.Ordinal) == true || firstEncounter?.StartsWith("arrival:", StringComparison.Ordinal) == true,
             "a resident met before any recovery is refused: " + firstEncounter);
 
+        // Recovery behind a lock does not count when its key lies in the resident's own room: the walk respects keys.
+        (GeneratedFloor Floor, PlacedResident Resident, FloorContent Content)? behindKey = null;
+        for (ulong run = 0; run < 24 && behindKey is null; run++)
+            if (Generate(FloorSeed.Current(run, 2, 0)).Floor is { } f)
+                foreach (var lck in f.Layout.Locks)
+                {
+                    PlacedFind? keyFind = f.Content.Finds.FirstOrDefault(x => x.Grants == lck.Item);
+                    string keyRoom = keyFind?.Id.Split('/')[0] ?? "";
+                    var keyModule = f.Layout.Placements.FirstOrDefault(p => p.Id == keyRoom);
+                    var post = keyModule is null ? null : content.Modules.Find(keyModule.Module)!.Sockets.FirstOrDefault(x => x.Kind == ContentSocketKind.ResidentPost);
+                    var behind = f.Layout.Placements.FirstOrDefault(p => p.Region == $"behind/{lck.Edge}" &&
+                        content.Modules.Find(p.Module)!.Sockets.Any(x => x.Kind == ContentSocketKind.Find));
+                    if (keyFind is null || post is null || behind is null || behindKey is not null) continue;
+                    var socket = content.Modules.Find(behind.Module)!.Sockets.First(x => x.Kind == ContentSocketKind.Find);
+                    PlacedFind bandage = new($"{behind.Id}/{socket.Id}", FindRole.Supplies, $"{behind.Id}/{socket.Socket}", tunings.Content.Pacing.RecoveryItem, 1, null);
+                    FloorContent only = f.Content with { Finds = [keyFind, bandage] };
+                    behindKey = (f, new($"{keyRoom}/{post.Id}", "porter", $"{keyRoom}/{post.Socket}", keyModule!.Region), only);
+                }
+        Check(behindKey is not null, "some floor's key room can hold a resident while recovery waits behind its lock");
+        var (bf, br, bc) = behindKey!.Value;
+        Check(ContentPacing.RecoveryBefore(br, bc.Finds, bf.Layout, bf.Plan, tunings.Content.Pacing.RecoveryItem) == 0,
+            "a dressing behind a door whose key the resident guards is not recovery before it");
+
         FloorSeed seed = FloorSeed.Current(run: 3, depth: 2, shift: 0);
         Check(Generate(seed).Floor!.Identity == Generate(seed).Floor!.Identity, "the same seed generates the same confirmed floor");
 
