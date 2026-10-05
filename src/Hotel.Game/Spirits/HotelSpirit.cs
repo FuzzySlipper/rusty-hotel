@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.Json;
 using Hotel.Game.Combat;
+using Hotel.Game.Content;
 using Hotel.Game.Expedition;
 using Hotel.Game.Player;
 using Hotel.Game.Scene;
@@ -9,14 +10,20 @@ using Rusty.Engine;
 
 namespace Hotel.Game.Spirits;
 
-internal enum ManifestationPhase { Absent, Arriving, Hushing, Departing }
+internal enum ManifestationPhase { Absent, Arriving, Holding, Departing }
 
 /// <summary>One pact, equipped choice and brief intervention; resources and combat keep their owners.</summary>
-internal sealed class HotelSpirit(SpiritDefinition definition, Vector3 bell, HotelSupplies supplies, HotelCombat combat, HotelPlayer player)
+internal sealed class HotelSpirit(SpiritDefinition definition, SpiritMessages text, SpiritBellPlacement placement,
+    HotelSupplies supplies, HotelCombat combat, HotelPlayer player)
 {
     internal SpiritDefinition Definition => definition;
     /// <summary>Where this excursion keeps the spirit's bell before the pact.</summary>
-    internal Vector3 Bell => bell;
+    internal Vector3 Bell { get; } = Authored.Vector(placement.Point);
+    internal string BellLabel => Named(text.BellLabel);
+    internal string Description => Template.Fill(definition.Description, ("place", placement.Place),
+        ("range", definition.Range), ("cost", definition.Cost), ("interrupt", definition.Interrupt));
+    /// <summary>The HUD's held-spirit line.</summary>
+    internal string HudLabel => Equipped ? definition.Name : Acquired ? text.HudInCase : text.HudNone;
     internal bool Acquired { get; private set; }
     internal bool Equipped { get; private set; }
     internal ulong Revision { get; private set; } = 1;
@@ -31,27 +38,33 @@ internal sealed class HotelSpirit(SpiritDefinition definition, Vector3 bell, Hot
     internal Quaternion Facing { get; private set; } = Quaternion.Identity;
     private float noticeTime;
     internal bool Active => Phase != ManifestationPhase.Absent;
-    internal string EquipReason => combat.Defeated ? "Overwhelmed · return to the refuge checkpoint first." : Active ? "Wait for Hushwing to depart." : "";
-    internal string Status => combat.Defeated ? "Unavailable while overwhelmed" : Active ? Phase.ToString() : Equipped ? "Q · Hush a visible resident" : Acquired ? "Equip in I · Spirits" : "No pact";
+    internal string EquipReason => combat.Defeated ? text.EquipOverwhelmed : Active ? Named(text.EquipWhileActive) : "";
+    internal string Status => combat.Defeated ? text.StatusOverwhelmed : Phase switch
+    {
+        ManifestationPhase.Arriving => definition.Text.Arriving,
+        ManifestationPhase.Holding => definition.Text.Holding,
+        ManifestationPhase.Departing => definition.Text.Departing,
+        _ => Equipped ? definition.Text.CallHint : Acquired ? text.StatusInCase : text.StatusNone
+    };
 
     internal bool Acquire()
     {
-        if (Acquired || combat.Defeated) return Refuse("The pact cannot be made now.");
+        if (Acquired || combat.Defeated) return Refuse(text.CannotMake);
         Acquired = true;
         Revision++;
         supplies.RestoreSummon(definition.WelcomeCharges);
-        Announce($"{definition.Name} is free · +{definition.WelcomeCharges} summon · I → Spirits to equip");
+        Announce(Template.Fill(text.Freed, ("spirit", definition.Name), ("charges", definition.WelcomeCharges)));
         return true;
     }
 
     internal bool Equip(bool equipped, ulong revision)
     {
-        if (revision != Revision) return Refuse("The pact changed. Select it again.");
-        if (!Acquired) return Refuse("No pact made. Find the bell in the linen room.");
+        if (revision != Revision) return Refuse(text.PactChanged);
+        if (!Acquired) return Refuse(Template.Fill(text.NoPactEquip, ("place", placement.Place)));
         if (EquipReason.Length > 0) return Refuse(EquipReason);
         Equipped = equipped;
         Revision++;
-        Announce(equipped ? $"{definition.Name} equipped · Q calls it toward the resident under your reticle" : $"{definition.Name} rests in the field case");
+        Announce(Named(equipped ? text.Equipped : text.Rests));
         return true;
     }
 
@@ -69,32 +82,33 @@ internal sealed class HotelSpirit(SpiritDefinition definition, Vector3 bell, Hot
                 if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("equipped", out var equip)
                     || equip.ValueKind is not (JsonValueKind.True or JsonValueKind.False)
                     || !root.TryGetProperty("revision", out var rev) || rev.ValueKind != JsonValueKind.Number || !rev.TryGetUInt64(out ulong revision))
-                { Refuse("Choose the spirit again."); continue; }
+                { Refuse(text.ChooseAgain); continue; }
                 Equip(equip.GetBoolean(), revision);
             }
-            catch (JsonException) { Refuse("The spirit choice could not be read."); }
+            catch (JsonException) { Refuse(text.Unreadable); }
         }
     }
 
     internal bool Call()
     {
-        if (combat.Defeated) return Refuse("Overwhelmed · spirits cannot answer · R to return to the refuge");
-        if (!Equipped) return Refuse(Acquired ? "Equip Hushwing in I → Spirits first" : "No pact made · explore the linen room");
-        if (Active) return Refuse("Hushwing is already here");
-        if (supplies.Summon < definition.Cost) return Refuse("No summon charge · Hushwing cannot answer");
+        if (combat.Defeated) return Refuse(text.CallOverwhelmed);
+        if (!Equipped) return Refuse(Acquired ? Named(text.NotEquipped) : Template.Fill(text.NoPactCall, ("place", placement.Place)));
+        if (Active) return Refuse(Named(text.AlreadyHere));
+        if (supplies.Summon < definition.Cost) return Refuse(Named(text.NoCharge));
         HotelEnemy? target = combat.SpiritTarget(definition.Range);
-        if (target is null) return Refuse("Aim at a visible resident within six paces · no charge spent");
+        if (target is null) return Refuse(Template.Fill(text.NoTarget, ("range", definition.Range)));
         if (!supplies.SpendSummon(definition.Cost)) return false;
-        combat.Interrupt(target, definition.Arrival + definition.Hold + definition.Departure);
+        combat.Interrupt(target, definition.Interrupt);
         Calls++;
         Elapsed = 0;
         Phase = ManifestationPhase.Arriving;
         Vector3 towardPlayer = Vector3.Normalize(player.Eye - target.Eye);
         Vector3 side = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, towardPlayer));
-        Destination = target.Eye + towardPlayer * .25f + side * .65f + new Vector3(0, .15f, 0);
-        Entrance = Vector3.Lerp(player.Eye, Destination, .2f) + new Vector3(0, -.25f, 0);
+        ManifestationTuning at = definition.Manifestation;
+        Destination = target.Eye + towardPlayer * at.Approach + side * at.Side + new Vector3(0, at.Lift, 0);
+        Entrance = Vector3.Lerp(player.Eye, Destination, at.EntranceFraction) - new Vector3(0, at.EntranceDrop, 0);
         Facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathF.Atan2(-towardPlayer.X, -towardPlayer.Z));
-        Announce($"{definition.Name} hushes {target.Kind.Name} · −{definition.Cost} summon");
+        Announce(Template.Fill(definition.Text.CallResult, ("spirit", definition.Name), ("resident", target.Kind.Name), ("cost", definition.Cost)));
         return true;
     }
 
@@ -104,14 +118,14 @@ internal sealed class HotelSpirit(SpiritDefinition definition, Vector3 bell, Hot
         IdleTime += seconds;
         if (combat.Defeated)
         {
-            if (Active) { Phase = ManifestationPhase.Absent; Announce("Hushwing withdraws · R to return to the refuge checkpoint"); }
+            if (Active) { Phase = ManifestationPhase.Absent; Announce(Named(text.Withdraws)); }
             return;
         }
         if (!Active) return;
         Elapsed += seconds;
         Phase = Elapsed < definition.Arrival ? ManifestationPhase.Arriving
-            : Elapsed < definition.Arrival + definition.Hold ? ManifestationPhase.Hushing
-            : Elapsed < definition.Arrival + definition.Hold + definition.Departure ? ManifestationPhase.Departing
+            : Elapsed < definition.Arrival + definition.Hold ? ManifestationPhase.Holding
+            : Elapsed < definition.Interrupt ? ManifestationPhase.Departing
             : ManifestationPhase.Absent;
     }
 
@@ -133,5 +147,6 @@ internal sealed class HotelSpirit(SpiritDefinition definition, Vector3 bell, Hot
         Elapsed = IdleTime = noticeTime = 0; Calls = 0; Message = "";
     }
     private bool Refuse(string message) { Announce(message); return false; }
-    private void Announce(string message) { Message = message; noticeTime = 5; }
+    private void Announce(string message) { Message = message; noticeTime = text.NoticeSeconds; }
+    private string Named(string template) => Template.Fill(template, ("spirit", definition.Name));
 }

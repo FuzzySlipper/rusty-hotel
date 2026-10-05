@@ -49,17 +49,16 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             ExcursionDefinition excursion = content.Excursion;
             scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
             player = Own(new HotelPlayer(engine, scene, content.Player, excursion.Placements.Arrival));
-            supplies = new HotelSupplies(content.Resources, content.Items, excursion.Placements.Finds,
-                content.Interface.SupplyPockets, scene.PlayerEntity);
-            combat = new HotelCombat(engine, scene, player, supplies, content.Combat, content.Residents, excursion.Placements.Residents);
-            spirit = new HotelSpirit(content.Spirit, Authored.Vector(content.SpiritBell.Point), supplies, combat, player);
-            route = new HotelRoute(engine, scene, player, supplies, spirit, content.Interaction, excursion.Route,
+            supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, scene.PlayerEntity);
+            combat = new HotelCombat(engine, scene, player, supplies, content.Combat, excursion.Placements.Residents);
+            spirit = new HotelSpirit(content.Spirit, content.SpiritText, content.SpiritBell, supplies, combat, player);
+            route = new HotelRoute(engine, scene, player, supplies, spirit, content.Route, excursion.Route,
                 excursion.Placements.Refuge, ReturnToRefuge, PublishInterface);
             hud = Own(new HotelHud(engine, content.Interface));
             ambience = Own(new HotelAmbience(engine, excursion.Ambience));
             combatView = Own(new CombatView(engine, scene, player, combat));
             spiritView = Own(new SpiritView(engine, scene, spirit));
-            expedition = Own(new HotelExpedition(engine, excursion.Placements.Refuge, player, supplies, combat, spirit, route));
+            expedition = Own(new HotelExpedition(engine, excursion.Placements.Refuge, content.ExpeditionText, player, supplies, combat, spirit, route));
         }
         catch { Dispose(); throw; }
     }

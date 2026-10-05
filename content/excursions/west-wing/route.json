@@ -45,7 +45,8 @@
         0,
         1
       ],
-      "handleMaterial": "brass"
+      "handleMaterial": "brass",
+      "lockedPrompt": "Return door · Latched from the service side"
     }
   ],
   "readings": [

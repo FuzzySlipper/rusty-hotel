@@ -85,7 +85,7 @@ internal sealed class SpiritView : IDisposable
             float arrival = Math.Clamp(spirit.Elapsed / spirit.Definition.Arrival, 0, 1);
             origin = Vector3.Lerp(spirit.Entrance, spirit.Destination, arrival);
             scale = .65f * (.25f + .75f * arrival);
-            flap = spirit.Phase == ManifestationPhase.Hushing ? .15f + MathF.Sin(spirit.Elapsed * 12) * .22f : .8f * MathF.Sin(spirit.Elapsed * 24);
+            flap = spirit.Phase == ManifestationPhase.Holding ? .15f + MathF.Sin(spirit.Elapsed * 12) * .22f : .8f * MathF.Sin(spirit.Elapsed * 24);
             if (spirit.Phase == ManifestationPhase.Departing)
             {
                 float leave = (spirit.Elapsed - spirit.Definition.Arrival - spirit.Definition.Hold) / spirit.Definition.Departure;

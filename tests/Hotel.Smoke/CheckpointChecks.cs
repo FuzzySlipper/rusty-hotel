@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text;
 using Hotel.Game.Combat;
+using Hotel.Game.Content;
 using Hotel.Game.Expedition;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
@@ -45,7 +46,7 @@ internal static class CheckpointChecks
                 f.Route.Use();
                 Check(f.Expedition.Returns == 0, "checkpoint cannot be recorded remotely through world use");
                 f.At(-1.1f, 2.85f, new(-2.33f, .93f, 2.85f));
-                Check(f.Route.Prompt.Contains("Record refuge"), "notebook uses existing focus flow");
+                Check(f.Route.Prompt == Template.Fill(f.Content.Route.Text.Ready, ("label", f.Content.Route.Text.RecordCheckpoint)), "notebook uses existing focus flow");
                 f.Route.Use();
                 Check(f.Expedition.Returns == 1 && f.Expedition.SecuredFinds.SequenceEqual(["survey-reel"]) &&
                     !Enumerable.Range(0, f.Supplies.Capacity).Any(i => f.Supplies.Slot(i)?.Item == "reel"), "ordinary notebook deposits reel and records checkpoint");
@@ -60,7 +61,7 @@ internal static class CheckpointChecks
                 f.Scene.Entities.Set(displaced.Entity, EngineComponentTypes.Transform, new(post + new Vector3(5, 0, 0), Quaternion.Identity, Vector3.One));
                 f.At(-1.1f, 2.85f, new(-2.33f, .93f, 2.85f));
                 f.Route.Use();
-                Check(f.Expedition.Returns == 1 && f.Expedition.ReceiptTitle == "Checkpoint not saved" && Stored() == good,
+                Check(f.Expedition.Returns == 1 && f.Expedition.ReceiptTitle == f.Content.ExpeditionText.NotSavedTitle && Stored() == good,
                     "live state that fails validation is refused with a receipt and leaves the stored checkpoint intact");
                 f.Scene.Entities.Set(displaced.Entity, EngineComponentTypes.Transform, new(post, Quaternion.Identity, Vector3.One));
                 f.Supplies.Use(7, f.Supplies.Revision); f.Supplies.SpendAmmo(4); f.Supplies.SpendSummon(1);
@@ -128,14 +129,15 @@ internal static class CheckpointChecks
         internal readonly HotelSpirit Spirit;
         internal readonly HotelRoute Route;
         internal readonly HotelExpedition Expedition;
+        internal readonly HotelContent Content;
         internal Fixture(IEngineContext engine)
         {
-            var content = Owners.Content(engine);
+            var content = Content = Owners.Content(engine);
             Scene = Owners.Scene(engine, content); Player = Owners.Player(engine, Scene, content);
             Supplies = Owners.Supplies(content, Scene.PlayerEntity);
             Combat = Owners.Combat(engine, Scene, Player, Supplies, content); Spirit = Owners.Spirit(content, Supplies, Combat, Player);
             Route = Owners.Route(engine, Scene, Player, Supplies, Spirit, content, ReturnToRefuge);
-            Expedition = new(engine, content.Excursion.Placements.Refuge, Player, Supplies, Combat, Spirit, Route);
+            Expedition = new(engine, content.Excursion.Placements.Refuge, content.ExpeditionText, Player, Supplies, Combat, Spirit, Route);
         }
         private bool ReturnToRefuge() => Expedition.Return();
         internal void At(float x, float z, Vector3 target)

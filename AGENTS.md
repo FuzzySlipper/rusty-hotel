@@ -149,11 +149,14 @@ engine or plugin system.
   spirit) apart from where one excursion places them. Keep geometry apart from
   tuning. Each domain loads and validates its own typed records; do not funnel
   all content through one record that every owner reads.
-- **No player-facing prose in C# or JS.** Names, prompts, notices, refusal
-  reasons, receipts and control labels belong in content as templates filled
-  from definition values. Never repeat a definition's name or number inside a
+- **No gameplay prose in C# or JS.** Names, prompts, notices, refusal reasons,
+  receipts, phase labels and control labels belong in their domain's content
+  (`messages.json`, or the definition they describe) as templates filled from
+  definition values. Never repeat a definition's name or number inside a
   literal (`"Hushwing"`, `"six paces"`, `"pry bar"`). Code composes text; it
-  does not author it.
+  does not author it. A screen module's fixed chrome (its title, button
+  captions, empty-state copy) may live in its markup, and so may
+  developer-console output.
 - **Gameplay values are tuning.** Timings, notice and flash durations, ranges,
   offsets, damage, costs and limits go in content. A C# `const` is not tuning
   support. Missing or invalid authored values fail validation naming the file

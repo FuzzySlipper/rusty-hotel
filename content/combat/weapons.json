@@ -1,5 +1,4 @@
 {
-  "reloadSeconds": 1.1,
   "weapons": [
     {
       "id": "prybar",
@@ -9,7 +8,10 @@
       "windup": 0.32,
       "commit": 0.13,
       "recovery": 0.65,
-      "ammoCost": 0
+      "ammoCost": 0,
+      "shortName": "pry bar",
+      "windupLabel": "Drawing back",
+      "commitLabel": "Swing"
     },
     {
       "id": "pistol",
@@ -19,7 +21,10 @@
       "windup": 0.24,
       "commit": 0.1,
       "recovery": 0.85,
-      "ammoCost": 1
+      "ammoCost": 1,
+      "shortName": "pistol",
+      "windupLabel": "Steadying shot",
+      "commitLabel": "Fired"
     }
   ]
 }

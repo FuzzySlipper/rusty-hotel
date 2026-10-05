@@ -3,7 +3,7 @@
     {
       "id": "bandage",
       "name": "Field dressing",
-      "description": "A sealed dressing. Restores up to 30 health. Keep it until you need it.",
+      "description": "A sealed dressing. Restores up to {amount} health. Keep it until you need it.",
       "kind": "Healing",
       "stackLimit": 3,
       "amount": 30,
@@ -12,7 +12,7 @@
     {
       "id": "rounds",
       "name": "Loose cartridges",
-      "description": "Six cartridges in a paper packet. Transfers up to 6 rounds to your ammunition reserve.",
+      "description": "{amount} cartridges in a paper packet. Transfers up to {amount} rounds to your ammunition reserve.",
       "kind": "Ammo",
       "stackLimit": 3,
       "amount": 6,
@@ -21,7 +21,7 @@
     {
       "id": "incense",
       "name": "Binding incense",
-      "description": "A waxed incense packet. Restores one charge to the shared summon reserve.",
+      "description": "A waxed incense packet. Restores {amount} charge to the shared summon reserve.",
       "kind": "Summon",
       "stackLimit": 3,
       "amount": 1,

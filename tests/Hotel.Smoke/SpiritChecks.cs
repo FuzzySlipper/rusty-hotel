@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text;
 using Hotel.Game.Combat;
+using Hotel.Game.Content;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Scene;
@@ -39,7 +40,8 @@ internal static class SpiritChecks
         Check(!spirit.Acquired, "wall and reach prevent remote pact acquisition");
         At(3.3f, -8, spirit.Bell);
         route.Update();
-        Check(route.Prompt.Contains("Hushwing"), "ordinary Engine focus exposes the pact");
+        Check(route.Prompt == Template.Fill(content.Route.Text.Ready, ("label", spirit.BellLabel)) && spirit.BellLabel.Contains(spirit.Definition.Name),
+            "ordinary Engine focus exposes the pact by the spirit's authored name");
         route.Use();
         Check(spirit.Acquired && !spirit.Equipped && supplies.Summon == 2, "ordinary focused use acquires once and grants two charges, without auto-equipping");
         Check(!spirit.Acquire() && supplies.Summon == 2, "duplicate acquisition cannot farm charges");
@@ -59,14 +61,14 @@ internal static class SpiritChecks
         Check(spirit.Call() && supplies.Summon == 1 && lamp.Phase == AttackPhase.Interrupted, "accepted call spends once and cancels windup");
         Check(!spirit.Call() && !spirit.Equip(false, spirit.Revision) && supplies.Summon == 1, "active manifestation rejects duplicate call and unequip without cost");
         view.Publish(); Step(60); view.Publish();
-        Check(spirit.Phase == ManifestationPhase.Hushing && supplies.Health == 70, "creature arrives and holds interruption across original attack deadline");
+        Check(spirit.Phase == ManifestationPhase.Holding && supplies.Health == 70, "creature arrives and holds interruption across original attack deadline");
         Step(80); view.Publish();
         Check(spirit.Phase == ManifestationPhase.Departing, "creature has a departure phase");
         Step(45); view.Publish();
         Check(!spirit.Active && supplies.Health == 70, "manifestation ends without replaying the cancelled hit");
         Check(spirit.Call() && supplies.Summon == 0 && spirit.Calls == 2, "second accepted use consumes final charge exactly once");
         Step(190);
-        Check(!spirit.Call() && supplies.Summon == 0 && spirit.Message.Contains("No summon"), "empty reserve refuses intelligibly");
+        Check(!spirit.Call() && supplies.Summon == 0 && spirit.Message == Template.Fill(content.SpiritText.NoCharge, ("spirit", spirit.Definition.Name)), "empty reserve refuses intelligibly");
         supplies.RestoreSummon(1);
         Check(spirit.Call(), "resource restoration permits another ordinary call");
         supplies.Damage(1000); spirit.Step(1f / 60);

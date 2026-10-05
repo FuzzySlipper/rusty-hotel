@@ -1,0 +1,17 @@
+{
+  "continued": "Continued from the refuge checkpoint.",
+  "initialReady": "Initial refuge checkpoint ready.",
+  "busy": "Finish your action before recording a checkpoint.",
+  "saveFailed": "The checkpoint could not be saved. Your carried finds and previous checkpoint are unchanged.\n\n{error}",
+  "nothingSecured": "No expedition finds secured yet.",
+  "secured": "Secured: {finds}.",
+  "saved": "{secured}\n\nCheckpoint {returns} saved. Health {health}; ammunition {ammo}; summon charges {summon}.\n\nYour supplies, pact, opened doors, collected finds and residents are recorded together. Defeat or reopening the hotel returns you to this refuge checkpoint. Changes made after this return are not saved.",
+  "savedTitle": "Return recorded",
+  "notSavedTitle": "Checkpoint not saved",
+  "savedStatus": "Refuge checkpoint {returns} saved · {count} expedition find secured",
+  "notSavedStatus": "Checkpoint not saved",
+  "returnedInitial": "Returned to the initial refuge checkpoint.",
+  "returned": "Returned to refuge checkpoint {returns}.",
+  "recoveredTitle": "Back at the refuge",
+  "recovered": "{status}\n\nYour supplies, pact, doors, finds and residents have all been restored. Nothing spent after this checkpoint is permanently lost."
+}

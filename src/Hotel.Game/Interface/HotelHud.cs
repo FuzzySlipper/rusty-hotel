@@ -41,12 +41,12 @@ internal sealed class HotelHud : IDisposable
                 w.Text("weapon", combat.Weapon.Name), w.Text("action", combat.ActionText), w.Flag("hit", combat.HitFlash > 0),
                 w.Number("ammo", supplies.Ammo), w.Number("maximumAmmo", supplies.MaximumAmmo),
                 w.Number("summon", supplies.Summon), w.Number("maximumSummon", supplies.MaximumSummon),
-                w.Text("spirit", spirit.Equipped ? spirit.Definition.Name : spirit.Acquired ? "Pact in field case" : "No pact"),
+                w.Text("spirit", spirit.HudLabel),
                 w.Text("spiritStatus", spirit.Status)),
             Supplies(w, supplies),
             w.Object("spirit",
                 w.Flag("acquired", spirit.Acquired), w.Flag("equipped", spirit.Equipped), w.Number("revision", spirit.Revision),
-                w.Text("name", spirit.Definition.Name), w.Text("description", spirit.Definition.Description),
+                w.Text("name", spirit.Definition.Name), w.Text("description", spirit.Description),
                 w.Text("message", spirit.Message), w.Text("equipReason", spirit.EquipReason)),
             w.Object("reading",
                 w.Number("sequence", route.ReadingSequence), w.Text("title", route.ReadingTitle), w.Text("text", route.ReadingText)),
@@ -68,7 +68,7 @@ internal sealed class HotelHud : IDisposable
             ItemStack? stack = supplies.Slot(i);
             ItemDefinition? item = stack is { } carried ? supplies.Item(carried.Item) : null;
             pockets.Add(w.Object("",
-                w.Text("id", item?.Id ?? ""), w.Text("name", item?.Name ?? ""), w.Text("description", item?.Description ?? ""),
+                w.Text("id", item?.Id ?? ""), w.Text("name", item?.Name ?? ""), w.Text("description", item?.Details ?? ""),
                 w.Text("mark", item?.Mark ?? "·"), w.Number("count", stack?.Count ?? 0), w.Number("stackLimit", item?.StackLimit ?? 0),
                 w.Text("useReason", supplies.UseReason(i))));
         }

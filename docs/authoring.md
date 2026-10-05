@@ -19,22 +19,38 @@ its own folder. Geometry is kept apart from tuning.
 | --- | --- |
 | `player/tuning.json` | Body/camera dimensions, movement and look tuning; `HotelPlayer` |
 | `route/interaction.json` | Reach and focus distances/angles for every world interaction; `HotelRoute` |
+| `route/messages.json` | Focus prompt wording and the labels of the take/notebook interactions; `HotelRoute` |
 | `interface/tuning.json` | Field-case pocket count and how many appear as HUD quick pockets; `HotelHud`, `HotelSupplies` |
 | `scene/surfaces.json` | Reusable surfaces: tint, texture, world-metre tile size, roughness, emission; `HotelScene` |
 | `supplies/resources.json` | Health, ammunition and summon bounds; `HotelSupplies` |
-| `supplies/items.json` | Item kinds, effects, stack limits, names and descriptions; `HotelSupplies` |
-| `combat/weapons.json` | Weapon commitments, damage, range, ammunition cost and reload time; `HotelCombat` |
-| `combat/residents.json` | Resident kinds: behavior/silhouette, health, damage, sight, timing, leash, body; `HotelCombat`, `CombatView` |
-| `spirits/<id>.json` | One spirit's pact terms, cost/range and manifestation timing; `HotelSpirit` |
+| `supplies/items.json` | Item kinds, effects, stack limits, names and descriptions (`{amount}`); `HotelSupplies` |
+| `supplies/messages.json` | Supply notices, refusal reasons and how long a notice stays up; `HotelSupplies` |
+| `combat/tuning.json` | Reload time and how long combat notices, hit and hurt flashes last; `HotelCombat` |
+| `combat/weapons.json` | Weapon commitments, damage, range, ammunition cost, short name and HUD phase labels; `HotelCombat` |
+| `combat/residents.json` | Resident kinds: behavior/silhouette, health, damage, sight, timing, leash, body and eye height; `HotelCombat`, `CombatView` |
+| `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
+| `spirits/<id>.json` | One spirit's pact terms, cost/range, manifestation timing and placement offsets, its description and its own wording (call hint and result, phase names); `HotelSpirit` |
+| `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}` and `{place}`; `HotelSpirit` |
+| `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
 | `excursions/<id>/geometry.json` | That section's static boxes, GLB props and lights; `HotelScene` |
-| `excursions/<id>/route.json` | Its doors/latches, readable notices, named room bounds and fallback location label; `HotelRoute` |
-| `excursions/<id>/placements.json` | Arrival point, refuge, item finds, placed residents (id + kind) and spirit bells |
+| `excursions/<id>/route.json` | Its doors/latches (with the locked-side prompt), readable notices, named room bounds and fallback location label; `HotelRoute` |
+| `excursions/<id>/placements.json` | Arrival point, refuge, item finds, placed residents (id + kind) and spirit bells (with the `place` their text names) |
 | `excursions/<id>/ambience.json` | Its ambient loops: content path, gain and optional world position/range; `HotelAmbience` |
 
 Runtime assets (`materials/`, `models/`, `audio/`) stay in their own folders and are
 referenced by path. When a new domain or kind of authored data arrives, give it its
-own file in the matching folder rather than appending it to a neighbour. Put
-player-facing text with the domain that shows it; do not write it into code.
+own file in the matching folder rather than appending it to a neighbour.
+
+### Player-facing text
+
+Gameplay text lives with the domain that shows it, in its `messages.json` or in the
+definition it describes. Write values as `{placeholders}` rather than repeating a
+name or number: `{spirit}`, `{item}`, `{range}` and so on are filled from the
+definitions at runtime. Each text field accepts a fixed set of placeholders. An
+unknown one fails loading with the file, the field and the allowed set. Text that
+belongs to one place (a door's locked prompt, where a spirit's bell hides) is
+authored with that placement. A screen's fixed chrome stays in its UI module, and
+developer-console output stays in code.
 
 These fields tune the implemented vocabulary. Additional weapon types, resident
 behaviors or multiple spirits need a deliberate change to their domain owner;

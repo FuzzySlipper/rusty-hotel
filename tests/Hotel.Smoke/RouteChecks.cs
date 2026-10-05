@@ -1,5 +1,6 @@
 using System.Numerics;
 using Hotel.Game.Combat;
+using Hotel.Game.Content;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Scene;
@@ -35,7 +36,10 @@ internal static class RouteChecks
         void Check(bool value, string why) { if (!value) throw new InvalidOperationException(why); }
 
         At(0, -10, new(0, 1.3f, -13.94f));
-        Check(route.Prompt.Contains("Move closer"), "door reports out of reach");
+        var text = content.Route.Text;
+        string Door(string id) => content.Excursion.Route.Doors.Single(d => d.Id == id).Label;
+        ReadingDefinition log = content.Excursion.Route.Readings.Single(r => r.Label == "Read field log");
+        Check(route.Prompt == Template.Fill(text.OutOfReach, ("label", Door("survey"))), "door reports out of reach");
         Check(!route.Interaction.UseFocused().Performed, "out-of-reach use does not open");
         At(0, -13, new(-1.6f, .97f, -16.64f));
         Check(Candidate("Read field log").Visibility == InteractionVisibility.Occluded,
@@ -57,10 +61,10 @@ internal static class RouteChecks
         Check(player.Position.Z < -15, "opened door collision allows walking into survey room");
 
         At(-1.6f, -15.4f, new(-1.6f, .97f, -16.64f));
-        Check(route.Prompt == "E · Read field log", "log has ordinary focused prompt");
+        Check(route.Prompt == Template.Fill(text.Ready, ("label", log.Label)), "log has ordinary focused prompt");
         InteractionTarget staleNote = Candidate("Read field log").Target;
         Check(route.Interaction.UseFocused().Performed, "field log can be read");
-        Check(route.ReadingSequence == 1 && route.ReadingTitle.StartsWith("Field log"), "reading facts are published by route owner");
+        Check(route.ReadingSequence == 1 && route.ReadingTitle == log.Title && route.ReadingText == log.Text, "reading facts are published by route owner");
         Check(!route.Interaction.UseTarget(staleNote).Performed && route.ReadingSequence == 1, "stale reading target cannot replay");
         At(7, 3, new(5.59f, 1.09f, 3));
         InteractionTarget reel = Candidate("Take Survey reel").Target;
@@ -69,10 +73,10 @@ internal static class RouteChecks
         Check(!route.Interaction.UseTarget(reel).Performed && supplies.Occupied == 1, "stale pickup cannot duplicate find");
         At(0, 3, new(0, 1.6f, -1));
         At(7, 3, new(5.59f, 1.09f, 3));
-        Check(!route.ReadInteraction().Candidates.ToArray().Any(c => c.Label == "Take Survey reel"), "leaving and returning cannot respawn a collected find");
+        Check(!route.ReadInteraction().Candidates.ToArray().Any(c => c.Label == Template.Fill(text.Take, ("item", supplies.Item("reel").Name))), "leaving and returning cannot respawn a collected find");
 
         At(2.25f, 3.6f, new(2.25f, 1.3f, 5.1f));
-        Check(route.Prompt.Contains("Latched from the service side"), "refuge side reports lock");
+        Check(route.Prompt == content.Excursion.Route.Doors.Single(d => d.Id == "return").LockedPrompt, "refuge side reports the door's authored lock");
         Check(!route.Interaction.UseFocused().Performed, "refuge cannot unlatch shortcut");
         At(2.25f, 6.2f, new(2.25f, 1.3f, 5.1f));
         Check(route.Interaction.UseFocused().Performed && route.OpenDoors.Contains("return"), "service side unlatches shortcut");

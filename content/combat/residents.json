@@ -14,7 +14,8 @@
       "recovery": 1.45,
       "leash": 4.5,
       "radius": 0.34,
-      "height": 1.8
+      "height": 1.8,
+      "eyeHeight": 0.576
     },
     {
       "id": "lamp",
@@ -30,7 +31,8 @@
       "recovery": 1.65,
       "leash": 0,
       "radius": 0.38,
-      "height": 1.8
+      "height": 1.8,
+      "eyeHeight": 0.576
     }
   ]
 }

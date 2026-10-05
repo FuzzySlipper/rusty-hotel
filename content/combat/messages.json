@@ -1,0 +1,14 @@
+{
+  "overwhelmed": "Overwhelmed · R to return to the refuge checkpoint",
+  "recovering": "Recovering",
+  "reloading": "Loading cartridges",
+  "ready": "Ready",
+  "emptyWeapon": "Empty {weapon} · R loads carried cartridges · 1 selects the {fallback}",
+  "noCartridges": "No carried cartridges",
+  "loaded": "Cartridges loaded",
+  "struckSurroundings": "Struck the surroundings",
+  "miss": "Miss",
+  "hit": "Hit · {resident}",
+  "residentFalls": "{resident} falls still",
+  "residentHits": "{resident} hits · −{damage} health"
+}

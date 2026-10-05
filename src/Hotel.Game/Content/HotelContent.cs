@@ -15,9 +15,9 @@ namespace Hotel.Game.Content;
 /// Every authored definition the product composes, loaded file by file through each domain's own record.
 /// Only composition reads this; each owner receives the pieces it uses.
 /// </summary>
-internal sealed record HotelContent(PlayerTuning Player, InteractionTuning Interaction, InterfaceTuning Interface,
-    SurfaceDefinition[] Surfaces, SupplyResources Resources, ItemDefinition[] Items, CombatDefinition Combat,
-    ResidentKind[] Residents, SpiritDefinition Spirit, ExcursionDefinition Excursion)
+internal sealed record HotelContent(PlayerTuning Player, RouteDefinition Route, InterfaceTuning Interface,
+    SurfaceDefinition[] Surfaces, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
+    SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
     {
@@ -25,10 +25,10 @@ internal sealed record HotelContent(PlayerTuning Player, InteractionTuning Inter
         // The product implements one pact; its bell placement names which spirit file to read.
         Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
             "exactly one spirit bell is supported.");
-        HotelContent content = new(PlayerTuning.Load(engine), InteractionTuning.Load(engine), InterfaceTuning.Load(engine),
-            SurfaceCatalog.Load(engine).Surfaces, SupplyResources.Load(engine), ItemCatalog.Load(engine).Items,
-            CombatDefinition.Load(engine), ResidentCatalog.Load(engine).Residents,
-            SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit), excursion);
+        HotelContent content = new(PlayerTuning.Load(engine), RouteDefinition.Load(engine), InterfaceTuning.Load(engine),
+            SurfaceCatalog.Load(engine).Surfaces, SuppliesDefinition.Load(engine), CombatDefinition.Load(engine),
+            SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit), SpiritMessages.Load(engine),
+            ExpeditionMessages.Load(engine), excursion);
         content.Validate();
         return content;
     }
@@ -39,10 +39,9 @@ internal sealed record HotelContent(PlayerTuning Player, InteractionTuning Inter
     private void Validate()
     {
         Unique(Surfaces.Select(s => s.Id), SurfaceCatalog.Path, "surfaces");
-        Unique(Items.Select(i => i.Id), ItemCatalog.Path, "items");
-        Unique(Combat.Weapons.Select(w => w.Id), CombatDefinition.Path, "weapons");
-        Unique(Residents.Select(r => r.Id), ResidentCatalog.Path, "residents");
-        Authored.Require(Combat.Weapons.Length > 0, CombatDefinition.Path, "weapons", "at least one weapon is required.");
+        Unique(Supplies.Items.Select(i => i.Id), ItemCatalog.Path, "items");
+        Unique(Combat.Weapons.Select(w => w.Id), WeaponCatalog.Path, "weapons");
+        Unique(Combat.Residents.Select(r => r.Id), ResidentCatalog.Path, "residents");
 
         string geometry = Excursion.GeometryPath, route = Excursion.RoutePath, placements = Excursion.PlacementsPath;
         ExcursionPlacements placed = Excursion.Placements;
@@ -63,11 +62,13 @@ internal sealed record HotelContent(PlayerTuning Player, InteractionTuning Inter
             Authored.Require(Surfaces.Any(s => s.Id == door.HandleMaterial), route, $"doors[{i}].handleMaterial", $"unknown surface '{door.HandleMaterial}'.");
             Authored.Require(!door.FarSideLatch || door.UnlockDirection is not null, route, $"doors[{i}].unlockDirection",
                 "a far-side latch needs the direction it unlocks from.");
+            Authored.Require(!door.FarSideLatch || door.LockedPrompt is not null, route, $"doors[{i}].lockedPrompt",
+                "a far-side latch needs the prompt shown from the locked side.");
         }
         for (int i = 0; i < placed.Finds.Length; i++)
-            Authored.Require(Items.Any(item => item.Id == placed.Finds[i].Item), placements, $"finds[{i}].item", $"unknown item '{placed.Finds[i].Item}'.");
+            Authored.Require(Supplies.Items.Any(item => item.Id == placed.Finds[i].Item), placements, $"finds[{i}].item", $"unknown item '{placed.Finds[i].Item}'.");
         for (int i = 0; i < placed.Residents.Length; i++)
-            Authored.Require(Residents.Any(kind => kind.Id == placed.Residents[i].Kind), placements, $"residents[{i}].kind",
+            Authored.Require(Combat.Residents.Any(kind => kind.Id == placed.Residents[i].Kind), placements, $"residents[{i}].kind",
                 $"unknown resident kind '{placed.Residents[i].Kind}'.");
     }
 

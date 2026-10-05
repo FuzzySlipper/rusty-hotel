@@ -1,0 +1,20 @@
+{
+  "noticeSeconds": 4,
+  "findGone": "This find is no longer available.",
+  "caseFull": "Field case full. This find stays here.",
+  "collected": "Collected {item} ×{count}.",
+  "overwhelmed": "Overwhelmed · return to the refuge checkpoint first.",
+  "emptyPocket": "Empty pocket.",
+  "healthFull": "Health is already full.",
+  "ammoFull": "Ammunition reserve is full.",
+  "summonFull": "Summon reserve is full.",
+  "keepForReturn": "Keep this expedition find for your return.",
+  "caseChanged": "Your field case changed. Select the item again.",
+  "used": "Used {item}.",
+  "chooseStack": "Choose a carried stack and another pocket.",
+  "stackFull": "That stack is full.",
+  "rearranged": "Field case rearranged.",
+  "chooseAgain": "Choose the supply again.",
+  "chooseAction": "Choose Use or another pocket.",
+  "unreadable": "The supply choice could not be read."
+}

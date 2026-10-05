@@ -1,4 +1,5 @@
 using Hotel.Game.Combat;
+using Hotel.Game.Content;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Spirits;
@@ -15,6 +16,7 @@ internal sealed class HotelExpedition : IDisposable
     internal const string Key = "refuge/current";
     private readonly ProductStateStore<CheckpointState> store;
     private readonly RefugeDefinition refuge;
+    private readonly ExpeditionMessages text;
     private readonly HotelPlayer player;
     private readonly HotelSupplies supplies;
     private readonly HotelCombat combat;
@@ -24,10 +26,10 @@ internal sealed class HotelExpedition : IDisposable
     private readonly CheckpointState initial;
     private CheckpointState? checkpoint;
 
-    internal HotelExpedition(IEngineContext engine, RefugeDefinition refuge, HotelPlayer player,
+    internal HotelExpedition(IEngineContext engine, RefugeDefinition refuge, ExpeditionMessages text, HotelPlayer player,
         HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelRoute route)
     {
-        this.refuge = refuge; this.player = player; this.supplies = supplies;
+        this.refuge = refuge; this.text = text; this.player = player; this.supplies = supplies;
         this.combat = combat; this.spirit = spirit; this.route = route;
         store = new(engine, Scope, new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
         initial = Capture(0);
@@ -53,7 +55,7 @@ internal sealed class HotelExpedition : IDisposable
             if (!loaded.Present) Write(state);
             checkpoint = state;
             Apply(state);
-            Status = loaded.Present ? "Continued from the refuge checkpoint." : "Initial refuge checkpoint ready.";
+            Status = loaded.Present ? text.Continued : text.InitialReady;
         }
         catch (Exception error)
         {
@@ -65,40 +67,40 @@ internal sealed class HotelExpedition : IDisposable
     internal bool Return()
     {
         if (combat.Defeated || combat.Phase != AttackPhase.Ready || spirit.Active)
-            return Receipt(false, "Finish your action before recording a checkpoint.");
+            return Receipt(false, text.Busy);
         CheckpointState next = Capture(checked(Returns + 1));
         // Live state that would not load again is refused here, before it can replace a good save.
         try { Validate(next); Write(next); }
         catch (Exception error) when (error is PersistenceStorageException or InvalidOperationException)
         {
-            return Receipt(false, "The checkpoint could not be saved. Your carried finds and previous checkpoint are unchanged.\n\n" + error.Message);
+            return Receipt(false, Template.Fill(text.SaveFailed, ("error", error.Message)));
         }
         // Settle the deposit only after Engine confirms the whole record is durable.
         checkpoint = next;
         supplies.Restore(next.Supplies);
-        string secured = next.SecuredFinds.Length == 0 ? "No expedition finds secured yet." :
-            "Secured: " + string.Join(", ", next.SecuredFinds.Select(id => supplies.Item(supplies.Finds.Single(f => f.Id == id).Item).Name)) + ".";
-        return Receipt(true, secured + $"\n\nCheckpoint {Returns} saved. Health {supplies.Health}; ammunition {supplies.Ammo}; summon charges {supplies.Summon}." +
-            "\n\nYour supplies, pact, opened doors, collected finds and residents are recorded together. Defeat or reopening the hotel returns you to this refuge checkpoint. Changes made after this return are not saved.");
+        string secured = next.SecuredFinds.Length == 0 ? text.NothingSecured : Template.Fill(text.Secured,
+            ("finds", string.Join(", ", next.SecuredFinds.Select(id => supplies.Item(supplies.Finds.Single(f => f.Id == id).Item).Name))));
+        return Receipt(true, Template.Fill(text.Saved, ("secured", secured), ("returns", Returns),
+            ("health", supplies.Health), ("ammo", supplies.Ammo), ("summon", supplies.Summon)));
     }
 
     internal void Recover()
     {
         Apply(checkpoint ?? throw new InvalidOperationException("No refuge checkpoint was established."));
-        Status = Returns == 0 ? "Returned to the initial refuge checkpoint." : $"Returned to refuge checkpoint {Returns}.";
-        ReceiptTitle = "Back at the refuge";
-        ReceiptText = Status + "\n\nYour supplies, pact, doors, finds and residents have all been restored. Nothing spent after this checkpoint is permanently lost.";
+        Status = Returns == 0 ? text.ReturnedInitial : Template.Fill(text.Returned, ("returns", Returns));
+        ReceiptTitle = text.RecoveredTitle;
+        ReceiptText = Template.Fill(text.Recovered, ("status", Status));
         ReceiptSequence++;
     }
 
     /// <summary>Developer override: live state returns to the excursion's start; the stored checkpoint is kept.</summary>
     internal void ApplyInitial() => Apply(initial);
 
-    private bool Receipt(bool saved, string text)
+    private bool Receipt(bool saved, string body)
     {
-        ReceiptTitle = saved ? "Return recorded" : "Checkpoint not saved";
-        ReceiptText = text;
-        Status = saved ? $"Refuge checkpoint {Returns} saved · {SecuredFinds.Length} expedition find secured" : "Checkpoint not saved";
+        ReceiptTitle = saved ? text.SavedTitle : text.NotSavedTitle;
+        ReceiptText = body;
+        Status = saved ? Template.Fill(text.SavedStatus, ("returns", Returns), ("count", SecuredFinds.Length)) : text.NotSavedStatus;
         ReceiptSequence++;
         return saved;
     }

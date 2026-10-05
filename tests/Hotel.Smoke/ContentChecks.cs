@@ -45,6 +45,10 @@ internal static class ContentChecks
         message = Failure(reference);
         Check(message.Contains("content/excursions/west-wing/geometry.json boxes[") && message.Contains("carpte"),
             "broken cross-file reference names file, field and value: " + message);
-        Console.WriteLine("Content checks passed: unknown fields, missing values and cross-file references name their file and field.");
+        Edit("combat/messages.json", s => s.Replace("\"Hit · {resident}\"", "\"Hit · {resdent}\""), out var placeholder);
+        message = Failure(placeholder);
+        Check(message.Contains("content/combat/messages.json hit") && message.Contains("{resdent}") && message.Contains("{resident}"),
+            "unknown template placeholder names file, field and the allowed placeholders: " + message);
+        Console.WriteLine("Content checks passed: unknown fields, missing values, cross-file references and template placeholders name their file and field.");
     }
 }

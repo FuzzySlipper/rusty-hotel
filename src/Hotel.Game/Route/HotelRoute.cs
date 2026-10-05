@@ -21,6 +21,7 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private readonly HotelScene scene;
     private readonly HotelPlayer player;
     private readonly InteractionTuning interaction;
+    private readonly RouteMessages text;
     private readonly ExcursionRoute layout;
     private readonly HotelSupplies supplies;
     private readonly HotelSpirit spirit;
@@ -36,7 +37,7 @@ internal sealed class HotelRoute : IWorldInteractionScene
     /// used, because Expedition itself captures and restores this route's door state.</param>
     /// <param name="changed">Publishes interface facts after a world action changes them.</param>
     internal HotelRoute(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
-        HotelSpirit spirit, InteractionTuning interaction, ExcursionRoute layout, RefugeDefinition refuge,
+        HotelSpirit spirit, RouteDefinition definition, ExcursionRoute layout, RefugeDefinition refuge,
         Func<bool> recordCheckpoint, Action changed)
     {
         this.engine = engine;
@@ -46,7 +47,8 @@ internal sealed class HotelRoute : IWorldInteractionScene
         this.spirit = spirit;
         this.recordCheckpoint = recordCheckpoint;
         this.changed = changed;
-        this.interaction = interaction;
+        interaction = definition.Interaction;
+        text = definition.Text;
         this.layout = layout;
         doors = layout.Doors.Select(d => new DoorState(d, scene.DoorEntity(d.Id))).ToArray();
         finds = supplies.Finds.Select(f => (f, scene.Entities.Create().Value)).ToArray();
@@ -65,13 +67,13 @@ internal sealed class HotelRoute : IWorldInteractionScene
         {
             Vector3 point = Authored.Vector(find.Definition.Point);
             Add(new(find.Entity, () => !supplies.Collected(find.Definition.Id),
-                () => $"Take {supplies.Item(find.Definition.Item).Name}", () => point, () => true, () => Take(find)));
+                () => Template.Fill(text.Take, ("item", supplies.Item(find.Definition.Item).Name)), () => point, () => true, () => Take(find)));
         }
         Vector3 bell = spirit.Bell;
-        Add(new(scene.Entities.Create().Value, () => !spirit.Acquired, () => "Lift the bell · free Hushwing",
+        Add(new(scene.Entities.Create().Value, () => !spirit.Acquired, () => spirit.BellLabel,
             () => bell, () => true, FreeSpirit));
         Vector3 notebook = Authored.Vector(refuge.Point);
-        Add(new(scene.Entities.Create().Value, () => true, () => "Record refuge checkpoint",
+        Add(new(scene.Entities.Create().Value, () => true, () => text.RecordCheckpoint,
             () => notebook, () => true, RecordCheckpoint));
         Interaction = new(this);
     }
@@ -94,9 +96,9 @@ internal sealed class HotelRoute : IWorldInteractionScene
                 c.Reason is InteractionReason.OutOfReach or InteractionReason.Locked).Select(c => (InteractionObservation?)c).FirstOrDefault();
         Prompt = row?.Reason switch
         {
-            InteractionReason.Ready => $"E · {row.Value.Candidate.Label}",
-            InteractionReason.OutOfReach => $"{row.Value.Candidate.Label} · Move closer",
-            InteractionReason.Locked => "Return door · Latched from the service side",
+            InteractionReason.Ready => Template.Fill(text.Ready, ("label", row.Value.Candidate.Label)),
+            InteractionReason.OutOfReach => Template.Fill(text.OutOfReach, ("label", row.Value.Candidate.Label)),
+            InteractionReason.Locked => doors.FirstOrDefault(d => d.Entity == row.Value.Candidate.Target.Id)?.Definition.LockedPrompt ?? "",
             _ => ""
         };
     }

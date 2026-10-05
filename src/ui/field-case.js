@@ -114,7 +114,7 @@ export function mountFieldCase(host, intents) {
       }
       host.querySelector('[data-spirit-name]').textContent = spiritFacts.name || '';
       host.querySelector('[data-spirit-equipped]').textContent = spiritFacts.equipped ? 'Equipped' : 'Pact made';
-      equip.textContent = spiritFacts.equipped ? 'Let Hushwing rest' : 'Equip Hushwing';
+      equip.textContent = spiritFacts.equipped ? `Let ${spiritFacts.name} rest` : `Equip ${spiritFacts.name}`;
       equip.disabled = !intents || !!spiritFacts.equipReason;
       result.textContent = spiritFacts.equipReason || spiritFacts.message || '';
 

@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Text.Json;
 using Hotel.Game;
+using Hotel.Game.Content;
 using Hotel.Game.Interface;
 using Rusty.Engine;
 using Rusty.Engine.Debugging;
@@ -19,6 +20,7 @@ host.Call(engine =>
 {
     using HotelProduct product = new(new ProductCreateContext(engine, new ProductContent(default),
         new ProductInputConfiguration(default, default, default, default, InputCursorMode.PointerLock), default!));
+    var content = Owners.Content(engine);
     CaptureCommands commands = new();
     product.RegisterDebugCommands(commands);
     product.Start();
@@ -136,13 +138,13 @@ host.Call(engine =>
     Advance(0, Key(KeyboardControl.KeyQ));
     Check(SpiritMessage() == "", "zero-step summon waits for admission");
     Advance(1);
-    Check(SpiritMessage().Contains("No pact"), "admitted ordinary Q reaches the spirit owner");
+    Check(SpiritMessage() == Template.Fill(content.SpiritText.NoPactCall, ("place", content.SpiritBell.Place)), "admitted ordinary Q reaches the spirit owner");
     product.Pause();
     product.HandlePausedIntents([SpiritChecks.Claim("{\"equipped\":true,\"revision\":0}")]);
-    Check(SpiritMessage().Contains("changed"), "paused semantic callback applies the same stale-choice rule and publishes");
+    Check(SpiritMessage() == content.SpiritText.PactChanged, "paused semantic callback applies the same stale-choice rule and publishes");
     product.HandlePausedIntents([SuppliesChecks.Claim("{\"action\":\"use\",\"from\":0,\"revision\":0}")]);
     using (JsonDocument paused = JsonDocument.Parse(commands.Module!.Observe().Message))
-        Check(paused.RootElement.GetProperty("supplyMessage").GetString()!.Contains("changed"),
+        Check(paused.RootElement.GetProperty("supplyMessage").GetString() == content.Supplies.Text.CaseChanged,
             "paused supply callback routes the same revision rule");
     product.Resume();
     product.Restart();
@@ -151,7 +153,7 @@ host.Call(engine =>
         Check(cleared.RootElement.GetProperty("supplyMessage").GetString() == "", "pause cancels queued quick supply");
     Advance(0, Key(KeyboardControl.Digit3)); Advance(1);
     using (JsonDocument quick = JsonDocument.Parse(commands.Module!.Observe().Message))
-        Check(quick.RootElement.GetProperty("supplyMessage").GetString() == "Empty pocket.", "admitted quick key uses the supplies rule");
+        Check(quick.RootElement.GetProperty("supplyMessage").GetString() == content.Supplies.Text.EmptyPocket, "admitted quick key uses the supplies rule");
     product.Restart();
     Vector3 reset = Position();
     Advance(60);

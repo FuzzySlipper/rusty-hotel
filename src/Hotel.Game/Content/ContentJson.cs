@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Hotel.Game.Audio;
 using Hotel.Game.Combat;
+using Hotel.Game.Expedition;
 using Hotel.Game.Interface;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
@@ -20,9 +21,15 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(SurfaceCatalog))]
 [JsonSerializable(typeof(SupplyResources))]
 [JsonSerializable(typeof(ItemCatalog))]
-[JsonSerializable(typeof(CombatDefinition))]
+[JsonSerializable(typeof(SupplyMessages))]
+[JsonSerializable(typeof(CombatTuning))]
+[JsonSerializable(typeof(WeaponCatalog))]
+[JsonSerializable(typeof(CombatMessages))]
 [JsonSerializable(typeof(ResidentCatalog))]
 [JsonSerializable(typeof(SpiritDefinition))]
+[JsonSerializable(typeof(SpiritMessages))]
+[JsonSerializable(typeof(RouteMessages))]
+[JsonSerializable(typeof(ExpeditionMessages))]
 [JsonSerializable(typeof(ExcursionGeometry))]
 [JsonSerializable(typeof(ExcursionRoute))]
 [JsonSerializable(typeof(ExcursionPlacements))]

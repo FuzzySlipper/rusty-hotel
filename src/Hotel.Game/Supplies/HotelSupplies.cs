@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Rusty.Engine;
+using Hotel.Game.Content;
 using Hotel.Game.Expedition;
 using Rusty.Engine.Entities;
 using Rusty.Engine.Mechanics;
@@ -13,6 +14,7 @@ internal sealed class HotelSupplies
 {
     private readonly SupplyResources resources;
     private readonly ItemDefinition[] items;
+    private readonly SupplyMessages text;
     private readonly FindDefinition[] finds;
     private readonly InventoryStackId?[] slots;
     private readonly EntityId owner;
@@ -22,14 +24,15 @@ internal sealed class HotelSupplies
     private ulong nextStack;
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
 
-    internal HotelSupplies(SupplyResources resources, ItemDefinition[] items, FindDefinition[] finds, int capacity, EntityId owner)
+    internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner)
     {
-        this.resources = resources;
-        this.items = items;
+        resources = definition.Resources;
+        items = definition.Items;
+        text = definition.Text;
         this.finds = finds;
         this.owner = owner;
         slots = new InventoryStackId?[capacity];
-        itemMechanics = items.ToDictionary(i => i.Id,
+        itemMechanics = definition.Items.ToDictionary(i => i.Id,
             i => new EngineItemDefinition(ItemDefinitionId.Parse(i.Id), ItemKind.Fungible, (ulong)i.StackLimit));
         health = new(resources.MaximumHealth, resources.InitialHealth, quantum: 1);
         ammo = new(resources.MaximumAmmo, 0, quantum: 1);
@@ -51,7 +54,7 @@ internal sealed class HotelSupplies
     internal string Message
     {
         get => message;
-        private set { message = value; noticeSeconds = value.Length == 0 ? 0 : 4; }
+        private set { message = value; noticeSeconds = value.Length == 0 ? 0 : text.NoticeSeconds; }
     }
     internal string Notice => noticeSeconds > 0 ? Message : "";
     internal void Step(float admittedSeconds) => noticeSeconds = Math.Max(0, noticeSeconds - admittedSeconds);
@@ -71,31 +74,31 @@ internal sealed class HotelSupplies
     internal bool Pickup(string id)
     {
         FindDefinition? find = finds.FirstOrDefault(f => f.Id == id);
-        if (find is null || collected.Contains(id)) return Refuse("This find is no longer available.");
-        if (!Add(find.Item, find.Count)) return Refuse("Field case full. This find stays here.");
+        if (find is null || collected.Contains(id)) return Refuse(text.FindGone);
+        if (!Add(find.Item, find.Count)) return Refuse(text.CaseFull);
         collected.Add(id);
         Revision++;
-        Message = $"Collected {Item(find.Item).Name} ×{find.Count}.";
+        Message = Template.Fill(text.Collected, ("item", Item(find.Item).Name), ("count", find.Count));
         return true;
     }
 
     internal string UseReason(int index)
     {
-        if (Health == 0) return "Overwhelmed · return to the refuge checkpoint first.";
-        if (index < 0 || index >= slots.Length || Slot(index) is not { } stack) return "Empty pocket.";
+        if (Health == 0) return text.Overwhelmed;
+        if (index < 0 || index >= slots.Length || Slot(index) is not { } stack) return text.EmptyPocket;
         return Item(stack.Item).Kind switch
         {
-            SupplyKind.Healing when Health >= MaximumHealth => "Health is already full.",
-            SupplyKind.Ammo when Ammo >= MaximumAmmo => "Ammunition reserve is full.",
-            SupplyKind.Summon when Summon >= MaximumSummon => "Summon reserve is full.",
-            SupplyKind.Expedition => "Keep this expedition find for your return.",
+            SupplyKind.Healing when Health >= MaximumHealth => text.HealthFull,
+            SupplyKind.Ammo when Ammo >= MaximumAmmo => text.AmmoFull,
+            SupplyKind.Summon when Summon >= MaximumSummon => text.SummonFull,
+            SupplyKind.Expedition => text.KeepForReturn,
             _ => ""
         };
     }
 
     internal bool Use(int index, ulong revision)
     {
-        if (revision != Revision) return Refuse("Your field case changed. Select the item again.");
+        if (revision != Revision) return Refuse(text.CaseChanged);
         string reason = UseReason(index);
         if (reason.Length != 0) return Refuse(reason);
         ItemStack stack = Slot(index)!.Value;
@@ -109,19 +112,19 @@ internal sealed class HotelSupplies
         inventory.Consume(owner, slots[index]!, 1);
         if (stack.Count == 1) slots[index] = null;
         Revision++;
-        Message = $"Used {item.Name}.";
+        Message = Template.Fill(text.Used, ("item", item.Name));
         return true;
     }
 
     internal bool Move(int from, int to, ulong revision)
     {
-        if (revision != Revision) return Refuse("Your field case changed. Select the item again.");
+        if (revision != Revision) return Refuse(text.CaseChanged);
         if (from < 0 || to < 0 || from >= slots.Length || to >= slots.Length || from == to || Slot(from) is not { } source)
-            return Refuse("Choose a carried stack and another pocket.");
+            return Refuse(text.ChooseStack);
         if (Slot(to) is { } target && source.Item == target.Item)
         {
             int moved = Math.Min(source.Count, Item(source.Item).StackLimit - target.Count);
-            if (moved == 0) return Refuse("That stack is full.");
+            if (moved == 0) return Refuse(text.StackFull);
             if (moved == source.Count)
             {
                 inventory.MergeFungible(owner, slots[from]!, slots[to]!);
@@ -139,7 +142,7 @@ internal sealed class HotelSupplies
         }
         else (slots[from], slots[to]) = (slots[to], slots[from]);
         Revision++;
-        Message = "Field case rearranged.";
+        Message = text.Rearranged;
         return true;
     }
 
@@ -158,12 +161,12 @@ internal sealed class HotelSupplies
                     || action.ValueKind != JsonValueKind.String || !root.TryGetProperty("revision", out var rev)
                     || rev.ValueKind != JsonValueKind.Number || !rev.TryGetUInt64(out ulong revision)
                     || !Integer(root, "from", out int from))
-                { Refuse("Choose the supply again."); continue; }
+                { Refuse(text.ChooseAgain); continue; }
                 if (action.GetString() == "use") Use(from, revision);
                 else if (action.GetString() == "move" && Integer(root, "to", out int to)) Move(from, to, revision);
-                else Refuse("Choose Use or another pocket.");
+                else Refuse(text.ChooseAction);
             }
-            catch (JsonException) { Refuse("The supply choice could not be read."); }
+            catch (JsonException) { Refuse(text.Unreadable); }
         }
     }
 
@@ -199,9 +202,12 @@ internal sealed class HotelSupplies
         return true;
     }
 
+    // Developer fixtures only: a bound on one console request, not a game rule. Its messages are console output.
+    private const int MaximumDeveloperGift = 99;
+
     internal bool Give(string item, int count)
     {
-        if (count <= 0 || count > 99 || !items.Any(i => i.Id == item)) return Refuse("Unknown item or invalid quantity.");
+        if (count <= 0 || count > MaximumDeveloperGift || !items.Any(i => i.Id == item)) return Refuse("Unknown item or invalid quantity.");
         if (!Add(item, count)) return Refuse("Field case full.");
         Revision++;
         Message = $"Developer supplied {Item(item).Name} ×{count}.";

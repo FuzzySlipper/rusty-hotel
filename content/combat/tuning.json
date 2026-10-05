@@ -1,0 +1,6 @@
+{
+  "reloadSeconds": 1.1,
+  "noticeSeconds": 2.5,
+  "hitFlashSeconds": 0.22,
+  "hurtFlashSeconds": 0.4
+}

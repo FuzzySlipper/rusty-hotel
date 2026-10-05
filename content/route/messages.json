@@ -1,0 +1,6 @@
+{
+  "ready": "E · {label}",
+  "outOfReach": "{label} · Move closer",
+  "take": "Take {item}",
+  "recordCheckpoint": "Record refuge checkpoint"
+}

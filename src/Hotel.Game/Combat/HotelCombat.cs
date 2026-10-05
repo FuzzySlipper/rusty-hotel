@@ -20,6 +20,7 @@ internal sealed class HotelCombat
     private readonly HotelPlayer player;
     private readonly HotelSupplies supplies;
     private readonly CombatDefinition definition;
+    private readonly CombatMessages text;
     private int weaponIndex;
     private float remaining, noticeRemaining;
     private int reloadPocket;
@@ -27,12 +28,13 @@ internal sealed class HotelCombat
     private Vector3 attackDirection;
 
     internal HotelCombat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
-        CombatDefinition definition, ResidentKind[] kinds, ResidentPlacement[] residents)
+        CombatDefinition definition, ResidentPlacement[] residents)
     {
         this.engine = engine; this.scene = scene; this.player = player; this.supplies = supplies;
         this.definition = definition;
+        text = definition.Text;
         Enemies = residents.Select(placed => new HotelEnemy(engine, scene, placed,
-            kinds.Single(kind => kind.Id == placed.Kind), player.Tuning.Gravity)).ToArray();
+            definition.Residents.Single(kind => kind.Id == placed.Kind), player.Tuning.Gravity)).ToArray();
     }
 
     internal HotelEnemy[] Enemies { get; }
@@ -41,7 +43,7 @@ internal sealed class HotelCombat
     internal float PhaseProgress => 1 - remaining / Math.Max(.001f, Phase switch
     {
         AttackPhase.Windup => Weapon.Windup, AttackPhase.Commit => Weapon.Commit,
-        AttackPhase.Recovery => Weapon.Recovery, AttackPhase.Reloading => definition.ReloadSeconds, _ => 1
+        AttackPhase.Recovery => Weapon.Recovery, AttackPhase.Reloading => definition.Tuning.ReloadSeconds, _ => 1
     });
     internal string Notice { get; private set; } = "";
     internal float HurtFlash { get; private set; }
@@ -50,11 +52,11 @@ internal sealed class HotelCombat
     internal int LandedHits { get; private set; }
     internal Vector3 ShotEnd { get; private set; }
     internal bool Defeated => supplies.Health == 0;
-    internal string ActionText => Defeated ? "Overwhelmed · R to return to the refuge checkpoint" : Phase switch
+    internal string ActionText => Defeated ? text.Overwhelmed : Phase switch
     {
-        AttackPhase.Windup => Weapon.AmmoCost == 0 ? "Drawing back" : "Steadying shot",
-        AttackPhase.Commit => Weapon.AmmoCost == 0 ? "Swing" : "Fired",
-        AttackPhase.Recovery => "Recovering", AttackPhase.Reloading => "Loading cartridges", _ => "Ready"
+        AttackPhase.Windup => Weapon.WindupLabel,
+        AttackPhase.Commit => Weapon.CommitLabel,
+        AttackPhase.Recovery => text.Recovering, AttackPhase.Reloading => text.Reloading, _ => text.Ready
     };
     internal CharacterObstacle[] Obstacles => Enemies.Where(e => e.Alive).Select(e => e.Obstacle).ToArray();
 
@@ -69,7 +71,11 @@ internal sealed class HotelCombat
     {
         if (Defeated || Phase != AttackPhase.Ready) return false;
         if (Weapon.AmmoCost > 0 && !supplies.SpendAmmo(Weapon.AmmoCost))
-        { Announce("Empty pistol · R loads carried cartridges · 1 selects the pry bar"); return false; }
+        {
+            WeaponDefinition fallback = definition.Weapons.First(w => w.AmmoCost == 0);
+            Announce(Template.Fill(text.EmptyWeapon, ("weapon", Weapon.ShortName), ("fallback", fallback.ShortName)));
+            return false;
+        }
         // Accepted attack commits its cost once. Further presses during the sequence are discarded.
         AcceptedAttacks++;
         attackDirection = player.Forward;
@@ -82,12 +88,12 @@ internal sealed class HotelCombat
     {
         if (Defeated || Phase != AttackPhase.Ready || Weapon.AmmoCost == 0) return false;
         reloadPocket = supplies.AmmoPocket;
-        if (reloadPocket < 0) { Announce("No carried cartridges"); return false; }
+        if (reloadPocket < 0) { Announce(text.NoCartridges); return false; }
         string reason = supplies.UseReason(reloadPocket);
         if (reason.Length != 0) { Announce(reason); return false; }
         reloadRevision = supplies.Revision;
         Phase = AttackPhase.Reloading;
-        remaining = definition.ReloadSeconds;
+        remaining = definition.Tuning.ReloadSeconds;
         return true;
     }
 
@@ -111,7 +117,7 @@ internal sealed class HotelCombat
                         Phase = AttackPhase.Recovery; remaining += Weapon.Recovery; break;
                     case AttackPhase.Reloading:
                         bool loaded = supplies.Use(reloadPocket, reloadRevision);
-                        Announce(loaded ? "Cartridges loaded" : supplies.Message);
+                        Announce(loaded ? text.Loaded : supplies.Message);
                         Phase = AttackPhase.Ready; break;
                     case AttackPhase.Recovery: Phase = AttackPhase.Ready; break;
                 }
@@ -144,11 +150,11 @@ internal sealed class HotelCombat
         ShotEnd = hit.Present ? hit.Point : player.Eye + attackDirection * Weapon.Range;
         HotelEnemy? victim = hit.Present && hit.Kind == SpatialHitKind.Entity
             ? Enemies.FirstOrDefault(e => e.Entity.Value == hit.Entity && e.Alive) : null;
-        if (victim is null) { Announce(hit.Present ? "Struck the surroundings" : "Miss"); return; }
+        if (victim is null) { Announce(hit.Present ? text.StruckSurroundings : text.Miss); return; }
         victim.Health.SetCurrent(Math.Max(0, victim.Health.ValueInt - Weapon.Damage));
         LandedHits++;
-        HitFlash = .22f;
-        Announce(victim.Alive ? $"Hit · {victim.Kind.Name}" : $"{victim.Kind.Name} falls still");
+        HitFlash = definition.Tuning.HitFlashSeconds;
+        Announce(Template.Fill(victim.Alive ? text.Hit : text.ResidentFalls, ("resident", victim.Kind.Name)));
         if (!victim.Alive) { victim.Phase = AttackPhase.Defeated; victim.BeamTime = 0; }
     }
 
@@ -195,8 +201,8 @@ internal sealed class HotelCombat
                 if (hit.Present && hit.Kind == SpatialHitKind.Entity && hit.Entity == scene.PlayerEntity.Value)
                 {
                     supplies.Damage(enemy.Kind.Damage);
-                    HurtFlash = .4f;
-                    Announce($"{enemy.Kind.Name} hits · −{enemy.Kind.Damage} health");
+                    HurtFlash = definition.Tuning.HurtFlashSeconds;
+                    Announce(Template.Fill(text.ResidentHits, ("resident", enemy.Kind.Name), ("damage", enemy.Kind.Damage)));
                 }
                 enemy.Phase = AttackPhase.Commit; enemy.Remaining += enemy.Kind.Commit; break;
             case AttackPhase.Commit:
@@ -255,7 +261,7 @@ internal sealed class HotelCombat
         Phase = AttackPhase.Ready; weaponIndex = 0; remaining = noticeRemaining = HurtFlash = HitFlash = 0;
         AcceptedAttacks = LandedHits = 0; Notice = "";
     }
-    private void Announce(string message) { Notice = message; noticeRemaining = 2.5f; }
+    private void Announce(string message) { Notice = message; noticeRemaining = definition.Tuning.NoticeSeconds; }
 }
 
 internal sealed class HotelEnemy
@@ -285,7 +291,7 @@ internal sealed class HotelEnemy
     internal Vector3 Spawn { get; }
     internal Vector3 Position => scene.Entities.Get(Entity, EngineComponentTypes.Transform).Translation;
     internal CharacterMotion Motion => scene.Entities.Get(Entity, EngineComponentTypes.CharacterMotion);
-    internal Vector3 Eye => Position + new Vector3(0, Kind.Height * .32f, 0);
+    internal Vector3 Eye => Position + new Vector3(0, Kind.EyeHeight, 0);
     internal bool Alive => Health.Value > 0;
     internal AttackPhase Phase;
     internal float Remaining, Yaw, BeamTime;
