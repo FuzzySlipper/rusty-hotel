@@ -182,6 +182,13 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         Publish();
     }
 
+    /// <summary>Forgets what this session remembered of generated floors, as when a new run begins.</summary>
+    internal void ForgetGeneratedFloors()
+    {
+        foreach (string id in memory.Keys.Where(k => k != content.Excursion.Id).ToArray()) memory.Remove(id);
+        collected.RemoveWhere(id => !content.Excursion.Placements.Finds.Any(f => f.Id == id));
+    }
+
     /// <summary>Rebuilds the refuge's floor when the player is elsewhere; the session's floor memory is forgotten.</summary>
     internal void ReturnToRefugeFloor()
     {

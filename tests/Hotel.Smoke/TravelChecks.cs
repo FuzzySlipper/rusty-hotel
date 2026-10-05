@@ -73,6 +73,7 @@ internal static class TravelChecks
 
             Check(commands.Hotel!.Floor(77, 2).Status == Rusty.Engine.Debugging.DebugCommandStatus.Success && Observe().GetProperty("depth").GetInt32() == 2,
                 "the developer floor command stands the player on a generated floor");
+            Check(Observe().GetProperty("occupiedPockets").GetInt32() == 1, "the developer floor command keeps what the player carries");
             JsonElement inspected = JsonDocument.Parse(commands.Hotel!.InspectFloor().Message).RootElement;
             Check(inspected.GetProperty("runSeed").GetUInt64() == 77 && inspected.GetProperty("places").GetArrayLength() > 5, "floor inspection reports the run and where its places are");
             product.Restart();

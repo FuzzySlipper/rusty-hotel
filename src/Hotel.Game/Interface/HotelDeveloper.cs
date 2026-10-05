@@ -62,7 +62,8 @@ internal sealed class HotelDeveloper(HotelProduct product)
     internal DebugCommandResult Floor(ulong seed, int depth)
     {
         if (depth is < 1 or > 99) return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "Depth is 1 to 99; depth 0 is the west wing.");
-        product.ReturnToRefugeFloor();
+        // A new run's floors are new: forget the old run's, but keep what the player carries.
+        product.ForgetGeneratedFloors();
         product.Floors.Begin(seed);
         if (product.Floors.Floor(depth) is not { } floor)
             return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"No floor at depth {depth}: {string.Join("; ", product.Floors.LastRefusals.Take(5))}");
