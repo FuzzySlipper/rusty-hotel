@@ -175,6 +175,8 @@ host.Call(ModuleChecks.Run);
 host.Call(LayoutChecks.Run);
 host.Call(GenerationChecks.Run);
 host.Call(ShiftChecks.Run);
+host.Call(FingerprintChecks.Run);
+host.Call(CensusChecks.Run);
 host.Call(RouteChecks.Run);
 host.Call(KeyChecks.Run);
 host.Call(SuppliesChecks.Run);

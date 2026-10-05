@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "sourceStamp": "f91865b886a44adb65382cea4e6835f55a80b8db4e8d35597896f1607c0dba7b",
+  "floors": [
+    {
+      "run": 101,
+      "depth": 1,
+      "plan": "b9954a10cf2144839b334bda1a4883713ada2507126510d674dc77075a707268"
+    },
+    {
+      "run": 202,
+      "depth": 2,
+      "plan": "5516ac49f35f85d375847f4331287a51e05b3c9b66be3e6eae10a3c6e3b6df8b"
+    },
+    {
+      "run": 303,
+      "depth": 3,
+      "plan": "0df8711ffeb586aeb64eb24228fe21b5b5023e8182addc5f162898daa42b5401"
+    },
+    {
+      "run": 404,
+      "depth": 1,
+      "plan": "7da09ba28377fd47feebf215a094362f7c4425d77ddccff32e9705036a393072"
+    },
+    {
+      "run": 505,
+      "depth": 2,
+      "plan": "bb0cf9a513886ccc44d415293e4bc6700d4c43072db3942386a7f88a86d474a6"
+    },
+    {
+      "run": 606,
+      "depth": 4,
+      "plan": "fce68859bdf8d0159014cfabfc95e0bbc9332bf28eb027d38ceb033bc11ddcdb"
+    }
+  ]
+}

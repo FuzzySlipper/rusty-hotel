@@ -20,10 +20,27 @@ Choose checks for the changed behavior:
 | Check | What it establishes |
 | --- | --- |
 | `rusty build` | Compilation and ordinary CoreCLR product staging |
-| `Hotel.Smoke` | Product callbacks and real Engine service calls: collision/input, route eligibility, supplies, combat, spirit rules, complete checkpoints, content errors naming their file and field, and repeatable keyed floor draws |
+| `Hotel.Smoke` | Product callbacks and real Engine service calls: collision/input, route eligibility, supplies, combat, spirit rules, complete checkpoints, content errors naming their file and field, and floor generation (keyed draws, mission graphs, modules, layouts, content pacing, Engine confirmation, travel, keys, floor saves, shifts and golden fingerprints) |
 | DOM unit checks | Pause request failures/supersession/disposal and asynchronous console mount/cleanup |
 | Ordinary hosted play | Rendered presentation, physical input, world/UI interaction, focus, pause and return to play |
 | `rusty build --aot` | Explicit NativeAOT publish/fidelity check; still separate from a visible run |
+
+### Floor generation tools
+
+The golden fingerprints in `tests/Hotel.Smoke/goldens/floors.json` record named seeds' plan hashes for the current
+generator version, with a stamp of the generator source and floor content. Smoke fails when output changes under
+the same version: bump `FloorSeed.CurrentVersion` (old saves' floors are then refused, not reinterpreted), then
+record new goldens. The census and the floor bank are off the default path.
+
+```text
+HOTEL_FLOOR_GOLDENS=write dotnet run --project tests/Hotel.Smoke/Hotel.Smoke.csproj
+HOTEL_FLOOR_CENSUS=50 dotnet run --project tests/Hotel.Smoke/Hotel.Smoke.csproj
+HOTEL_FLOOR_SVG=/tmp/floor-bank HOTEL_FLOOR_CENSUS=10 dotnet run --project tests/Hotel.Smoke/Hotel.Smoke.csproj
+```
+
+The census reports, per depth, floors made, first tries, rooms, generation time and refusal reasons. The floor bank
+writes one plan drawing per census floor: spaces by style, mission places labelled, ordinary doors, locks in red and
+the shortcut's latch in amber.
 
 The smoke harness supplies a unique temporary persistence root. It does not
 render, play audio, mount the browser or prove host pause admission. DOM unit

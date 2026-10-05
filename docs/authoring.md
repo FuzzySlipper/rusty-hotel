@@ -168,6 +168,23 @@ Generated content takes its ids from where it stands: a find, resident or notice
 (`p7/table`), so the same floor always names it the same way. A stair core needs one `Arrival` socket, where the
 player stands on entering the floor.
 
+## Tuning generated floors
+
+A generated floor is made in stages, each from its own file. Every random choice is a keyed Engine draw, so the same
+run, depth and shift always make the same floor.
+
+1. The mission graph (`floors/mission.json`): places and the locks between them, grown by weighted rules and
+   validated there and back.
+2. The layout (`floors/layout.json`): modules for each place, joined socket to socket, the service passage and fill
+   rooms, checked so every lock cuts what it guards.
+3. The content (`floors/content.json`, `floors/readings.json`): finds, keys, residents, the bell and notices at
+   content sockets, within the pacing budgets.
+4. Engine confirmation (`floors/generation.json`): every promised route walked both ways for the player's body, with
+   retries by attempt and then by candidate.
+
+Change what a floor holds in content and the module files, not in code. Any change that alters generated floors
+needs a generator version bump and new goldens (see [development](development.md)).
+
 ## Content identities and checkpoints
 
 Checkpoint versioning lives in `Expedition/CheckpointState.cs` and
