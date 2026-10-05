@@ -174,6 +174,7 @@ host.Call(MissionChecks.Run);
 host.Call(ModuleChecks.Run);
 host.Call(LayoutChecks.Run);
 host.Call(GenerationChecks.Run);
+host.Call(ShiftChecks.Run);
 host.Call(RouteChecks.Run);
 host.Call(KeyChecks.Run);
 host.Call(SuppliesChecks.Run);

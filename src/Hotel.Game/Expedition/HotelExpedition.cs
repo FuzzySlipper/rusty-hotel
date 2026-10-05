@@ -89,15 +89,18 @@ internal sealed class HotelExpedition : IDisposable
         if (combat.Defeated || combat.Phase != AttackPhase.Ready || spirit.Active)
             return Receipt(false, text.Busy);
         CheckpointState next = Capture(checked(Returns + 1));
+        // The run's floors shift while the player is away: each is due to shift when the player next climbs to it.
+        next = next with { Floors = next.Floors! with { Floors = [.. next.Floors.Floors.Select(f => f with { ShiftDue = true })] } };
         // Live state that would not load again is refused here, before it can replace a good save.
         try { Validate(next); Write(next); }
         catch (Exception error) when (error is PersistenceStorageException or InvalidOperationException)
         {
             return Receipt(false, Template.Fill(text.SaveFailed, ("error", error.Message)));
         }
-        // Settle the deposit only after Engine confirms the whole record is durable.
+        // Settle the deposit and the coming shift only after Engine confirms the whole record is durable.
         checkpoint = next;
         supplies.Restore(next.Supplies);
+        floors.Restore(next.Floors!);
         string secured = next.SecuredFinds.Length == 0 ? text.NothingSecured : Template.Fill(text.Secured,
             ("finds", string.Join(", ", next.SecuredFinds.Select(id => (supplies.Finds.FirstOrDefault(f => f.Id == id) is { } here
                 ? supplies.Item(here.Item) : floors.FindItem(id)!).Name))));
@@ -131,7 +134,7 @@ internal sealed class HotelExpedition : IDisposable
         SuppliesState carried = supplies.Capture();
         // Expedition finds from this floor and from the run's generated floors are secured together.
         FloorsState run = floors.Capture();
-        string[] secured = [.. carried.Collected.Where(supplies.IsExpeditionFind), .. Floors.HotelFloors.ExpeditionFinds(run, supplies)];
+        string[] secured = [.. carried.Collected.Where(supplies.IsExpeditionFind), .. Floors.HotelFloors.ExpeditionFinds(run)];
         // Expedition finds move into the refuge ledger, retaining their collected identity.
         SuppliesState deposited = carried with { Pockets = carried.Pockets.Select(s => s is { } item && supplies.Item(item.Item).Kind == SupplyKind.Expedition ? null : s).ToArray() };
         return new(2, returns, refuge.Id, combat.Weapon.Id, deposited, route.OpenDoors,
@@ -149,7 +152,7 @@ internal sealed class HotelExpedition : IDisposable
         combat.Validate(state.Weapon, state.Residents);
         spirit.Validate(state.Spirit);
         string[] expected = state.Supplies.Collected.Where(supplies.IsExpeditionFind)
-            .Concat(state.Floors is { } stored ? Floors.HotelFloors.ExpeditionFinds(stored, supplies) : []).Order().ToArray();
+            .Concat(state.Floors is { } stored ? Floors.HotelFloors.ExpeditionFinds(stored) : []).Order().ToArray();
         if (state.SecuredFinds is null || !state.SecuredFinds.Order().SequenceEqual(expected) ||
             state.Supplies.Pockets.Any(s => s is { } item && supplies.Item(item.Item).Kind == SupplyKind.Expedition))
             throw new InvalidOperationException("Checkpoint expedition deposit is inconsistent.");

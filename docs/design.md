@@ -115,7 +115,10 @@ floor is larger than the west wing, roughly 15–25 rooms, with branching enough
 that the decision to turn back matters.
 
 Floors shift while you are away. A visited floor keeps its landmarks and the
-routes you opened, but its rooms rearrange between excursions. The hotel's
+routes you opened, but its rooms rearrange between excursions: after a return to
+the refuge, the next climb finds the floor shifted around its stair core, its
+landmark and, once you have unlatched it, its shortcut back to the stairs. Rooms
+that rearrange start fresh; what you secured at the refuge stays secured. The hotel's
 impossibility is the fiction for that, not a bug to hide. What a floor promises
 stays true after every shift: an objective, a way back to the stairs, resource
 opportunities and recognizable landmarks. The generator plans floors in hotel

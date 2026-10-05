@@ -15,9 +15,10 @@ namespace Hotel.Game.Floors.Layout;
 /// <remarks>The scored socket growth follows CraftSurvive's modular dungeon assembly; see docs/reuse.md.</remarks>
 internal static class FloorEmbedding
 {
-    internal static LayoutResult Embed(MissionGraph graph, ModuleCatalog catalog, LayoutTuning tuning, FloorDraws draws)
+    /// <param name="kept">When a floor shifts, the pieces it keeps: placed first, as they were, and grown around.</param>
+    internal static LayoutResult Embed(MissionGraph graph, ModuleCatalog catalog, LayoutTuning tuning, FloorDraws draws, KeptSet? kept = null)
     {
-        Assembly assembly = new(catalog, tuning, draws);
+        Assembly assembly = new(catalog, tuning, draws, kept);
         string? failure = assembly.Grow(graph);
         return failure is null ? new(assembly.Layout(), null) : new(null, failure);
     }
@@ -56,8 +57,11 @@ internal static class FloorEmbedding
 
     private sealed record Open(PlacedDoorway Doorway, string Region);
 
-    private sealed class Assembly(ModuleCatalog catalog, LayoutTuning tuning, FloorDraws draws)
+    private sealed class Assembly(ModuleCatalog catalog, LayoutTuning tuning, FloorDraws draws, KeptSet? kept)
     {
+        // New placements of a shift are numbered apart from the kept ones, so no id is reused for a different room.
+        private readonly string prefix = draws.Seed.Shift == 0 ? "p" : $"s{draws.Seed.Shift}p";
+        private int numbered;
         // A corridor piece must leave an archway with this much free floor beyond it, so the corridor can go on.
         private const float Tolerance = 1e-3f, PorchDepth = 0.5f, ReservedDepth = 2.5f, WayOnDepth = 4f;
         private readonly List<PlacedModule> placed = [];
@@ -87,18 +91,48 @@ internal static class FloorEmbedding
             Dictionary<string, string> regions = Regions(graph);
             Dictionary<string, MissionNode> nodes = graph.Nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
 
-            // Phase 1: the stair core, standing for arrival.
-            PlaceRole arrivalRole = tuning.Role(MissionNodeKind.Arrival);
-            ModuleDefinition core = catalog.Find(Pick(arrivalRole.Modules, "arrival", "core"))!;
-            PlacedModule landing = Place(core, Vector2.Zero, draws.Index(FloorStage.Embedding, "arrival.turn", "core", 4), OpenRegion, null);
-            places[MissionGraph.ArrivalId] = hosts[MissionGraph.ArrivalId] = landing.Id;
-            Reserve(landing, DoorwayKind.ServiceDoor);
+            // Phase 1: the stair core, standing for arrival; on a shift, every kept piece as it was.
+            Dictionary<string, string> keptPlaces = new(StringComparer.Ordinal);
+            if (kept is not null)
+            {
+                foreach (LayoutPlacement p in kept.Placements) PlaceKept(p);
+                Prune();
+                foreach (var (kind, placement) in kept.Places)
+                    if (graph.Nodes.FirstOrDefault(n => n.Kind == kind) is { } node)
+                    {
+                        if (regions[node.Id] != OpenRegion) return $"kept: '{node.Id}' is behind a lock in this graph, but its kept room is not.";
+                        keptPlaces[node.Id] = placement;
+                    }
+                if (kept.Latch is not null)
+                {
+                    passage = new(kept.Passage, kept.PassageLinks, kept.PassageFixtures, kept.Latch);
+                    latch = kept.Latch;
+                    taken.AddRange(kept.Passage.Select(s => (new Vector2(s.Min[0], s.Min[1]), new Vector2(s.Max[0], s.Max[1]))));
+                    Prune();
+                }
+                places[MissionGraph.ArrivalId] = hosts[MissionGraph.ArrivalId] = kept.Places[MissionNodeKind.Arrival];
+            }
+            else
+            {
+                PlaceRole arrivalRole = tuning.Role(MissionNodeKind.Arrival);
+                ModuleDefinition core = catalog.Find(Pick(arrivalRole.Modules, "arrival", "core"))!;
+                PlacedModule landing = Place(core, Vector2.Zero, draws.Index(FloorStage.Embedding, "arrival.turn", "core", 4), OpenRegion, null);
+                places[MissionGraph.ArrivalId] = hosts[MissionGraph.ArrivalId] = landing.Id;
+            }
+            if (passage is null) Reserve(placed.First(p => p.Id == places[MissionGraph.ArrivalId]), DoorwayKind.ServiceDoor);
 
             // Phase 2: a module for every mission place, region by region from arrival, each region's gates last so the
             // corridor stays open for everything else on that side of them.
             foreach (var (id, parentId, edge) in Order(graph, regions, nodes))
             {
                 MissionNode node = nodes[id], parent = nodes[parentId];
+                // A kept room already stands; it hangs off the kept corridor it is joined to.
+                if (keptPlaces.TryGetValue(id, out string? keptPlacement))
+                {
+                    places[id] = keptPlacement;
+                    hosts[id] = Neighbour(keptPlacement) ?? keptPlacement;
+                    continue;
+                }
                 PlaceRole role = tuning.Role(node.Kind);
                 bool locked = edge.Kind == MissionEdgeKind.Locked;
                 bool throughGate = locked && gated.GetValueOrDefault(parentId) == edge.Id;
@@ -135,9 +169,11 @@ internal static class FloorEmbedding
                 if (node.Kind == MissionNodeKind.Shortcut) Reserve(module, DoorwayKind.ServiceDoor);
             }
 
-            // Phase 3: the service passage from each shortcut back to the stair core's service door, latched at the core.
+            // Phase 3: the service passage from each shortcut back to the stair core's service door, latched at the core;
+            // a kept passage already runs there.
             foreach (MissionEdge edge in graph.Edges.Where(e => e.Kind == MissionEdgeKind.Latch).OrderBy(e => e.Id, StringComparer.Ordinal))
             {
+                if (kept?.Latch is not null && keptPlaces.ContainsKey(edge.From)) continue;
                 if (passage is not null) return "service: only one shortcut passage is supported per floor.";
                 PlacedModule from = placed.First(p => p.Id == places[edge.From]), to = placed.First(p => p.Id == places[edge.To]);
                 PlacedDoorway? start = OpenOf(from, DoorwayKind.ServiceDoor), end = OpenOf(to, DoorwayKind.ServiceDoor);
@@ -290,9 +326,31 @@ internal static class FloorEmbedding
             return (placedModule, ModuleRealizer.JoinId(at.Doorway.Id, placedModule.Name(chosen.Mine.Doorway.Id)));
         }
 
+        // A kept piece stands where it stood, under its old id, in the open region.
+        private void PlaceKept(LayoutPlacement p)
+        {
+            PlacedModule module1 = new(p.Id, new(catalog.Find(p.Module)!, new(p.X, p.Z), p.Turn));
+            placed.Add(module1);
+            placedRegions[module1.Id] = OpenRegion;
+            taken.Add((module1.Transform.Corner, module1.Transform.Corner + module1.Transform.Footprint));
+            foreach (PlacedDoorway d in ModuleRealizer.Doorways(module1, catalog))
+            {
+                doorways.Add(new(d, OpenRegion));
+                Open? mate = open.FirstOrDefault(o => o.Doorway.Mates(d));
+                if (mate is not null) open.Remove(mate);
+                else open.Add(new(d, OpenRegion));
+            }
+        }
+
+        // The placement a kept room's doorway is joined to.
+        private string? Neighbour(string placement) => doorways
+            .Where(d => d.Doorway.Placement.Id == placement)
+            .SelectMany(d => doorways.Where(o => o.Doorway.Placement.Id != placement && o.Doorway.Mates(d.Doorway)))
+            .Select(o => o.Doorway.Placement.Id).FirstOrDefault();
+
         private PlacedModule Place(ModuleDefinition module, Vector2 corner, int turn, string region, Open? joined)
         {
-            PlacedModule module1 = new($"p{placed.Count}", new(module, corner, turn));
+            PlacedModule module1 = new($"{prefix}{numbered++}", new(module, corner, turn));
             placed.Add(module1);
             placedRegions[module1.Id] = region;
             taken.Add((corner, corner + module1.Transform.Footprint));

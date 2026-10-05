@@ -77,12 +77,20 @@ internal static class FloorSaveChecks
                 {
                 product.Start();
                 Check(product.Floors.Capture().Floors.Length == 1, "the visited floor is restored before it is entered");
-                ExcursionDefinition floor = product.Floors.Floor(1)!;
-                Check(product.Floors.LastMilliseconds == 0 && Geometry(floor) == geometry, "the floor is rebuilt from its plan, identical, without generating");
-                product.Enter(floor, 1, StairDirection.Up);
-                Check(product.Floors.Current!.Identity.PlanHash == identity, "with the same identity");
-                Check(product.World.Route.Keys.Contains(key) && product.World.Route.OpenDoors.Contains(door) && product.World.Supplies.Collected(page),
-                    "the key is still held, the door still open, and the secured page still gone");
+                var (stored, storedFloor) = product.Floors.Stored(1)!.Value;
+                Check(product.Floors.LastMilliseconds == 0 && Geometry(storedFloor) == geometry && stored.Identity.PlanHash == identity,
+                    "the floor is rebuilt from its plan, identical in identity and geometry, without generating");
+                WorldMemory left = product.Floors.Memory(FloorExcursion.Id(1))!;
+                Check(left.Keys.Contains(key) && left.OpenDoors.Contains(door) && product.Floors.Collected.Contains(page) && product.Floors.ShiftDue(1),
+                    "the key is still held, the door still open, the secured page still gone, and the floor due to shift on the next visit");
+                // Climbing to it after the refuge return, it has shifted around its kept stair core and landmark.
+                ExcursionDefinition shifted = product.Floors.Floor(1)!;
+                GeneratedFloor next = product.Floors.Stored(1)!.Value.Floor;
+                Check(next.Identity.Seed.Shift == 1 && next.Identity.PlanHash != identity && Geometry(shifted) != geometry, "the next visit finds the floor shifted");
+                string Core(GeneratedFloor g) => g.Layout.Placements.First(p => p.Id == g.Layout.Places["arrival"]) is var c ? $"{c.Id} {c.Module} {c.X} {c.Z} {c.Turn}" : "";
+                Check(Core(next) == Core(stored), "the stair core stays where it was");
+                Check(product.Floors.Memory(FloorExcursion.Id(1)) is null || product.Floors.Memory(FloorExcursion.Id(1))!.Keys.Length == 0,
+                    "the shifted floor's keys start fresh");
                 }
 
                 using var store = new ProductStateStore<CheckpointState>(engine, HotelExpedition.Scope,

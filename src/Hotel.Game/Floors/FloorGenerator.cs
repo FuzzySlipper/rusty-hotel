@@ -64,7 +64,8 @@ internal static class FloorGenerator
         return FloorIdentity.Of(seed, plan);
     }
 
-    internal static GenerationResult Generate(IEngineContext engine, FloorSeed seed, FloorTunings tunings, FloorSources sources)
+    /// <param name="kept">When a floor shifts, what it keeps; every candidate and attempt grows around it.</param>
+    internal static GenerationResult Generate(IEngineContext engine, FloorSeed seed, FloorTunings tunings, FloorSources sources, KeptSet? kept = null)
     {
         List<string> refusals = [];
         FloorDraws root = new(engine.Random, seed);
@@ -76,7 +77,7 @@ internal static class FloorGenerator
             {
                 string at = string.Create(CultureInfo.InvariantCulture, $"c{candidate}/a{attempt}");
                 FloorDraws draws = root.Retry(candidate, attempt);
-                FloorLayouts.Laid laid = FloorLayouts.Lay(mission.Graph, sources.Modules, tunings.Layout, sources.Kit, sources.Fixtures, draws);
+                FloorLayouts.Laid laid = FloorLayouts.Lay(mission.Graph, sources.Modules, tunings.Layout, sources.Kit, sources.Fixtures, draws, kept);
                 if (laid.Failure is { } failure) { refusals.Add($"{at} layout: {failure}"); continue; }
                 FloorContent content = ContentPlacement.Place(mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, sources.Modules, tunings.Content,
                     sources.Residents, tunings.Readings, draws);

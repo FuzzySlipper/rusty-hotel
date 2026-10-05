@@ -184,6 +184,11 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 A version 1 checkpoint has no run and begins a new one.
 
+Recording the refuge checkpoint marks every visited floor due to shift; the next climb to it generates it again under
+the next shift number around its kept set (stair core, landmark, and the shortcut passage once unlatched), whose
+placements keep their ids. New placements of a shift are numbered `s<shift>p<n>`, so a re-rolled room never reuses an
+old room's ids. Secured generated finds are kept by item in the run, since their rooms may shift away.
+
 ### Adding saved state
 
 1. In the owning domain, extend its `Capture`, `Validate` and `Restore`. `Restore`

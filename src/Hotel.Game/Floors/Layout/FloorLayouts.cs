@@ -10,9 +10,9 @@ internal static class FloorLayouts
     internal sealed record Laid(FloorLayout? Layout, FloorPlan? Plan, BuiltFloor? Floor, string? Failure);
 
     internal static Laid Lay(MissionGraph graph, ModuleCatalog catalog, LayoutTuning tuning, KitDefinition kit, FixtureCatalog fixtures,
-        FloorDraws draws)
+        FloorDraws draws, KeptSet? kept = null)
     {
-        LayoutResult result = FloorEmbedding.Embed(graph, catalog, tuning, draws);
+        LayoutResult result = FloorEmbedding.Embed(graph, catalog, tuning, draws, kept);
         if (result.Layout is not { } layout) return new(null, null, null, result.Failure);
         FloorPlan plan = layout.Realize(catalog);
         BuiltFloor floor;
