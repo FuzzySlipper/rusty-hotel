@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
+using Hotel.Game.Combat;
+using Hotel.Game.Expedition;
 using Hotel.Game.Content;
 using Hotel.Game.Floors.Layout;
 using Hotel.Game.Floors.Modules;
@@ -122,7 +124,7 @@ internal sealed class HotelFloors
         HashSet<string> stays = kept.Placements.Select(p => $"{excursion.Id}/{p.Id}/").ToHashSet(StringComparer.Ordinal);
         Collected.RemoveWhere(id => id.StartsWith(excursion.Id + "/", StringComparison.Ordinal) && !stays.Any(id.StartsWith));
         memory.Remove(excursion.Id);
-        if (latchOpened && kept.Latch is not null) memory[excursion.Id] = new([$"{excursion.Id}/latch"], [], []);
+        if (latchOpened && kept.Latch is not null) memory[excursion.Id] = new([$"{excursion.Id}/latch"], null, []);
         visited[depth] = (next, FloorExcursion.From(next, Tunings, Sources, content.Player));
     }
 
@@ -166,11 +168,35 @@ internal sealed class HotelFloors
             FloorPlan plan = r.Layout.Realize(Sources.Modules);
             BuiltFloor built = KitBuilder.Build(plan, $"checkpoint floor {r.Depth}", Sources.Kit, Sources.Fixtures);
             GeneratedFloor floor = new(identity, r.Graph, r.Layout, r.Content, plan, built, null, r.Candidate, r.Attempt);
-            rebuilt.Add((r.Depth, floor, FloorExcursion.From(floor, Tunings, Sources, content.Player), r.Memory));
+            ExcursionDefinition excursion = FloorExcursion.From(floor, Tunings, Sources, content.Player);
+            if (r.Memory is { } left) ValidateMemory(excursion, left, r.Depth);
+            rebuilt.Add((r.Depth, floor, excursion, r.Memory));
         }
         if (state.Collected.Any(id => !rebuilt.Any(b => b.Item3.Placements.Finds.Any(f => f.Id == id))))
             throw new InvalidOperationException("Checkpoint collects a find on no visited floor.");
         return rebuilt;
+    }
+
+    // What a stored floor was left as must fit the floor it is rebuilt as: its doors, its keys and its residents.
+    private void ValidateMemory(ExcursionDefinition floor, WorldMemory left, int depth)
+    {
+        if (left.OpenDoors is null || left.Keys is null || left.OpenDoors.Distinct().Count() != left.OpenDoors.Length ||
+            left.OpenDoors.Any(id => floor.Route.Doors.All(d => d.Id != id)) ||
+            left.Keys.Distinct().Count() != left.Keys.Length || left.Keys.Any(k => floor.Route.Keys.All(d => d.Item != k)))
+            throw new InvalidOperationException($"Checkpoint floor {depth}'s doors or keys do not belong to it.");
+        if (left.Residents is not { } residents) return;
+        ResidentPlacement[] roster = floor.Placements.Residents;
+        if (residents.Length != roster.Length || residents.Select(r => r?.Id).Distinct().Count() != roster.Length)
+            throw new InvalidOperationException($"Checkpoint floor {depth}'s resident roster does not match it.");
+        foreach (ResidentState? state in residents)
+        {
+            ResidentPlacement? placed = roster.FirstOrDefault(p => p.Id == state?.Id);
+            ResidentKind? kind = placed is null ? null : content.Combat.Residents.FirstOrDefault(k => k.Id == placed.Kind);
+            if (state is null || placed is null || kind is null || state.Health < 0 || state.Health > kind.Health ||
+                !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
+                System.Numerics.Vector3.Distance(new(state.X, state.Y, state.Z), Authored.Vector(placed.Position)) > kind.Leash + 1)
+                throw new InvalidOperationException($"Checkpoint floor {depth}'s resident values are invalid.");
+        }
     }
 
     /// <summary>The expedition finds a stored run has secured from its generated floors.</summary>

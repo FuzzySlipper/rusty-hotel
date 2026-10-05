@@ -101,7 +101,10 @@ internal static class FloorSaveChecks
                     saved with { Floors = saved.Floors with { Floors = [record with { PlanHash = new string('0', 64) }] } },
                     saved with { Floors = saved.Floors with { Floors = [record with { Version = FloorSeed.CurrentVersion + 1 }] } },
                     saved with { Floors = saved.Floors with { Floors = [record with { Layout = record.Layout with { Placements = record.Layout.Placements[1..] } }] } },
-                    saved with { Floors = saved.Floors with { Collected = [.. saved.Floors.Collected, "floor-9/p1/table"] } } })
+                    saved with { Floors = saved.Floors with { Collected = [.. saved.Floors.Collected, "floor-9/p1/table"] } },
+                    saved with { Floors = saved.Floors with { Floors = [record with { Memory = record.Memory! with { Keys = ["no-such-key"] } }] } },
+                    saved with { Floors = saved.Floors with { Floors = [record with { Memory = record.Memory! with { OpenDoors = ["floor-1/no-such-door"] } }] } },
+                    saved with { Floors = saved.Floors with { Floors = [record with { Memory = record.Memory! with { Residents = [] } }] } } })
                 {
                     store.Save(HotelExpedition.Key, invalid);
                     string stored = JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState);
@@ -109,7 +112,7 @@ internal static class FloorSaveChecks
                     try { using HotelProduct again = Product(engine); again.Start(); }
                     catch (InvalidOperationException e) { rejected = e.Message.Contains("Cannot load"); }
                     Check(rejected && JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState) == stored,
-                        "a tampered plan, another generator's floor or an unknown find is refused and the save is not replaced");
+                        "a tampered plan, another generator's floor, an unknown find, or memory that does not fit the floor is refused and the save is not replaced");
                 }
             });
         }

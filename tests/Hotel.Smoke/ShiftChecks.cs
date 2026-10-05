@@ -23,7 +23,7 @@ internal static class ShiftChecks
             if (floors.Floor(1) is not { } first) continue;
             GeneratedFloor original = floors.Stored(1)!.Value.Floor;
             // The player unlatched the shortcut on the first visit.
-            floors.Remember(first.Id, new([$"{first.Id}/latch"], [], []));
+            floors.Remember(first.Id, new([$"{first.Id}/latch"], null, []));
             KeptSet kept = KeptSet.From(original, latchOpened: true);
             HashSet<string> previous = [original.Identity.PlanHash];
             floorsShifted++;

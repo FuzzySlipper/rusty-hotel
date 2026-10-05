@@ -27,6 +27,8 @@ internal sealed class HotelExpedition : IDisposable
     // Captured at construction, while every owner still holds its authored starting values.
     private readonly CheckpointState initial;
     private CheckpointState? checkpoint;
+    /// <summary>The checkpoint last stored or loaded.</summary>
+    internal CheckpointState? Checkpoint => checkpoint;
 
     internal HotelExpedition(IEngineContext engine, RefugeDefinition refuge, ExpeditionMessages text, HotelPlayer player,
         HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelRoute route, Floors.HotelFloors floors)

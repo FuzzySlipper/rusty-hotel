@@ -163,6 +163,9 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     internal void Enter(ExcursionDefinition excursion, int depth, StairDirection way, bool newRun = false)
     {
         WorldCarry carry = world.Carry();
+        // A new run's floors share no finds with the old run's: only the refuge floor's collected finds come along.
+        if (newRun) carry = carry with { Supplies = carry.Supplies with
+            { Collected = carry.Supplies.Collected.Where(id => content.Excursion.Placements.Finds.Any(f => f.Id == id)).ToArray() } };
         if (!newRun || world.HasRefuge)
         {
             foreach (string id in carry.Supplies.Collected) floors.Collected.Add(id);

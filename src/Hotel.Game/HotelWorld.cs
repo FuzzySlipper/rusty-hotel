@@ -16,7 +16,8 @@ namespace Hotel.Game;
 internal sealed record WorldCarry(SuppliesState Supplies, SpiritState Spirit, string Weapon);
 
 /// <summary>What a floor keeps while the player is elsewhere in the session: its opened doors and its residents.</summary>
-internal sealed record WorldMemory(string[] OpenDoors, ResidentState[] Residents, string[] Keys);
+/// <param name="Residents">The residents as left, or null for a floor whose residents start fresh.</param>
+internal sealed record WorldMemory(string[] OpenDoors, ResidentState[]? Residents, string[] Keys);
 
 /// <summary>
 /// The owners of one excursion's world, built together for the floor the player stands on and disposed together when
@@ -75,7 +76,7 @@ internal sealed class HotelWorld : IDisposable
         Supplies.Restore(carry.Supplies with { Collected = carry.Supplies.Collected.Concat(collected).Distinct()
             .Where(id => Supplies.Finds.Any(f => f.Id == id)).Order(StringComparer.Ordinal).ToArray() });
         Spirit.Restore(carry.Spirit);
-        if (memory is not null) Combat.Validate(carry.Weapon, memory.Residents);
+        if (memory?.Residents is { } left) Combat.Validate(carry.Weapon, left);
         Combat.Restore(carry.Weapon, memory?.Residents ?? []);
         Route.Restore(memory?.OpenDoors ?? [], memory?.Keys);
     }

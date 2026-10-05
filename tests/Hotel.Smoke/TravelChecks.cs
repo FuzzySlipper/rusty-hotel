@@ -76,17 +76,37 @@ internal static class TravelChecks
             Check(Observe().GetProperty("occupiedPockets").GetInt32() == 1, "the developer floor command keeps what the player carries");
             JsonElement inspected = JsonDocument.Parse(commands.Hotel!.InspectFloor().Message).RootElement;
             Check(inspected.GetProperty("runSeed").GetUInt64() == 77 && inspected.GetProperty("places").GetArrayLength() > 5, "floor inspection reports the run and where its places are");
-            // A new run at the same depth starts fresh: the old run's residents, doors and finds do not leak into it.
+            // A new run at the same depth starts fresh: the old run's residents, doors and finds do not leak into it, even a
+            // collected id the new run's floor happens to share.
             var oldFind = product.World.Supplies.Finds.FirstOrDefault();
             if (oldFind is not null) product.World.Supplies.Pickup(oldFind.Id);
+            HotelFloors probe = new(engine, product.Content);
+            probe.Begin(78);
+            string overlap = probe.Floor(2)!.Placements.Finds[0].Id;
+            var carried = product.World.Supplies.Capture();
+            product.World.Supplies.Restore(carried with { Collected = [.. carried.Collected, overlap] });
             foreach (var enemy in product.World.Combat.Enemies) enemy.Health.SetCurrent(0);
             Check(commands.Hotel!.Floor(78, 2).Status == Rusty.Engine.Debugging.DebugCommandStatus.Success, "a new run at the same depth");
             Check(product.World.Combat.Enemies.All(e => e.Alive) && product.World.Route.OpenDoors.Length == 0 &&
-                product.World.Supplies.Finds.All(f => !product.World.Supplies.Collected(f.Id)) && !product.Floors.Collected.Contains(oldFind?.Id ?? "-"),
+                product.World.Supplies.Finds.All(f => !product.World.Supplies.Collected(f.Id)) && !product.Floors.Collected.Contains(oldFind?.Id ?? "-") &&
+                !product.World.Supplies.Collected(overlap),
                 "a new run's floor at the same depth keeps nothing of the old run's floor");
             Check(Observe().GetProperty("occupiedPockets").GetInt32() >= 1, "while what the player carries comes along");
+            // A shifted floor whose kept shortcut was unlatched is entered with its latch still open and fresh residents.
+            Check(commands.Hotel!.Floor(31, 1).Status == Rusty.Engine.Debugging.DebugCommandStatus.Success, "enter a floor to unlatch");
+            string? latch = product.World.Excursion.Route.Doors.FirstOrDefault(d => d.FarSideLatch)?.Id;
+            if (latch is not null)
+            {
+                product.World.Route.Restore([latch]);
+                product.Enter(product.Content.Excursion, 0, StairDirection.Down);
+                Check(product.World.Expedition.Return(), "record the checkpoint so the floor shifts");
+                product.Enter(product.Floors.Floor(1)!, 1, StairDirection.Up);
+                Check(product.Floors.Stored(1)!.Value.Floor.Identity.Seed.Shift == 1 && product.World.Route.OpenDoors.Contains(latch) &&
+                    product.World.Combat.Enemies.All(e => e.Alive), "the shifted floor keeps its open latch and its residents start fresh");
+            }
             product.Restart();
-            Check(Observe().GetProperty("depth").GetInt32() == 0 && product.World.HasRefuge && Observe().GetProperty("occupiedPockets").GetInt32() == 0,
+            Check(Observe().GetProperty("depth").GetInt32() == 0 && product.World.HasRefuge &&
+                Observe().GetProperty("occupiedPockets").GetInt32() == product.World.Expedition.Checkpoint!.Supplies.Pockets.Count(p => p is not null),
                 "defeat or restart on a generated floor returns to the refuge's checkpoint");
             Console.WriteLine("Travel checks passed: stairs up and down with the use key, carried supplies, the landing and the foot of the stairs, the same floor again, developer floor entry and inspection, and restart to the refuge.");
         });
