@@ -1,5 +1,6 @@
 using Hotel.Game.Combat;
 using Hotel.Game.Content;
+using Hotel.Game.Floors;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Spirits;
@@ -22,17 +23,19 @@ internal sealed class HotelExpedition : IDisposable
     private readonly HotelCombat combat;
     private readonly HotelSpirit spirit;
     private readonly HotelRoute route;
+    private readonly Floors.HotelFloors floors;
     // Captured at construction, while every owner still holds its authored starting values.
     private readonly CheckpointState initial;
     private CheckpointState? checkpoint;
 
     internal HotelExpedition(IEngineContext engine, RefugeDefinition refuge, ExpeditionMessages text, HotelPlayer player,
-        HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelRoute route)
+        HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelRoute route, Floors.HotelFloors floors)
     {
         this.refuge = refuge; this.text = text; this.player = player; this.supplies = supplies;
-        this.combat = combat; this.spirit = spirit; this.route = route;
+        this.combat = combat; this.spirit = spirit; this.route = route; this.floors = floors;
         store = new(engine, Scope, new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
-        initial = Capture(0);
+        // The authored start has no run yet; a new game begins one when it first establishes its checkpoint.
+        initial = Capture(0) with { Floors = null };
     }
 
     internal int Returns => checkpoint?.Returns ?? 0;
@@ -48,9 +51,13 @@ internal sealed class HotelExpedition : IDisposable
         try
         {
             ProductStateLoad<CheckpointState> loaded = store.Load(Key);
-            CheckpointState state = loaded.Present
-                ? loaded.State ?? throw new InvalidOperationException("Checkpoint has no state.")
-                : initial;
+            CheckpointState state;
+            if (loaded.Present) state = loaded.State ?? throw new InvalidOperationException("Checkpoint has no state.");
+            else
+            {
+                floors.BeginNew();
+                state = initial with { Floors = floors.Capture() };
+            }
             Validate(state);
             if (!loaded.Present) Write(state);
             checkpoint = state;
@@ -92,7 +99,8 @@ internal sealed class HotelExpedition : IDisposable
         checkpoint = next;
         supplies.Restore(next.Supplies);
         string secured = next.SecuredFinds.Length == 0 ? text.NothingSecured : Template.Fill(text.Secured,
-            ("finds", string.Join(", ", next.SecuredFinds.Select(id => supplies.Item(supplies.Finds.Single(f => f.Id == id).Item).Name))));
+            ("finds", string.Join(", ", next.SecuredFinds.Select(id => (supplies.Finds.FirstOrDefault(f => f.Id == id) is { } here
+                ? supplies.Item(here.Item) : floors.FindItem(id)!).Name))));
         return Receipt(true, Template.Fill(text.Saved, ("secured", secured), ("returns", Returns),
             ("health", supplies.Health), ("ammo", supplies.Ammo), ("summon", supplies.Summon)));
     }
@@ -121,22 +129,27 @@ internal sealed class HotelExpedition : IDisposable
     private CheckpointState Capture(int returns)
     {
         SuppliesState carried = supplies.Capture();
-        string[] secured = carried.Collected.Where(supplies.IsExpeditionFind).ToArray();
+        // Expedition finds from this floor and from the run's generated floors are secured together.
+        FloorsState run = floors.Capture();
+        string[] secured = [.. carried.Collected.Where(supplies.IsExpeditionFind), .. Floors.HotelFloors.ExpeditionFinds(run, supplies)];
         // Expedition finds move into the refuge ledger, retaining their collected identity.
         SuppliesState deposited = carried with { Pockets = carried.Pockets.Select(s => s is { } item && supplies.Item(item.Item).Kind == SupplyKind.Expedition ? null : s).ToArray() };
-        return new(1, returns, refuge.Id, combat.Weapon.Id, deposited, route.OpenDoors,
-            spirit.Capture(), combat.Capture(), secured);
+        return new(2, returns, refuge.Id, combat.Weapon.Id, deposited, route.OpenDoors,
+            spirit.Capture(), combat.Capture(), secured, run);
     }
 
     internal void Validate(CheckpointState state)
     {
-        if (state.Version != 1 || state.Returns < 0 || state.Refuge != refuge.Id || state.Supplies is null || state.Spirit is null)
+        if (state.Version is not (1 or 2) || state.Returns < 0 || state.Refuge != refuge.Id || state.Supplies is null || state.Spirit is null ||
+            (state.Version == 2) != (state.Floors is not null))
             throw new InvalidOperationException("Checkpoint version or refuge is invalid.");
+        if (state.Floors is { } run) floors.Validate(run);
         supplies.Validate(state.Supplies);
         route.Validate(state.OpenDoors);
         combat.Validate(state.Weapon, state.Residents);
         spirit.Validate(state.Spirit);
-        string[] expected = state.Supplies.Collected.Where(supplies.IsExpeditionFind).Order().ToArray();
+        string[] expected = state.Supplies.Collected.Where(supplies.IsExpeditionFind)
+            .Concat(state.Floors is { } stored ? Floors.HotelFloors.ExpeditionFinds(stored, supplies) : []).Order().ToArray();
         if (state.SecuredFinds is null || !state.SecuredFinds.Order().SequenceEqual(expected) ||
             state.Supplies.Pockets.Any(s => s is { } item && supplies.Item(item.Item).Kind == SupplyKind.Expedition))
             throw new InvalidOperationException("Checkpoint expedition deposit is inconsistent.");
@@ -146,6 +159,8 @@ internal sealed class HotelExpedition : IDisposable
     // collected set, so it runs after supplies; the player returns to the arrival point last of the bodies.
     private void Apply(CheckpointState state)
     {
+        if (state.Floors is { } run) floors.Restore(run);
+        else floors.BeginNew();
         supplies.Restore(state.Supplies);
         combat.Restore(state.Weapon, state.Residents);
         spirit.Restore(state.Spirit);

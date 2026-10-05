@@ -183,6 +183,7 @@ CheckpointChecks.Run();
 ContentChecks.Run();
 FloorChecks.Run();
 TravelChecks.Run();
+FloorSaveChecks.Run();
 Console.WriteLine("Hotel smoke passed: floor/walls, walking pace, clear, pause/resume callbacks, pointer consumption and restart.");
 
 static ProductInputEvent Key(KeyboardControl key) => default(ProductInputEvent) with

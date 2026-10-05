@@ -177,6 +177,13 @@ labels or art. Pocket count, stack/resource bounds, resident roster/health/leash
 and other validation rules also affect whether an existing save remains valid.
 There is no automatic migration or fallback to a new game for invalid data.
 
+Version 2 adds the run: its seed and every generated floor visited in it, kept as the floor's identity and resolved
+plan (mission graph, layout and content, never boxes), with what the player left it as (open doors, residents, keys)
+and the finds collected on it. A stored floor is rebuilt from its plan without drawing, after its generator version
+and the canonical hash of its plan are checked; a floor made by another generator version is refused like any other
+invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
+A version 1 checkpoint has no run and begins a new one.
+
 ### Adding saved state
 
 1. In the owning domain, extend its `Capture`, `Validate` and `Restore`. `Restore`

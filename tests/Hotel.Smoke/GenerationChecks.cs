@@ -21,7 +21,7 @@ internal static class GenerationChecks
         GenerationResult Generate(FloorSeed seed) => FloorGenerator.Generate(engine, seed, tunings, sources);
 
         Dictionary<string, int> refused = new(StringComparer.Ordinal);
-        int floors = 0, confirmed = 0, firstTry = 0, routes = 0, locks = 0, finds = 0, residents = 0;
+        int floors = 0, accepted = 0, firstTry = 0, routes = 0, locks = 0, finds = 0, residents = 0;
         GeneratedFloor? hazardous = null;
         double milliseconds = 0;
         for (int depth = 1; depth <= 3; depth++)
@@ -31,12 +31,13 @@ internal static class GenerationChecks
                 GenerationResult result = Generate(FloorSeed.Current(run, depth, 0));
                 foreach (string why in result.Refusals) { string key = why.Split(' ')[1].TrimEnd(':') + " " + why.Split(' ')[2].TrimEnd(':'); refused[key] = refused.GetValueOrDefault(key) + 1; }
                 if (result.Floor is not { } floor) continue;
-                confirmed++;
+                accepted++;
                 if (floor.Candidate == 0 && floor.Attempt == 0) firstTry++;
-                routes += floor.Confirmation.Routes.Length;
-                locks += floor.Confirmation.Locks.Length;
-                milliseconds += floor.Confirmation.Milliseconds;
-                Check(floor.Confirmation.Routes.Length >= 2 && floor.Confirmation.Confirmed, "a returned floor is confirmed both ways");
+                Confirmation confirmed = floor.Confirmation ?? throw new InvalidOperationException("a generated floor carries its confirmation");
+                routes += confirmed.Routes.Length;
+                locks += confirmed.Locks.Length;
+                milliseconds += confirmed.Milliseconds;
+                Check(confirmed.Routes.Length >= 2 && confirmed.Confirmed, "a returned floor is confirmed both ways");
                 Check(ContentPacing.Check(floor.Content, floor.Graph, floor.Layout, floor.Plan, floor.Floor, tunings.Content, sources.Items, sources.Residents, depth) is null,
                     "every pacing budget holds on an accepted floor");
                 Check(floor.Content.Finds.All(f => floor.Floor.Sockets.ContainsKey(f.Socket)) && floor.Content.Residents.All(r => floor.Floor.Sockets.ContainsKey(r.Socket)),
@@ -45,7 +46,7 @@ internal static class GenerationChecks
                 residents += floor.Content.Residents.Length;
                 if (floor.Graph.Nodes.Any(n => n.Kind == MissionNodeKind.Hazard)) hazardous ??= floor;
             }
-        Check(confirmed == floors, $"every seed yields a confirmed floor after retries; {confirmed} of {floors}: {string.Join(", ", refused)}");
+        Check(accepted == floors, $"every seed yields a confirmed floor after retries; {accepted} of {floors}: {string.Join(", ", refused)}");
 
         // A hazard with no recovery before it: the stops reachable before it lose their dressings, and the floor is refused.
         Check(hazardous is not null, "some floor has a hazard");
@@ -95,8 +96,8 @@ internal static class GenerationChecks
         RouteVerdict? blocked = verdict.Routes.FirstOrDefault(r => !r.Reached);
         Check(!verdict.Confirmed && blocked?.Blocking is { } at && at.StartsWith("doorway ", StringComparison.Ordinal) && at.Contains("/door"),
             $"a doorway too narrow for the body is refused naming it: {blocked}");
-        Console.WriteLine($"Generation checks passed: {confirmed} of {floors} seeds furnished within budget ({finds / confirmed} finds, {residents / confirmed} residents each) and Engine-confirmed ({firstTry} first try) with {routes} promised routes and " +
-            $"{locks} shut-lock checks, {milliseconds / Math.Max(1, confirmed):0} ms navigation each; refusals before success {(refused.Count == 0 ? "none" : string.Join(", ", refused.Select(r => $"{r.Key} ×{r.Value}")))}; " +
+        Console.WriteLine($"Generation checks passed: {accepted} of {floors} seeds furnished within budget ({finds / accepted} finds, {residents / accepted} residents each) and Engine-confirmed ({firstTry} first try) with {routes} promised routes and " +
+            $"{locks} shut-lock checks, {milliseconds / Math.Max(1, accepted):0} ms navigation each; refusals before success {(refused.Count == 0 ? "none" : string.Join(", ", refused.Select(r => $"{r.Key} ×{r.Value}")))}; " +
             $"unprepared hazard refused ({unprepared}); narrow door refused: {blocked}.");
     }
 }

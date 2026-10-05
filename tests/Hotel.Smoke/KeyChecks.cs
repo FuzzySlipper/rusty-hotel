@@ -48,7 +48,7 @@ internal static class KeyChecks
         Check(route.Keys.Length == 0, "a fresh visit holds no keys");
 
         // A generated floor with locks: a keyed door per lock opening into what it guards, a key per lock, and the latch.
-        using HotelFloors floors = new(engine, content);
+        HotelFloors floors = new(engine, content);
         floors.Begin(5);
         int locks = 0, latches = 0;
         for (int depth = 1; depth <= 6; depth++)

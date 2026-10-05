@@ -26,7 +26,7 @@ internal sealed class HotelWorld : IDisposable
 {
     private readonly List<IDisposable> owned = [];
 
-    internal HotelWorld(IEngineContext engine, HotelContent content, ExcursionDefinition excursion, WorldInteraction interaction,
+    internal HotelWorld(IEngineContext engine, HotelContent content, Floors.HotelFloors floors, ExcursionDefinition excursion, WorldInteraction interaction,
         Func<bool> returnToRefuge, Action publishInterface, Func<StairDirection, bool> travel)
     {
         Excursion = excursion;
@@ -45,7 +45,7 @@ internal sealed class HotelWorld : IDisposable
             SpiritView = Own(new SpiritView(engine, Scene, Spirit));
             // The checkpoint always belongs to the authored refuge, whichever floor this world is.
             Expedition = Own(new HotelExpedition(engine, content.Excursion.Placements.Refuge!, content.ExpeditionText,
-                Player, Supplies, Combat, Spirit, Route));
+                Player, Supplies, Combat, Spirit, Route, floors));
         }
         catch { Dispose(); throw; }
     }

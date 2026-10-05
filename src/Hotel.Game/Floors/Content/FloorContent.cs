@@ -1,6 +1,7 @@
 namespace Hotel.Game.Floors.Content;
 
 /// <summary>Why a find is on the floor: the floor's objective, a key for a lock, a resource stop, or loose supplies.</summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<FindRole>))]
 internal enum FindRole { Objective, Key, Supplies, Loose }
 
 /// <summary>

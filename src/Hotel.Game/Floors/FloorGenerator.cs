@@ -39,8 +39,9 @@ internal sealed record FloorSources(ModuleCatalog Modules, KitDefinition Kit, Fi
     CharacterControllerConfig Body);
 
 /// <summary>A generated floor, proven by the Engine: its identity, mission graph, layout, plan, built geometry and verdict.</summary>
+/// <param name="Confirmation">The Engine's verdict when it was generated; none when it was rebuilt from a save.</param>
 internal sealed record GeneratedFloor(FloorIdentity Identity, MissionGraph Graph, FloorLayout Layout, FloorContent Content, FloorPlan Plan,
-    BuiltFloor Floor, Confirmation Confirmation, int Candidate, int Attempt);
+    BuiltFloor Floor, Confirmation? Confirmation, int Candidate, int Attempt);
 
 /// <summary>A floor, or why every candidate and attempt was refused.</summary>
 internal sealed record GenerationResult(GeneratedFloor? Floor, string[] Refusals);
@@ -53,6 +54,16 @@ internal sealed record GenerationResult(GeneratedFloor? Floor, string[] Refusals
 /// </summary>
 internal static class FloorGenerator
 {
+    /// <summary>A resolved floor's identity: the canonical hash of its retry, mission graph, layout and content under its seed.</summary>
+    internal static FloorIdentity Identity(FloorSeed seed, int candidate, int attempt, MissionGraph graph, FloorLayout layout, FloorContent content)
+    {
+        CanonicalText plan = new CanonicalText().Line("retry", CanonicalText.Number(candidate), CanonicalText.Number(attempt));
+        graph.Write(plan);
+        layout.Write(plan);
+        content.Write(plan);
+        return FloorIdentity.Of(seed, plan);
+    }
+
     internal static GenerationResult Generate(IEngineContext engine, FloorSeed seed, FloorTunings tunings, FloorSources sources)
     {
         List<string> refusals = [];
@@ -74,11 +85,8 @@ internal static class FloorGenerator
                 Confirmation confirmation = FloorConfirmation.Confirm(engine, mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, sources.Modules, sources.Body,
                     tunings.Generation.Navigation);
                 if (!confirmation.Confirmed) { refusals.Add($"{at} navigation: {confirmation.FirstProblem}"); continue; }
-                CanonicalText plan = new CanonicalText().Line("retry", CanonicalText.Number(candidate), CanonicalText.Number(attempt));
-                mission.Graph.Write(plan);
-                laid.Layout!.Write(plan);
-                content.Write(plan);
-                return new(new(FloorIdentity.Of(seed, plan), mission.Graph, laid.Layout, content, laid.Plan!, laid.Floor!, confirmation, candidate, attempt), [.. refusals]);
+                return new(new(Identity(seed, candidate, attempt, mission.Graph, laid.Layout!, content), mission.Graph, laid.Layout!, content,
+                    laid.Plan!, laid.Floor!, confirmation, candidate, attempt), [.. refusals]);
             }
         }
         return new(null, [.. refusals]);

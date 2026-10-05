@@ -25,9 +25,6 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly CurrentRoute current = new();
     private readonly WorldInteraction interaction;
     private readonly HotelDeveloper developer;
-    // Session memory of floors the player has left, and finds collected on floors other than the current one.
-    private readonly Dictionary<string, WorldMemory> memory = new(StringComparer.Ordinal);
-    private readonly HashSet<string> collected = new(StringComparer.Ordinal);
     private HotelWorld world;
     private (ExcursionDefinition Excursion, int Depth, StairDirection Way)? pendingTravel;
     private bool pendingUse, pendingAttack, pendingReload, pendingSummon;
@@ -57,7 +54,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     internal HotelFloors Floors => floors;
     internal ulong Step => step;
 
-    public void Start() { floors.Start(); world.Expedition.Start(); Publish(); world.Ambience.Start(); }
+    public void Start() { world.Expedition.Start(); Publish(); world.Ambience.Start(); }
 
     public ProductUpdateResult Update(ProductUpdate update)
     {
@@ -130,13 +127,12 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         if (disposed) return;
         disposed = true;
         world?.Dispose();
-        floors?.Dispose();
         hud?.Dispose();
     }
 
     private HotelWorld Build(ExcursionDefinition excursion)
     {
-        HotelWorld built = new(engine, content, excursion, interaction, ReturnToRefuge, PublishInterface, Travel);
+        HotelWorld built = new(engine, content, floors, excursion, interaction, ReturnToRefuge, PublishInterface, Travel);
         current.Route = built.Route;
         interaction.Focus.Clear();
         return built;
@@ -166,15 +162,15 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     internal void Enter(ExcursionDefinition excursion, int depth, StairDirection way)
     {
         WorldCarry carry = world.Carry();
-        foreach (string id in carry.Supplies.Collected) collected.Add(id);
-        memory[world.Excursion.Id] = world.Remember();
+        foreach (string id in carry.Supplies.Collected) floors.Collected.Add(id);
+        floors.Remember(world.Excursion.Id, world.Remember());
         // The old world releases its scene, lights and collision before the next claims theirs.
         HotelExpedition previous = world.Expedition;
         world.Dispose();
         world = Build(excursion);
         world.Expedition.Adopt(previous);
         floors.Arrive(depth);
-        world.Enter(carry, collected, memory.GetValueOrDefault(excursion.Id));
+        world.Enter(carry, floors.Collected, floors.Memory(excursion.Id));
         var arrival = way == StairDirection.Up ? excursion.Placements.Arrival : excursion.Placements.FromAbove;
         world.Player.Place(Authored.Vector(arrival.Position), arrival.YawDegrees);
         ClearActions();
@@ -182,18 +178,9 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         Publish();
     }
 
-    /// <summary>Forgets what this session remembered of generated floors, as when a new run begins.</summary>
-    internal void ForgetGeneratedFloors()
-    {
-        foreach (string id in memory.Keys.Where(k => k != content.Excursion.Id).ToArray()) memory.Remove(id);
-        collected.RemoveWhere(id => !content.Excursion.Placements.Finds.Any(f => f.Id == id));
-    }
-
-    /// <summary>Rebuilds the refuge's floor when the player is elsewhere; the session's floor memory is forgotten.</summary>
+    /// <summary>Rebuilds the refuge's floor when the player is elsewhere, ready for the checkpoint to be applied.</summary>
     internal void ReturnToRefugeFloor()
     {
-        memory.Clear();
-        collected.Clear();
         if (world.HasRefuge) return;
         HotelExpedition previous = world.Expedition;
         world.Dispose();

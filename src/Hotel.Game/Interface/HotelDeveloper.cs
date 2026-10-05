@@ -62,8 +62,7 @@ internal sealed class HotelDeveloper(HotelProduct product)
     internal DebugCommandResult Floor(ulong seed, int depth)
     {
         if (depth is < 1 or > 99) return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "Depth is 1 to 99; depth 0 is the west wing.");
-        // A new run's floors are new: forget the old run's, but keep what the player carries.
-        product.ForgetGeneratedFloors();
+        // A new run's floors are new: the old run's are forgotten, and what the player carries is kept.
         product.Floors.Begin(seed);
         if (product.Floors.Floor(depth) is not { } floor)
             return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"No floor at depth {depth}: {string.Join("; ", product.Floors.LastRefusals.Take(5))}");
@@ -97,7 +96,7 @@ internal sealed class HotelDeveloper(HotelProduct product)
         return DebugCommandResult.Success(JsonSerializer.Serialize(new FloorInspection(floors.RunSeed, floors.Depth, World.Excursion.Id,
             floor?.Identity.PlanHash, floor?.Candidate, floor?.Attempt, places, spaces, links,
             floor?.Layout.Placements.Length, floor?.Content.Finds.Length, floor?.Content.Residents.Length,
-            floor?.Confirmation.Routes.Length, floors.LastRefusals, floors.LastMilliseconds), DeveloperJson.Default.FloorInspection));
+            floor?.Confirmation?.Routes.Length, floors.LastRefusals, floors.LastMilliseconds), DeveloperJson.Default.FloorInspection));
     }
 
     internal DebugCommandResult LookBy(double yaw, double pitch)
