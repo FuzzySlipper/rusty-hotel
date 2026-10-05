@@ -31,49 +31,34 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly HotelCombat combat;
     private readonly CombatView combatView;
     private readonly HotelAmbience ambience;
+    private readonly List<IDisposable> owned = [];
     private bool disposed;
     private ulong step;
     private double sampleTime;
 
     public HotelProduct(ProductCreateContext context)
     {
-        scene = new HotelScene(context.Engine, HotelDefinition.Load(context.Engine));
+        IEngineContext engine = context.Engine;
         try
         {
-            player = new HotelPlayer(context.Engine, scene);
-            try
-            {
-                supplies = new HotelSupplies(scene.Definition.Supplies, scene.Definition.Interface.SupplyPockets, scene.PlayerEntity);
-                combat = new HotelCombat(context.Engine, scene, player, supplies);
-                spirit = new HotelSpirit(scene.Definition.Spirit, supplies, combat, player);
-                route = new HotelRoute(context.Engine, scene, player, supplies, spirit);
-                hud = new HotelHud(context.Engine, scene.Definition.Interface);
-                try
-                {
-                    ambience = new HotelAmbience(context.Engine, scene.Definition.Ambience);
-                    try
-                    {
-                        combatView = new CombatView(context.Engine, scene, player, combat);
-                        try
-                        {
-                            spiritView = new SpiritView(context.Engine, scene, spirit);
-                            try { expedition = new HotelExpedition(context.Engine, scene.Definition, player, supplies, combat, spirit, route); }
-                            catch { spiritView.Dispose(); throw; }
-                        }
-                        catch { combatView.Dispose(); throw; }
-                    }
-                    catch { ambience.Dispose(); throw; }
-                }
-                catch { hud.Dispose(); throw; }
-            }
-            catch { player.Dispose(); throw; }
+            scene = Own(new HotelScene(engine, HotelDefinition.Load(engine)));
+            player = Own(new HotelPlayer(engine, scene));
+            supplies = new HotelSupplies(scene.Definition.Supplies, scene.Definition.Interface.SupplyPockets, scene.PlayerEntity);
+            combat = new HotelCombat(engine, scene, player, supplies);
+            spirit = new HotelSpirit(scene.Definition.Spirit, supplies, combat, player);
+            route = new HotelRoute(engine, scene, player, supplies, spirit);
+            hud = Own(new HotelHud(engine, scene.Definition.Interface));
+            ambience = Own(new HotelAmbience(engine, scene.Definition.Ambience));
+            combatView = Own(new CombatView(engine, scene, player, combat));
+            spiritView = Own(new SpiritView(engine, scene, spirit));
+            expedition = Own(new HotelExpedition(engine, scene.Definition, player, supplies, combat, spirit, route));
         }
-        catch { scene.Dispose(); throw; }
+        catch { Dispose(); throw; }
         route.RecordCheckpoint = expedition.Return;
-        route.Changed = () => hud.Publish(route, supplies, combat, spirit, expedition);
+        route.Changed = PublishInterface;
     }
 
-    public void Start() { expedition.Start(); spiritView.Publish(); combatView.Publish(); player.Publish(0); hud.Publish(route, supplies, combat, spirit, expedition); ambience.Start(); }
+    public void Start() { expedition.Start(); Publish(); ambience.Start(); }
 
     public ProductUpdateResult Update(ProductUpdate update)
     {
@@ -108,12 +93,9 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             route.Update();
             if (pendingUse) { pendingUse = false; if (!combat.Defeated) route.Use(); }
         }
-        spiritView.Publish();
-        combatView.Publish();
-        hud.Publish(route, supplies, combat, spirit, expedition);
         step = checked(update.Facts.SimulationStep + update.Facts.AdmittedStepCount);
         sampleTime = step * update.Facts.FixedDeltaSeconds;
-        player.Publish(sampleTime);
+        Publish();
         return ProductUpdateResult.None;
     }
 
@@ -123,38 +105,53 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     {
         supplies.HandleIntents(intents);
         spirit.HandleIntents(intents);
-        hud.Publish(route, supplies, combat, spirit, expedition);
+        PublishInterface();
     }
 
     public void Pause() { ClearActions(); player.ClearInput(); }
     public void Resume() { ClearActions(); player.ClearInput(); }
-    public void Restart() { ClearActions(); expedition.Recover(); spiritView.Publish(); combatView.Publish(); player.Publish(sampleTime); hud.Publish(route, supplies, combat, spirit, expedition); }
+    public void Restart() { ClearActions(); expedition.Recover(); Publish(); }
     public void Shutdown() => Dispose();
     public void Dispose()
     {
         if (disposed) return;
         disposed = true;
-        expedition.Dispose();
-        spiritView.Dispose();
-        combatView.Dispose();
-        ambience.Dispose();
-        hud.Dispose();
-        player.Dispose();
-        scene.Dispose();
+        // Reverse construction order: dependents release before the scene they draw into.
+        for (int i = owned.Count - 1; i >= 0; i--) owned[i].Dispose();
+        owned.Clear();
     }
+
+    private T Own<T>(T resource) where T : IDisposable
+    {
+        owned.Add(resource);
+        return resource;
+    }
+
+    /// <summary>Publishes every presentation of the current domain state: scene views, camera and HUD.</summary>
+    private void Publish()
+    {
+        spiritView.Publish();
+        combatView.Publish();
+        player.Publish(sampleTime);
+        PublishInterface();
+    }
+
+    // Paused claims, route results and developer fixtures change only UI facts; the camera
+    // sample and scene snapshot stay at the last admitted simulation step.
+    private void PublishInterface() => hud.Publish(route, supplies, combat, spirit, expedition);
 
     public void RegisterDebugCommands(IDebugCommandModuleRegistrar registrar)
     {
         registrar.Register(new PlaytestDebugModule(Observe, Action, ["forward", "back", "left", "right", "use", "attack", "melee", "pistol", "reload", "summon"], LookBy));
         registrar.Register(new InteractionDebugModule(route.Interaction));
         registrar.Register(new HotelDebugCommands(Observe, ResetExcursion));
-        registrar.Register(new SuppliesDebugCommands(supplies, () => hud.Publish(route, supplies, combat, spirit, expedition)));
+        registrar.Register(new SuppliesDebugCommands(supplies, PublishInterface));
     }
 
     private void ResetExcursion()
     {
         ClearActions(); player.Reset(); supplies.Reset(); combat.Reset(); spirit.Reset(); route.Reset();
-        spiritView.Publish(); combatView.Publish(); player.Publish(sampleTime); hud.Publish(route, supplies, combat, spirit, expedition);
+        Publish();
     }
 
     private DebugCommandResult LookBy(double yaw, double pitch)
@@ -162,9 +159,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         if (!double.IsFinite(yaw) || !double.IsFinite(pitch) || Math.Abs(yaw) > 360 || Math.Abs(pitch) > 180)
             return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "Look degrees exceed bounds.");
         player.LookBy(yaw, pitch);
-        spiritView.Publish();
-        combatView.Publish();
-        player.Publish(sampleTime);
+        Publish();
         return Observe();
     }
 

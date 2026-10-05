@@ -43,6 +43,14 @@ places those same meshes in one Engine spatial session. One Engine entity store
 holds the player's transform and motion. Static scene entities supply real
 identities for their appearance and collision instances.
 
+The constructor creates owners in one flat sequence. Each disposable owner is
+registered as it is created; a construction failure or `Dispose` releases them
+in reverse order. Adding an owner is one line. Every path that changes domain
+state ends in one of two methods. `Publish` sends the scene views, camera sample
+and HUD. `PublishInterface` sends HUD facts only, for paused claims, route
+results and developer fixtures, which must not resample the camera at an
+unadmitted time.
+
 `Start` publishes the scene, camera and HUD facts and starts Engine ambient voices. Each admitted update consumes Engine
 input through `FpsInput`, integrates look through its helper, and applies one
 `ProposeCharacterStep` per admitted fixed step. Only accepted Engine receipts
