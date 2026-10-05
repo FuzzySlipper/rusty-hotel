@@ -34,6 +34,17 @@ internal sealed class HotelDeveloper(HotelProduct product)
         return Observe();
     }
 
+    internal DebugCommandResult View(float x, float z, float yaw, float pitch)
+    {
+        if (!float.IsFinite(x) || !float.IsFinite(z) || !float.IsFinite(yaw) || !float.IsFinite(pitch))
+            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "The point and angles must be finite numbers.");
+        product.ClearActions();
+        World.Player.Place(new(x, World.Player.Tuning.Height / 2, z), yaw);
+        World.Player.LookBy(0, pitch);
+        product.Publish();
+        return Observe();
+    }
+
     internal DebugCommandResult ShowModule(string id, int turn)
     {
         ModuleCatalog modules = product.Content.Modules;

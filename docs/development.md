@@ -66,6 +66,7 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.dev.floor <seed> <depth>` | Begin a run from a seed (stored as the run) and stand on its generated floor at a depth, arriving up its stairs with the current supplies; reports the floor inspection |
 | `hotel.floor.inspect` | The run seed, depth and current generated floor: identity hash, retry, places with their module, centre and door, every space and link with its midpoint, sizes, and the last generation's refusals and time |
 | `hotel.dev.goto <space>` | Stand on a floor-plan space's first post, or at its centre when it has none, keeping the current facing, to inspect the built floor; changes no saved state. The centre may hold furniture: use a post or a doorway point from `hotel.floor.inspect` |
+| `hotel.dev.view <x> <z> <yaw> <pitch>` | Stand at a floor point facing a yaw and pitch in degrees, for repeatable captures from one viewpoint; changes no saved state. The point is not checked against furniture |
 | `hotel.dev.give-supply` | Fixture grant subject to inventory capacity rules |
 | `hotel.dev.set-health` | Fixture health change within authored bounds |
 | `hotel.dev.use-supply` | Use a zero-based pocket with its current revision and ordinary resource eligibility |

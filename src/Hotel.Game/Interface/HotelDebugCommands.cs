@@ -16,6 +16,9 @@ internal sealed class HotelDebugCommands(HotelDeveloper developer) : IDebugComma
     [DebugCommand("hotel.dev.goto", Description = "Developer override: stand at the centre of a named floor-plan space (for inspecting the built floor).")]
     public DebugCommandResult GoTo(string space) => developer.GoTo(space);
 
+    [DebugCommand("hotel.dev.view", Description = "Developer override: stand at a floor point (x, z) facing a yaw and pitch in degrees, for repeatable captures from one viewpoint.")]
+    public DebugCommandResult View(float x, float z, float yaw, float pitch) => developer.View(x, z, yaw, pitch);
+
     [DebugCommand("hotel.inspect", Description = "Read the current Hotel player position, look, route, focus and reading state.")]
     public DebugCommandResult Inspect() => developer.Observe();
 
