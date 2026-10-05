@@ -18,7 +18,7 @@ internal static class SpiritChecks
         HotelSupplies supplies = new(scene.Definition.Supplies, 12, scene.PlayerEntity);
         HotelCombat combat = new(engine, scene, player, supplies);
         HotelSpirit spirit = new(scene.Definition.Spirit, supplies, combat, player);
-        HotelRoute route = new(engine, scene, player, supplies, spirit);
+        HotelRoute route = new(engine, scene, player, supplies, spirit, () => false, () => { });
         using SpiritView view = new(engine, scene, spirit);
         HotelEnemy lamp = combat.Enemies.Single(e => e.Definition.Id == "lamp");
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }

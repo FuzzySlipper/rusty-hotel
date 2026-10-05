@@ -1,7 +1,9 @@
 using System.Numerics;
+using Hotel.Game.Combat;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Scene;
+using Hotel.Game.Spirits;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
 using Rusty.Engine.Entities;
@@ -14,7 +16,9 @@ internal static class RouteChecks
         using HotelScene scene = new(engine, HotelDefinition.Load(engine));
         using HotelPlayer player = new(engine, scene);
         HotelSupplies supplies = new(scene.Definition.Supplies, scene.Definition.Interface.SupplyPockets, scene.PlayerEntity);
-        HotelRoute route = new(engine, scene, player, supplies);
+        HotelCombat combat = new(engine, scene, player, supplies);
+        HotelSpirit spirit = new(scene.Definition.Spirit, supplies, combat, player);
+        HotelRoute route = new(engine, scene, player, supplies, spirit, () => false, () => { });
         scene.Publish();
         void At(float x, float z, Vector3 target)
         {

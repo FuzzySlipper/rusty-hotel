@@ -46,7 +46,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             supplies = new HotelSupplies(scene.Definition.Supplies, scene.Definition.Interface.SupplyPockets, scene.PlayerEntity);
             combat = new HotelCombat(engine, scene, player, supplies);
             spirit = new HotelSpirit(scene.Definition.Spirit, supplies, combat, player);
-            route = new HotelRoute(engine, scene, player, supplies, spirit);
+            route = new HotelRoute(engine, scene, player, supplies, spirit, ReturnToRefuge, PublishInterface);
             hud = Own(new HotelHud(engine, scene.Definition.Interface));
             ambience = Own(new HotelAmbience(engine, scene.Definition.Ambience));
             combatView = Own(new CombatView(engine, scene, player, combat));
@@ -54,8 +54,6 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             expedition = Own(new HotelExpedition(engine, scene.Definition, player, supplies, combat, spirit, route));
         }
         catch { Dispose(); throw; }
-        route.RecordCheckpoint = expedition.Return;
-        route.Changed = PublishInterface;
     }
 
     public void Start() { expedition.Start(); Publish(); ambience.Start(); }
@@ -120,6 +118,9 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         for (int i = owned.Count - 1; i >= 0; i--) owned[i].Dispose();
         owned.Clear();
     }
+
+    // The notebook's use handler; Expedition is created after Route because it captures route state.
+    private bool ReturnToRefuge() => expedition.Return();
 
     private T Own<T>(T resource) where T : IDisposable
     {

@@ -39,8 +39,8 @@ original images in `docs/references/`.
 
 Solid boxes participate in Engine collision. Decorative GLB props are visual
 only; place them on solid furniture. A model does not become an interaction
-simply by appearing in the scene. Extend the existing route candidate adapter
-for new world actions. A supply's find ID associates its authored boxes with
+simply by appearing in the scene. Add new world actions as `Interactable`
+entries and a use handler in `HotelRoute`. A supply's find ID associates its authored boxes with
 the collected state; disappearance must follow successful inventory admission.
 Door open/closed appearance and collision use the same authored poses.
 

@@ -9,6 +9,10 @@ using Rusty.Engine.Interaction;
 namespace Hotel.Game.Route;
 
 /// <summary>Authored route policy; Engine owns focus, visibility and use admission.</summary>
+/// <remarks>
+/// Every world interactable is one <see cref="Interactable"/> entry built from authored definitions.
+/// A new kind adds its entries and one use handler; focus, visibility and staleness stay shared.
+/// </remarks>
 internal sealed class HotelRoute : IWorldInteractionScene
 {
     private readonly IEngineContext engine;
@@ -16,33 +20,58 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private readonly HotelPlayer player;
     private readonly RouteDefinition tuning;
     private readonly HotelSupplies supplies;
-    private readonly (FindDefinition Definition, ulong Entity)[] finds;
+    private readonly HotelSpirit spirit;
+    private readonly Func<bool> recordCheckpoint;
+    private readonly Action changed;
     private readonly DoorState[] doors;
-    private readonly (ReadingDefinition Definition, ulong Entity)[] readings;
-    private readonly HotelSpirit? spirit;
-    private readonly ulong spiritEntity;
-    private readonly ulong refugeEntity;
+    private readonly (FindDefinition Definition, ulong Entity)[] finds;
+    private readonly List<Interactable> interactables = [];
+    private readonly Dictionary<ulong, Interactable> byEntity = [];
     private ulong revision = 1;
 
-    internal HotelRoute(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies, HotelSpirit? spirit = null)
+    /// <param name="recordCheckpoint">Expedition's refuge return. It is resolved when the notebook is
+    /// used, because Expedition itself captures and restores this route's door state.</param>
+    /// <param name="changed">Publishes interface facts after a world action changes them.</param>
+    internal HotelRoute(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
+        HotelSpirit spirit, Func<bool> recordCheckpoint, Action changed)
     {
         this.engine = engine;
         this.scene = scene;
         this.player = player;
         this.supplies = supplies;
         this.spirit = spirit;
-        spiritEntity = scene.Entities.Create().Value;
-        refugeEntity = scene.Entities.Create().Value;
+        this.recordCheckpoint = recordCheckpoint;
+        this.changed = changed;
         tuning = scene.Definition.Route;
         doors = tuning.Doors.Select(d => new DoorState(d, scene.DoorEntity(d.Id))).ToArray();
-        readings = tuning.Readings.Select(r => (r, scene.Entities.Create().Value)).ToArray();
         finds = scene.Definition.Supplies.Finds.Select(f => (f, scene.Entities.Create().Value)).ToArray();
+
+        // Candidate order is stable: doors, readings, finds, the spirit bell, then the refuge notebook.
+        foreach (DoorState door in doors)
+            Add(new(door.Entity, () => !door.Open, () => door.Definition.Label, () => DoorFocus(door),
+                () => CanUnlatch(door), () => OpenDoor(door)));
+        foreach (ReadingDefinition reading in tuning.Readings)
+        {
+            Vector3 point = HotelDefinition.Vector(reading.Point);
+            Add(new(scene.Entities.Create().Value, () => true, () => reading.Label, () => point,
+                () => true, () => Read(reading)));
+        }
+        foreach (var find in finds)
+        {
+            Vector3 point = HotelDefinition.Vector(find.Definition.Point);
+            Add(new(find.Entity, () => !supplies.Collected(find.Definition.Id),
+                () => $"Take {supplies.Item(find.Definition.Item).Name}", () => point, () => true, () => Take(find)));
+        }
+        Vector3 bell = HotelDefinition.Vector(spirit.Definition.Point);
+        Add(new(scene.Entities.Create().Value, () => !spirit.Acquired, () => "Lift the bell · free Hushwing",
+            () => bell, () => true, FreeSpirit));
+        Vector3 notebook = HotelDefinition.Vector(scene.Definition.Refuge.Point);
+        Add(new(scene.Entities.Create().Value, () => true, () => "Record refuge checkpoint",
+            () => notebook, () => true, RecordCheckpoint));
         Interaction = new(this);
     }
 
     internal WorldInteraction Interaction { get; }
-    internal Action? Changed { get; set; }
-    internal Func<bool>? RecordCheckpoint { get; set; }
     internal string ReadingTitle { get; private set; } = "";
     internal string ReadingText { get; private set; } = "";
     internal ulong ReadingSequence { get; private set; }
@@ -72,43 +101,15 @@ internal sealed class HotelRoute : IWorldInteractionScene
     public InteractionSceneSnapshot ReadInteraction()
     {
         List<InteractionCandidate> candidates = [];
-        InteractionVisibility Visible(Vector3 point, ulong entity) => InteractionVisibilityQuery.Cast(
-            engine.Spatial, scene.Session, player.Eye, point, new(uint.MaxValue, uint.MaxValue),
-            ReadOnlyMemory<SpatialEntityCollider>.Empty, new[] { entity }, .02f);
-        foreach (DoorState door in doors)
+        foreach (Interactable item in interactables)
         {
-            if (door.Open) continue;
-            Vector3 center = HotelDefinition.Vector(door.Definition.FocusPoint);
-            Vector3 normal = Vector3.Transform(Vector3.UnitZ, Quaternion.CreateFromAxisAngle(Vector3.UnitY,
-                door.Definition.ClosedYaw * MathF.PI / 180));
-            // Aim just outside the visible face, on either side of the closed leaf.
-            Vector3 point = center + normal * (Vector3.Dot(player.Eye - center, normal) >= 0 ? .07f : -.07f);
-            candidates.Add(new(new(door.Entity, revision), door.Definition.Label, point, tuning.Reach,
-                Visible(point, door.Entity), CanUnlatch(door) ? InteractionAvailability.Available : InteractionAvailability.Locked));
-        }
-        foreach (var reading in readings)
-        {
-            Vector3 point = HotelDefinition.Vector(reading.Definition.Point);
-            candidates.Add(new(new(reading.Entity, revision), reading.Definition.Label, point, tuning.Reach, Visible(point, reading.Entity), InteractionAvailability.Available));
-        }
-        foreach (var find in finds)
-        {
-            if (supplies.Collected(find.Definition.Id)) continue;
-            Vector3 point = HotelDefinition.Vector(find.Definition.Point);
-            candidates.Add(new(new(find.Entity, revision), $"Take {supplies.Item(find.Definition.Item).Name}", point,
-                tuning.Reach, Visible(point, find.Entity), InteractionAvailability.Available));
-        }
-        if (spirit is { Acquired: false })
-        {
-            Vector3 point = HotelDefinition.Vector(spirit.Definition.Point);
-            candidates.Add(new(new(spiritEntity, revision), "Lift the bell · free Hushwing", point,
-                tuning.Reach, Visible(point, spiritEntity), InteractionAvailability.Available));
-        }
-        if (RecordCheckpoint is not null)
-        {
-            Vector3 point = HotelDefinition.Vector(scene.Definition.Refuge.Point);
-            candidates.Add(new(new(refugeEntity, revision), "Record refuge checkpoint", point,
-                tuning.Reach, Visible(point, refugeEntity), InteractionAvailability.Available));
+            if (!item.Present()) continue;
+            Vector3 point = item.Point();
+            InteractionVisibility visibility = InteractionVisibilityQuery.Cast(
+                engine.Spatial, scene.Session, player.Eye, point, new(uint.MaxValue, uint.MaxValue),
+                ReadOnlyMemory<SpatialEntityCollider>.Empty, new[] { item.Entity }, .02f);
+            candidates.Add(new(new(item.Entity, revision), item.Label(), point, tuning.Reach, visibility,
+                item.Available() ? InteractionAvailability.Available : InteractionAvailability.Locked));
         }
         return new(new(player.Eye, player.Forward, tuning.AcquireAngle, tuning.ReleaseAngle,
             tuning.FocusDistance, tuning.FocusDistance + .5f), candidates.ToArray(), $"hotel-route:{revision}", "use");
@@ -117,55 +118,7 @@ internal sealed class HotelRoute : IWorldInteractionScene
     public InteractionActionResult UseInteraction(InteractionTarget target)
     {
         if (target.Revision != revision) return new(false, "The target has changed.");
-        if (target.Id == refugeEntity && RecordCheckpoint is not null)
-        {
-            bool recorded = RecordCheckpoint();
-            revision++;
-            Changed?.Invoke();
-            return new(recorded, recorded ? "Refuge checkpoint recorded." : "Checkpoint not saved.");
-        }
-        if (target.Id == spiritEntity && spirit is not null)
-        {
-            bool acquired = spirit.Acquire();
-            if (acquired) { revision++; Update(); }
-            Changed?.Invoke();
-            return new(acquired, spirit.Message);
-        }
-        DoorState? door = doors.FirstOrDefault(d => d.Entity == target.Id);
-        if (door is not null)
-        {
-            if (door.Open || !CanUnlatch(door)) return new(false, "The door cannot be opened from here.");
-            scene.PlaceDoor(door.Definition.Id, true);
-            door.Open = true;
-            revision++;
-            Update();
-            Changed?.Invoke();
-            return new(true, "Door opened.");
-        }
-        foreach (var reading in readings)
-        {
-            if (reading.Entity != target.Id) continue;
-            ReadingTitle = reading.Definition.Title;
-            ReadingText = reading.Definition.Text;
-            ReadingSequence++;
-            revision++;
-            Changed?.Invoke();
-            return new(true, "Opened for reading.");
-        }
-        foreach (var find in finds)
-        {
-            if (find.Entity != target.Id) continue;
-            bool pickedUp = supplies.Pickup(find.Definition.Id);
-            if (pickedUp)
-            {
-                scene.ShowFind(find.Definition.Id, false);
-                revision++;
-                Update();
-            }
-            Changed?.Invoke();
-            return new(pickedUp, supplies.Message);
-        }
-        return new(false, "Unknown hotel target.");
+        return byEntity.TryGetValue(target.Id, out Interactable? item) ? item.Use() : new(false, "Unknown hotel target.");
     }
 
     internal void Validate(string[] openDoors)
@@ -192,13 +145,83 @@ internal sealed class HotelRoute : IWorldInteractionScene
         Update();
     }
 
+    private void Add(Interactable item)
+    {
+        interactables.Add(item);
+        byEntity.Add(item.Entity, item);
+    }
+
+    private InteractionActionResult RecordCheckpoint()
+    {
+        bool recorded = recordCheckpoint();
+        revision++;
+        changed();
+        return new(recorded, recorded ? "Refuge checkpoint recorded." : "Checkpoint not saved.");
+    }
+
+    private InteractionActionResult FreeSpirit()
+    {
+        bool acquired = spirit.Acquire();
+        if (acquired) { revision++; Update(); }
+        changed();
+        return new(acquired, spirit.Message);
+    }
+
+    private InteractionActionResult OpenDoor(DoorState door)
+    {
+        if (door.Open || !CanUnlatch(door)) return new(false, "The door cannot be opened from here.");
+        scene.PlaceDoor(door.Definition.Id, true);
+        door.Open = true;
+        revision++;
+        Update();
+        changed();
+        return new(true, "Door opened.");
+    }
+
+    private InteractionActionResult Read(ReadingDefinition reading)
+    {
+        ReadingTitle = reading.Title;
+        ReadingText = reading.Text;
+        ReadingSequence++;
+        revision++;
+        changed();
+        return new(true, "Opened for reading.");
+    }
+
+    private InteractionActionResult Take((FindDefinition Definition, ulong Entity) find)
+    {
+        bool pickedUp = supplies.Pickup(find.Definition.Id);
+        if (pickedUp)
+        {
+            scene.ShowFind(find.Definition.Id, false);
+            revision++;
+            Update();
+        }
+        changed();
+        return new(pickedUp, supplies.Message);
+    }
+
+    // Aim just outside the visible face, on whichever side of the closed leaf the player stands.
+    private Vector3 DoorFocus(DoorState door)
+    {
+        Vector3 center = HotelDefinition.Vector(door.Definition.FocusPoint);
+        Vector3 normal = Vector3.Transform(Vector3.UnitZ, Quaternion.CreateFromAxisAngle(Vector3.UnitY,
+            door.Definition.ClosedYaw * MathF.PI / 180));
+        return center + normal * (Vector3.Dot(player.Eye - center, normal) >= 0 ? .07f : -.07f);
+    }
+
     private bool CanUnlatch(DoorState door) => !door.Definition.FarSideLatch ||
         Vector3.Dot(player.Position - HotelDefinition.Vector(door.Definition.Hinge),
             HotelDefinition.Vector(door.Definition.UnlockDirection!)) > 0;
+
     private sealed class DoorState(DoorDefinition definition, ulong entity)
     {
         internal DoorDefinition Definition { get; } = definition;
         internal ulong Entity { get; } = entity;
         internal bool Open { get; set; }
     }
+
+    /// <summary>One focusable world object: whether it is currently offered, how it reads, and its use.</summary>
+    private sealed record Interactable(ulong Entity, Func<bool> Present, Func<string> Label, Func<Vector3> Point,
+        Func<bool> Available, Func<InteractionActionResult> Use);
 }

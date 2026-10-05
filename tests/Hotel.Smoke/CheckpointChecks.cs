@@ -123,10 +123,10 @@ internal static class CheckpointChecks
             Scene = new(engine, HotelDefinition.Load(engine)); Player = new(engine, Scene);
             Supplies = new(Scene.Definition.Supplies, Scene.Definition.Interface.SupplyPockets, Scene.PlayerEntity);
             Combat = new(engine, Scene, Player, Supplies); Spirit = new(Scene.Definition.Spirit, Supplies, Combat, Player);
-            Route = new(engine, Scene, Player, Supplies, Spirit);
+            Route = new(engine, Scene, Player, Supplies, Spirit, ReturnToRefuge, () => { });
             Expedition = new(engine, Scene.Definition, Player, Supplies, Combat, Spirit, Route);
-            Route.RecordCheckpoint = Expedition.Return;
         }
+        private bool ReturnToRefuge() => Expedition.Return();
         internal void At(float x, float z, Vector3 target)
         {
             Player.Reset(); Scene.Entities.Set(Scene.PlayerEntity, EngineComponentTypes.Transform, new(new(x, .875f, z), Quaternion.Identity, Vector3.One));

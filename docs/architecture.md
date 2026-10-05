@@ -101,6 +101,15 @@ checkpoint unchanged; it is not a teleport or checkpoint recovery.
 
 `HotelRoute` supplies current candidates to Engine `WorldInteraction`, and uses
 `InteractionVisibilityQuery` against the same retained spatial session as movement.
+Each focusable object is one private `Interactable` entry: entity, whether it is
+currently offered, label, focus point, availability and use handler. Doors,
+readings, finds, the spirit bell and the refuge notebook are entries built from
+authored definitions in that stable order. `ReadInteraction` iterates them, and
+`UseInteraction` rejects stale revisions and dispatches to the entry. A new kind of
+world action adds entries and one handler. It does not add a second focus path.
+Route receives Expedition's refuge return and the interface publish callback at
+construction. The return is a product method resolved at use time, because
+Expedition is built afterwards: it captures and restores Route's door state.
 E consumes the Engine focused action; the Engine debug module shares that action
 owner. Door policy checks the current revision and far-side latch, then moves the
 leaf appearance and collision to the same authored pose. Open doors remain open until a checkpoint restore supplies their saved state. Readings publish title/text and a sequence for UI presentation;
