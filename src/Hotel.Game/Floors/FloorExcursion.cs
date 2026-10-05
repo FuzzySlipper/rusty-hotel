@@ -65,7 +65,7 @@ internal static class FloorExcursion
             ? [new DoorPlacement(Scoped("latch"), doors.LatchLabel, latchLink, DoorHinge.Start, links[latchLink].Between[0], doors.Material, doors.HandleMaterial,
                 LatchedFrom: links[latchLink].Between[1], LockedPrompt: doors.LatchPrompt).Resolve($"generated {Id(depth)}", "latch", built, sources.Kit.DoorLeaf)]
             : [];
-        // Doors a shift kept hang again under their old ids: unlocked once opened, still locked to a key the player holds.
+        // Doors a shift kept hang again under their old ids, locked to a key the player still holds.
         DoorDefinition[] keptDoors = floor.Layout.KeptDoors.Select((d, i) => new DoorPlacement(d.Id, doors.LockedLabel, d.Link, DoorHinge.Start,
             d.Locked?.Guards ?? links[d.Link].Between[1], doors.Material, doors.HandleMaterial,
             LockedPrompt: d.Locked is { } held ? Template.Fill(doors.LockedPrompt, ("key", Template.Fill(doors.KeyName, ("room", RoomName(held.Guards))))) : null)

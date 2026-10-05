@@ -44,7 +44,7 @@ internal static class FloorSaveChecks
                 CaptureCommands commands = new();
                 product.RegisterDebugCommands(commands);
                 product.Start();
-                // A floor with a lock: take its key, leave its door shut, and pick up its ledger page.
+                // A floor with a lock: take its key, open its door, and pick up its ledger page.
                 ulong seed = 0;
                 for (ulong s = 1; s < 40 && seed == 0; s++)
                 {
@@ -58,7 +58,7 @@ internal static class FloorSaveChecks
                 key = held.Item;
                 door = floor.Route.Doors.First(d => d.Key == key).Id;
                 page = floor.Placements.Finds.First(f => f.Item == "ledger-page").Id;
-                product.World.Route.Restore([], [key]);
+                product.World.Route.Restore([door], [key]);
                 Check(product.World.Supplies.Pickup(page), "pick up the ledger page");
                 identity = product.Floors.Current!.Identity.PlanHash;
                 geometry = Geometry(floor);
@@ -82,24 +82,24 @@ internal static class FloorSaveChecks
                 Check(product.Floors.LastMilliseconds == 0 && Geometry(storedFloor) == geometry && stored.Identity.PlanHash == identity,
                     "the floor is rebuilt from its plan, identical in identity and geometry, without generating");
                 WorldMemory left = product.Floors.Memory(FloorExcursion.Id(1))!;
-                Check(left.Keys.SequenceEqual([key]) && !left.OpenDoors.Contains(door) && product.Floors.Collected.Contains(page) && product.Floors.ShiftDue(1),
-                    "the key is still held, its door still shut, the secured page still gone, and the floor due to shift on the next visit");
+                Check(left.Keys.SequenceEqual([key]) && left.OpenDoors.Contains(door) && product.Floors.Collected.Contains(page) && product.Floors.ShiftDue(1),
+                    "the key is still held, its door still open, the secured page still gone, and the floor due to shift on the next visit");
                 // Climbing to it after the refuge return, it has shifted around its kept stair core and landmark.
                 ExcursionDefinition shifted = product.Floors.Floor(1)!;
                 GeneratedFloor next = product.Floors.Stored(1)!.Value.Floor;
                 Check(next.Identity.Seed.Shift == 1 && next.Identity.PlanHash != identity && Geometry(shifted) != geometry, "the next visit finds the floor shifted");
                 string Core(GeneratedFloor g) => g.Layout.Placements.First(p => p.Id == g.Layout.Places["arrival"]) is var c ? $"{c.Id} {c.Module} {c.X} {c.Z} {c.Turn}" : "";
                 Check(Core(next) == Core(stored), "the stair core stays where it was");
-                // The held key's door is kept, still locked, and the key still opens it on the visit after the restore.
+                // The held key's door is kept, open and locked to it, and the key is still held on the visit after the restore.
                 string link = stored.Layout.Locks.First(l => KeptSet.LockDoor(FloorExcursion.Id(1), l) == door).Link;
                 KeptDoor? keptLock = next.Layout.KeptDoors.FirstOrDefault(d => d.Link == link);
                 Check(keptLock?.Locked is { } still && product.Floors.Memory(FloorExcursion.Id(1)) is { } after && after.Keys.SequenceEqual([still.Item]) &&
-                    !after.OpenDoors.Contains(keptLock.Id) && next.Layout.Locks.All(l => l.Item != still.Item),
-                    "the shifted floor keeps the door whose key the player holds, locked to that key, which no new lock shares");
+                    after.OpenDoors.Contains(keptLock.Id) && next.Layout.Locks.All(l => l.Item != still.Item),
+                    "the shifted floor keeps the door the player opened, open and locked to the key they hold, which no new lock shares");
                 product.Enter(shifted, 1, StairDirection.Up);
                 DoorDefinition hung = product.World.Excursion.Route.Doors.Single(d => d.Id == keptLock!.Id);
-                Check(product.World.Route.Keys.SequenceEqual([hung.Key!]) && !product.World.Route.OpenDoors.Contains(hung.Id) && hung.LockedPrompt is not null,
-                    "entering the shifted floor, the key is held and its door hangs shut, locked to it");
+                Check(product.World.Route.Keys.SequenceEqual([hung.Key!]) && product.World.Route.OpenDoors.Contains(hung.Id) && hung.LockedPrompt is not null,
+                    "entering the shifted floor, the key is held and its door hangs open, locked to it");
                 }
 
                 using var store = new ProductStateStore<CheckpointState>(engine, HotelExpedition.Scope,
@@ -126,6 +126,6 @@ internal static class FloorSaveChecks
             });
         }
         finally { Directory.Delete(root, true); }
-        Console.WriteLine("Floor save checks passed: a checkpoint with a generated floor visited relaunches into the same run and an identical floor (identity and geometry) rebuilt without generating, with its held key, shut door and secured ledger page, and the next visit's shift keeps that door locked to the key; tampered plans, another generator version and unknown finds are refused without replacing the save.");
+        Console.WriteLine("Floor save checks passed: a checkpoint with a generated floor visited relaunches into the same run and an identical floor (identity and geometry) rebuilt without generating, with its held key, open door and secured ledger page, and the next visit's shift keeps that door open and the key held; tampered plans, another generator version and unknown finds are refused without replacing the save.");
     }
 }

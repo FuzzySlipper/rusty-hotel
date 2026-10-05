@@ -126,7 +126,7 @@ internal sealed class HotelFloors
         // Opened kept doors and a kept latch stay open, and a held key still opens its kept door; residents of the
         // re-rolled floor start fresh.
         memory.Remove(excursion.Id);
-        string[] stillOpen = [.. kept.Doors.Where(d => d.Locked is null).Select(d => d.Id), .. kept.Latch is not null ? [$"{excursion.Id}/latch"] : Array.Empty<string>()];
+        string[] stillOpen = [.. kept.Open, .. kept.Latch is not null ? [$"{excursion.Id}/latch"] : Array.Empty<string>()];
         string[] stillHeld = (left?.Keys ?? []).Select(k => Layout.KeptSet.Carried(kept, floor, excursion.Id, k)).OfType<string>().Order(StringComparer.Ordinal).ToArray();
         if (stillOpen.Length > 0 || stillHeld.Length > 0) memory[excursion.Id] = new(stillOpen, null, stillHeld);
         visited[depth] = (next, FloorExcursion.From(next, Tunings, Sources, content.Player));

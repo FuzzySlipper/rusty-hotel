@@ -24,12 +24,11 @@ internal static class ShiftChecks
             floors.Begin(run);
             if (floors.Floor(1) is not { } first) continue;
             GeneratedFloor original = floors.Stored(1)!.Value.Floor;
-            // The player unlatched the shortcut on the first visit and, on alternate runs, opened a locked door or took
-            // its key and left the door shut.
+            // The player unlatched the shortcut on the first visit and, run by run, took a lock's key and left its door
+            // shut, opened the door with the key, or found the door open without holding its key.
             LayoutLock? lck = original.Layout.Locks.FirstOrDefault();
-            bool holds = run % 2 == 0;
-            string? opened = lck is null || holds ? null : KeptSet.LockDoor(first.Id, lck);
-            string[] held = lck is not null && holds ? [lck.Item] : [];
+            string? opened = lck is null || run % 3 == 0 ? null : KeptSet.LockDoor(first.Id, lck);
+            string[] held = lck is not null && run % 3 != 2 ? [lck.Item] : [];
             string[] open = [$"{first.Id}/latch", .. opened is null ? Array.Empty<string>() : [opened]];
             floors.Remember(first.Id, new(open, null, held));
             KeptSet kept = KeptSet.From(original, first.Id, open, held);
@@ -61,19 +60,20 @@ internal static class ShiftChecks
                 {
                     KeptDoor locked = kept.Doors.Single();
                     Check(locked.Locked is { } still && shifted.Layout.KeptDoors.Contains(locked) && floors.Memory(first.Id)?.Keys.SequenceEqual([still.Item]) == true &&
-                        shifted.Layout.Locks.All(l => l.Item != still.Item) && floors.Stored(1)!.Value.Excursion.Route.Doors.Count(d => d.Id == locked.Id && d.Key == still.Item) == 1,
-                        $"run {run} shift {k} keeps the door whose key the player holds, locked to that key alone");
+                        shifted.Layout.Locks.All(l => l.Item != still.Item) && floors.Stored(1)!.Value.Excursion.Route.Doors.Count(d => d.Id == locked.Id && d.Key == still.Item) == 1 &&
+                        floors.Memory(first.Id)!.OpenDoors.Contains(locked.Id) == (opened is not null),
+                        $"run {run} shift {k} keeps the door whose key the player holds, {(opened is null ? "shut" : "open")} and locked to that key alone");
                 }
                 string? keptDoor = opened is null ? null : kept.Doors.Single().Id;
                 if (keptDoor is not null)
                     Check(shifted.Layout.KeptDoors.Any(d => d.Id == keptDoor) && floors.Memory(first.Id)?.OpenDoors.Contains(keptDoor) == true &&
-                        floors.Stored(1)!.Value.Excursion.Route.Doors.Count(d => d.Id == keptDoor && d.Key is null) == 1,
+                        floors.Stored(1)!.Value.Excursion.Route.Doors.Count(d => d.Id == keptDoor && (d.Key is null) == (held.Length == 0)) == 1,
                         $"run {run} shift {k} keeps the door the player opened, open and hung again");
                 Check(shifted.Layout.Placements.Count(p => !kept.Placements.Any(q => q.Id == p.Id)) > 0, $"run {run} shift {k} has re-rolled rooms");
             }
         }
         Check(floorsShifted == runs.Length && failed == 0 && shifts == runs.Length * Shifts && doorsKept > 0 && keysKept > 0,
             $"every floor shifts {Shifts} times; {shifts} shifts, {failed} failed, {doorsKept} opened doors, {keysKept} held keys");
-        Console.WriteLine($"Shift checks passed: {floorsShifted} floors shifted {Shifts} times each, keeping their stair core, landmark, {doorsKept} opened doors, {keysKept} doors locked to a held key and the unlatched shortcut in place, re-rolling the rest, every shift Engine-confirmed.");
+        Console.WriteLine($"Shift checks passed: {floorsShifted} floors shifted {Shifts} times each, keeping their stair core, landmark, {doorsKept} opened doors, {keysKept} doors locked to a held key (open or shut) and the unlatched shortcut in place, re-rolling the rest, every shift Engine-confirmed.");
     }
 }

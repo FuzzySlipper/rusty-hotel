@@ -10,8 +10,8 @@ namespace Hotel.Game.Floors.Layout;
 internal sealed record LayoutPlacement(string Id, string Module, float X, float Z, int Turn, string Region);
 
 /// <summary>
-/// A door a floor kept through a shift: its route door id and the link it hangs in. Open, unless the player held its key
-/// without using it: then it stays <see cref="Locked"/>.
+/// A door a floor kept through a shift: its route door id and the link it hangs in. While the player holds its key it
+/// stays <see cref="Locked"/> to that key; whether it stands open is the floor's memory.
 /// </summary>
 internal sealed record KeptDoor(string Id, string Link, KeptLock? Locked = null);
 
