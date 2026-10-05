@@ -40,9 +40,11 @@ its own folder. Geometry is kept apart from tuning.
 | `spirits/<id>.json` | One spirit's pact terms, cost/range, manifestation timing and placement offsets, its description and its own wording (call hint and result, phase names); `HotelSpirit` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}` and `{place}`; `HotelSpirit` |
 | `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
-| `excursions/<id>/geometry.json` | That section's static boxes, GLB props and lights; `HotelScene` |
-| `excursions/<id>/route.json` | Its doors/latches (with the locked-side prompt), readable notices, named room bounds and fallback location label; `HotelRoute` |
-| `excursions/<id>/placements.json` | Arrival point, refuge, item finds, placed residents (id + kind) and spirit bells (with the `place` their text names) |
+| `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim sets, door frames and space styles (surface sets); `KitBuilder` |
+| `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, packets, frames, pictures. Each is boxes in its own frame, plus lights and named sockets; `KitBuilder` |
+| `excursions/<id>/plan.json` | The floor plan: spaces, the links between them, the fixtures placed in them, ambient light and GLB props; built by `KitBuilder` |
+| `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, and the fallback location label; `HotelRoute` |
+| `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id + kind) and spirit bells (socket, and the `place` their text names) |
 | `excursions/<id>/ambience.json` | Its ambient loops: content path, gain and optional world position/range; `HotelAmbience` |
 
 Runtime assets (`materials/`, `models/`, `audio/`) stay in their own folders and are
@@ -66,28 +68,59 @@ These fields tune the implemented vocabulary. Additional weapon types, resident
 behaviors or multiple spirits need a deliberate change to their domain owner;
 adding arbitrary JSON entries alone does not implement them.
 
-## Geometry and interactions
+## Authoring a floor
 
-Positions are `[x, y, z]` in world metres, with Y up. Room boxes use minimum and
-maximum corners. `spawn` is the player body centre, not its feet or eye; eye
-height is measured from the feet by the player owner. Fields named `Degrees`
-and door yaw values use degrees; the runtime converts them at the relevant owner.
+Floors are authored as rooms, not boxes. The kit builds every wall, trim run, frame, floor and ceiling.
 
-Material IDs connect boxes and doors to surfaces. `tileWidth`/`tileHeight` set
+Positions are world metres, with Y up; north is −z, south +z, west −x and east +x. The arrival point and residents
+are body centres, not feet or eyes. Fields named `Degrees` are degrees.
+
+**Spaces.** A space is a room or corridor. `min`/`max` give `[x, z]` on its *wall centrelines*, and `style` names
+a surface set in the kit, which `floor`, `wall` or `ceiling` may override. Spaces that touch share the wall
+between them. Each space builds the half of every wall on its own side, in its own wallpaper, with the trim set
+on its face. Spaces never overlap. Every space is also a named room for the HUD location.
+
+**Links.** A link joins two touching spaces along the one wall they share:
+- `Open` removes the whole shared wall.
+- `Door` cuts an opening of `width` × `height` centred at `at` along the wall, with an optional kit `frame`.
+- `Passage` is a door without a leaf, open to the ceiling unless it has a `height`.
+
+Above an opening the wall continues as a lintel, and trim bands above the opening (picture rail, cornice) run
+across it. A shared wall without a link stays a solid partition. An outer wall is any edge with no neighbour.
+
+**Fixtures.** Each placement names a catalog `kind` and how it mounts:
+- Floor or ceiling fixtures stand in a `space` `at` `[x, z]`, with optional quarter `turn`s and `mirror`.
+- Wall fixtures sit on a space's `edge`, `along` it, facing into the room.
+- Socket fixtures go `on` an earlier fixture's socket, written `"instance.socket"`.
+
+Giving a placement an `id` makes its sockets addressable. A fixture whose parts show a find names the `find`, and
+those parts disappear when it is taken. Fixture lights are the floor's point lights; a placement may override
+`intensity` and `range`.
+
+**Sockets.** The route's readings, the refuge notebook, finds and spirit bells name sockets (`refuge-desk.notebook`),
+not coordinates, so moving a desk moves everything on it. Doors name their door link, the end they hinge at
+(`Start` is the opening's lower coordinate), the space they open into, and for a latch the space it opens from.
+The kit derives the leaf's pose, size and use prompt from the opening.
+
+A new kind of furnishing goes into `scene/fixtures.json` once, then is placed wherever it is wanted. A new
+surface set or trim goes into `scene/kit.json`. One-off geometry has no place in a plan; make it a fixture.
+Inspect a built floor with the developer command `hotel.dev.goto <space>`.
+
+Material IDs connect fixtures, styles and doors to surfaces. `tileWidth`/`tileHeight` set
 world-metre repeats; room geometry projects UVs from world position so adjacent
 wall sections share a pattern phase. Inspect near/far repeats at eye height in
 motion. Preserve the broad wallpaper/fine dark carpet hierarchy from the two
 original images in `docs/references/`.
 
-Solid boxes participate in Engine collision. Decorative GLB props are visual
+Built walls, floors, ceilings and solid fixture parts take part in Engine collision. Decorative GLB props are visual
 only; place them on solid furniture. A model does not become an interaction
 simply by appearing in the scene. Add new world actions as `Interactable`
-entries and a use handler in `HotelRoute`. A supply's find ID associates its authored boxes with
-the collected state; disappearance must follow successful inventory admission.
-Door open/closed appearance and collision use the same authored poses.
+entries and a use handler in `HotelRoute`. A find's ID ties the fixture parts that show it to the collected
+state; they disappear only after successful inventory admission. Door open/closed appearance and collision use the
+same derived poses.
 
-Add a notice or field log as a `readings` entry in the excursion's `route.json` with a stable ID, focus
-point, label, title and text; dress its location with ordinary scene geometry.
+Add a notice or field log as a fixture with a `focus` socket, plus a `readings` entry in the excursion's
+`route.json` with a stable ID, that socket, label, title and text.
 It uses the existing reading screen and pause/resume flow. Readings themselves
 do not grant items. Resource effects remain in Supplies; encounters remain in
 Combat; a contextual receipt observes Expedition's result.

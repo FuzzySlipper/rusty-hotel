@@ -50,9 +50,9 @@ internal static class ContentChecks
         message = Failure(missing);
         Check(message.Contains("content/combat/weapons.json") && message.Contains("damage"), "missing field names its file: " + message);
 
-        Edit("excursions/west-wing/geometry.json", s => s.Replace("\"material\": \"carpet\"", "\"material\": \"carpte\""), out var reference);
+        Edit("scene/kit.json", s => s.Replace("\"floor\": \"carpet\"", "\"floor\": \"carpte\""), out var reference);
         message = Failure(reference);
-        Check(message.Contains("content/excursions/west-wing/geometry.json boxes[") && message.Contains("carpte"),
+        Check(message.Contains("content/scene/kit.json styles.corridor.floor") && message.Contains("carpte"),
             "broken cross-file reference names file, field and value: " + message);
         Edit("combat/messages.json", s => s.Replace("\"Hit · {resident}\"", "\"Hit · {resdent}\""), out var placeholder);
         message = Failure(placeholder);
@@ -83,14 +83,37 @@ internal static class ContentChecks
                 "content/excursions/west-wing/placements.json finds[0].count"),
             ("excursions/west-wing/placements.json", root => root["finds"]![0]!["count"] = 1000,
                 "content/excursions/west-wing/placements.json finds[0].count"),
-            ("excursions/west-wing/geometry.json", root => root["boxes"]![0]!["max"] = new JsonArray(-5, 0, 1),
-                "content/excursions/west-wing/geometry.json boxes[0].max"),
-            ("excursions/west-wing/route.json", root => root["doors"]![0]!["hinge"] = new JsonArray(1, 2, 3, 4),
-                "content/excursions/west-wing/route.json doors[0].hinge"),
-            ("excursions/west-wing/route.json", root => root["rooms"]![0]!["max"]![0] = root["rooms"]![0]!["min"]![0]!.GetValue<float>(),
-                "content/excursions/west-wing/route.json rooms[0].max"),
-            ("excursions/west-wing/route.json", root => root["rooms"]![0]!["max"]![2] = root["rooms"]![0]!["min"]![2]!.GetValue<float>(),
-                "content/excursions/west-wing/route.json rooms[0].max"),
+            // The floor plan: spaces, links, fixtures and the sockets the route and placements use.
+            ("excursions/west-wing/plan.json", root => root["spaces"]![0]!["max"]![0] = root["spaces"]![0]!["min"]![0]!.GetValue<float>(),
+                "content/excursions/west-wing/plan.json spaces[0].max"),
+            ("excursions/west-wing/plan.json", root => root["spaces"]![2]!["max"] = new JsonArray(0.5f, -1.9f),
+                "content/excursions/west-wing/plan.json spaces[2]"),
+            ("excursions/west-wing/plan.json", root => root["spaces"]![0]!["style"] = "ballroom",
+                "content/excursions/west-wing/plan.json spaces[0].style"),
+            ("excursions/west-wing/plan.json", root => root["links"]![1]!["between"]![1] = "workroom",
+                "content/excursions/west-wing/plan.json links[1].between"),
+            ("excursions/west-wing/plan.json", root => root["links"]![1]!["at"] = -8.0f,
+                "content/excursions/west-wing/plan.json links[1].at"),
+            ("excursions/west-wing/plan.json", root => root["links"]![1]!["height"] = 9,
+                "content/excursions/west-wing/plan.json links[1].height"),
+            ("excursions/west-wing/plan.json", root => root["fixtures"]![0]!["at"] = new JsonArray(40, -2),
+                "content/excursions/west-wing/plan.json fixtures[0].at"),
+            ("excursions/west-wing/plan.json", root => root["fixtures"]![4]!["along"] = 3,
+                "content/excursions/west-wing/plan.json fixtures[4].along"),
+            ("excursions/west-wing/plan.json", root => root["fixtures"]![0]!["kind"] = "chandelier",
+                "content/excursions/west-wing/plan.json fixtures[0].kind"),
+            ("excursions/west-wing/plan.json", root => root["fixtures"]!.AsArray().First(f => f!["find"] is not null)!.AsObject().Remove("find"),
+                "content/excursions/west-wing/plan.json fixtures["),
+            ("scene/fixtures.json", root => root["fixtures"]![0]!["parts"]![0]!["max"] = new JsonArray(-1, 2, 0.08f),
+                "content/scene/fixtures.json fixtures[0].parts[0].max"),
+            ("excursions/west-wing/route.json", root => root["doors"]![0]!["link"] = "refuge-corridor",
+                "content/excursions/west-wing/route.json doors[0].link"),
+            ("excursions/west-wing/route.json", root => root["doors"]![0]!["opensInto"] = "refuge",
+                "content/excursions/west-wing/route.json doors[0].opensInto"),
+            ("excursions/west-wing/route.json", root => root["readings"]![0]!["socket"] = "refuge-notice.nowhere",
+                "content/excursions/west-wing/route.json readings[0].socket"),
+            ("excursions/west-wing/placements.json", root => root["finds"]![0]!["socket"] = "missing.focus",
+                "content/excursions/west-wing/placements.json finds[0].socket"),
             ("excursions/west-wing/ambience.json", root => root["voices"]![0]!["volume"] = 3,
                 "content/excursions/west-wing/ambience.json voices[0].volume"),
             ("player/tuning.json", root => root["radius"] = 2, "content/player/tuning.json radius"),

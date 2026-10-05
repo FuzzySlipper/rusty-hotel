@@ -37,6 +37,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly CombatView combatView;
     private readonly HotelAmbience ambience;
     private readonly HotelControls controls;
+    private readonly RoomDefinition[] rooms;
     private readonly List<IDisposable> owned = [];
     private bool disposed;
     private ulong step;
@@ -51,6 +52,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             ExcursionDefinition excursion = content.Excursion;
             scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
             controls = new HotelControls(content.Controls, content.Combat.Weapons);
+            rooms = excursion.Route.Rooms;
             player = Own(new HotelPlayer(engine, scene, content.Player, excursion.Placements.Arrival, content.Controls));
             supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, scene.PlayerEntity);
             combat = new HotelCombat(engine, scene, player, supplies, content.Combat, excursion.Placements.Residents,
@@ -158,8 +160,19 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     {
         registrar.Register(new PlaytestDebugModule(Observe, controls.Action, controls.ActionIds, LookBy));
         registrar.Register(new InteractionDebugModule(route.Interaction));
-        registrar.Register(new HotelDebugCommands(Observe, ResetExcursion));
+        registrar.Register(new HotelDebugCommands(Observe, ResetExcursion, GoTo));
         registrar.Register(new SuppliesDebugCommands(supplies, PublishInterface));
+    }
+
+    private DebugCommandResult GoTo(string space)
+    {
+        RoomDefinition? room = rooms.FirstOrDefault(r => r.Id == space);
+        if (room is null)
+            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"Unknown space '{space}'. Spaces: {string.Join(", ", rooms.Select(r => r.Id))}.");
+        ClearActions();
+        player.Place(new((room.Min[0] + room.Max[0]) / 2, player.Tuning.Height / 2, (room.Min[2] + room.Max[2]) / 2), player.LookState.YawRadians * 180 / MathF.PI);
+        Publish();
+        return Observe();
     }
 
     private void ResetExcursion()

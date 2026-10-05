@@ -45,6 +45,7 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.inspect` | Observe current domain facts; does not change gameplay |
 | `interaction.inspect` / `interaction.use` | Engine world-interaction inspection/assisted use, retaining reach, visibility, revision and eligibility checks |
 | `hotel.dev.return-to-entrance` | Reset live player, supplies, residents, pact and route to initial state; leave the existing checkpoint intact |
+| `hotel.dev.goto <space>` | Stand at the centre of a floor-plan space, keeping the current facing, to inspect the kit-built floor; changes no saved state |
 | `hotel.dev.give-supply` | Fixture grant subject to inventory capacity rules |
 | `hotel.dev.set-health` | Fixture health change within authored bounds |
 | `hotel.dev.use-supply` | Use a zero-based pocket with its current revision and ordinary resource eligibility |

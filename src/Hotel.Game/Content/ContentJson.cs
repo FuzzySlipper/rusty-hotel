@@ -8,6 +8,7 @@ using Hotel.Game.Interface;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Scene;
+using Hotel.Game.Scene.Kit;
 using Hotel.Game.Spirits;
 using Hotel.Game.Supplies;
 
@@ -34,8 +35,10 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(SpiritMessages))]
 [JsonSerializable(typeof(RouteMessages))]
 [JsonSerializable(typeof(ExpeditionMessages))]
-[JsonSerializable(typeof(ExcursionGeometry))]
-[JsonSerializable(typeof(ExcursionRoute))]
-[JsonSerializable(typeof(ExcursionPlacements))]
+[JsonSerializable(typeof(KitDefinition))]
+[JsonSerializable(typeof(FixtureCatalog))]
+[JsonSerializable(typeof(FloorPlan))]
+[JsonSerializable(typeof(RoutePlan))]
+[JsonSerializable(typeof(PlacementPlan))]
 [JsonSerializable(typeof(AmbienceDefinition))]
 internal sealed partial class ContentJson : JsonSerializerContext;

@@ -1,0 +1,78 @@
+{
+  "wallThickness": 0.2,
+  "floorThickness": 0.2,
+  "ceilingThickness": 0.2,
+  "doorLeaf": {
+    "thickness": 0.1,
+    "clearance": 0.01,
+    "focusHeight": 1.3
+  },
+  "trimSets": {
+    "hotel": [
+      {
+        "name": "skirting",
+        "from": 0,
+        "to": 0.15,
+        "depth": 0.022,
+        "material": "trim"
+      },
+      {
+        "name": "picture rail",
+        "from": 2.34,
+        "to": 2.39,
+        "depth": 0.022,
+        "material": "trim"
+      },
+      {
+        "name": "cornice",
+        "from": 2.51,
+        "to": 2.65,
+        "depth": 0.022,
+        "material": "trim"
+      }
+    ],
+    "none": []
+  },
+  "frames": {
+    "guest-door": {
+      "material": "door",
+      "jambWidth": 0.11,
+      "inset": 0.025,
+      "proud": 0.04,
+      "headHeight": 0.08
+    },
+    "service-door": {
+      "material": "trim",
+      "jambWidth": 0.06,
+      "inset": 0,
+      "proud": 0.03,
+      "headHeight": 0.08
+    }
+  },
+  "styles": {
+    "guest-room": {
+      "wall": "medallion",
+      "floor": "west",
+      "ceiling": "ceiling",
+      "trim": "hotel"
+    },
+    "corridor": {
+      "wall": "wall",
+      "floor": "carpet",
+      "ceiling": "ceiling",
+      "trim": "hotel",
+      "seams": {
+        "spacing": 2,
+        "width": 0.018,
+        "depth": 0.003,
+        "material": "ceiling-seam"
+      }
+    },
+    "service": {
+      "wall": "service-paint",
+      "floor": "east",
+      "ceiling": "ceiling",
+      "trim": "none"
+    }
+  }
+}

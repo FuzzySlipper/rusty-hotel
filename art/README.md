@@ -56,8 +56,8 @@ bed is global and the tape-machine loop is spatial, with volumes and range in
 audio must be balanced against these quiet beds.
 
 Trim, doors, lights, furniture, field cases, notebook, pencil and abstract framed
-pictures are product-authored box compositions in
-`content/excursions/west-wing/geometry.json`. They introduce
+pictures are product-authored box compositions: fixtures in
+`content/scene/fixtures.json`, placed by `content/excursions/west-wing/plan.json`. They introduce
 no external art dependency. The owner-supplied historical screenshots remain in
 `docs/references/` as direction rather than runtime textures or interface art.
 

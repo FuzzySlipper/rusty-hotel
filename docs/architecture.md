@@ -23,6 +23,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Content/` | Reading authored files through Engine content services (`Authored`), the strict JSON contract (`ContentJson`), and composition-only loading and validation of references between files (`HotelContent`, `ExcursionDefinition`) |
 | `src/Hotel.Game/*/…Definition.cs`, `…Tuning.cs` | Each domain's typed authored records and the file it loads them from |
 | `src/Hotel.Game/Scene/HotelScene.cs` | Static appearances, paired door appearance/collision poses, GLB props, retained lights, collision placement and resource lifetimes |
+| `src/Hotel.Game/Scene/Kit/` | The architectural kit: authored floor plan, kit tuning and fixture catalog records, and `KitBuilder`, which turns a plan into walls (half per side, per space surface), trim, frames, floors, ceilings, seams, fixtures, lights, sockets, rooms and door openings |
 | `src/Hotel.Game/Scene/RoomGeometry.cs` | Authored mesh vertices with world-metre texture coordinates, used by presentation and static collision |
 | `src/Hotel.Game/Audio/HotelAmbience.cs` | Authored ambient clips and looping voices; Engine owns playback, spatialization and mixing |
 | `src/Hotel.Game/Interface/HotelHud.cs` | The `rusty.hotel.hud` projection: every UI fact written once, grouped by HUD region or screen |
@@ -85,8 +86,8 @@ Wall and floor UVs derive from authored world metres so adjoining wall sections
 keep the same texture phase. The material owns repeat size, color, roughness and
 emission. Engine admits PNG textures and retains material/light resources. GLB
 props use the pinned SDK's Animation content/appearance API even when unrigged;
-Hotel does not decode models or animate the recorder. Primitive props and solid
-room boxes share the existing Engine collision session; decorative GLB props
+Hotel does not decode models or animate the recorder. Kit-built walls, floors, ceilings and solid fixture
+parts share the existing Engine collision session; decorative GLB props
 are visual only and sit on solid furniture. Engine follows the active camera
 for audio listening. The ventilation bed is global; the recorder bed has an
 authored world position and range. Offline asset-authoring tools are not build

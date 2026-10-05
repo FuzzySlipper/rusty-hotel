@@ -98,14 +98,14 @@ internal sealed class HotelScene : IDisposable
                 Transform pose = DoorPose(door, false);
                 int first = placed.Count;
                 MeshResource leaf = RoomGeometry.Box(engine, surfaces[door.Material], Vector3.Zero,
-                    new(door.Width, door.Height, .10f), Vector2.One);
+                    new(door.Width, door.Height, door.Thickness), Vector2.One);
                 meshes.Add(leaf);
                 Appearance appearance = engine.Graphics.CreateMeshAppearance(leaf);
                 appearances.Add(appearance);
                 placed.Add(new(entity.Value, false, 0, pose, appearance, true, RenderLayer.Scene));
                 // Both handles use the same door pose; only the leaf is collision geometry.
                 MeshResource handle = RoomGeometry.Box(engine, surfaces[door.HandleMaterial], new(door.Width - .25f, .97f, -.055f),
-                    new(door.Width - .1f, 1.04f, .155f), Vector2.One);
+                    new(door.Width - .1f, 1.04f, door.Thickness + .055f), Vector2.One);
                 meshes.Add(handle);
                 Appearance handleAppearance = engine.Graphics.CreateMeshAppearance(handle);
                 appearances.Add(handleAppearance);

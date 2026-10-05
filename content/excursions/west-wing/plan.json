@@ -1,0 +1,577 @@
+{
+  "spaces": [
+    {
+      "id": "refuge",
+      "label": "Refuge",
+      "min": [
+        -3.6,
+        0.9
+      ],
+      "max": [
+        3.6,
+        5.1
+      ],
+      "height": 2.65,
+      "style": "guest-room"
+    },
+    {
+      "id": "corridor",
+      "label": "West wing corridor",
+      "min": [
+        -1.9,
+        -14.0
+      ],
+      "max": [
+        1.9,
+        0.9
+      ],
+      "height": 2.65,
+      "style": "corridor"
+    },
+    {
+      "id": "west",
+      "label": "Portrait room",
+      "min": [
+        -6.1,
+        -8.1
+      ],
+      "max": [
+        -1.9,
+        -1.9
+      ],
+      "height": 2.65,
+      "style": "guest-room"
+    },
+    {
+      "id": "east",
+      "label": "Linen room",
+      "min": [
+        1.9,
+        -12.1
+      ],
+      "max": [
+        6.1,
+        -5.9
+      ],
+      "height": 2.65,
+      "style": "guest-room",
+      "floor": "east"
+    },
+    {
+      "id": "survey",
+      "label": "Survey room",
+      "min": [
+        -3.6,
+        -18.1
+      ],
+      "max": [
+        3.6,
+        -14.0
+      ],
+      "height": 2.65,
+      "style": "guest-room"
+    },
+    {
+      "id": "upper-service",
+      "label": "Service passage",
+      "min": [
+        3.6,
+        -17.1
+      ],
+      "max": [
+        6.9,
+        -14.9
+      ],
+      "height": 2.65,
+      "style": "service"
+    },
+    {
+      "id": "long-service",
+      "label": "Service passage",
+      "min": [
+        6.9,
+        -17.1
+      ],
+      "max": [
+        9.1,
+        7.1
+      ],
+      "height": 2.65,
+      "style": "service"
+    },
+    {
+      "id": "return-service",
+      "label": "Service passage",
+      "min": [
+        1.4,
+        5.1
+      ],
+      "max": [
+        6.9,
+        7.1
+      ],
+      "height": 2.65,
+      "style": "service"
+    },
+    {
+      "id": "workroom",
+      "label": "Service workroom",
+      "min": [
+        4.9,
+        0.9
+      ],
+      "max": [
+        6.9,
+        5.1
+      ],
+      "height": 2.65,
+      "style": "service"
+    }
+  ],
+  "links": [
+    {
+      "id": "refuge-corridor",
+      "between": [
+        "corridor",
+        "refuge"
+      ],
+      "kind": "Open"
+    },
+    {
+      "id": "portrait-door",
+      "between": [
+        "corridor",
+        "west"
+      ],
+      "kind": "Door",
+      "at": -5.0,
+      "width": 1.4,
+      "height": 2.15,
+      "frame": "guest-door"
+    },
+    {
+      "id": "linen-door",
+      "between": [
+        "corridor",
+        "east"
+      ],
+      "kind": "Door",
+      "at": -9.0,
+      "width": 1.4,
+      "height": 2.15,
+      "frame": "guest-door"
+    },
+    {
+      "id": "survey-door",
+      "between": [
+        "corridor",
+        "survey"
+      ],
+      "kind": "Door",
+      "at": 0,
+      "width": 1.4,
+      "height": 2.15,
+      "frame": "service-door"
+    },
+    {
+      "id": "survey-service",
+      "between": [
+        "survey",
+        "upper-service"
+      ],
+      "kind": "Passage",
+      "at": -16.0,
+      "width": 2.0
+    },
+    {
+      "id": "upper-long",
+      "between": [
+        "upper-service",
+        "long-service"
+      ],
+      "kind": "Open"
+    },
+    {
+      "id": "long-workroom",
+      "between": [
+        "long-service",
+        "workroom"
+      ],
+      "kind": "Open"
+    },
+    {
+      "id": "long-return",
+      "between": [
+        "long-service",
+        "return-service"
+      ],
+      "kind": "Open"
+    },
+    {
+      "id": "return-door",
+      "between": [
+        "refuge",
+        "return-service"
+      ],
+      "kind": "Door",
+      "at": 2.25,
+      "width": 1.5,
+      "height": 2.15,
+      "frame": "service-door"
+    }
+  ],
+  "fixtures": [
+    {
+      "kind": "ceiling-lamp",
+      "space": "corridor",
+      "at": [
+        0,
+        -2
+      ]
+    },
+    {
+      "kind": "ceiling-lamp",
+      "space": "corridor",
+      "at": [
+        0,
+        -6
+      ]
+    },
+    {
+      "kind": "ceiling-lamp",
+      "space": "corridor",
+      "at": [
+        0,
+        -10
+      ]
+    },
+    {
+      "kind": "ceiling-lamp",
+      "space": "corridor",
+      "at": [
+        0,
+        -13
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "corridor",
+      "edge": "West",
+      "along": -2
+    },
+    {
+      "kind": "sconce",
+      "space": "corridor",
+      "edge": "West",
+      "along": -7
+    },
+    {
+      "kind": "sconce",
+      "space": "corridor",
+      "edge": "West",
+      "along": -12
+    },
+    {
+      "kind": "sconce",
+      "space": "corridor",
+      "edge": "East",
+      "along": -4
+    },
+    {
+      "kind": "sconce",
+      "space": "corridor",
+      "edge": "East",
+      "along": -10
+    },
+    {
+      "kind": "ceiling-lamp",
+      "space": "refuge",
+      "at": [
+        0,
+        2
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "refuge",
+      "edge": "West",
+      "along": 2.2
+    },
+    {
+      "kind": "expedition-notice",
+      "id": "refuge-notice",
+      "space": "refuge",
+      "edge": "North",
+      "along": -2.32
+    },
+    {
+      "kind": "pinned-frame",
+      "space": "refuge",
+      "edge": "West",
+      "along": 3.05
+    },
+    {
+      "kind": "writing-desk",
+      "id": "refuge-desk",
+      "space": "refuge",
+      "at": [
+        -2.625,
+        2.75
+      ]
+    },
+    {
+      "kind": "dressing-packet",
+      "id": "refuge-dressing",
+      "on": "refuge-desk.dressing",
+      "find": "refuge-dressing"
+    },
+    {
+      "kind": "cartridge-table",
+      "id": "refuge-cartridge-table",
+      "space": "refuge",
+      "at": [
+        2.55,
+        2.7
+      ]
+    },
+    {
+      "kind": "cartridge-packet",
+      "id": "refuge-rounds",
+      "on": "refuge-cartridge-table.top",
+      "find": "refuge-rounds"
+    },
+    {
+      "kind": "ceiling-lamp",
+      "space": "west",
+      "at": [
+        -4.35,
+        -5.0
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "west",
+      "edge": "West",
+      "along": -6.4
+    },
+    {
+      "kind": "landscape-picture",
+      "space": "west",
+      "edge": "West",
+      "along": -4.4
+    },
+    {
+      "kind": "guest-bench",
+      "space": "west",
+      "at": [
+        -4.625,
+        -2.325
+      ]
+    },
+    {
+      "kind": "low-cabinet",
+      "space": "west",
+      "at": [
+        -5.525,
+        -6.6
+      ]
+    },
+    {
+      "kind": "side-table",
+      "id": "portrait-table",
+      "space": "west",
+      "at": [
+        -4.4,
+        -6.8
+      ]
+    },
+    {
+      "kind": "dressing-packet",
+      "id": "portrait-dressing",
+      "on": "portrait-table.top",
+      "find": "portrait-dressing"
+    },
+    {
+      "kind": "open-door-leaf",
+      "space": "west",
+      "at": [
+        -2.05,
+        -5.7
+      ],
+      "turn": 3
+    },
+    {
+      "kind": "ceiling-lamp",
+      "space": "east",
+      "at": [
+        4.35,
+        -9.0
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "east",
+      "edge": "East",
+      "along": -9.0
+    },
+    {
+      "kind": "luggage-table",
+      "space": "east",
+      "at": [
+        5.25,
+        -10.9
+      ]
+    },
+    {
+      "kind": "side-table",
+      "id": "linen-table",
+      "space": "east",
+      "at": [
+        4.4,
+        -10.5
+      ]
+    },
+    {
+      "kind": "rounds-packet",
+      "id": "linen-rounds",
+      "on": "linen-table.top",
+      "find": "linen-rounds"
+    },
+    {
+      "kind": "bell-pedestal",
+      "id": "bell-pedestal",
+      "space": "east",
+      "at": [
+        4.5,
+        -8.0
+      ]
+    },
+    {
+      "kind": "open-door-leaf",
+      "space": "east",
+      "at": [
+        2.05,
+        -9.7
+      ],
+      "turn": 1,
+      "mirror": true
+    },
+    {
+      "kind": "pendant",
+      "space": "survey",
+      "at": [
+        0,
+        -16
+      ]
+    },
+    {
+      "kind": "log-desk",
+      "id": "log-desk",
+      "space": "survey",
+      "at": [
+        -1.6,
+        -16.7
+      ]
+    },
+    {
+      "kind": "side-table",
+      "id": "survey-table",
+      "space": "survey",
+      "at": [
+        1.3,
+        -17.2
+      ]
+    },
+    {
+      "kind": "incense-packet",
+      "id": "survey-incense",
+      "on": "survey-table.top",
+      "find": "survey-incense"
+    },
+    {
+      "kind": "service-lamp",
+      "space": "long-service",
+      "at": [
+        8.0,
+        -15.8
+      ]
+    },
+    {
+      "kind": "service-lamp",
+      "space": "long-service",
+      "at": [
+        8.0,
+        -10
+      ]
+    },
+    {
+      "kind": "service-lamp",
+      "space": "long-service",
+      "at": [
+        8.0,
+        -4
+      ]
+    },
+    {
+      "kind": "service-lamp",
+      "space": "long-service",
+      "at": [
+        8.0,
+        2
+      ]
+    },
+    {
+      "kind": "service-lamp",
+      "space": "long-service",
+      "at": [
+        8.0,
+        6
+      ]
+    },
+    {
+      "kind": "pendant",
+      "space": "workroom",
+      "at": [
+        5.85,
+        3.0
+      ],
+      "intensity": 3.2,
+      "range": 4.8
+    },
+    {
+      "kind": "reel-desk",
+      "id": "reel-desk",
+      "space": "workroom",
+      "at": [
+        5.6,
+        3.0
+      ]
+    },
+    {
+      "kind": "reel-case",
+      "id": "survey-reel",
+      "on": "reel-desk.top",
+      "find": "survey-reel"
+    }
+  ],
+  "lighting": {
+    "ambientColor": [
+      0.65,
+      0.72,
+      0.69
+    ],
+    "ambientIntensity": 0.13
+  },
+  "models": [
+    {
+      "path": "models/recorder.glb",
+      "position": [
+        -2.65,
+        0.83,
+        2.25
+      ],
+      "scale": 1,
+      "yawDegrees": 0
+    }
+  ]
+}
