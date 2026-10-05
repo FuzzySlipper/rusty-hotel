@@ -74,8 +74,27 @@ internal sealed class HotelDeveloper(HotelProduct product)
     {
         HotelFloors floors = product.Floors;
         GeneratedFloor? floor = floors.Current;
+        // Each mission place: its module, the middle of its first space, and the middle of the doorway it is entered by.
+        PlaceInspection[]? places = floor?.Layout.Places.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p =>
+        {
+            var space = floor.Plan.Spaces.First(s => s.Id.StartsWith(p.Value + "/", StringComparison.Ordinal));
+            var door = floor.Floor.Openings.Values.Where(o => o.Link.Between.Count(b => b.StartsWith(p.Value + "/", StringComparison.Ordinal)) == 1)
+                .OrderBy(o => o.Link.Id, StringComparer.Ordinal).FirstOrDefault();
+            Vector3? at = door is null ? null : (door.Start + door.End) / 2;
+            return new PlaceInspection(p.Key, p.Value, floor.Layout.Placements.First(l => l.Id == p.Value).Module,
+                [(space.Min[0] + space.Max[0]) / 2, (space.Min[1] + space.Max[1]) / 2], at is { } d ? [d.X, d.Z] : null);
+        }).ToArray();
+        // The floor's walkable map for agents: every space, and every link with the middle of its opening or shared wall.
+        SpaceInspection[]? spaces = floor?.Plan.Spaces.Select(s => new SpaceInspection(s.Id, s.Label, s.Min, s.Max)).ToArray();
+        LinkInspection[]? links = floor?.Plan.Links.Select(l =>
+        {
+            if (floor.Floor.Openings.TryGetValue(l.Id, out var o)) { Vector3 c = (o.Start + o.End) / 2; return new LinkInspection(l.Id, l.Between, [c.X, c.Z]); }
+            var a = floor.Plan.Spaces.First(s => s.Id == l.Between[0]); var b = floor.Plan.Spaces.First(s => s.Id == l.Between[1]);
+            float x0 = Math.Max(a.Min[0], b.Min[0]), x1 = Math.Min(a.Max[0], b.Max[0]), z0 = Math.Max(a.Min[1], b.Min[1]), z1 = Math.Min(a.Max[1], b.Max[1]);
+            return new LinkInspection(l.Id, l.Between, [(x0 + x1) / 2, (z0 + z1) / 2]);
+        }).ToArray();
         return DebugCommandResult.Success(JsonSerializer.Serialize(new FloorInspection(floors.RunSeed, floors.Depth, World.Excursion.Id,
-            floor?.Identity.PlanHash, floor?.Candidate, floor?.Attempt, floor?.Layout.Places.ToDictionary(p => p.Key, p => p.Value),
+            floor?.Identity.PlanHash, floor?.Candidate, floor?.Attempt, places, spaces, links,
             floor?.Layout.Placements.Length, floor?.Content.Finds.Length, floor?.Content.Residents.Length,
             floor?.Confirmation.Routes.Length, floors.LastRefusals, floors.LastMilliseconds), DeveloperJson.Default.FloorInspection));
     }
@@ -111,8 +130,11 @@ internal sealed record HotelObservation(ulong Step, int Depth, float[] Position,
     string SpiritPhase, float SpiritElapsed, int SpiritCalls, string SpiritMessage, int CheckpointReturns, string[] SecuredFinds,
     string CheckpointStatus, EnemyObservation[] Enemies);
 internal sealed record EnemyObservation(string Id, float[] Position, int Health, string Phase);
+internal sealed record PlaceInspection(string Place, string Placement, string Module, float[] Centre, float[]? Door);
+internal sealed record SpaceInspection(string Id, string Label, float[] Min, float[] Max);
+internal sealed record LinkInspection(string Id, string[] Between, float[] Point);
 internal sealed record FloorInspection(ulong RunSeed, int Depth, string Excursion, string? PlanHash, int? Candidate, int? Attempt,
-    Dictionary<string, string>? Places, int? Modules, int? Finds, int? Residents, int? PromisedRoutes, string[] LastRefusals, double LastMilliseconds);
+    PlaceInspection[]? Places, SpaceInspection[]? Spaces, LinkInspection[]? Links, int? Modules, int? Finds, int? Residents, int? PromisedRoutes, string[] LastRefusals, double LastMilliseconds);
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(HotelObservation))]
