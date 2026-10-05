@@ -16,7 +16,7 @@ namespace Hotel.Game;
 internal sealed record WorldCarry(SuppliesState Supplies, SpiritState Spirit, string Weapon);
 
 /// <summary>What a floor keeps while the player is elsewhere in the session: its opened doors and its residents.</summary>
-internal sealed record WorldMemory(string[] OpenDoors, ResidentState[] Residents);
+internal sealed record WorldMemory(string[] OpenDoors, ResidentState[] Residents, string[] Keys);
 
 /// <summary>
 /// The owners of one excursion's world, built together for the floor the player stands on and disposed together when
@@ -64,7 +64,7 @@ internal sealed class HotelWorld : IDisposable
     internal bool HasRefuge => Excursion.Placements.Refuge is not null;
 
     internal WorldCarry Carry() => new(Supplies.Capture(), Spirit.Capture(), Combat.Weapon.Id);
-    internal WorldMemory Remember() => new(Route.OpenDoors, Combat.Capture());
+    internal WorldMemory Remember() => new(Route.OpenDoors, Combat.Capture(), Route.Keys);
 
     /// <summary>
     /// Brings the player's carried values into this freshly built world, with what it remembered from an earlier visit
@@ -77,7 +77,7 @@ internal sealed class HotelWorld : IDisposable
         Spirit.Restore(carry.Spirit);
         if (memory is not null) Combat.Validate(carry.Weapon, memory.Residents);
         Combat.Restore(carry.Weapon, memory?.Residents ?? []);
-        Route.Restore(memory?.OpenDoors ?? []);
+        Route.Restore(memory?.OpenDoors ?? [], memory?.Keys);
     }
 
     private T Own<T>(T resource) where T : IDisposable

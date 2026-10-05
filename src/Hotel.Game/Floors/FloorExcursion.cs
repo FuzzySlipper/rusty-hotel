@@ -2,6 +2,7 @@ using System.Numerics;
 using Hotel.Game.Combat;
 using Hotel.Game.Content;
 using Hotel.Game.Floors.Content;
+using Hotel.Game.Floors.Layout;
 using Hotel.Game.Floors.Mission;
 using Hotel.Game.Floors.Modules;
 using Hotel.Game.Player;
@@ -26,10 +27,14 @@ internal static class FloorExcursion
     {
         int depth = floor.Identity.Seed.Depth;
         string Scoped(string id) => $"{Id(depth)}/{id}";
+        DoorTuning doors = tunings.Content.Doors;
         PlacedFind[] shown = floor.Content.Finds.Where(f => f.Item is not null).ToArray();
+        PlacedFind[] keyFinds = floor.Content.Finds.Where(f => f.Role == FindRole.Key).ToArray();
         FloorPlan plan = floor.Plan with
         {
-            Fixtures = [.. floor.Plan.Fixtures, .. shown.Select(f => new FixturePlacement(tunings.Content.Display(f.Item!), Id: Display(f), On: f.Socket, Find: Scoped(f.Id)))]
+            Fixtures = [.. floor.Plan.Fixtures,
+                .. shown.Select(f => new FixturePlacement(tunings.Content.Display(f.Item!), Id: Display(f), On: f.Socket, Find: Scoped(f.Id))),
+                .. keyFinds.Select(f => new FixturePlacement(doors.KeyFixture, Id: Display(f), On: f.Socket, Find: Scoped(f.Id)))]
         };
         BuiltFloor built = KitBuilder.Build(plan, $"generated {Id(depth)}", sources.Kit, sources.Fixtures);
         float[] At(Vector3 p) => [p.X, p.Y, p.Z];
@@ -45,7 +50,32 @@ internal static class FloorExcursion
             FloorReading text = tunings.Readings.Readings.First(t => t.Id == r.Reading);
             return new ReadingDefinition(Scoped(r.Id), text.Label, At(built.Sockets[r.Socket]), text.Title, text.Text);
         }).ToArray();
-        ExcursionRoute route = new(tunings.Content.FallbackLocation, [], readings, built.Rooms, stairs);
+        // A lock's door opens into the space behind it, the side in the region its edge guards; its key is named for that room.
+        Dictionary<string, LinkDefinition> links = plan.Links.ToDictionary(l => l.Id, StringComparer.Ordinal);
+        string Guarded(LayoutLock lck)
+        {
+            LinkDefinition link = links[lck.Link];
+            string a = link.Between[0], b = link.Between[1];
+            return floor.Layout.RegionOf(a) == $"behind/{lck.Edge}" ? a : b;
+        }
+        string RoomName(string space) => plan.Spaces.First(s => s.Id == space).Label.ToLowerInvariant();
+        DoorDefinition[] lockDoors = floor.Layout.Locks.Select((lck, i) =>
+        {
+            string guarded = Guarded(lck);
+            string key = Template.Fill(doors.KeyName, ("room", RoomName(guarded)));
+            return new DoorPlacement(Scoped($"lock/{lck.Edge}"), doors.LockedLabel, lck.Link, DoorHinge.Start, guarded, doors.Material, doors.HandleMaterial,
+                LockedPrompt: Template.Fill(doors.LockedPrompt, ("key", key))).Resolve($"generated {Id(depth)}", $"locks[{i}]", built, sources.Kit.DoorLeaf) with { Key = lck.Item };
+        }).ToArray();
+        DoorDefinition[] latch = floor.Layout.Latch is { } latchLink
+            ? [new DoorPlacement(Scoped("latch"), doors.LatchLabel, latchLink, DoorHinge.Start, links[latchLink].Between[0], doors.Material, doors.HandleMaterial,
+                LatchedFrom: links[latchLink].Between[1], LockedPrompt: doors.LatchPrompt).Resolve($"generated {Id(depth)}", "latch", built, sources.Kit.DoorLeaf)]
+            : [];
+        KeyDefinition[] keys = keyFinds.Select(f =>
+        {
+            LayoutLock lck = floor.Layout.Locks.First(l => l.Item == f.Grants);
+            return new KeyDefinition(Scoped(f.Id), f.Grants!, Template.Fill(doors.KeyName, ("room", RoomName(Guarded(lck)))), At(built.Sockets[$"{Display(f)}.focus"]));
+        }).ToArray();
+        ExcursionRoute route = new(tunings.Content.FallbackLocation, [.. lockDoors, .. latch], readings, built.Rooms, stairs, keys);
 
         ArrivalPlacement arrival = new(Standing(floor.Content.Arrival, player.Height), floor.Content.ArrivalYaw);
         FindDefinition[] finds = shown.Select(f => new FindDefinition(Scoped(f.Id), f.Item!, f.Count, At(built.Sockets[$"{Display(f)}.focus"]))).ToArray();

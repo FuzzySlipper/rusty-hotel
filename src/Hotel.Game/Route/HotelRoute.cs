@@ -30,6 +30,7 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private readonly Action changed;
     private readonly DoorState[] doors;
     private readonly (FindDefinition Definition, ulong Entity)[] finds;
+    private readonly HashSet<string> keys = new(StringComparer.Ordinal);
     private readonly List<Interactable> interactables = [];
     private readonly Dictionary<ulong, Interactable> byEntity = [];
     private ulong revision = 1;
@@ -67,6 +68,12 @@ internal sealed class HotelRoute : IWorldInteractionScene
             Add(new(scene.Entities.Create().Value, () => true, () => reading.Label, () => point,
                 () => true, () => Read(reading)));
         }
+        foreach (KeyDefinition key in layout.Keys)
+        {
+            Vector3 point = Authored.Vector(key.Point);
+            Add(new(scene.Entities.Create().Value, () => !keys.Contains(key.Item), () => Template.Fill(text.Take, ("item", key.Name)),
+                () => point, () => true, () => TakeKey(key)));
+        }
         foreach (var find in finds)
         {
             Vector3 point = Authored.Vector(find.Definition.Point);
@@ -100,6 +107,8 @@ internal sealed class HotelRoute : IWorldInteractionScene
         player.Position.X >= r.Min[0] && player.Position.X <= r.Max[0] &&
         player.Position.Z >= r.Min[2] && player.Position.Z <= r.Max[2])?.Label ?? layout.FallbackLocation;
     internal string[] OpenDoors => doors.Where(d => d.Open).Select(d => d.Definition.Id).ToArray();
+    /// <summary>The keys the player holds on this floor.</summary>
+    internal string[] Keys => keys.Order(StringComparer.Ordinal).ToArray();
 
     internal void Update()
     {
@@ -149,8 +158,11 @@ internal sealed class HotelRoute : IWorldInteractionScene
     }
 
     internal void Reset() => Restore([]);
-    internal void Restore(string[] openDoors)
+    internal void Restore(string[] openDoors, string[]? heldKeys = null)
     {
+        keys.Clear();
+        keys.UnionWith((heldKeys ?? []).Where(k => layout.Keys.Any(d => d.Item == k)));
+        foreach (KeyDefinition key in layout.Keys) scene.ShowFind(key.Id, !keys.Contains(key.Item));
         foreach (DoorState door in doors)
         {
             bool open = openDoors.Contains(door.Definition.Id);
@@ -212,6 +224,16 @@ internal sealed class HotelRoute : IWorldInteractionScene
         return new(true, "Opened for reading.");
     }
 
+    private InteractionActionResult TakeKey(KeyDefinition key)
+    {
+        keys.Add(key.Item);
+        scene.ShowFind(key.Id, false);
+        revision++;
+        Update();
+        changed();
+        return new(true, "Key taken.");
+    }
+
     private InteractionActionResult Take((FindDefinition Definition, ulong Entity) find)
     {
         bool pickedUp = supplies.Pickup(find.Definition.Id);
@@ -234,9 +256,10 @@ internal sealed class HotelRoute : IWorldInteractionScene
         return center + normal * (Vector3.Dot(player.Eye - center, normal) >= 0 ? .07f : -.07f);
     }
 
-    private bool CanUnlatch(DoorState door) => !door.Definition.FarSideLatch ||
+    // A latched door opens from its far side; a locked one only for the holder of its key.
+    private bool CanUnlatch(DoorState door) => (door.Definition.Key is not { } key || keys.Contains(key)) && (!door.Definition.FarSideLatch ||
         Vector3.Dot(player.Position - Authored.Vector(door.Definition.Hinge),
-            Authored.Vector(door.Definition.UnlockDirection!)) > 0;
+            Authored.Vector(door.Definition.UnlockDirection!)) > 0);
 
     private sealed class DoorState(DoorDefinition definition, ulong entity)
     {

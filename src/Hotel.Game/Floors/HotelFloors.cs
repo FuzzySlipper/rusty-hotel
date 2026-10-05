@@ -34,6 +34,8 @@ internal sealed class HotelFloors : IDisposable
         this.engine = engine;
         this.content = content;
         Tunings = FloorTunings.Load(engine, content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents);
+        foreach (string surface in new[] { Tunings.Content.Doors.Material, Tunings.Content.Doors.HandleMaterial })
+            Authored.Require(content.Surfaces.Any(s => s.Id == surface), Floors.Content.ContentTuning.Path, "doors", $"unknown surface '{surface}'.");
         Sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, content.Player.Controller(engine.Spatial));
         store = new(engine, Scope, new JsonProductStateCodec<RunState>(RunJson.Default.RunState));
     }

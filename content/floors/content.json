@@ -88,5 +88,15 @@
       "item": "ledger-page",
       "fixture": "ledger-page"
     }
-  ]
+  ],
+  "doors": {
+    "material": "door",
+    "handleMaterial": "brass",
+    "lockedLabel": "Open the locked door",
+    "lockedPrompt": "Locked \u00b7 Needs the {key}",
+    "latchLabel": "Unlatch the service door",
+    "latchPrompt": "Service door \u00b7 Latched from the passage side",
+    "keyName": "key to the {room}",
+    "keyFixture": "room-key"
+  }
 }

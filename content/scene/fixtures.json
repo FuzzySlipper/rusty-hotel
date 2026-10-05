@@ -1544,6 +1544,64 @@
           0
         ]
       }
+    },
+    {
+      "id": "room-key",
+      "mount": "Socket",
+      "parts": [
+        {
+          "name": "tag",
+          "material": "paper",
+          "min": [
+            -0.03,
+            0,
+            -0.06
+          ],
+          "max": [
+            0.03,
+            0.006,
+            0.02
+          ],
+          "find": true
+        },
+        {
+          "name": "bow",
+          "material": "brass",
+          "min": [
+            -0.025,
+            0,
+            0.02
+          ],
+          "max": [
+            0.025,
+            0.012,
+            0.06
+          ],
+          "find": true
+        },
+        {
+          "name": "shank",
+          "material": "brass",
+          "min": [
+            -0.006,
+            0,
+            0.06
+          ],
+          "max": [
+            0.006,
+            0.01,
+            0.14
+          ],
+          "find": true
+        }
+      ],
+      "sockets": {
+        "focus": [
+          0,
+          0.1,
+          0.04
+        ]
+      }
     }
   ]
 }

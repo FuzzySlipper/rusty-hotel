@@ -27,8 +27,9 @@ internal sealed record PacingTuning(string RecoveryItem, int RecoveryBeforeHazar
 /// </summary>
 /// <param name="FallbackLocation">The location label where the player stands in no named space.</param>
 /// <param name="Displays">The socket fixture that shows each item where it lies.</param>
+/// <param name="Doors">How locked doors, the shortcut's latch and their keys look and read.</param>
 internal sealed record ContentTuning(string Spirit, string FallbackLocation, ItemWeight[] Objective, ItemWeight[] Supplies, int SuppliesPerStop,
-    DepthCurve LooseSupplies, ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing, ItemDisplay[] Displays)
+    DepthCurve LooseSupplies, ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing, ItemDisplay[] Displays, DoorTuning Doors)
 {
     internal string Display(string item) => Displays.First(d => d.Item == item).Fixture;
 
@@ -44,6 +45,12 @@ internal sealed record ContentTuning(string Spirit, string FallbackLocation, Ite
             Authored.Require(shown is { Mount: FixtureMount.Socket } && shown.Parts.Any(p => p.Find) && shown.Sockets?.ContainsKey("focus") == true,
                 Path, $"displays[{i}].fixture", $"'{t.Displays[i].Fixture}' must be a socket fixture with find parts and a focus socket.");
         }
+        Template.Plain(Path, ("doors.lockedLabel", t.Doors.LockedLabel), ("doors.latchLabel", t.Doors.LatchLabel), ("doors.latchPrompt", t.Doors.LatchPrompt));
+        Template.Check(Path, "doors.lockedPrompt", t.Doors.LockedPrompt, "key");
+        Template.Check(Path, "doors.keyName", t.Doors.KeyName, "room");
+        FixtureDefinition? keyShown = fixtures.Fixtures.FirstOrDefault(f => f.Id == t.Doors.KeyFixture);
+        Authored.Require(keyShown is { Mount: FixtureMount.Socket } && keyShown.Parts.Any(p => p.Find) && keyShown.Sockets?.ContainsKey("focus") == true,
+            Path, "doors.keyFixture", $"'{t.Doors.KeyFixture}' must be a socket fixture with find parts and a focus socket.");
         foreach (string item in t.Objective.Concat(t.Supplies).Select(w => w.Item).Distinct())
             Authored.Require(t.Displays.Count(d => d.Item == item) == 1, Path, "displays", $"'{item}' needs exactly one display fixture.");
         void Items(string field, ItemWeight[] weights, SupplyKind[] kinds)
@@ -81,6 +88,13 @@ internal sealed record ContentTuning(string Spirit, string FallbackLocation, Ite
         return t;
     }
 }
+
+/// <summary>
+/// The look and wording of a generated floor's locked doors, its shortcut latch, and the keys: a key is named for the
+/// room its door guards.
+/// </summary>
+internal sealed record DoorTuning(string Material, string HandleMaterial, string LockedLabel, string LockedPrompt, string LatchLabel,
+    string LatchPrompt, string KeyName, string KeyFixture);
 
 /// <summary>The fixture an item is shown with where it lies.</summary>
 internal sealed record ItemDisplay(string Item, string Fixture);

@@ -39,7 +39,7 @@ internal sealed record RouteMessages(string Ready, string OutOfReach, string Tak
 
 /// <summary>One excursion's doors, readings, stairs and named rooms, resolved from its route plan and built floor.</summary>
 internal sealed record ExcursionRoute(string FallbackLocation, DoorDefinition[] Doors, ReadingDefinition[] Readings, RoomDefinition[] Rooms,
-    StairDefinition[] Stairs);
+    StairDefinition[] Stairs, KeyDefinition[] Keys);
 
 /// <summary>Which way a flight of stairs leads: up to the next floor, or down toward the refuge.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<StairDirection>))]
@@ -48,9 +48,13 @@ internal enum StairDirection { Up, Down }
 /// <summary>A flight of stairs the player uses at <see cref="Point"/> to change floor.</summary>
 internal sealed record StairDefinition(string Id, StairDirection Direction, float[] Point);
 /// <param name="Thickness">Leaf thickness; the leaf is centred in its wall when closed.</param>
+/// <param name="Key">The key item a locked door needs before it opens; none for an ordinary door.</param>
 internal sealed record DoorDefinition(string Id, string Label, float[] Hinge, float Width, float Height, float Thickness,
     float ClosedYaw, float OpenYaw, string Material, string HandleMaterial, float[] FocusPoint, bool FarSideLatch = false,
-    float[]? UnlockDirection = null, string? LockedPrompt = null);
+    float[]? UnlockDirection = null, string? LockedPrompt = null, string? Key = null);
+
+/// <summary>A key lying at <see cref="Point"/>: taking it lets the player open every door locked with <see cref="Item"/>.</summary>
+internal sealed record KeyDefinition(string Id, string Item, string Name, float[] Point);
 internal sealed record ReadingDefinition(string Id, string Label, float[] Point, string Title, string Text);
 internal sealed record RoomDefinition(string Id, string Label, float[] Min, float[] Max);
 
@@ -71,7 +75,7 @@ internal sealed record RoutePlan(string FallbackLocation, DoorPlacement[] Doors,
             readings[i] = new(r.Id, r.Label, Socket(path, $"readings[{i}].socket", floor, r.Socket), r.Title, r.Text);
         }
         StairDefinition[] stairs = Stairs.Select((s, i) => new StairDefinition(s.Id, s.Direction, Socket(path, $"stairs[{i}].socket", floor, s.Socket))).ToArray();
-        return new(FallbackLocation, doors, readings, floor.Rooms, stairs);
+        return new(FallbackLocation, doors, readings, floor.Rooms, stairs, []);
     }
 
     internal static float[] Socket(string path, string field, BuiltFloor floor, string socket)
