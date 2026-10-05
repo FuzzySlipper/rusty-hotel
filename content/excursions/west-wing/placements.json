@@ -53,20 +53,12 @@
     {
       "id": "porter",
       "kind": "porter",
-      "position": [
-        -4.1,
-        0.9,
-        -3.5
-      ]
+      "socket": "west.porter"
     },
     {
       "id": "lamp",
       "kind": "lamp",
-      "position": [
-        1.55,
-        0.9,
-        -16.5
-      ]
+      "socket": "survey.lamp"
     }
   ],
   "spiritBells": [

@@ -4,8 +4,11 @@ using Hotel.Game.Route;
 
 namespace Hotel.Game.Scene.Kit;
 
-/// <summary>A cut through a shared wall: its ends on the wall centreline, which way faces the link's second space, and its height.</summary>
-internal sealed record BuiltOpening(LinkDefinition Link, Vector3 Start, Vector3 End, Vector3 Normal, float Height);
+/// <summary>
+/// A cut through a shared wall: its ends on the wall centreline at floor level, which way faces the link's second
+/// space, the height of its sill and the height of the opening above that sill.
+/// </summary>
+internal sealed record BuiltOpening(LinkDefinition Link, Vector3 Start, Vector3 End, Vector3 Normal, float Bottom, float Height);
 
 /// <summary>A built floor: the boxes the scene meshes and collides, its lights, addressable sockets, rooms and openings.</summary>
 internal sealed record BuiltFloor(RoomBox[] Boxes, PointLightDefinition[] Lights, IReadOnlyDictionary<string, Vector3> Sockets,
@@ -45,6 +48,10 @@ internal static class KitBuilder
         internal string Ceiling => Definition.Ceiling ?? Style.Ceiling;
         internal SpaceStyle Style { get; } = style;
 
+        // Whether [x, z] is within the room between its walls' inner faces.
+        internal bool Inside(float x, float z, float half) =>
+            x > MinX + half - Tolerance && x < MaxX - half + Tolerance && z > MinZ + half - Tolerance && z < MaxZ - half + Tolerance;
+
         // An edge's line coordinate, its extent along the line, and whether that line runs along x.
         internal (float Line, float From, float To, bool AlongX) Edge(WallEdge edge) => edge switch
         {
@@ -66,14 +73,15 @@ internal static class KitBuilder
         };
     }
 
-    // A stretch of one space's edge with no wall: an open link's whole shared wall, or one opening.
-    private sealed record Cut(float From, float To, bool Open, float Height);
+    // A stretch of one space's edge with no wall between Bottom and Top: an open link's whole shared wall, or one opening.
+    private sealed record Cut(float From, float To, bool Open, float Bottom, float Top);
 
     private sealed class Builder(FloorPlan plan, string path, KitDefinition kit, FixtureCatalog catalog)
     {
         private readonly List<RoomBox> boxes = [];
         private readonly List<PointLightDefinition> lights = [];
         private readonly Dictionary<string, Vector3> sockets = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Space> socketSpaces = new(StringComparer.Ordinal);
         private readonly Dictionary<string, BuiltOpening> openings = new(StringComparer.Ordinal);
         private readonly Dictionary<(int Space, WallEdge Edge), List<Cut>> cuts = [];
         private readonly List<(LinkDefinition Link, int Index, BuiltOpening Opening)> frames = [];
@@ -93,7 +101,15 @@ internal static class KitBuilder
                     "a space must be wider and deeper than one wall thickness.");
                 Authored.Positive(path, $"{at}.height", s.Height);
                 Authored.Require(kit.Styles.TryGetValue(s.Style, out SpaceStyle? style), path, $"{at}.style", $"unknown style '{s.Style}'.");
-                Spaces.Add(new(s, i, style!));
+                Space space = new(s, i, style!);
+                Spaces.Add(space);
+                foreach (var (post, point) in s.Posts ?? [])
+                {
+                    Authored.Require(point.Length == 2 && point.All(float.IsFinite), path, $"{at}.posts.{post}", "must be [x, z].");
+                    Authored.Require(space.Inside(point[0], point[1], Half), path, $"{at}.posts.{post}",
+                        $"[{point[0]}, {point[1]}] is outside '{s.Id}'.");
+                    AddSocket($"{s.Id}.{post}", new(point[0], 0, point[1]), space, $"{at}.posts.{post}");
+                }
             }
             string? repeated = plan.Spaces.GroupBy(s => s.Id).FirstOrDefault(g => g.Count() > 1)?.Key;
             Authored.Require(repeated is null, path, "spaces", $"id '{repeated}' appears more than once.");
@@ -123,7 +139,7 @@ internal static class KitBuilder
                 {
                     Authored.Require(plan.Links.Count(l => SamePair(l, link)) == 1, path, $"{at}.kind",
                         "an open link removes the whole shared wall, so it must be the pair's only link.");
-                    cut = new(from, to, true, height);
+                    cut = new(from, to, true, 0, height);
                 }
                 else
                 {
@@ -131,13 +147,15 @@ internal static class KitBuilder
                     float lo = link.At - link.Width / 2, hi = link.At + link.Width / 2;
                     Authored.Require(lo >= from - Tolerance && hi <= to + Tolerance, path, $"{at}.at",
                         $"the opening {lo}..{hi} must lie within the shared wall {from}..{to}.");
+                    if (link.Kind == LinkKind.Hatch) Authored.Within(path, $"{at}.sill", link.Sill, Tolerance, height);
+                    else Authored.Require(link.Sill == 0, path, $"{at}.sill", "only a hatch is raised on a sill.");
                     float openingHeight = link.Kind == LinkKind.Passage && link.Height == 0 ? height : link.Height;
-                    Authored.Within(path, $"{at}.height", openingHeight, Tolerance, height);
+                    Authored.Within(path, $"{at}.height", openingHeight, Tolerance, height - link.Sill);
                     if (link.Frame is { } frame)
                         Authored.Require(kit.Frames.ContainsKey(frame), path, $"{at}.frame", $"unknown frame '{frame}'.");
-                    cut = new(lo, hi, false, openingHeight);
+                    cut = new(lo, hi, false, link.Sill, link.Sill + openingHeight);
                     Vector3 start = alongX ? new(lo, 0, line) : new(line, 0, lo), end = alongX ? new(hi, 0, line) : new(line, 0, hi);
-                    BuiltOpening opening = new(link, start, end, Space.Outward(edge), openingHeight);
+                    BuiltOpening opening = new(link, start, end, Space.Outward(edge), link.Sill, openingHeight);
                     openings.Add(link.Id, opening);
                     if (link.Frame is not null) frames.Add((link, i, opening));
                 }
@@ -170,30 +188,32 @@ internal static class KitBuilder
             (float line, float from, float to, _) = space.Edge(edge);
             List<Cut> edgeCuts = (cuts.TryGetValue((space.Index, edge), out var found) ? found : []).OrderBy(c => c.From).ToList();
             float cursor = from;
-            foreach (Cut cut in edgeCuts.Append(new Cut(to, to, false, 0)))
+            foreach (Cut cut in edgeCuts.Append(new Cut(to, to, false, 0, 0)))
             {
                 if (cut.From - cursor > Tolerance)
                 {
                     bool openBefore = edgeCuts.Any(c => c.Open && Math.Abs(c.To - cursor) < Tolerance) && cursor > from + Tolerance;
                     bool openAfter = cut.Open && cut.From < to - Tolerance;
-                    WallRun(space, edge, line, cursor - (openBefore ? Half : 0), cut.From + (openAfter ? Half : 0), 0, space.Height, false);
+                    WallRun(space, edge, line, cursor - (openBefore ? Half : 0), cut.From + (openAfter ? Half : 0), 0, space.Height, "wall");
                 }
-                if (!cut.Open && cut.To > cut.From && cut.Height < space.Height - Tolerance)
-                    WallRun(space, edge, line, cut.From, cut.To, cut.Height, space.Height, true);
+                if (!cut.Open && cut.To > cut.From && cut.Bottom > Tolerance)
+                    WallRun(space, edge, line, cut.From, cut.To, 0, cut.Bottom, "sill");
+                if (!cut.Open && cut.To > cut.From && cut.Top < space.Height - Tolerance)
+                    WallRun(space, edge, line, cut.From, cut.To, cut.Top, space.Height, "lintel");
                 cursor = Math.Max(cursor, cut.To);
             }
         }
 
-        // One stretch of wall on this space's side, with the trim bands that fit within its height.
-        private void WallRun(Space space, WallEdge edge, float line, float from, float to, float bottom, float top, bool lintel)
+        // One stretch of wall on this space's side, with the trim bands that start within its height.
+        private void WallRun(Space space, WallEdge edge, float line, float from, float to, float bottom, float top, string piece)
         {
-            string name = $"{space.Definition.Id} {edge.ToString().ToLowerInvariant()} {(lintel ? "lintel" : "wall")}";
+            string name = $"{space.Definition.Id} {edge.ToString().ToLowerInvariant()} {piece}";
             (Vector3 min, Vector3 max) = Slab(space, edge, line, from, to, bottom, top, Half);
             Add(name, min, max, space.Wall, true);
             foreach (TrimBand band in kit.TrimSets[space.Style.Trim])
             {
-                if (band.From < bottom - Tolerance || band.From >= space.Height) continue;
-                (min, max) = Slab(space, edge, line, from, to, band.From, Math.Min(band.To, space.Height), Half + band.Depth);
+                if (band.From < bottom - Tolerance || band.From >= top) continue;
+                (min, max) = Slab(space, edge, line, from, to, band.From, Math.Min(band.To, top), Half + band.Depth);
                 Add($"{name} {band.Name}", min, max, band.Material, false);
             }
         }
@@ -221,7 +241,8 @@ internal static class KitBuilder
             }
         }
 
-        // Frames are built once per door, straddling the whole wall and standing proud of both faces.
+        // Frames are built once per opening, straddling the whole wall and standing proud of both faces. A raised
+        // opening gets a sill piece under it.
         internal void BuildFrames()
         {
             foreach (var (link, _, opening) in frames)
@@ -230,13 +251,15 @@ internal static class KitBuilder
                 bool alongX = Math.Abs(opening.End.X - opening.Start.X) > Tolerance;
                 float lo = alongX ? opening.Start.X : opening.Start.Z, hi = alongX ? opening.End.X : opening.End.Z;
                 float line = alongX ? opening.Start.Z : opening.Start.X, depth = Half + frame.Proud;
-                float outer = frame.JambWidth - frame.Inset, head = opening.Height - frame.Inset;
+                float outer = frame.JambWidth - frame.Inset, bottom = opening.Bottom, top = bottom + opening.Height, head = top - frame.Inset;
                 void Piece(string part, float from, float to, float bottom, float top) => Add($"{link.Id} {part}",
                     alongX ? new(from, bottom, line - depth) : new(line - depth, bottom, from),
                     alongX ? new(to, top, line + depth) : new(line + depth, top, to), frame.Material, false);
-                Piece("jamb", lo - outer, lo + frame.Inset, 0, head);
-                Piece("jamb", hi - frame.Inset, hi + outer, 0, head);
-                Piece("head", lo - outer, hi + outer, head, opening.Height + frame.HeadHeight);
+                float foot = bottom > 0 ? bottom + frame.Inset : 0;
+                Piece("jamb", lo - outer, lo + frame.Inset, foot, head);
+                Piece("jamb", hi - frame.Inset, hi + outer, foot, head);
+                Piece("head", lo - outer, hi + outer, head, top + frame.HeadHeight);
+                if (bottom > 0) Piece("sill", lo - outer, hi + outer, Math.Max(0, bottom - frame.HeadHeight), foot);
             }
         }
 
@@ -250,7 +273,7 @@ internal static class KitBuilder
                 string at = $"fixtures[{i}]";
                 Authored.Require(kinds.TryGetValue(placed.Kind, out FixtureDefinition? fixture), path, $"{at}.kind", $"unknown fixture '{placed.Kind}'.");
                 if (placed.Id is { } id) Authored.Require(ids.Add(id), path, $"{at}.id", $"id '{id}' appears more than once.");
-                (Vector3 origin, int turn) = Origin(fixture!, placed, at);
+                (Vector3 origin, int turn, Space space, string field) = Origin(fixture!, placed, at);
                 bool showsFind = fixture!.Parts.Any(p => p.Find);
                 Authored.Require(showsFind == placed.Find is not null, path, $"{at}.find", showsFind
                     ? $"'{placed.Kind}' shows a find; name the find it shows."
@@ -259,6 +282,10 @@ internal static class KitBuilder
                 foreach (FixturePart part in fixture.Parts)
                 {
                     (Vector3 min, Vector3 max) = KitTransform.Box(part.Min, part.Max, origin, turn, placed.Mirror);
+                    // Wall fixtures sit on the wall's face, so their footprint is checked against the face itself.
+                    float inset = fixture.Mount == FixtureMount.Wall ? Half - Tolerance : Half;
+                    Authored.Require(space.Inside(min.X, min.Z, inset) && space.Inside(max.X, max.Z, inset), path, field,
+                        $"'{placed.Kind}' part '{part.Name}' reaches {min.X}..{max.X}, {min.Z}..{max.Z}, outside '{space.Definition.Id}'.");
                     Add($"{label} {part.Name}", min, max, part.Material, part.Solid, part.Find ? placed.Find : null);
                 }
                 foreach (FixtureLight light in fixture.Lights ?? [])
@@ -269,17 +296,18 @@ internal static class KitBuilder
                 }
                 if (placed.Id is not null)
                     foreach (var (socket, point) in fixture.Sockets ?? [])
-                        sockets[$"{placed.Id}.{socket}"] = KitTransform.Point(point, origin, turn, placed.Mirror);
+                        AddSocket($"{placed.Id}.{socket}", KitTransform.Point(point, origin, turn, placed.Mirror), space, $"{at}.id");
             }
         }
 
-        private (Vector3 Origin, int Turn) Origin(FixtureDefinition fixture, FixturePlacement placed, string at)
+        // Where the fixture's frame sits, the space it must stay inside, and the field that placed it there.
+        private (Vector3 Origin, int Turn, Space Space, string Field) Origin(FixtureDefinition fixture, FixturePlacement placed, string at)
         {
             if (fixture.Mount == FixtureMount.Socket)
             {
                 Authored.Require(placed.On is not null && sockets.ContainsKey(placed.On), path, $"{at}.on",
                     $"'{placed.Kind}' goes on an earlier fixture's socket; '{placed.On}' is not one.");
-                return (sockets[placed.On!], placed.Turn);
+                return (sockets[placed.On!], placed.Turn, socketSpaces[placed.On!], $"{at}.on");
             }
             Authored.Require(placed.Space is not null, path, $"{at}.space", $"'{placed.Kind}' needs the space it stands in.");
             Space space = Find(placed.Space!, $"{at}.space");
@@ -290,13 +318,19 @@ internal static class KitBuilder
                 (float line, float from, float to, bool alongX) = space.Edge(edge);
                 Authored.Within(path, $"{at}.along", placed.Along, from + Half, to - Half);
                 float face = line + (edge is WallEdge.North or WallEdge.West ? Half : -Half);
-                return (alongX ? new(placed.Along, 0, face) : new(face, 0, placed.Along), KitTransform.WallTurn(edge) + placed.Turn);
+                return (alongX ? new(placed.Along, 0, face) : new(face, 0, placed.Along), KitTransform.WallTurn(edge) + placed.Turn,
+                    space, $"{at}.along");
             }
             Authored.Require(placed.At is { Length: 2 }, path, $"{at}.at", $"'{placed.Kind}' needs [x, z] within its space.");
             float x = placed.At![0], z = placed.At[1];
-            Authored.Require(x > space.MinX + Half && x < space.MaxX - Half && z > space.MinZ + Half && z < space.MaxZ - Half,
-                path, $"{at}.at", $"[{x}, {z}] is outside '{space.Definition.Id}'.");
-            return (new(x, fixture.Mount == FixtureMount.Ceiling ? space.Height : 0, z), placed.Turn);
+            Authored.Require(space.Inside(x, z, Half), path, $"{at}.at", $"[{x}, {z}] is outside '{space.Definition.Id}'.");
+            return (new(x, fixture.Mount == FixtureMount.Ceiling ? space.Height : 0, z), placed.Turn, space, $"{at}.at");
+        }
+
+        private void AddSocket(string name, Vector3 point, Space space, string field)
+        {
+            Authored.Require(sockets.TryAdd(name, point), path, field, $"socket '{name}' is defined more than once.");
+            socketSpaces[name] = space;
         }
 
         internal BuiltFloor Result() => new(boxes.ToArray(), lights.ToArray(), sockets, Spaces.Select(s => new RoomDefinition(

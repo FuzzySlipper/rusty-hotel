@@ -44,7 +44,7 @@ its own folder. Geometry is kept apart from tuning.
 | `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, packets, frames, pictures. Each is boxes in its own frame, plus lights and named sockets; `KitBuilder` |
 | `excursions/<id>/plan.json` | The floor plan: spaces, the links between them, the fixtures placed in them, ambient light and GLB props; built by `KitBuilder` |
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, and the fallback location label; `HotelRoute` |
-| `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id + kind) and spirit bells (socket, and the `place` their text names) |
+| `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id, kind and the post they stand on) and spirit bells (socket, and the `place` their text names) |
 | `excursions/<id>/ambience.json` | Its ambient loops: content path, gain and optional world position/range; `HotelAmbience` |
 
 Runtime assets (`materials/`, `models/`, `audio/`) stay in their own folders and are
@@ -72,19 +72,23 @@ adding arbitrary JSON entries alone does not implement them.
 
 Floors are authored as rooms, not boxes. The kit builds every wall, trim run, frame, floor and ceiling.
 
-Positions are world metres, with Y up; north is −z, south +z, west −x and east +x. The arrival point and residents
-are body centres, not feet or eyes. Fields named `Degrees` are degrees.
+Positions are world metres, with Y up; north is −z, south +z, west −x and east +x. The arrival point is a body
+centre, not feet or eyes. Fields named `Degrees` are degrees.
 
 **Spaces.** A space is a room or corridor. `min`/`max` give `[x, z]` on its *wall centrelines*, and `style` names
 a surface set in the kit, which `floor`, `wall` or `ceiling` may override. Spaces that touch share the wall
 between them. Each space builds the half of every wall on its own side, in its own wallpaper, with the trim set
-on its face. Spaces never overlap. Every space is also a named room for the HUD location.
+on its face. Spaces never overlap. Every space is also a named room for the HUD location. A space's `posts` are
+named `[x, z]` floor points inside it, addressed as `"space.post"`; residents stand on them.
 
 **Links.** A link joins two touching spaces along the one wall they share:
 - `Open` removes the whole shared wall.
 - `Door` cuts an opening of `width` × `height` centred at `at` along the wall, with an optional kit `frame`.
 - `Passage` is a door without a leaf, open to the ceiling unless it has a `height`.
+- `Hatch` is a raised opening: `height` tall above a `sill`, with wall (and its skirting) below. Only a hatch has a
+  sill.
 
+Openings on one wall never overlap and lie within the wall the two spaces share.
 Above an opening the wall continues as a lintel, and trim bands above the opening (picture rail, cornice) run
 across it. A shared wall without a link stays a solid partition. An outer wall is any edge with no neighbour.
 
@@ -93,12 +97,15 @@ across it. A shared wall without a link stays a solid partition. An outer wall i
 - Wall fixtures sit on a space's `edge`, `along` it, facing into the room.
 - Socket fixtures go `on` an earlier fixture's socket, written `"instance.socket"`.
 
-Giving a placement an `id` makes its sockets addressable. A fixture whose parts show a find names the `find`, and
+Every part of a fixture, after its turn and mirror, stays inside its space between the walls' inner faces; a
+socket fixture stays inside the space of the fixture it sits on. Giving a placement an `id` makes its sockets
+addressable. A fixture whose parts show a find names the `find`, and
 those parts disappear when it is taken. Fixture lights are the floor's point lights; a placement may override
 `intensity` and `range`.
 
-**Sockets.** The route's readings, the refuge notebook, finds and spirit bells name sockets (`refuge-desk.notebook`),
-not coordinates, so moving a desk moves everything on it. Doors name their door link, the end they hinge at
+**Sockets.** The route's readings, the refuge notebook, finds and spirit bells name fixture sockets
+(`refuge-desk.notebook`), and residents name posts (`west.porter`), not coordinates, so moving a desk or a room moves
+everything on it. A resident's body centre stands half its kind's height above its post. Socket names are unique. Doors name their door link, the end they hinge at
 (`Start` is the opening's lower coordinate), the space they open into, and for a latch the space it opens from.
 The kit derives the leaf's pose, size and use prompt from the opening.
 

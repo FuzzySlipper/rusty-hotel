@@ -27,12 +27,13 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         IReadOnlyDictionary<string, string> keys = controls.Labels;
         KitDefinition kit = KitDefinition.Load(engine);
         FixtureCatalog fixtures = FixtureCatalog.Load(engine);
-        ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures);
+        CombatDefinition combat = CombatDefinition.Load(engine, keys);
+        ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures, combat.Residents);
         // The product implements one pact; its bell placement names which spirit file to read.
         Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
             "exactly one spirit bell is supported.");
         HotelContent content = new(controls, PlayerTuning.Load(engine), RouteDefinition.Load(engine, keys), InterfaceTuning.Load(engine),
-            SurfaceCatalog.Load(engine).Surfaces, kit, fixtures, SuppliesDefinition.Load(engine), CombatDefinition.Load(engine, keys),
+            SurfaceCatalog.Load(engine).Surfaces, kit, fixtures, SuppliesDefinition.Load(engine), combat,
             SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
@@ -104,9 +105,6 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
             Authored.Require(placed.Finds[i].Count <= item!.StackLimit * Interface.SupplyPockets, placements, $"finds[{i}].count",
                 $"{placed.Finds[i].Count} exceeds what an empty field case holds ({item.StackLimit} per pocket × {Interface.SupplyPockets}).");
         }
-        for (int i = 0; i < placed.Residents.Length; i++)
-            Authored.Require(Combat.Residents.Any(kind => kind.Id == placed.Residents[i].Kind), placements, $"residents[{i}].kind",
-                $"unknown resident kind '{placed.Residents[i].Kind}'.");
     }
 
     private static void Unique(IEnumerable<string> ids, string path, string field)
@@ -128,7 +126,7 @@ internal sealed record ExcursionDefinition(string Id, FloorPlan Plan, ExcursionG
     internal string PlacementsPath => Folder(Id) + "placements.json";
 
     internal static ExcursionDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys,
-        KitDefinition kit, FixtureCatalog fixtures)
+        KitDefinition kit, FixtureCatalog fixtures, ResidentKind[] residents)
     {
         string folder = Folder(id);
         FloorPlan plan = Authored.Read(engine, folder + "plan.json", ContentJson.Default.FloorPlan);
@@ -142,7 +140,7 @@ internal sealed record ExcursionDefinition(string Id, FloorPlan Plan, ExcursionG
         ExcursionRoute route = Authored.Read(engine, folder + "route.json", ContentJson.Default.RoutePlan, keys)
             .Resolve(folder + "route.json", floor, kit.DoorLeaf);
         ExcursionPlacements placements = Authored.Read(engine, folder + "placements.json", ContentJson.Default.PlacementPlan)
-            .Resolve(folder + "placements.json", floor);
+            .Resolve(folder + "placements.json", floor, residents);
         AmbienceDefinition ambience = Authored.Read(engine, folder + "ambience.json", ContentJson.Default.AmbienceDefinition);
         ambience.Validate(folder + "ambience.json");
         return new(id, plan, geometry, route, placements, ambience.Voices);
@@ -156,16 +154,25 @@ internal sealed record ExcursionPlacements(ArrivalPlacement Arrival, RefugeDefin
     ResidentPlacement[] Residents, SpiritBellPlacement[] SpiritBells);
 
 /// <summary>
-/// The authored placements. The refuge notebook, finds and bells sit at fixture sockets in the floor plan; the
-/// arrival point and residents are body centres in the world.
+/// The authored placements. The refuge notebook, finds and bells sit at fixture sockets in the floor plan, and
+/// residents stand on posts; the arrival point is a body centre in the world.
 /// </summary>
 internal sealed record PlacementPlan(ArrivalPlacement Arrival, RefugePlacement Refuge, FindPlacement[] Finds,
-    ResidentPlacement[] Residents, SpiritBellSocket[] SpiritBells)
+    ResidentPost[] Residents, SpiritBellSocket[] SpiritBells)
 {
-    internal ExcursionPlacements Resolve(string path, BuiltFloor floor)
+    internal ExcursionPlacements Resolve(string path, BuiltFloor floor, ResidentKind[] kinds)
     {
         Arrival.Validate(path);
-        for (int i = 0; i < Residents.Length; i++) Authored.Point(path, $"residents[{i}].position", Residents[i].Position);
+        ResidentPlacement[] residents = new ResidentPlacement[Residents.Length];
+        for (int i = 0; i < Residents.Length; i++)
+        {
+            ResidentPost post = Residents[i];
+            ResidentKind? kind = kinds.FirstOrDefault(k => k.Id == post.Kind);
+            Authored.Require(kind is not null, path, $"residents[{i}].kind", $"unknown resident kind '{post.Kind}'.");
+            // A post is the resident's footing; its body centre stands half its height above.
+            float[] feet = RoutePlan.Socket(path, $"residents[{i}].socket", floor, post.Socket);
+            residents[i] = new(post.Id, post.Kind, [feet[0], feet[1] + kind!.Height / 2, feet[2]]);
+        }
         FindDefinition[] finds = new FindDefinition[Finds.Length];
         for (int i = 0; i < Finds.Length; i++)
         {
@@ -174,10 +181,11 @@ internal sealed record PlacementPlan(ArrivalPlacement Arrival, RefugePlacement R
         }
         SpiritBellPlacement[] bells = SpiritBells.Select((b, i) =>
             new SpiritBellPlacement(b.Spirit, RoutePlan.Socket(path, $"spiritBells[{i}].socket", floor, b.Socket), b.Place)).ToArray();
-        return new(Arrival, new(Refuge.Id, RoutePlan.Socket(path, "refuge.socket", floor, Refuge.Socket)), finds, Residents, bells);
+        return new(Arrival, new(Refuge.Id, RoutePlan.Socket(path, "refuge.socket", floor, Refuge.Socket)), finds, residents, bells);
     }
 }
 
 internal sealed record RefugePlacement(string Id, string Socket);
 internal sealed record FindPlacement(string Id, string Item, int Count, string Socket);
+internal sealed record ResidentPost(string Id, string Kind, string Socket);
 internal sealed record SpiritBellSocket(string Spirit, string Socket, string Place);
