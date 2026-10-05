@@ -51,7 +51,7 @@ Hotel adapted the following small flows from the `rusty-fptester` working tree:
 | --- | --- | --- |
 | `src/FpTester.Game/Player/PlayerController.cs` | `Player/HotelPlayer.cs`: Engine FPS input, controller receipt application, eye placement, camera sampling and input clear/reset | `f64dbf4b177158d0e4033840365c64b906396e59f262d59bf16a7e52f854c861` |
 | `src/FpTester.Game/Scene/LabGeometry.cs` | `Scene/RoomGeometry.cs`: authored unit-box vertices/normals/triangles only | `af0c84c5841fd6a26da24cb03ab28fe47a9e1a29c6216bb6319e9207434530cf` |
-| `src/FpTester.Game/Scene/LabDefinition.cs` | `Scene/HotelDefinition.cs`: Engine content read and typed JSON definition pattern | `3d6b4d9bd46e205b88008c7ac2f2f3e3260f629ffc3b5d56a3e2c4e72a5ef530` |
+| `src/FpTester.Game/Scene/LabDefinition.cs` | `Content/Authored.cs`: Engine content read and typed JSON definition pattern | `3d6b4d9bd46e205b88008c7ac2f2f3e3260f629ffc3b5d56a3e2c4e72a5ef530` |
 | `src/FpTester.Game/FpTesterProduct.cs` | `HotelProduct.cs`: explicit lifecycle composition and Engine playtest module adapter | `1ce48144c06b3bc3dad3603db7b558965c83c977df8668ce040acdb8ae983282` |
 
 These files were uncommitted/untracked in the donor; its HEAD

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Hotel.Game.Content;
 using Hotel.Game.Scene;
 using Rusty.Engine;
 using Rusty.Engine.Entities;
@@ -11,16 +12,18 @@ internal sealed class HotelPlayer : IDisposable
     private readonly IEngineContext engine;
     private readonly HotelScene scene;
     private readonly PlayerTuning tuning;
+    private readonly ArrivalPlacement arrival;
     private readonly CharacterControllerConfig config;
     private readonly Camera camera;
     private ulong commandSequence;
     private bool cut = true;
 
-    internal HotelPlayer(IEngineContext engine, HotelScene scene)
+    internal HotelPlayer(IEngineContext engine, HotelScene scene, PlayerTuning tuning, ArrivalPlacement arrival)
     {
         this.engine = engine;
         this.scene = scene;
-        tuning = scene.Definition.Player;
+        this.tuning = tuning;
+        this.arrival = arrival;
         CharacterControllerConfig baseline = engine.Spatial.DefaultCharacterControllerConfig();
         config = baseline with
         {
@@ -42,6 +45,7 @@ internal sealed class HotelPlayer : IDisposable
         catch { camera.Dispose(); throw; }
     }
 
+    internal PlayerTuning Tuning => tuning;
     internal FpsInput Input { get; }
     internal LookState LookState { get; private set; }
     internal Vector3 Position => scene.Entities.Get(scene.PlayerEntity, EngineComponentTypes.Transform).Translation;
@@ -79,12 +83,12 @@ internal sealed class HotelPlayer : IDisposable
 
     internal void Reset()
     {
-        Vector3 position = HotelDefinition.Vector(scene.Definition.Spawn);
+        Vector3 position = Authored.Vector(arrival.Position);
         scene.Entities.Set(scene.PlayerEntity, EngineComponentTypes.Transform, new Transform(position, Quaternion.Identity, Vector3.One));
         scene.Entities.Set(scene.PlayerEntity, EngineComponentTypes.CharacterMotion, new CharacterMotion(Vector3.Zero, Vector3.Zero,
             false, CharacterStance.Standing, 0, 0, 0, false, 0, Vector3.Zero, Vector3.Zero, Quaternion.Identity,
             Vector3.Zero, position.Y, position.Y, 0, 0));
-        LookState = new(scene.Definition.SpawnYawDegrees * MathF.PI / 180, 0);
+        LookState = new(arrival.YawDegrees * MathF.PI / 180, 0);
         ClearInput();
         cut = true;
     }

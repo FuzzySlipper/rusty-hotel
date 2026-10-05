@@ -1,0 +1,11 @@
+{
+  "height": 1.75,
+  "radius": 0.25,
+  "eyeHeight": 1.6,
+  "speed": 2.3,
+  "gravity": 18,
+  "maximumStepHeight": 0.2,
+  "maximumSlopeDegrees": 45,
+  "pointerRadiansPerUnit": 0.0020944,
+  "fieldOfViewDegrees": 75
+}

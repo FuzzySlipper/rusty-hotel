@@ -1,4 +1,6 @@
 using System.Numerics;
+using Hotel.Game.Content;
+using Hotel.Game.Expedition;
 using Hotel.Game.Player;
 using Hotel.Game.Scene;
 using Hotel.Game.Supplies;
@@ -18,7 +20,8 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private readonly IEngineContext engine;
     private readonly HotelScene scene;
     private readonly HotelPlayer player;
-    private readonly RouteDefinition tuning;
+    private readonly InteractionTuning interaction;
+    private readonly ExcursionRoute layout;
     private readonly HotelSupplies supplies;
     private readonly HotelSpirit spirit;
     private readonly Func<bool> recordCheckpoint;
@@ -33,7 +36,8 @@ internal sealed class HotelRoute : IWorldInteractionScene
     /// used, because Expedition itself captures and restores this route's door state.</param>
     /// <param name="changed">Publishes interface facts after a world action changes them.</param>
     internal HotelRoute(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
-        HotelSpirit spirit, Func<bool> recordCheckpoint, Action changed)
+        HotelSpirit spirit, InteractionTuning interaction, ExcursionRoute layout, RefugeDefinition refuge,
+        Func<bool> recordCheckpoint, Action changed)
     {
         this.engine = engine;
         this.scene = scene;
@@ -42,30 +46,31 @@ internal sealed class HotelRoute : IWorldInteractionScene
         this.spirit = spirit;
         this.recordCheckpoint = recordCheckpoint;
         this.changed = changed;
-        tuning = scene.Definition.Route;
-        doors = tuning.Doors.Select(d => new DoorState(d, scene.DoorEntity(d.Id))).ToArray();
-        finds = scene.Definition.Supplies.Finds.Select(f => (f, scene.Entities.Create().Value)).ToArray();
+        this.interaction = interaction;
+        this.layout = layout;
+        doors = layout.Doors.Select(d => new DoorState(d, scene.DoorEntity(d.Id))).ToArray();
+        finds = supplies.Finds.Select(f => (f, scene.Entities.Create().Value)).ToArray();
 
         // Candidate order is stable: doors, readings, finds, the spirit bell, then the refuge notebook.
         foreach (DoorState door in doors)
             Add(new(door.Entity, () => !door.Open, () => door.Definition.Label, () => DoorFocus(door),
                 () => CanUnlatch(door), () => OpenDoor(door)));
-        foreach (ReadingDefinition reading in tuning.Readings)
+        foreach (ReadingDefinition reading in layout.Readings)
         {
-            Vector3 point = HotelDefinition.Vector(reading.Point);
+            Vector3 point = Authored.Vector(reading.Point);
             Add(new(scene.Entities.Create().Value, () => true, () => reading.Label, () => point,
                 () => true, () => Read(reading)));
         }
         foreach (var find in finds)
         {
-            Vector3 point = HotelDefinition.Vector(find.Definition.Point);
+            Vector3 point = Authored.Vector(find.Definition.Point);
             Add(new(find.Entity, () => !supplies.Collected(find.Definition.Id),
                 () => $"Take {supplies.Item(find.Definition.Item).Name}", () => point, () => true, () => Take(find)));
         }
-        Vector3 bell = HotelDefinition.Vector(spirit.Definition.Point);
+        Vector3 bell = spirit.Bell;
         Add(new(scene.Entities.Create().Value, () => !spirit.Acquired, () => "Lift the bell · free Hushwing",
             () => bell, () => true, FreeSpirit));
-        Vector3 notebook = HotelDefinition.Vector(scene.Definition.Refuge.Point);
+        Vector3 notebook = Authored.Vector(refuge.Point);
         Add(new(scene.Entities.Create().Value, () => true, () => "Record refuge checkpoint",
             () => notebook, () => true, RecordCheckpoint));
         Interaction = new(this);
@@ -76,9 +81,9 @@ internal sealed class HotelRoute : IWorldInteractionScene
     internal string ReadingText { get; private set; } = "";
     internal ulong ReadingSequence { get; private set; }
     internal string Prompt { get; private set; } = "";
-    internal string Location => tuning.Rooms.FirstOrDefault(r =>
+    internal string Location => layout.Rooms.FirstOrDefault(r =>
         player.Position.X >= r.Min[0] && player.Position.X <= r.Max[0] &&
-        player.Position.Z >= r.Min[2] && player.Position.Z <= r.Max[2])?.Label ?? "West wing corridor";
+        player.Position.Z >= r.Min[2] && player.Position.Z <= r.Max[2])?.Label ?? layout.FallbackLocation;
     internal string[] OpenDoors => doors.Where(d => d.Open).Select(d => d.Definition.Id).ToArray();
 
     internal void Update()
@@ -108,11 +113,11 @@ internal sealed class HotelRoute : IWorldInteractionScene
             InteractionVisibility visibility = InteractionVisibilityQuery.Cast(
                 engine.Spatial, scene.Session, player.Eye, point, new(uint.MaxValue, uint.MaxValue),
                 ReadOnlyMemory<SpatialEntityCollider>.Empty, new[] { item.Entity }, .02f);
-            candidates.Add(new(new(item.Entity, revision), item.Label(), point, tuning.Reach, visibility,
+            candidates.Add(new(new(item.Entity, revision), item.Label(), point, interaction.Reach, visibility,
                 item.Available() ? InteractionAvailability.Available : InteractionAvailability.Locked));
         }
-        return new(new(player.Eye, player.Forward, tuning.AcquireAngle, tuning.ReleaseAngle,
-            tuning.FocusDistance, tuning.FocusDistance + .5f), candidates.ToArray(), $"hotel-route:{revision}", "use");
+        return new(new(player.Eye, player.Forward, interaction.AcquireAngle, interaction.ReleaseAngle,
+            interaction.FocusDistance, interaction.FocusDistance + .5f), candidates.ToArray(), $"hotel-route:{revision}", "use");
     }
 
     public InteractionActionResult UseInteraction(InteractionTarget target)
@@ -204,15 +209,15 @@ internal sealed class HotelRoute : IWorldInteractionScene
     // Aim just outside the visible face, on whichever side of the closed leaf the player stands.
     private Vector3 DoorFocus(DoorState door)
     {
-        Vector3 center = HotelDefinition.Vector(door.Definition.FocusPoint);
+        Vector3 center = Authored.Vector(door.Definition.FocusPoint);
         Vector3 normal = Vector3.Transform(Vector3.UnitZ, Quaternion.CreateFromAxisAngle(Vector3.UnitY,
             door.Definition.ClosedYaw * MathF.PI / 180));
         return center + normal * (Vector3.Dot(player.Eye - center, normal) >= 0 ? .07f : -.07f);
     }
 
     private bool CanUnlatch(DoorState door) => !door.Definition.FarSideLatch ||
-        Vector3.Dot(player.Position - HotelDefinition.Vector(door.Definition.Hinge),
-            HotelDefinition.Vector(door.Definition.UnlockDirection!)) > 0;
+        Vector3.Dot(player.Position - Authored.Vector(door.Definition.Hinge),
+            Authored.Vector(door.Definition.UnlockDirection!)) > 0;
 
     private sealed class DoorState(DoorDefinition definition, ulong entity)
     {

@@ -13,14 +13,15 @@ internal static class SpiritChecks
 {
     internal static void Run(IEngineContext engine)
     {
-        using HotelScene scene = new(engine, HotelDefinition.Load(engine));
-        using HotelPlayer player = new(engine, scene);
-        HotelSupplies supplies = new(scene.Definition.Supplies, 12, scene.PlayerEntity);
-        HotelCombat combat = new(engine, scene, player, supplies);
-        HotelSpirit spirit = new(scene.Definition.Spirit, supplies, combat, player);
-        HotelRoute route = new(engine, scene, player, supplies, spirit, () => false, () => { });
+        var content = Owners.Content(engine);
+        using HotelScene scene = Owners.Scene(engine, content);
+        using HotelPlayer player = Owners.Player(engine, scene, content);
+        HotelSupplies supplies = Owners.Supplies(content, scene.PlayerEntity, 12);
+        HotelCombat combat = Owners.Combat(engine, scene, player, supplies, content);
+        HotelSpirit spirit = Owners.Spirit(content, supplies, combat, player);
+        HotelRoute route = Owners.Route(engine, scene, player, supplies, spirit, content);
         using SpiritView view = new(engine, scene, spirit);
-        HotelEnemy lamp = combat.Enemies.Single(e => e.Definition.Id == "lamp");
+        HotelEnemy lamp = combat.Enemies.Single(e => e.Id == "lamp");
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
         void At(float x, float z, Vector3 target)
         {
@@ -33,10 +34,10 @@ internal static class SpiritChecks
         }
         void Step(int count) { for (int i = 0; i < count; i++) { combat.Step(1f / 60); spirit.Step(1f / 60); } }
         Check(!spirit.Call() && !spirit.Equip(true, spirit.Revision) && supplies.Summon == 0, "unacquired spirit refuses call/equip");
-        At(0, -8, HotelDefinition.Vector(spirit.Definition.Point));
+        At(0, -8, spirit.Bell);
         route.Update(); route.Use();
         Check(!spirit.Acquired, "wall and reach prevent remote pact acquisition");
-        At(3.3f, -8, HotelDefinition.Vector(spirit.Definition.Point));
+        At(3.3f, -8, spirit.Bell);
         route.Update();
         Check(route.Prompt.Contains("Hushwing"), "ordinary Engine focus exposes the pact");
         route.Use();

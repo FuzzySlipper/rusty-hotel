@@ -13,12 +13,13 @@ internal static class RouteChecks
 {
     internal static void Run(IEngineContext engine)
     {
-        using HotelScene scene = new(engine, HotelDefinition.Load(engine));
-        using HotelPlayer player = new(engine, scene);
-        HotelSupplies supplies = new(scene.Definition.Supplies, scene.Definition.Interface.SupplyPockets, scene.PlayerEntity);
-        HotelCombat combat = new(engine, scene, player, supplies);
-        HotelSpirit spirit = new(scene.Definition.Spirit, supplies, combat, player);
-        HotelRoute route = new(engine, scene, player, supplies, spirit, () => false, () => { });
+        var content = Owners.Content(engine);
+        using HotelScene scene = Owners.Scene(engine, content);
+        using HotelPlayer player = Owners.Player(engine, scene, content);
+        HotelSupplies supplies = Owners.Supplies(content, scene.PlayerEntity);
+        HotelCombat combat = Owners.Combat(engine, scene, player, supplies, content);
+        HotelSpirit spirit = Owners.Spirit(content, supplies, combat, player);
+        HotelRoute route = Owners.Route(engine, scene, player, supplies, spirit, content);
         scene.Publish();
         void At(float x, float z, Vector3 target)
         {

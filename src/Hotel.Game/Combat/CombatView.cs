@@ -27,7 +27,7 @@ internal sealed class CombatView : IDisposable
         {
             foreach (HotelEnemy enemy in combat.Enemies)
             {
-                residents[enemy.Definition.Id] = enemy.Definition.Behavior == "porter"
+                residents[enemy.Id] = enemy.Kind.Behavior == ResidentBehavior.Porter
                     ? [Box("porter-coat", new(0, .06f, 0), new(.62f, .85f, .36f)),
                        Box("equipment", new(-.17f, -.61f, 0), new(.20f, .55f, .24f)),
                        Box("equipment", new(.17f, -.61f, 0), new(.20f, .55f, .24f)),
@@ -50,7 +50,7 @@ internal sealed class CombatView : IDisposable
                        Box("tell-amber", new(0, .58f, -.34f), new(.22f, .08f, .035f), "tell"),
                        Box("brass", new(-.30f, -.22f, 0), new(.08f, .5f, .08f)),
                        Box("brass", new(.30f, -.22f, 0), new(.08f, .5f, .08f))];
-                beams.Add(enemy.Definition.Id, Box("tell-amber", default, Vector3.One));
+                beams.Add(enemy.Id, Box("tell-amber", default, Vector3.One));
             }
             bar = [Box("equipment", new(0, 0, -.15f), new(.055f, .055f, .65f)),
                    Box("brass", new(0, .065f, -.48f), new(.065f, .16f, .06f)),
@@ -87,15 +87,15 @@ internal sealed class CombatView : IDisposable
         {
             Quaternion facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, -enemy.Yaw);
             bool winding = enemy.Phase == AttackPhase.Windup, committed = enemy.Phase == AttackPhase.Commit;
-            foreach (Part part in residents[enemy.Definition.Id])
+            foreach (Part part in residents[enemy.Id])
             {
                 Vector3 offset = part.Offset;
                 if (part.Role == "arm") offset += winding ? new Vector3(0, .55f, .18f) : committed ? new Vector3(0, -.04f, -.60f) : Vector3.Zero;
                 if (enemy.Phase is AttackPhase.Recovery or AttackPhase.Interrupted) offset.Y -= .10f;
                 Place(part, enemy.Position, facing, enemy.Alive && (part.Role != "tell" || winding || committed), offset);
             }
-            Part beam = beams[enemy.Definition.Id];
-            bool showBeam = enemy.Alive && enemy.Definition.Behavior == "lamp" && enemy.BeamTime > 0;
+            Part beam = beams[enemy.Id];
+            bool showBeam = enemy.Alive && enemy.Kind.Behavior == ResidentBehavior.Lamp && enemy.BeamTime > 0;
             Vector3 delta = enemy.BeamEnd - enemy.Eye;
             float length = delta.Length();
             Quaternion beamRotation = length > .001f ? Facing(delta / length) : Quaternion.Identity;

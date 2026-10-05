@@ -1,10 +1,9 @@
 using System.Text.Json;
 using Rusty.Engine;
-using Hotel.Game.Scene;
 using Hotel.Game.Expedition;
 using Rusty.Engine.Entities;
 using Rusty.Engine.Mechanics;
-using ItemDefinition = Hotel.Game.Scene.ItemDefinition;
+using ItemDefinition = Hotel.Game.Supplies.ItemDefinition;
 using EngineItemDefinition = Rusty.Engine.Mechanics.ItemDefinition;
 
 namespace Hotel.Game.Supplies;
@@ -12,7 +11,9 @@ namespace Hotel.Game.Supplies;
 /// <summary>One owner for carried stacks, collected finds and player resources.</summary>
 internal sealed class HotelSupplies
 {
-    private readonly SuppliesDefinition definition;
+    private readonly SupplyResources resources;
+    private readonly ItemDefinition[] items;
+    private readonly FindDefinition[] finds;
     private readonly InventoryStackId?[] slots;
     private readonly EntityId owner;
     private readonly Dictionary<string, EngineItemDefinition> itemMechanics;
@@ -21,26 +22,28 @@ internal sealed class HotelSupplies
     private ulong nextStack;
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
 
-    internal HotelSupplies(SuppliesDefinition definition, int capacity, EntityId owner)
+    internal HotelSupplies(SupplyResources resources, ItemDefinition[] items, FindDefinition[] finds, int capacity, EntityId owner)
     {
-        this.definition = definition;
+        this.resources = resources;
+        this.items = items;
+        this.finds = finds;
         this.owner = owner;
         slots = new InventoryStackId?[capacity];
-        itemMechanics = definition.Items.ToDictionary(i => i.Id,
+        itemMechanics = items.ToDictionary(i => i.Id,
             i => new EngineItemDefinition(ItemDefinitionId.Parse(i.Id), ItemKind.Fungible, (ulong)i.StackLimit));
-        health = new(definition.MaximumHealth, definition.InitialHealth, quantum: 1);
-        ammo = new(definition.MaximumAmmo, 0, quantum: 1);
-        summon = new(definition.MaximumSummon, 0, quantum: 1);
+        health = new(resources.MaximumHealth, resources.InitialHealth, quantum: 1);
+        ammo = new(resources.MaximumAmmo, 0, quantum: 1);
+        summon = new(resources.MaximumSummon, 0, quantum: 1);
         Reset();
     }
 
     internal ulong Revision { get; private set; }
     internal int Health => health.ValueInt;
-    internal int MaximumHealth => definition.MaximumHealth;
+    internal int MaximumHealth => resources.MaximumHealth;
     internal int Ammo => ammo.ValueInt;
-    internal int MaximumAmmo => definition.MaximumAmmo;
+    internal int MaximumAmmo => resources.MaximumAmmo;
     internal int Summon => summon.ValueInt;
-    internal int MaximumSummon => definition.MaximumSummon;
+    internal int MaximumSummon => resources.MaximumSummon;
     internal int Capacity => slots.Length;
     internal int Occupied => slots.Count(s => s is not null);
     private float noticeSeconds;
@@ -59,12 +62,15 @@ internal sealed class HotelSupplies
         InventoryStack stack = inventory.View(owner).Stacks.Single(s => s.Id == id);
         return new(stack.Definition.Value, checked((int)stack.Quantity));
     }
-    internal ItemDefinition Item(string id) => definition.Items.First(i => i.Id == id);
+    internal ItemDefinition Item(string id) => items.First(i => i.Id == id);
     internal bool Collected(string id) => collected.Contains(id);
+    internal FindDefinition[] Finds => finds;
+    // Expedition finds are deposited at the refuge rather than used in the field.
+    internal bool IsExpeditionFind(string findId) => Item(finds.Single(f => f.Id == findId).Item).Kind == SupplyKind.Expedition;
 
     internal bool Pickup(string id)
     {
-        FindDefinition? find = definition.Finds.FirstOrDefault(f => f.Id == id);
+        FindDefinition? find = finds.FirstOrDefault(f => f.Id == id);
         if (find is null || collected.Contains(id)) return Refuse("This find is no longer available.");
         if (!Add(find.Item, find.Count)) return Refuse("Field case full. This find stays here.");
         collected.Add(id);
@@ -195,7 +201,7 @@ internal sealed class HotelSupplies
 
     internal bool Give(string item, int count)
     {
-        if (count <= 0 || count > 99 || !definition.Items.Any(i => i.Id == item)) return Refuse("Unknown item or invalid quantity.");
+        if (count <= 0 || count > 99 || !items.Any(i => i.Id == item)) return Refuse("Unknown item or invalid quantity.");
         if (!Add(item, count)) return Refuse("Field case full.");
         Revision++;
         Message = $"Developer supplied {Item(item).Name} ×{count}.";
@@ -219,10 +225,10 @@ internal sealed class HotelSupplies
         if (state.Health <= 0 || state.Health > MaximumHealth || state.Ammo < 0 || state.Ammo > MaximumAmmo ||
             state.Summon < 0 || state.Summon > MaximumSummon || state.Pockets is null || state.Pockets.Length != Capacity ||
             state.Collected is null || state.Collected.Distinct().Count() != state.Collected.Length ||
-            state.Collected.Any(id => !definition.Finds.Any(f => f.Id == id)))
+            state.Collected.Any(id => !finds.Any(f => f.Id == id)))
             throw new InvalidOperationException("Checkpoint supplies or collected finds are invalid.");
         foreach (ItemStack? pocket in state.Pockets)
-            if (pocket is { } stack && (stack.Count <= 0 || !definition.Items.Any(i => i.Id == stack.Item && stack.Count <= i.StackLimit)))
+            if (pocket is { } stack && (stack.Count <= 0 || !items.Any(i => i.Id == stack.Item && stack.Count <= i.StackLimit)))
                 throw new InvalidOperationException("Checkpoint contains an invalid carried stack.");
     }
 
@@ -249,7 +255,7 @@ internal sealed class HotelSupplies
         inventory = new();
         inventory.RegisterInventory(new(owner));
         nextStack = 0;
-        health.SetCurrent(definition.InitialHealth);
+        health.SetCurrent(resources.InitialHealth);
         ammo.SetCurrent(0);
         summon.SetCurrent(0);
         Revision++;

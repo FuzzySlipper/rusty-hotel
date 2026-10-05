@@ -1,7 +1,6 @@
 using Hotel.Game.Combat;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
-using Hotel.Game.Scene;
 using Hotel.Game.Spirits;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
@@ -15,7 +14,7 @@ internal sealed class HotelExpedition : IDisposable
     internal const string Scope = "hotel.checkpoints";
     internal const string Key = "refuge/current";
     private readonly ProductStateStore<CheckpointState> store;
-    private readonly HotelDefinition definition;
+    private readonly RefugeDefinition refuge;
     private readonly HotelPlayer player;
     private readonly HotelSupplies supplies;
     private readonly HotelCombat combat;
@@ -23,10 +22,10 @@ internal sealed class HotelExpedition : IDisposable
     private readonly HotelRoute route;
     private CheckpointState? checkpoint;
 
-    internal HotelExpedition(IEngineContext engine, HotelDefinition definition, HotelPlayer player,
+    internal HotelExpedition(IEngineContext engine, RefugeDefinition refuge, HotelPlayer player,
         HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelRoute route)
     {
-        this.definition = definition; this.player = player; this.supplies = supplies;
+        this.refuge = refuge; this.player = player; this.supplies = supplies;
         this.combat = combat; this.spirit = spirit; this.route = route;
         store = new(engine, Scope, new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
     }
@@ -75,7 +74,7 @@ internal sealed class HotelExpedition : IDisposable
         checkpoint = next;
         supplies.Restore(next.Supplies);
         string secured = next.SecuredFinds.Length == 0 ? "No expedition finds secured yet." :
-            "Secured: " + string.Join(", ", next.SecuredFinds.Select(id => supplies.Item(definition.Supplies.Finds.Single(f => f.Id == id).Item).Name)) + ".";
+            "Secured: " + string.Join(", ", next.SecuredFinds.Select(id => supplies.Item(supplies.Finds.Single(f => f.Id == id).Item).Name)) + ".";
         return Receipt(true, secured + $"\n\nCheckpoint {Returns} saved. Health {supplies.Health}; ammunition {supplies.Ammo}; summon charges {supplies.Summon}." +
             "\n\nYour supplies, pact, opened doors, collected finds and residents are recorded together. Defeat or reopening the hotel returns you to this refuge checkpoint. Changes made after this return are not saved.");
     }
@@ -101,22 +100,22 @@ internal sealed class HotelExpedition : IDisposable
     private CheckpointState Capture(int returns)
     {
         SuppliesState carried = supplies.Capture();
-        string[] secured = carried.Collected.Where(id => supplies.Item(definition.Supplies.Finds.Single(f => f.Id == id).Item).Kind == SupplyKind.Expedition).ToArray();
+        string[] secured = carried.Collected.Where(supplies.IsExpeditionFind).ToArray();
         // Expedition finds move into the refuge ledger, retaining their collected identity.
         SuppliesState deposited = carried with { Pockets = carried.Pockets.Select(s => s is { } item && supplies.Item(item.Item).Kind == SupplyKind.Expedition ? null : s).ToArray() };
-        return new(1, returns, definition.Refuge.Id, combat.Weapon.Id, deposited, route.OpenDoors,
+        return new(1, returns, refuge.Id, combat.Weapon.Id, deposited, route.OpenDoors,
             spirit.Capture(), combat.Capture(), secured);
     }
 
     internal void Validate(CheckpointState state)
     {
-        if (state.Version != 1 || state.Returns < 0 || state.Refuge != definition.Refuge.Id || state.Supplies is null || state.Spirit is null)
+        if (state.Version != 1 || state.Returns < 0 || state.Refuge != refuge.Id || state.Supplies is null || state.Spirit is null)
             throw new InvalidOperationException("Checkpoint version or refuge is invalid.");
         supplies.Validate(state.Supplies);
         route.Validate(state.OpenDoors);
         combat.Validate(state.Weapon, state.Residents);
         spirit.Validate(state.Spirit);
-        string[] expected = state.Supplies.Collected.Where(id => supplies.Item(definition.Supplies.Finds.Single(f => f.Id == id).Item).Kind == SupplyKind.Expedition).Order().ToArray();
+        string[] expected = state.Supplies.Collected.Where(supplies.IsExpeditionFind).Order().ToArray();
         if (state.SecuredFinds is null || !state.SecuredFinds.Order().SequenceEqual(expected) ||
             state.Supplies.Pockets.Any(s => s is { } item && supplies.Item(item.Item).Kind == SupplyKind.Expedition))
             throw new InvalidOperationException("Checkpoint expedition deposit is inconsistent.");

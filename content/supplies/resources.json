@@ -1,0 +1,6 @@
+{
+  "initialHealth": 70,
+  "maximumHealth": 100,
+  "maximumAmmo": 24,
+  "maximumSummon": 3
+}

@@ -1,5 +1,5 @@
 using System.Numerics;
-using Hotel.Game.Scene;
+using Hotel.Game.Content;
 using Rusty.Engine;
 
 namespace Hotel.Game.Audio;
@@ -33,7 +33,7 @@ internal sealed class HotelAmbience : IDisposable
             voices.Add(audio.CreateVoice(new(clip, AudioBus.Ambient, definition.Volume, 1, true,
                 placed ? 1 : 0, definition.Range, AudioRolloff.Linear, 0,
                 placed ? AudioEmitterKind.World3d : AudioEmitterKind.Global2d,
-                placed ? HotelDefinition.Vector(definition.Position!) : Vector3.Zero, 0, Vector3.Zero)));
+                placed ? Authored.Vector(definition.Position!) : Vector3.Zero, 0, Vector3.Zero)));
         }
     }
 

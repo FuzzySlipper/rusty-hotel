@@ -1,6 +1,7 @@
 using System.Numerics;
 using Hotel.Game.Player;
 using Hotel.Game.Expedition;
+using Hotel.Game.Content;
 using Hotel.Game.Scene;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
@@ -25,11 +26,13 @@ internal sealed class HotelCombat
     private ulong reloadRevision;
     private Vector3 attackDirection;
 
-    internal HotelCombat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies)
+    internal HotelCombat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
+        CombatDefinition definition, ResidentKind[] kinds, ResidentPlacement[] residents)
     {
         this.engine = engine; this.scene = scene; this.player = player; this.supplies = supplies;
-        definition = scene.Definition.Combat;
-        Enemies = definition.Enemies.Select(d => new HotelEnemy(engine, scene, d)).ToArray();
+        this.definition = definition;
+        Enemies = residents.Select(placed => new HotelEnemy(engine, scene, placed,
+            kinds.Single(kind => kind.Id == placed.Kind), player.Tuning.Gravity)).ToArray();
     }
 
     internal HotelEnemy[] Enemies { get; }
@@ -145,7 +148,7 @@ internal sealed class HotelCombat
         victim.Health.SetCurrent(Math.Max(0, victim.Health.ValueInt - Weapon.Damage));
         LandedHits++;
         HitFlash = .22f;
-        Announce(victim.Alive ? $"Hit · {victim.Definition.Name}" : $"{victim.Definition.Name} falls still");
+        Announce(victim.Alive ? $"Hit · {victim.Kind.Name}" : $"{victim.Kind.Name} falls still");
         if (!victim.Alive) { victim.Phase = AttackPhase.Defeated; victim.BeamTime = 0; }
     }
 
@@ -155,20 +158,20 @@ internal sealed class HotelCombat
         if (!enemy.Alive || Defeated) return;
         Vector3 toPlayer = player.Eye - enemy.Eye;
         float distance = toPlayer.Length();
-        bool visible = distance <= enemy.Definition.SightRange && ClearLine(enemy.Eye, player.Eye);
+        bool visible = distance <= enemy.Kind.SightRange && ClearLine(enemy.Eye, player.Eye);
         bool withinLeash = Vector3.Distance(new(player.Position.X, 0, player.Position.Z),
-            new(enemy.Spawn.X, 0, enemy.Spawn.Z)) <= enemy.Definition.Leash;
+            new(enemy.Spawn.X, 0, enemy.Spawn.Z)) <= enemy.Kind.Leash;
         if (enemy.Phase == AttackPhase.Ready)
         {
             if (!visible) return;
             enemy.Yaw = MathF.Atan2(toPlayer.X, -toPlayer.Z);
-            if (distance <= enemy.Definition.AttackRange)
+            if (distance <= enemy.Kind.AttackRange)
             {
                 enemy.Phase = AttackPhase.Windup;
-                enemy.Remaining = enemy.Definition.Windup;
+                enemy.Remaining = enemy.Kind.Windup;
                 enemy.Aim = Vector3.Normalize(toPlayer); // A committed direction: strafing can evade it.
             }
-            else if (enemy.Definition.Speed > 0 && withinLeash)
+            else if (enemy.Kind.Speed > 0 && withinLeash)
             {
                 // This resident stops to attack before body contact; only hotel geometry constrains its approach.
                 CharacterStepReceipt move = engine.Spatial.ProposeCharacterStep(new(scene.Session,
@@ -186,18 +189,18 @@ internal sealed class HotelCombat
             case AttackPhase.Windup:
                 SpatialEntityCollider body = PlayerHitbox();
                 SpatialHit hit = engine.Spatial.CastRay(new(scene.Session, enemy.Eye, enemy.Aim,
-                    enemy.Definition.AttackRange, new(2, uint.MaxValue), new[] { body }, new[] { enemy.Entity.Value }, new[] { body }));
-                enemy.BeamEnd = hit.Present ? hit.Point : enemy.Eye + enemy.Aim * enemy.Definition.AttackRange;
-                enemy.BeamTime = enemy.Definition.Commit;
+                    enemy.Kind.AttackRange, new(2, uint.MaxValue), new[] { body }, new[] { enemy.Entity.Value }, new[] { body }));
+                enemy.BeamEnd = hit.Present ? hit.Point : enemy.Eye + enemy.Aim * enemy.Kind.AttackRange;
+                enemy.BeamTime = enemy.Kind.Commit;
                 if (hit.Present && hit.Kind == SpatialHitKind.Entity && hit.Entity == scene.PlayerEntity.Value)
                 {
-                    supplies.Damage(enemy.Definition.Damage);
+                    supplies.Damage(enemy.Kind.Damage);
                     HurtFlash = .4f;
-                    Announce($"{enemy.Definition.Name} hits · −{enemy.Definition.Damage} health");
+                    Announce($"{enemy.Kind.Name} hits · −{enemy.Kind.Damage} health");
                 }
-                enemy.Phase = AttackPhase.Commit; enemy.Remaining += enemy.Definition.Commit; break;
+                enemy.Phase = AttackPhase.Commit; enemy.Remaining += enemy.Kind.Commit; break;
             case AttackPhase.Commit:
-                enemy.Phase = AttackPhase.Recovery; enemy.Remaining += enemy.Definition.Recovery; break;
+                enemy.Phase = AttackPhase.Recovery; enemy.Remaining += enemy.Kind.Recovery; break;
             case AttackPhase.Recovery:
             case AttackPhase.Interrupted: enemy.Phase = AttackPhase.Ready; break;
         }
@@ -205,14 +208,15 @@ internal sealed class HotelCombat
 
     private SpatialEntityCollider PlayerHitbox()
     {
-        Vector3 half = new(scene.Definition.Player.Radius, scene.Definition.Player.Height / 2, scene.Definition.Player.Radius);
+        PlayerTuning body = player.Tuning;
+        Vector3 half = new(body.Radius, body.Height / 2, body.Radius);
         return new(scene.PlayerEntity.Value, player.Position - half, player.Position + half, 1, uint.MaxValue, true, false, false);
     }
     private bool ClearLine(Vector3 start, Vector3 end) => !engine.Spatial.CastSegment(new(scene.Session, start, end,
         new(0, uint.MaxValue), ReadOnlyMemory<SpatialEntityCollider>.Empty, ReadOnlyMemory<ulong>.Empty,
         ReadOnlyMemory<SpatialEntityCollider>.Empty)).Present;
 
-    internal ResidentState[] Capture() => Enemies.Select(e => new ResidentState(e.Definition.Id,
+    internal ResidentState[] Capture() => Enemies.Select(e => new ResidentState(e.Id,
         e.Health.ValueInt, e.Position.X, e.Position.Y, e.Position.Z, e.Yaw)).ToArray();
 
     internal void Validate(string weapon, ResidentState[] residents)
@@ -222,10 +226,10 @@ internal sealed class HotelCombat
             throw new InvalidOperationException("Checkpoint weapon or resident roster is invalid.");
         foreach (ResidentState? state in residents)
         {
-            HotelEnemy? enemy = Enemies.FirstOrDefault(e => e.Definition.Id == state?.Id);
-            if (state is null || enemy is null || state.Health < 0 || state.Health > enemy.Definition.Health ||
+            HotelEnemy? enemy = Enemies.FirstOrDefault(e => e.Id == state?.Id);
+            if (state is null || enemy is null || state.Health < 0 || state.Health > enemy.Kind.Health ||
                 !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
-                Vector3.Distance(new(state.X, state.Y, state.Z), enemy.Spawn) > enemy.Definition.Leash + 1)
+                Vector3.Distance(new(state.X, state.Y, state.Z), enemy.Spawn) > enemy.Kind.Leash + 1)
                 throw new InvalidOperationException("Checkpoint resident values are invalid.");
         }
     }
@@ -236,7 +240,7 @@ internal sealed class HotelCombat
         weaponIndex = Array.FindIndex(definition.Weapons, w => w.Id == weapon);
         foreach (ResidentState state in residents)
         {
-            HotelEnemy enemy = Enemies.Single(e => e.Definition.Id == state.Id);
+            HotelEnemy enemy = Enemies.Single(e => e.Id == state.Id);
             enemy.Health.SetCurrent(state.Health);
             enemy.Yaw = state.Yaw;
             enemy.Phase = enemy.Alive ? AttackPhase.Ready : AttackPhase.Defeated;
@@ -257,40 +261,42 @@ internal sealed class HotelCombat
 internal sealed class HotelEnemy
 {
     private readonly HotelScene scene;
-    internal HotelEnemy(IEngineContext engine, HotelScene scene, EnemyDefinition definition)
+    internal HotelEnemy(IEngineContext engine, HotelScene scene, ResidentPlacement placement, ResidentKind kind, float gravity)
     {
-        this.scene = scene; Definition = definition;
+        this.scene = scene; Kind = kind; Id = placement.Id; Spawn = Authored.Vector(placement.Position);
         Entity = scene.Entities.Create();
-        Health = new(definition.Health);
+        Health = new(kind.Health);
         CharacterControllerConfig baseline = engine.Spatial.DefaultCharacterControllerConfig();
         Controller = baseline with
         {
-            Shape = baseline.Shape with { StandingHeight = definition.Height, Radius = definition.Radius },
-            Ground = baseline.Ground with { ForwardSpeed = definition.Speed, BackwardSpeed = definition.Speed, StrafeSpeed = definition.Speed },
-            Vertical = baseline.Vertical with { Gravity = scene.Definition.Player.Gravity }
+            Shape = baseline.Shape with { StandingHeight = kind.Height, Radius = kind.Radius },
+            Ground = baseline.Ground with { ForwardSpeed = kind.Speed, BackwardSpeed = kind.Speed, StrafeSpeed = kind.Speed },
+            Vertical = baseline.Vertical with { Gravity = gravity }
         };
         engine.Spatial.ValidateCharacterControllerConfig(Controller);
         Reset();
     }
-    internal EnemyDefinition Definition { get; }
+    /// <summary>Saved identity of this placed resident.</summary>
+    internal string Id { get; }
+    internal ResidentKind Kind { get; }
     internal EntityId Entity { get; }
     internal Track Health { get; }
     internal CharacterControllerConfig Controller { get; }
-    internal Vector3 Spawn => HotelDefinition.Vector(Definition.Position);
+    internal Vector3 Spawn { get; }
     internal Vector3 Position => scene.Entities.Get(Entity, EngineComponentTypes.Transform).Translation;
     internal CharacterMotion Motion => scene.Entities.Get(Entity, EngineComponentTypes.CharacterMotion);
-    internal Vector3 Eye => Position + new Vector3(0, Definition.Height * .32f, 0);
+    internal Vector3 Eye => Position + new Vector3(0, Kind.Height * .32f, 0);
     internal bool Alive => Health.Value > 0;
     internal AttackPhase Phase;
     internal float Remaining, Yaw, BeamTime;
     internal Vector3 Aim, BeamEnd;
     internal ulong Sequence;
-    private Vector3 Half => new(Definition.Radius, Definition.Height / 2, Definition.Radius);
+    private Vector3 Half => new(Kind.Radius, Kind.Height / 2, Kind.Radius);
     internal SpatialEntityCollider Hitbox => new(Entity.Value, Position - Half, Position + Half, 2, uint.MaxValue, true, false, false);
     internal CharacterObstacle Obstacle => new(Entity.Value, new(Position, Quaternion.Identity, Vector3.One), -Half, Half, true, default, default);
     internal void Reset()
     {
-        Health.SetCurrent(Definition.Health); Phase = AttackPhase.Ready; Remaining = BeamTime = Yaw = 0;
+        Health.SetCurrent(Kind.Health); Phase = AttackPhase.Ready; Remaining = BeamTime = Yaw = 0;
         scene.Entities.Set(Entity, EngineComponentTypes.Transform, new(Spawn, Quaternion.Identity, Vector3.One));
         scene.Entities.Set(Entity, EngineComponentTypes.CharacterMotion, new(Vector3.Zero, Vector3.Zero,
             false, CharacterStance.Standing, 0, 0, 0, false, 0, Vector3.Zero, Vector3.Zero, Quaternion.Identity,

@@ -1,0 +1,213 @@
+{
+  "surfaces": [
+    {
+      "id": "wall",
+      "color": [
+        0.9,
+        0.94,
+        0.87
+      ],
+      "texture": "materials/angular.png",
+      "tileWidth": 1.8,
+      "tileHeight": 2.4
+    },
+    {
+      "id": "medallion",
+      "color": [
+        0.9,
+        0.94,
+        0.9
+      ],
+      "texture": "materials/medallion.png",
+      "tileWidth": 2.4,
+      "tileHeight": 2.4
+    },
+    {
+      "id": "ceiling",
+      "color": [
+        0.38,
+        0.37,
+        0.29
+      ]
+    },
+    {
+      "id": "carpet",
+      "color": [
+        0.34,
+        0.085,
+        0.12
+      ],
+      "texture": "materials/carpet.png",
+      "tileWidth": 1.25,
+      "tileHeight": 1.25
+    },
+    {
+      "id": "west",
+      "color": [
+        0.1,
+        0.18,
+        0.17
+      ],
+      "texture": "materials/carpet.png",
+      "tileWidth": 1.25,
+      "tileHeight": 1.25
+    },
+    {
+      "id": "east",
+      "color": [
+        0.18,
+        0.19,
+        0.12
+      ],
+      "texture": "materials/carpet.png",
+      "tileWidth": 1.25,
+      "tileHeight": 1.25
+    },
+    {
+      "id": "trim",
+      "color": [
+        0.1,
+        0.045,
+        0.022
+      ],
+      "roughness": 0.75
+    },
+    {
+      "id": "door",
+      "color": [
+        0.24,
+        0.12,
+        0.055
+      ],
+      "roughness": 0.72
+    },
+    {
+      "id": "brass",
+      "color": [
+        0.36,
+        0.27,
+        0.105
+      ],
+      "roughness": 0.65
+    },
+    {
+      "id": "lamp",
+      "color": [
+        0.24,
+        0.18,
+        0.095
+      ],
+      "emission": 0.8
+    },
+    {
+      "id": "paper",
+      "color": [
+        0.65,
+        0.57,
+        0.39
+      ]
+    },
+    {
+      "id": "equipment",
+      "color": [
+        0.055,
+        0.071,
+        0.05
+      ],
+      "roughness": 0.75
+    },
+    {
+      "id": "canvas",
+      "color": [
+        0.24,
+        0.28,
+        0.18
+      ]
+    },
+    {
+      "id": "picture",
+      "color": [
+        0.12,
+        0.24,
+        0.22
+      ]
+    },
+    {
+      "id": "picture-light",
+      "color": [
+        0.41,
+        0.36,
+        0.19
+      ]
+    },
+    {
+      "id": "ceiling-seam",
+      "color": [
+        0.22,
+        0.22,
+        0.17
+      ]
+    },
+    {
+      "id": "service-paint",
+      "color": [
+        0.24,
+        0.34,
+        0.32
+      ],
+      "roughness": 0.95
+    },
+    {
+      "id": "dressing-wrap",
+      "color": [
+        0.7,
+        0.63,
+        0.43
+      ]
+    },
+    {
+      "id": "dressing-mark",
+      "color": [
+        0.42,
+        0.12,
+        0.08
+      ]
+    },
+    {
+      "id": "incense-wrap",
+      "color": [
+        0.21,
+        0.3,
+        0.24
+      ]
+    },
+    {
+      "id": "porter-coat",
+      "color": [
+        0.35,
+        0.075,
+        0.06
+      ],
+      "roughness": 0.92
+    },
+    {
+      "id": "resident-ivory",
+      "color": [
+        0.62,
+        0.57,
+        0.4
+      ],
+      "roughness": 0.8
+    },
+    {
+      "id": "tell-amber",
+      "color": [
+        1,
+        0.48,
+        0.09
+      ],
+      "roughness": 0.8,
+      "emission": 1.2
+    }
+  ]
+}

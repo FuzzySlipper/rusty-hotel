@@ -12,7 +12,7 @@ three built-in image-generation calls. The `*-source.png` files are the original
 channel because the pinned Engine accepts RGBA8 PNG; RGB pixels and dimensions
 are unchanged. `assets.json` records both sets of hashes.
 
-`content/hotel.json` supplies wall repeat dimensions in metres and surface
+`content/scene/surfaces.json` supplies wall repeat dimensions in metres and surface
 tints. One carpet texture supplies teal room, olive room and burgundy corridor
 variants. Texture repetition, filtering, decoding and resource ownership remain
 Engine services. Inspect repeats from player eye height after changing scale.
@@ -52,11 +52,12 @@ player-view evidence belong in Den, not the source-asset ledger.
 `content/audio/` using Python's standard library. This is optional offline
 authoring; the shipped WAV files require no Python at runtime. The ventilation
 bed is global and the tape-machine loop is spatial, with volumes and range in
-`hotel.json`. Engine owns all playback and listener motion. Later interactive
+`content/excursions/west-wing/ambience.json`. Engine owns all playback and listener motion. Later interactive
 audio must be balanced against these quiet beds.
 
 Trim, doors, lights, furniture, field cases, notebook, pencil and abstract framed
-pictures are product-authored box compositions in `hotel.json`. They introduce
+pictures are product-authored box compositions in
+`content/excursions/west-wing/geometry.json`. They introduce
 no external art dependency. The owner-supplied historical screenshots remain in
 `docs/references/` as direction rather than runtime textures or interface art.
 

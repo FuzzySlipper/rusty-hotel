@@ -120,11 +120,12 @@ internal static class CheckpointChecks
         internal readonly HotelExpedition Expedition;
         internal Fixture(IEngineContext engine)
         {
-            Scene = new(engine, HotelDefinition.Load(engine)); Player = new(engine, Scene);
-            Supplies = new(Scene.Definition.Supplies, Scene.Definition.Interface.SupplyPockets, Scene.PlayerEntity);
-            Combat = new(engine, Scene, Player, Supplies); Spirit = new(Scene.Definition.Spirit, Supplies, Combat, Player);
-            Route = new(engine, Scene, Player, Supplies, Spirit, ReturnToRefuge, () => { });
-            Expedition = new(engine, Scene.Definition, Player, Supplies, Combat, Spirit, Route);
+            var content = Owners.Content(engine);
+            Scene = Owners.Scene(engine, content); Player = Owners.Player(engine, Scene, content);
+            Supplies = Owners.Supplies(content, Scene.PlayerEntity);
+            Combat = Owners.Combat(engine, Scene, Player, Supplies, content); Spirit = Owners.Spirit(content, Supplies, Combat, Player);
+            Route = Owners.Route(engine, Scene, Player, Supplies, Spirit, content, ReturnToRefuge);
+            Expedition = new(engine, content.Excursion.Placements.Refuge, Player, Supplies, Combat, Spirit, Route);
         }
         private bool ReturnToRefuge() => Expedition.Return();
         internal void At(float x, float z, Vector3 target)

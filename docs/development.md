@@ -20,7 +20,7 @@ Choose checks for the changed behavior:
 | Check | What it establishes |
 | --- | --- |
 | `rusty build` | Compilation and ordinary CoreCLR product staging |
-| `Hotel.Smoke` | Product callbacks and real Engine service calls: collision/input, route eligibility, supplies, combat, spirit rules and complete checkpoints |
+| `Hotel.Smoke` | Product callbacks and real Engine service calls: collision/input, route eligibility, supplies, combat, spirit rules, complete checkpoints, and content errors naming their file and field |
 | DOM unit checks | Pause request failures/supersession/disposal and asynchronous console mount/cleanup |
 | Ordinary hosted play | Rendered presentation, physical input, world/UI interaction, focus, pause and return to play |
 | `rusty build --aot` | Explicit NativeAOT publish/fidelity check; still separate from a visible run |

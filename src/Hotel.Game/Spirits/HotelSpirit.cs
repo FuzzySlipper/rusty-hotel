@@ -12,9 +12,11 @@ namespace Hotel.Game.Spirits;
 internal enum ManifestationPhase { Absent, Arriving, Hushing, Departing }
 
 /// <summary>One pact, equipped choice and brief intervention; resources and combat keep their owners.</summary>
-internal sealed class HotelSpirit(SpiritDefinition definition, HotelSupplies supplies, HotelCombat combat, HotelPlayer player)
+internal sealed class HotelSpirit(SpiritDefinition definition, Vector3 bell, HotelSupplies supplies, HotelCombat combat, HotelPlayer player)
 {
     internal SpiritDefinition Definition => definition;
+    /// <summary>Where this excursion keeps the spirit's bell before the pact.</summary>
+    internal Vector3 Bell => bell;
     internal bool Acquired { get; private set; }
     internal bool Equipped { get; private set; }
     internal ulong Revision { get; private set; } = 1;
@@ -92,7 +94,7 @@ internal sealed class HotelSpirit(SpiritDefinition definition, HotelSupplies sup
         Destination = target.Eye + towardPlayer * .25f + side * .65f + new Vector3(0, .15f, 0);
         Entrance = Vector3.Lerp(player.Eye, Destination, .2f) + new Vector3(0, -.25f, 0);
         Facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathF.Atan2(-towardPlayer.X, -towardPlayer.Z));
-        Announce($"{definition.Name} hushes {target.Definition.Name} · −{definition.Cost} summon");
+        Announce($"{definition.Name} hushes {target.Kind.Name} · −{definition.Cost} summon");
         return true;
     }
 

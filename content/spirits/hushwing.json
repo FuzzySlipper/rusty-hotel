@@ -1,0 +1,11 @@
+{
+  "id": "hushwing",
+  "name": "Hushwing",
+  "description": "A velvet moth with a brass bell for a head. It has had enough of being rung. Free it in the linen room and it will quiet the hotel for you.\n\nQ calls it at the resident under your reticle, within six paces and clear sight. Costs 1 summon charge. Its arrival interrupts the resident, holding it still for 3 seconds while you strike or retreat. It then folds its wings and leaves.",
+  "welcomeCharges": 2,
+  "cost": 1,
+  "range": 6,
+  "arrival": 0.4,
+  "hold": 1.8,
+  "departure": 0.8
+}

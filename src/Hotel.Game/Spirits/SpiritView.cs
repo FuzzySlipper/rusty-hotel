@@ -76,7 +76,7 @@ internal sealed class SpiritView : IDisposable
     {
         bool visible = !spirit.Acquired || spirit.Active;
         float scale = .65f;
-        Vector3 origin = HotelDefinition.Vector(spirit.Definition.Point);
+        Vector3 origin = spirit.Bell;
         Quaternion facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathF.PI / 2);
         float flap = .22f + MathF.Sin(spirit.IdleTime * 7) * .25f;
         if (spirit.Active)

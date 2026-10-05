@@ -162,6 +162,7 @@ host.Call(SuppliesChecks.Run);
 host.Call(CombatChecks.Run);
 host.Call(SpiritChecks.Run);
 CheckpointChecks.Run();
+ContentChecks.Run();
 Console.WriteLine("Hotel smoke passed: floor/walls, walking pace, clear, pause/resume callbacks, pointer consumption and restart.");
 
 static ProductInputEvent Key(KeyboardControl key) => default(ProductInputEvent) with

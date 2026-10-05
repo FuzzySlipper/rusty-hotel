@@ -19,7 +19,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | Pact acquisition/equipping, semantic equip claims, summon eligibility and transient manifestation phase |
 | `src/Hotel.Game/Spirits/SpiritView.cs` | Authored bell-headed moth mesh parts and admitted-time entrance, wing poses and departure |
 | `src/Hotel.Game/Player/HotelPlayer.cs` | FPS input interpretation, authored body tuning, accepted player transform/motion and first-person camera |
-| `src/Hotel.Game/Scene/HotelDefinition.cs` | Typed authored layout and tuning loaded through Engine content services |
+| `src/Hotel.Game/Content/` | Reading authored files through Engine content services (`Authored`), the strict JSON contract (`ContentJson`), and composition-only loading and validation of references between files (`HotelContent`, `ExcursionDefinition`) |
+| `src/Hotel.Game/*/…Definition.cs`, `…Tuning.cs` | Each domain's typed authored records and the file it loads them from |
 | `src/Hotel.Game/Scene/HotelScene.cs` | Static appearances, paired door appearance/collision poses, GLB props, retained lights, collision placement and resource lifetimes |
 | `src/Hotel.Game/Scene/RoomGeometry.cs` | Authored mesh vertices with world-metre texture coordinates, used by presentation and static collision |
 | `src/Hotel.Game/Audio/HotelAmbience.cs` | Authored ambient clips and looping voices; Engine owns playback, spatialization and mixing |
@@ -27,7 +28,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Interface/HotelDebugCommands.cs` | Generated Hotel inspection and explicit developer initial-excursion reset commands over existing owners |
 | `src/Hotel.Game/Interface/SuppliesDebugCommands.cs` | Explicit developer supply, health and consumption fixtures over the supplies owner |
 | `src/Hotel.Game/Hotel.Game.csproj` | Product identity, entry, content/UI roots and host defaults |
-| `content/hotel.json` | Refuge/corridor/rooms, metre-scale material repeats, props, lights, ambient cues and player tuning |
+| `content/` | Authored data by domain: player, route, interface, scene surfaces, supplies, combat, spirits, and one folder per excursion. See [authoring](authoring.md). |
 | `src/ui/main.js` | HUD, single foreground screen navigation, focus containment and Engine input-mode handoff |
 | `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, pact selection/equip claims and quick-pocket presentation |
 | `src/ui/developer.js` | Lazy packaged Engine console mount, disposal and stale-mount cleanup |
@@ -38,10 +39,18 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 ## Lifecycle and data flow
 
 The packaged runtime loads the SDK-generated bind entry and constructs
-`HotelProduct`. Hotel loads `hotel.json`, creates static meshes/appearances and
+`HotelProduct`. Hotel loads its content tree (`HotelContent`), creates static meshes/appearances and
 places those same meshes in one Engine spatial session. One Engine entity store
 holds the player's transform and motion. Static scene entities supply real
 identities for their appearance and collision instances.
+
+Content loading is composition-only. `HotelContent.Load` reads each file through
+its domain record's `Load`, with the strict `ContentJson` contract: a missing value,
+a null or an unknown member is an error. It then checks references between files,
+such as surfaces, items, resident kinds, finds and the spirit bell. Every failure
+names `content/<file>` and the field. The constructor hands each owner only its own
+records. No owner receives `HotelContent` or reads another domain's file.
+`HotelProduct.StartingExcursion` selects the excursion folder.
 
 The constructor creates owners in one flat sequence. Each disposable owner is
 registered as it is created; a construction failure or `Dispose` releases them
@@ -135,7 +144,7 @@ Use refuses defeated players; recovery remains the expedition owner's action.
 Use and movement check the current inventory revision; full resources, empty
 pockets and expedition keepsakes refuse consumption. Resource spending cannot
 go below zero. Item definitions, stack limits, effects and find placements are
-authored under `supplies` in `hotel.json`; pocket capacities are under `interface`.
+authored in `content/supplies/` and each excursion's `placements.json`; pocket capacities are in `content/interface/`.
 Pickup notices expire using admitted simulation time.
 
 `HotelHud` publishes changed typed facts through one Engine UI stream. The field
@@ -171,7 +180,7 @@ can stop its shot. No local navigation or collision mechanism is present.
 eye, strike, beam, recovery droop and first-person weapon. `HotelScene` publishes
 one combined static/combat snapshot. The DOM receives weapon, action state and
 brief hit/hurt notices; it does not render weapons or aim attacks. Authored weapon
-and encounter numbers live under `combat` in `hotel.json`. Zero health suppresses
+and resident numbers live in `content/combat/`; resident placements in each excursion's `placements.json`. Zero health suppresses
 movement, use and further attacks; R invokes the expedition owner to restore the whole saved refuge checkpoint.
 
 ## Spirit pact and manifestation
@@ -203,7 +212,7 @@ steps. Arrival grows and flies toward the resident, hushing spreads the wings,
 and departure folds/shrinks upward. This presentation has no collision authority
 or separate animation clock. Pausing freezes it; defeat withdraws it. Checkpoint recovery restores acquired/equipped values and clears transient
 manifestation poses and timing. Spirit identity, rule values, position and
-player-facing description live in `hotel.json`.
+player-facing description live in `content/spirits/<id>.json`; the bell position is an excursion placement.
 
 ## Refuge checkpoint
 

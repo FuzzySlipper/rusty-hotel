@@ -1,0 +1,25 @@
+{
+  "reloadSeconds": 1.1,
+  "weapons": [
+    {
+      "id": "prybar",
+      "name": "Pry bar",
+      "damage": 24,
+      "range": 2.05,
+      "windup": 0.32,
+      "commit": 0.13,
+      "recovery": 0.65,
+      "ammoCost": 0
+    },
+    {
+      "id": "pistol",
+      "name": "Survey pistol",
+      "damage": 36,
+      "range": 16,
+      "windup": 0.24,
+      "commit": 0.1,
+      "recovery": 0.85,
+      "ammoCost": 1
+    }
+  ]
+}

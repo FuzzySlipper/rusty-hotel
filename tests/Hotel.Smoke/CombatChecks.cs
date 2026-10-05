@@ -10,12 +10,13 @@ internal static class CombatChecks
 {
     internal static void Run(IEngineContext engine)
     {
-        using HotelScene scene = new(engine, HotelDefinition.Load(engine));
-        using HotelPlayer player = new(engine, scene);
-        HotelSupplies supplies = new(scene.Definition.Supplies, 12, scene.PlayerEntity);
-        HotelCombat combat = new(engine, scene, player, supplies);
-        HotelEnemy porter = combat.Enemies.Single(e => e.Definition.Id == "porter");
-        HotelEnemy lamp = combat.Enemies.Single(e => e.Definition.Id == "lamp");
+        var content = Owners.Content(engine);
+        using HotelScene scene = Owners.Scene(engine, content);
+        using HotelPlayer player = Owners.Player(engine, scene, content);
+        HotelSupplies supplies = Owners.Supplies(content, scene.PlayerEntity, 12);
+        HotelCombat combat = Owners.Combat(engine, scene, player, supplies, content);
+        HotelEnemy porter = combat.Enemies.Single(e => e.Id == "porter");
+        HotelEnemy lamp = combat.Enemies.Single(e => e.Id == "lamp");
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
         void Steps(int count) { for (int i = 0; i < count; i++) combat.Step(1f / 60); }
         void At(float x, float z, Vector3 target)
@@ -89,7 +90,7 @@ internal static class CombatChecks
             combat.Step(1f / 60);
         }
         Check(Vector2.Distance(new(player.Position.X, player.Position.Z), new(porter.Position.X, porter.Position.Z)) >=
-            scene.Definition.Player.Radius + porter.Definition.Radius - .03f, "Engine body collision prevents walking through a live resident");
+            player.Tuning.Radius + porter.Kind.Radius - .03f, "Engine body collision prevents walking through a live resident");
         combat.Reset(); supplies.Reset();
         At(1.55f, -14.7f, lamp.Eye);
         for (int i = 0; i < 3; i++) { Check(combat.Attack(), "melee lamp attack accepted"); Steps(80); }

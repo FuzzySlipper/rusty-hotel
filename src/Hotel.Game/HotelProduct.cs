@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hotel.Game.Player;
 using Hotel.Game.Expedition;
+using Hotel.Game.Content;
 using Hotel.Game.Scene;
 using Hotel.Game.Interface;
 using Hotel.Game.Audio;
@@ -18,6 +19,9 @@ namespace Hotel.Game;
 
 public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
 {
+    /// <summary>The authored hotel section a new game opens in: <c>content/excursions/west-wing/</c>.</summary>
+    internal const string StartingExcursion = "west-wing";
+
     private readonly HotelExpedition expedition;
     private readonly HotelScene scene;
     private readonly HotelPlayer player;
@@ -41,17 +45,21 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         IEngineContext engine = context.Engine;
         try
         {
-            scene = Own(new HotelScene(engine, HotelDefinition.Load(engine)));
-            player = Own(new HotelPlayer(engine, scene));
-            supplies = new HotelSupplies(scene.Definition.Supplies, scene.Definition.Interface.SupplyPockets, scene.PlayerEntity);
-            combat = new HotelCombat(engine, scene, player, supplies);
-            spirit = new HotelSpirit(scene.Definition.Spirit, supplies, combat, player);
-            route = new HotelRoute(engine, scene, player, supplies, spirit, ReturnToRefuge, PublishInterface);
-            hud = Own(new HotelHud(engine, scene.Definition.Interface));
-            ambience = Own(new HotelAmbience(engine, scene.Definition.Ambience));
+            HotelContent content = HotelContent.Load(engine, StartingExcursion);
+            ExcursionDefinition excursion = content.Excursion;
+            scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
+            player = Own(new HotelPlayer(engine, scene, content.Player, excursion.Placements.Arrival));
+            supplies = new HotelSupplies(content.Resources, content.Items, excursion.Placements.Finds,
+                content.Interface.SupplyPockets, scene.PlayerEntity);
+            combat = new HotelCombat(engine, scene, player, supplies, content.Combat, content.Residents, excursion.Placements.Residents);
+            spirit = new HotelSpirit(content.Spirit, Authored.Vector(content.SpiritBell.Point), supplies, combat, player);
+            route = new HotelRoute(engine, scene, player, supplies, spirit, content.Interaction, excursion.Route,
+                excursion.Placements.Refuge, ReturnToRefuge, PublishInterface);
+            hud = Own(new HotelHud(engine, content.Interface));
+            ambience = Own(new HotelAmbience(engine, excursion.Ambience));
             combatView = Own(new CombatView(engine, scene, player, combat));
             spiritView = Own(new SpiritView(engine, scene, spirit));
-            expedition = Own(new HotelExpedition(engine, scene.Definition, player, supplies, combat, spirit, route));
+            expedition = Own(new HotelExpedition(engine, excursion.Placements.Refuge, player, supplies, combat, spirit, route));
         }
         catch { Dispose(); throw; }
     }
@@ -182,7 +190,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private DebugCommandResult Observe() => DebugCommandResult.Success(JsonSerializer.Serialize(new HotelObservation(
         step, [player.Position.X, player.Position.Y, player.Position.Z],
         [player.Eye.X, player.Eye.Y, player.Eye.Z], player.LookState.YawRadians,
-        player.LookState.PitchRadians, player.Motion.Grounded, route.Location, route.Prompt, route.OpenDoors, route.ReadingSequence, supplies.Health, supplies.Ammo, supplies.Summon, supplies.Occupied, supplies.Revision, supplies.Message, combat.Weapon.Id, combat.Phase.ToString(), combat.AcceptedAttacks, combat.LandedHits, spirit.Acquired, spirit.Equipped, spirit.Revision, spirit.Phase.ToString(), spirit.Elapsed, spirit.Calls, spirit.Message, expedition.Returns, expedition.SecuredFinds, expedition.Status, combat.Enemies.Select(e => new EnemyObservation(e.Definition.Id, [e.Position.X, e.Position.Y, e.Position.Z], e.Health.ValueInt, e.Phase.ToString())).ToArray()), ObservationJson.Default.HotelObservation));
+        player.LookState.PitchRadians, player.Motion.Grounded, route.Location, route.Prompt, route.OpenDoors, route.ReadingSequence, supplies.Health, supplies.Ammo, supplies.Summon, supplies.Occupied, supplies.Revision, supplies.Message, combat.Weapon.Id, combat.Phase.ToString(), combat.AcceptedAttacks, combat.LandedHits, spirit.Acquired, spirit.Equipped, spirit.Revision, spirit.Phase.ToString(), spirit.Elapsed, spirit.Calls, spirit.Message, expedition.Returns, expedition.SecuredFinds, expedition.Status, combat.Enemies.Select(e => new EnemyObservation(e.Id, [e.Position.X, e.Position.Y, e.Position.Z], e.Health.ValueInt, e.Phase.ToString())).ToArray()), ObservationJson.Default.HotelObservation));
 }
 
 internal sealed record HotelObservation(ulong Step, float[] Position, float[] Eye, float Yaw, float Pitch, bool Grounded, string Location, string Prompt, string[] OpenDoors, ulong ReadingSequence, int Health, int Ammo, int Summon, int OccupiedPockets, ulong InventoryRevision, string SupplyMessage, string Weapon, string AttackPhase, int AcceptedAttacks, int LandedHits, bool SpiritAcquired, bool SpiritEquipped, ulong SpiritRevision, string SpiritPhase, float SpiritElapsed, int SpiritCalls, string SpiritMessage, int CheckpointReturns, string[] SecuredFinds, string CheckpointStatus, EnemyObservation[] Enemies);

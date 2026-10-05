@@ -8,10 +8,10 @@ internal static class SuppliesChecks
 {
     internal static void Run(IEngineContext engine)
     {
-        SuppliesDefinition definition = HotelDefinition.Load(engine).Supplies;
+        var content = Owners.Content(engine);
         using EntityStore entities = new([]);
         EntityId owner = entities.Create();
-        HotelSupplies supplies = new(definition, 2, owner);
+        HotelSupplies supplies = Owners.Supplies(content, owner, 2);
         void Check(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
         Check(supplies.Pickup("refuge-dressing"), "real dressing pickup");
         Check(!supplies.Pickup("refuge-dressing") && supplies.Slot(0)?.Count == 1, "duplicate pickup refused");
@@ -36,10 +36,10 @@ internal static class SuppliesChecks
         Check(!supplies.SetHealth(-1) && !supplies.Give("bandage", -2), "developer fixtures preserve resource bounds");
         supplies.Reset();
         Check(supplies.Occupied == 0 && !supplies.Collected("refuge-dressing") && supplies.Health == 70, "new run resets inventory and authored resources");
-        HotelSupplies partial = new(definition, 1, owner);
+        HotelSupplies partial = Owners.Supplies(content, owner, 1);
         Check(partial.Give("bandage", 2), "partial stack fixture");
         Check(!partial.Pickup("portrait-dressing") && partial.Slot(0)?.Count == 2 && !partial.Collected("portrait-dressing"), "whole-find admission refuses partial capacity without changing stack or find");
-        HotelSupplies merging = new(definition, 2, owner);
+        HotelSupplies merging = Owners.Supplies(content, owner, 2);
         Check(merging.Give("bandage", 4), "two-stack fixture");
         Check(merging.Move(0, 1, merging.Revision) && merging.Slot(0)?.Count == 1 && merging.Slot(1)?.Count == 3,
             "partial merge keeps the remainder and conserves quantity");

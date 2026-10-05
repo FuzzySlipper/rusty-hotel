@@ -1,4 +1,6 @@
 using System.Numerics;
+using Hotel.Game.Content;
+using Hotel.Game.Route;
 using Rusty.Engine;
 using Rusty.Engine.Entities;
 
@@ -22,10 +24,9 @@ internal sealed class HotelScene : IDisposable
     private AppearanceFact[] spiritFacts = [];
     private readonly Dictionary<string, List<int>> findFacts = new(StringComparer.Ordinal);
 
-    internal HotelScene(IEngineContext engine, HotelDefinition definition)
+    internal HotelScene(IEngineContext engine, SurfaceDefinition[] surfaceDefinitions, ExcursionGeometry geometry, DoorDefinition[] doorDefinitions)
     {
         this.engine = engine;
-        Definition = definition;
         Entities = new EntityStore([EngineComponentTypes.Transform, EngineComponentTypes.CharacterMotion]);
         PlayerEntity = Entities.Create();
         try { Session = engine.Spatial.CreateSession(new SpatialSessionConfig(.25f, 16, VoxelSurfaceMode.GreedyCubes)); }
@@ -34,9 +35,9 @@ internal sealed class HotelScene : IDisposable
         {
             List<AppearanceFact> placed = [];
             Dictionary<string, RenderResourceReference> texturePaths = new(StringComparer.Ordinal);
-            foreach (SurfaceDefinition surface in definition.Materials)
+            foreach (SurfaceDefinition surface in surfaceDefinitions)
             {
-                Vector3 rgb = HotelDefinition.Vector(surface.Color);
+                Vector3 rgb = Authored.Vector(surface.Color);
                 RenderResourceReference texture = default;
                 if (surface.Texture is string path)
                 {
@@ -54,13 +55,13 @@ internal sealed class HotelScene : IDisposable
                 materials.Add(material);
                 surfaces.Add(surface.Id, material);
             }
-            foreach (RoomBox box in definition.Boxes)
+            foreach (RoomBox box in geometry.Boxes)
             {
-                Vector3 min = HotelDefinition.Vector(box.Min), max = HotelDefinition.Vector(box.Max);
+                Vector3 min = Authored.Vector(box.Min), max = Authored.Vector(box.Max);
                 Vector3 size = max - min;
                 if (size.X <= 0 || size.Y <= 0 || size.Z <= 0)
                     throw new InvalidOperationException($"Hotel box '{box.Name}' must have positive dimensions.");
-                SurfaceDefinition surface = definition.Materials.First(surface => surface.Id == box.Material);
+                SurfaceDefinition surface = surfaceDefinitions.First(surface => surface.Id == box.Material);
                 MeshResource mesh = RoomGeometry.Box(engine, surfaces[box.Material], min, max, new(surface.TileWidth, surface.TileHeight));
                 meshes.Add(mesh);
                 Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
@@ -80,7 +81,7 @@ internal sealed class HotelScene : IDisposable
                     instances.Add(new StaticMeshInstance(entity.Value, asset, pose));
                 }
             }
-            foreach (ModelDefinition model in definition.Models)
+            foreach (ModelDefinition model in geometry.Models)
             {
                 using ContentReference content = engine.Content.OpenReference(new(model.Path));
                 // The pinned SDK admits GLB through Animation even for a static, unrigged prop.
@@ -90,10 +91,10 @@ internal sealed class HotelScene : IDisposable
                 appearances.Add(appearance);
                 EntityId entity = Entities.Create();
                 placed.Add(new AppearanceFact(entity.Value, false, 0,
-                    new Transform(HotelDefinition.Vector(model.Position), Quaternion.CreateFromAxisAngle(Vector3.UnitY, model.YawDegrees * MathF.PI / 180), new Vector3(model.Scale)),
+                    new Transform(Authored.Vector(model.Position), Quaternion.CreateFromAxisAngle(Vector3.UnitY, model.YawDegrees * MathF.PI / 180), new Vector3(model.Scale)),
                     appearance, true, RenderLayer.Scene));
             }
-            foreach (DoorDefinition door in definition.Route.Doors)
+            foreach (DoorDefinition door in doorDefinitions)
             {
                 EntityId entity = Entities.Create();
                 Transform pose = DoorPose(door, false);
@@ -105,7 +106,7 @@ internal sealed class HotelScene : IDisposable
                 appearances.Add(appearance);
                 placed.Add(new(entity.Value, false, 0, pose, appearance, true, RenderLayer.Scene));
                 // Both handles use the same door pose; only the leaf is collision geometry.
-                MeshResource handle = RoomGeometry.Box(engine, surfaces["brass"], new(door.Width - .25f, .97f, -.055f),
+                MeshResource handle = RoomGeometry.Box(engine, surfaces[door.HandleMaterial], new(door.Width - .25f, .97f, -.055f),
                     new(door.Width - .1f, 1.04f, .155f), Vector2.One);
                 meshes.Add(handle);
                 Appearance handleAppearance = engine.Graphics.CreateMeshAppearance(handle);
@@ -117,21 +118,20 @@ internal sealed class HotelScene : IDisposable
                 instances.Add(new(entity.Value, asset, pose));
                 doors.Add(door.Id, new(door, entity.Value, first, collider, asset));
             }
-            LightingDefinition lighting = definition.Lighting;
+            LightingDefinition lighting = geometry.Lighting;
             lights.Add(engine.Graphics.CreateLight(new(1, false, 0, new(LightKind.Ambient,
-                HotelDefinition.Vector(lighting.AmbientColor), lighting.AmbientIntensity, true,
+                Authored.Vector(lighting.AmbientColor), lighting.AmbientIntensity, true,
                 Vector3.Zero, -Vector3.UnitY, false, 0, 0, 0, 0, LightShadowIntent.Disabled))));
             foreach (PointLightDefinition light in lighting.Points)
                 lights.Add(engine.Graphics.CreateLight(new((ulong)lights.Count + 1, false, 0,
-                    new(LightKind.Point, HotelDefinition.Vector(light.Color), light.Intensity, true,
-                    HotelDefinition.Vector(light.Position), -Vector3.UnitY, true, light.Range, 2, 0, 0, LightShadowIntent.Requested))));
+                    new(LightKind.Point, Authored.Vector(light.Color), light.Intensity, true,
+                    Authored.Vector(light.Position), -Vector3.UnitY, true, light.Range, 2, 0, 0, LightShadowIntent.Requested))));
             ReplaceCollision();
             facts = placed.ToArray();
         }
         catch { Dispose(); throw; }
     }
 
-    internal HotelDefinition Definition { get; }
     internal EntityStore Entities { get; }
     internal EntityId PlayerEntity { get; }
     internal SpatialSession Session { get; }
@@ -159,7 +159,7 @@ internal sealed class HotelScene : IDisposable
         Publish();
     }
 
-    private static Transform DoorPose(DoorDefinition door, bool open) => new(HotelDefinition.Vector(door.Hinge),
+    private static Transform DoorPose(DoorDefinition door, bool open) => new(Authored.Vector(door.Hinge),
         Quaternion.CreateFromAxisAngle(Vector3.UnitY, (open ? door.OpenYaw : door.ClosedYaw) * MathF.PI / 180), Vector3.One);
     private void ReplaceCollision() => engine.Spatial.ReplaceCollision(new(Session, assets.ToArray(),
         ReadOnlyMemory<Vector3>.Empty, ReadOnlyMemory<Triangle>.Empty, instances.ToArray()));
