@@ -107,6 +107,21 @@ authoring option; it never constrains the player to grid movement. Endless
 streaming, impossible-space rendering, and an infinite world are not implied by
 the name or needed for the first excursion.
 
+Procedural floors stack from a fixed refuge. The refuge is the hub and never
+generated. The authored west wing is the first floor. A stair or lift core leads
+on to generated floors, each farther and more demanding than the last, so going
+deeper is the tempting choice and coming back is the sensible one. A generated
+floor is larger than the west wing, roughly 15–25 rooms, with branching enough
+that the decision to turn back matters.
+
+Floors shift while you are away. A visited floor keeps its landmarks and the
+routes you opened, but its rooms rearrange between excursions. The hotel's
+impossibility is the fiction for that, not a bug to hide. What a floor promises
+stays true after every shift: an objective, a way back to the stairs, resource
+opportunities and recognizable landmarks. The generator plans floors in hotel
+terms: corridor spines, guest-room bays, service routes, stair cores and a few
+public rooms. Generated and authored floors are the same kind of content.
+
 ## Resource and combat baseline
 
 Start with health, ammunition, and one shared summon resource. A small readable
@@ -205,7 +220,8 @@ the enemy is gone? Keep original captures and the action sequence in Den.
 - Run structure versus a persistent hotel, final defeat costs, and wider saves.
 - The spirit roster, acquisition rules, and final summon-resource fiction.
 - Inventory capacity and whether any later maintenance mechanic earns a place.
-- How strongly procedural floors rearrange after they have been visited.
+- How much of a floor a shift keeps beyond landmarks and opened routes, and
+  whether depth itself changes the hotel's character.
 - The role of memory interpretation puzzles. The old memory-stone locks are a
   promising idea to revisit after exploration works, not a first-slice gate.
 
