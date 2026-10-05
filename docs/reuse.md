@@ -124,7 +124,12 @@ and PCM authoring produce ordinary content files and are outside the runtime.
 | `rusty-craftsurvive/src/CraftSurvive.Game/Modules/WorldGen/TerrainGeneratorContract.cs` | `207b19a55db470eb605741dab392a8355ac96295` | `Floors/FloorDraws.cs`: Engine `DrawKeyed` as the only draw source, the version spread into the seed, purpose scopes, and wide-range one-in-N. Hotel adds stage scopes, depth/shift key prefixes and weighted choice; no noise seed or test-only draw source | `cb887122ede87742c4b96bfc40556ac97777a4ff75877042cd02dc89a2c02a97` |
 | `rusty-rifles/src/Rifles.Procgen/GraphValidation.cs`, `GraphCore.cs` | `06f9c5c668395b5c20c2849eac7a196f2211ce4f` | `Floors/Mission/`: the monotone item-aware reachability fixed point (`MissionReach`), whole-graph validation before a rule is accepted, and fail-atomic rule proposals with provenance. Hotel adds latches, blocked-place and absent-edge queries, needed-lock, supplies-before-hazard and way-back checks, and draws placement through `FloorDraws`; no repair actions, scoring or fixed node ids | `9360f4cbb279a54c40ab08d82b5faf7206a816254e4184f89e84ad5815b9d8f6`, `2e52120ec18a21d2bf19c5071e27affc583ac3b962d71c33f5f66f7a57c623f7` |
 
-All were committed and unchanged at those revisions. Checks use the same Engine draws through `EngineTestHost`.
+All were committed and unchanged at those revisions.
+
+The room modules (`Floors/Modules/`) consulted CraftSurvive's `src/CraftSurvive.Game/Modules/Dungeons/DungeonModules.cs`
+at `413a3bfc92cdc72e16192cc02598c61965dd557c` for the shape: a module's size on a lattice, typed sockets on its faces,
+dead-end and once-only set-piece flags. No code was copied. Hotel modules are kit floor plans in metres, not voxel
+canvases, and turn with the kit's own transform. Checks use the same Engine draws through `EngineTestHost`.
 
 ## Mounted UI lifecycle
 

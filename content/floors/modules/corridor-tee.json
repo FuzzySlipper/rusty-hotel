@@ -1,0 +1,67 @@
+{
+  "id": "corridor-tee",
+  "size": [
+    3,
+    3
+  ],
+  "tags": [
+    "Corridor"
+  ],
+  "spaces": [
+    {
+      "id": "hall",
+      "label": "Corridor",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        3,
+        3
+      ],
+      "height": 2.65,
+      "style": "corridor"
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "ceiling-lamp",
+      "space": "hall",
+      "at": [
+        1.5,
+        1.5
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "hall",
+      "edge": "West",
+      "along": 1.5
+    }
+  ],
+  "doorways": [
+    {
+      "id": "north",
+      "kind": "Archway",
+      "space": "hall",
+      "edge": "North",
+      "at": 1.5
+    },
+    {
+      "id": "south",
+      "kind": "Archway",
+      "space": "hall",
+      "edge": "South",
+      "at": 1.5
+    },
+    {
+      "id": "east",
+      "kind": "Archway",
+      "space": "hall",
+      "edge": "East",
+      "at": 1.5
+    }
+  ],
+  "sockets": []
+}

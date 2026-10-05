@@ -11,6 +11,7 @@ using Hotel.Game.Route;
 using Hotel.Game.Supplies;
 using Hotel.Game.Combat;
 using Hotel.Game.Spirits;
+using Hotel.Game.Floors.Modules;
 using Rusty.Engine.Interaction;
 using Rusty.Engine;
 using Rusty.Engine.Debugging;
@@ -38,6 +39,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly HotelAmbience ambience;
     private readonly HotelControls controls;
     private readonly RoomDefinition[] rooms;
+    private readonly HotelContent content;
     private readonly List<IDisposable> owned = [];
     private bool disposed;
     private ulong step;
@@ -48,7 +50,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         IEngineContext engine = context.Engine;
         try
         {
-            HotelContent content = HotelContent.Load(engine, StartingExcursion);
+            content = HotelContent.Load(engine, StartingExcursion);
             ExcursionDefinition excursion = content.Excursion;
             scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
             controls = new HotelControls(content.Controls, content.Combat.Weapons);
@@ -160,7 +162,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     {
         registrar.Register(new PlaytestDebugModule(Observe, controls.Action, controls.ActionIds, LookBy));
         registrar.Register(new InteractionDebugModule(route.Interaction));
-        registrar.Register(new HotelDebugCommands(Observe, ResetExcursion, GoTo));
+        registrar.Register(new HotelDebugCommands(Observe, ResetExcursion, GoTo, ShowModule));
         registrar.Register(new SuppliesDebugCommands(supplies, PublishInterface));
     }
 
@@ -171,6 +173,26 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"Unknown space '{space}'. Spaces: {string.Join(", ", rooms.Select(r => r.Id))}.");
         ClearActions();
         player.Place(new((room.Min[0] + room.Max[0]) / 2, player.Tuning.Height / 2, (room.Min[2] + room.Max[2]) / 2), player.LookState.YawRadians * 180 / MathF.PI);
+        Publish();
+        return Observe();
+    }
+
+    // Far enough beside the hotel that a previewed module never touches it.
+    private static readonly System.Numerics.Vector2 PreviewCorner = new(100, 0);
+
+    private DebugCommandResult ShowModule(string id, int turn)
+    {
+        if (content.Modules.Find(id) is not { } module)
+            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments,
+                $"Unknown module '{id}'. Modules: {string.Join(", ", content.Modules.Modules.Select(m => m.Id))}.");
+        if (turn is < 0 or > 3) return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "Turn is 0 to 3 quarter turns.");
+        var (floor, porches) = ModuleCheck.Realize(module, ModuleCatalog.ModulePath(id), content.Modules, content.Kit, content.Fixtures, turn, PreviewCorner);
+        scene.ShowPreview(floor.Boxes, floor.Lights);
+        // Stand on the first doorway's porch, facing through it.
+        var (doorway, stand) = porches[0];
+        System.Numerics.Vector2 toward = doorway.Point - stand;
+        ClearActions();
+        player.Place(new(stand.X, player.Tuning.Height / 2, stand.Y), MathF.Atan2(toward.X, -toward.Y) * 180 / MathF.PI);
         Publish();
         return Observe();
     }

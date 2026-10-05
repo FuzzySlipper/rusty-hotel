@@ -159,6 +159,9 @@ host.Call(engine =>
     Advance(60);
     Check(MathF.Abs(reset.Z - 3.5f) < .01f && MathF.Abs(Position().Z - reset.Z) < .01f,
         "restart restores spawn and clears held input");
+    Check(commands.Hotel!.ShowModule("guest-room-a", 1).Status == DebugCommandStatus.Success && Position().X > 90,
+        "the developer module viewer stands the player at a module built beside the hotel");
+    Check(commands.Hotel!.ShowModule("ballroom", 0).Status == DebugCommandStatus.InvalidArguments, "an unknown module is refused");
     commands.Supplies!.Give("bandage", 1);
     Advance(60, Key(KeyboardControl.KeyW));
     commands.Hotel!.ReturnToEntrance();
@@ -168,6 +171,7 @@ host.Call(engine =>
 });
 host.Call(KitChecks.Run);
 host.Call(MissionChecks.Run);
+host.Call(ModuleChecks.Run);
 host.Call(RouteChecks.Run);
 host.Call(SuppliesChecks.Run);
 host.Call(CombatChecks.Run);

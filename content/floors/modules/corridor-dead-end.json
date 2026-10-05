@@ -1,0 +1,80 @@
+{
+  "id": "corridor-dead-end",
+  "size": [
+    3,
+    4
+  ],
+  "tags": [
+    "Corridor",
+    "DeadEnd"
+  ],
+  "spaces": [
+    {
+      "id": "hall",
+      "label": "Corridor",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        3,
+        4
+      ],
+      "height": 2.65,
+      "style": "corridor",
+      "posts": {
+        "post": [
+          1.5,
+          3
+        ]
+      }
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "ceiling-lamp",
+      "space": "hall",
+      "at": [
+        1.5,
+        2
+      ]
+    },
+    {
+      "kind": "landscape-picture",
+      "space": "hall",
+      "edge": "South",
+      "along": 1.5
+    }
+  ],
+  "doorways": [
+    {
+      "id": "north",
+      "kind": "Archway",
+      "space": "hall",
+      "edge": "North",
+      "at": 1.5
+    },
+    {
+      "id": "west",
+      "kind": "CorridorDoor",
+      "space": "hall",
+      "edge": "West",
+      "at": 2
+    },
+    {
+      "id": "east",
+      "kind": "CorridorDoor",
+      "space": "hall",
+      "edge": "East",
+      "at": 2
+    }
+  ],
+  "sockets": [
+    {
+      "id": "post",
+      "kind": "ResidentPost",
+      "socket": "hall.post"
+    }
+  ]
+}

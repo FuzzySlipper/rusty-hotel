@@ -1,0 +1,61 @@
+{
+  "id": "stair-core",
+  "size": [
+    4,
+    4
+  ],
+  "tags": [
+    "StairCore",
+    "Keepable"
+  ],
+  "spaces": [
+    {
+      "id": "landing",
+      "label": "Stair landing",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        4,
+        4
+      ],
+      "height": 2.65,
+      "style": "corridor"
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "ceiling-lamp",
+      "space": "landing",
+      "at": [
+        2,
+        2
+      ]
+    },
+    {
+      "kind": "pinned-frame",
+      "space": "landing",
+      "edge": "West",
+      "along": 2
+    }
+  ],
+  "doorways": [
+    {
+      "id": "corridor",
+      "kind": "Archway",
+      "space": "landing",
+      "edge": "North",
+      "at": 2
+    },
+    {
+      "id": "stair",
+      "kind": "Stair",
+      "space": "landing",
+      "edge": "South",
+      "at": 2
+    }
+  ],
+  "sockets": []
+}

@@ -1,0 +1,102 @@
+{
+  "id": "guest-room-b",
+  "size": [
+    4.5,
+    5.5
+  ],
+  "tags": [
+    "Guest"
+  ],
+  "spaces": [
+    {
+      "id": "room",
+      "label": "Guest room",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        4.5,
+        5.5
+      ],
+      "height": 2.65,
+      "style": "guest-room",
+      "posts": {
+        "post": [
+          2.5,
+          3.5
+        ]
+      }
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "ceiling-lamp",
+      "space": "room",
+      "at": [
+        2.25,
+        2.75
+      ]
+    },
+    {
+      "kind": "pinned-frame",
+      "space": "room",
+      "edge": "West",
+      "along": 3
+    },
+    {
+      "kind": "sconce",
+      "space": "room",
+      "edge": "East",
+      "along": 1.0
+    },
+    {
+      "kind": "guest-bench",
+      "space": "room",
+      "at": [
+        4.0,
+        3.0
+      ],
+      "turn": 1
+    },
+    {
+      "kind": "side-table",
+      "id": "table",
+      "space": "room",
+      "at": [
+        1.0,
+        4.6
+      ]
+    },
+    {
+      "kind": "luggage-table",
+      "space": "room",
+      "at": [
+        3.2,
+        4.8
+      ]
+    }
+  ],
+  "doorways": [
+    {
+      "id": "door",
+      "kind": "CorridorDoor",
+      "space": "room",
+      "edge": "North",
+      "at": 1.5
+    }
+  ],
+  "sockets": [
+    {
+      "id": "table",
+      "kind": "Find",
+      "socket": "table.top"
+    },
+    {
+      "id": "post",
+      "kind": "ResidentPost",
+      "socket": "room.post"
+    }
+  ]
+}

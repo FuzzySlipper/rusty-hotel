@@ -1,0 +1,54 @@
+{
+  "cell": 0.5,
+  "lighting": {
+    "ambientColor": [
+      0.65,
+      0.72,
+      0.69
+    ],
+    "ambientIntensity": 0.13
+  },
+  "doorways": [
+    {
+      "kind": "CorridorDoor",
+      "link": "Door",
+      "width": 1.4,
+      "height": 2.15,
+      "frame": "guest-door"
+    },
+    {
+      "kind": "ServiceDoor",
+      "link": "Door",
+      "width": 1.2,
+      "height": 2.15,
+      "frame": "service-door"
+    },
+    {
+      "kind": "FireDoor",
+      "link": "Door",
+      "width": 1.6,
+      "height": 2.15,
+      "frame": "service-door"
+    },
+    {
+      "kind": "Archway",
+      "link": "Passage",
+      "width": 2.0,
+      "height": 0
+    }
+  ],
+  "modules": [
+    "corridor-straight",
+    "corridor-corner",
+    "corridor-tee",
+    "corridor-cross",
+    "corridor-dead-end",
+    "guest-room-a",
+    "guest-room-b",
+    "linen-room",
+    "service-corridor",
+    "refuge",
+    "stair-core",
+    "landmark-lounge"
+  ]
+}

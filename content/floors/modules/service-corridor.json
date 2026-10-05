@@ -1,0 +1,89 @@
+{
+  "id": "service-corridor",
+  "size": [
+    2,
+    6
+  ],
+  "tags": [
+    "Service",
+    "Corridor"
+  ],
+  "spaces": [
+    {
+      "id": "passage",
+      "label": "Service passage",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        2,
+        6
+      ],
+      "height": 2.65,
+      "style": "service",
+      "posts": {
+        "post": [
+          1,
+          4.5
+        ]
+      }
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "service-lamp",
+      "space": "passage",
+      "at": [
+        0.7,
+        2
+      ]
+    },
+    {
+      "kind": "service-lamp",
+      "space": "passage",
+      "at": [
+        0.7,
+        4.5
+      ]
+    }
+  ],
+  "doorways": [
+    {
+      "id": "north",
+      "kind": "ServiceDoor",
+      "space": "passage",
+      "edge": "North",
+      "at": 1
+    },
+    {
+      "id": "south",
+      "kind": "ServiceDoor",
+      "space": "passage",
+      "edge": "South",
+      "at": 1
+    },
+    {
+      "id": "east",
+      "kind": "ServiceDoor",
+      "space": "passage",
+      "edge": "East",
+      "at": 3
+    },
+    {
+      "id": "west",
+      "kind": "ServiceDoor",
+      "space": "passage",
+      "edge": "West",
+      "at": 3
+    }
+  ],
+  "sockets": [
+    {
+      "id": "post",
+      "kind": "ResidentPost",
+      "socket": "passage.post"
+    }
+  ]
+}

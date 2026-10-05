@@ -46,6 +46,8 @@ its own folder. Geometry is kept apart from tuning.
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, and the fallback location label; `HotelRoute` |
 | `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id, kind and the post they stand on) and spirit bells (socket, and the `place` their text names) |
 | `floors/mission.json` | How generated floors' mission graphs grow: size budget, rule steps by depth, each rule's weight and per-floor limit, and the rules every floor finishes with; `MissionGenerator` |
+| `floors/modules.json` | The room-module catalog: authoring lattice, generated floors' ambient light, the link, size and frame each doorway kind is built with, and the module files that exist; `ModuleCatalog` |
+| `floors/modules/<id>.json` | One room module: kit spaces, links and fixtures in its own north-facing frame, tags, doorways and content sockets; `ModuleCatalog`, `ModuleCheck` |
 | `excursions/<id>/ambience.json` | Its ambient loops: content path, gain and optional world position/range; `HotelAmbience` |
 
 Runtime assets (`materials/`, `models/`, `audio/`) stay in their own folders and are
@@ -132,6 +134,31 @@ Add a notice or field log as a fixture with a `focus` socket, plus a `readings` 
 It uses the existing reading screen and pause/resume flow. Readings themselves
 do not grant items. Resource effects remain in Supplies; encounters remain in
 Combat; a contextual receipt observes Expedition's result.
+
+## Authoring a room module
+
+Generated floors are assembled from room modules. A module is a small floor plan in its own frame: `[0, 0]` is its
+north-west corner and `size` is `[width, depth]` in metres, with the module authored facing north and given quarter
+turns when it is placed. Its spaces, links and fixtures are written exactly as in a floor plan, and every wall
+centreline, size and doorway position lies on the catalog's `cell` lattice.
+
+**Doorways** are where neighbours join. Each names its `kind` (`CorridorDoor`, `ServiceDoor`, `FireDoor`, `Archway`
+or `Stair`), the `space` it opens from, the `edge` of that space, which must be the module's outer wall, and the
+position `at` along it. Two placed doorways mate when they are the same kind at the same point on facing walls; the
+catalog's doorway style for that kind then builds the link, so every corridor door is the same size and frame. An
+unmated doorway stays wall. A `Stair` doorway cuts no wall: it marks where the flight to other floors leaves.
+
+**Content sockets** say what a module offers floor content: a `Find`, `ResidentPost`, `Reading`, `Landmark`, `Bell`
+or `Notebook`, each naming a fixture socket (`table.top`) or a space post (`room.post`). Modules never decide finds
+themselves: no module fixture names a `find`. **Tags** (`Corridor`, `Guest`, `Service`, `Public`, `Refuge`,
+`Landmark`, `StairCore`, `DeadEnd`, `SetPieceOnce`, `Keepable`) tell the floor grammar where a module may go.
+
+Every module passes an isolated self-check when content loads. It is built alone with a porch outside each doorway,
+and its floor is walked on a 0.1 m planning grid for the player's body: anything solid between step height and head
+height, widened by the body radius, blocks. Every doorway must reach every other, every resident post must be on
+reached floor, and every other socket must be within interaction reach of it. A fixture that blocks a doorway fails
+naming the module file and that doorway. Add a module by writing its file and listing its id in `floors/modules.json`;
+view it with `hotel.dev.floor.module <id> <turn>`.
 
 ## Content identities and checkpoints
 

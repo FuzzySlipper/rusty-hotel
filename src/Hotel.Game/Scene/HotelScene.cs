@@ -23,6 +23,8 @@ internal sealed class HotelScene : IDisposable
     private AppearanceFact[] combatFacts = [];
     private AppearanceFact[] spiritFacts = [];
     private readonly Dictionary<string, List<int>> findFacts = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, SurfaceDefinition> surfaceDefinitions = new(StringComparer.Ordinal);
+    private Preview? preview;
 
     internal HotelScene(IEngineContext engine, SurfaceDefinition[] surfaceDefinitions, ExcursionGeometry geometry, DoorDefinition[] doorDefinitions)
     {
@@ -54,31 +56,9 @@ internal sealed class HotelScene : IDisposable
                     new Color(rgb.X, rgb.Y, rgb.Z, 1), texture, surface.Roughness, new Color(1, 1, 1, 1), rgb, surface.Emission, false));
                 materials.Add(material);
                 surfaces.Add(surface.Id, material);
+                this.surfaceDefinitions.Add(surface.Id, surface);
             }
-            foreach (RoomBox box in geometry.Boxes)
-            {
-                // Shape and size were validated when the geometry file loaded.
-                Vector3 min = Authored.Vector(box.Min), max = Authored.Vector(box.Max);
-                SurfaceDefinition surface = surfaceDefinitions.First(surface => surface.Id == box.Material);
-                MeshResource mesh = RoomGeometry.Box(engine, surfaces[box.Material], min, max, new(surface.TileWidth, surface.TileHeight));
-                meshes.Add(mesh);
-                Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
-                appearances.Add(appearance);
-                EntityId entity = Entities.Create();
-                Transform pose = new(Vector3.Zero, Quaternion.Identity, Vector3.One);
-                if (box.Find is string find)
-                {
-                    if (!findFacts.TryGetValue(find, out List<int>? indices)) findFacts.Add(find, indices = []);
-                    indices.Add(placed.Count);
-                }
-                placed.Add(new AppearanceFact(entity.Value, false, 0, pose, appearance, true, RenderLayer.Scene));
-                if (box.Solid)
-                {
-                    ulong asset = checked((ulong)assets.Count + 1);
-                    assets.Add(new StaticMeshAsset(asset, new MeshResourceReference(mesh), 0, 0, 0, 0));
-                    instances.Add(new StaticMeshInstance(entity.Value, asset, pose));
-                }
-            }
+            AddBoxes(geometry.Boxes, 0, meshes, appearances, placed, assets, instances, findFacts);
             foreach (ModelDefinition model in geometry.Models)
             {
                 using ContentReference content = engine.Content.OpenReference(new(model.Path));
@@ -120,21 +100,104 @@ internal sealed class HotelScene : IDisposable
             lights.Add(engine.Graphics.CreateLight(new(1, false, 0, new(LightKind.Ambient,
                 Authored.Vector(lighting.AmbientColor), lighting.AmbientIntensity, true,
                 Vector3.Zero, -Vector3.UnitY, false, 0, 0, 0, 0, LightShadowIntent.Disabled))));
-            foreach (PointLightDefinition light in lighting.Points)
-                lights.Add(engine.Graphics.CreateLight(new((ulong)lights.Count + 1, false, 0,
-                    new(LightKind.Point, Authored.Vector(light.Color), light.Intensity, true,
-                    Authored.Vector(light.Position), -Vector3.UnitY, true, light.Range, 2, 0, 0, LightShadowIntent.Requested))));
+            lights.AddRange(PointLights(lighting.Points, 2));
             ReplaceCollision();
             facts = placed.ToArray();
         }
         catch { Dispose(); throw; }
     }
 
+    // Meshes, appearances and solid collision for authored boxes. Shape and size were validated when the floor built.
+    private void AddBoxes(RoomBox[] boxes, ulong assetBase, List<MeshResource> meshList, List<Appearance> appearanceList, List<AppearanceFact> placed,
+        List<StaticMeshAsset> assetList, List<StaticMeshInstance> instanceList, Dictionary<string, List<int>>? finds)
+    {
+        foreach (RoomBox box in boxes)
+        {
+            Vector3 min = Authored.Vector(box.Min), max = Authored.Vector(box.Max);
+            SurfaceDefinition surface = surfaceDefinitions[box.Material];
+            MeshResource mesh = RoomGeometry.Box(engine, surfaces[box.Material], min, max, new(surface.TileWidth, surface.TileHeight));
+            meshList.Add(mesh);
+            Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
+            appearanceList.Add(appearance);
+            EntityId entity = Entities.Create();
+            Transform pose = new(Vector3.Zero, Quaternion.Identity, Vector3.One);
+            if (finds is not null && box.Find is string find)
+            {
+                if (!finds.TryGetValue(find, out List<int>? indices)) finds.Add(find, indices = []);
+                indices.Add(placed.Count);
+            }
+            placed.Add(new AppearanceFact(entity.Value, false, 0, pose, appearance, true, RenderLayer.Scene));
+            if (box.Solid)
+            {
+                ulong asset = checked(assetBase + (ulong)assetList.Count + 1);
+                assetList.Add(new StaticMeshAsset(asset, new MeshResourceReference(mesh), 0, 0, 0, 0));
+                instanceList.Add(new StaticMeshInstance(entity.Value, asset, pose));
+            }
+        }
+    }
+
+    private List<Light> PointLights(PointLightDefinition[] points, ulong firstId)
+    {
+        List<Light> created = [];
+        ulong id = firstId;
+        foreach (PointLightDefinition light in points)
+            created.Add(engine.Graphics.CreateLight(new(id++, false, 0,
+                new(LightKind.Point, Authored.Vector(light.Color), light.Intensity, true,
+                Authored.Vector(light.Position), -Vector3.UnitY, true, light.Range, 2, 0, 0, LightShadowIntent.Requested))));
+        return created;
+    }
+
+    /// <summary>
+    /// Developer viewing: shows one extra built floor beside the hotel, with its lights and collision, replacing any
+    /// previous one. It is presentation for inspection only; no domain owner reads it.
+    /// </summary>
+    internal void ShowPreview(RoomBox[] boxes, PointLightDefinition[] points)
+    {
+        ClearPreview();
+        Preview shown = new();
+        preview = shown;
+        List<AppearanceFact> placed = [];
+        AddBoxes(boxes, PreviewIds, shown.Meshes, shown.Appearances, placed, shown.Assets, shown.Instances, null);
+        shown.Facts = [.. placed];
+        shown.Lights.AddRange(PointLights(points, PreviewIds));
+        ReplaceCollision();
+        Publish();
+    }
+
+    internal void ClearPreview()
+    {
+        if (preview is not { } shown) return;
+        preview = null;
+        ReplaceCollision();
+        Publish();
+        shown.Dispose();
+    }
+
+    // Preview collision assets and lights are numbered apart from the hotel's own.
+    private const ulong PreviewIds = 1UL << 32;
+
+    private sealed class Preview : IDisposable
+    {
+        internal List<MeshResource> Meshes { get; } = [];
+        internal List<Appearance> Appearances { get; } = [];
+        internal List<StaticMeshAsset> Assets { get; } = [];
+        internal List<StaticMeshInstance> Instances { get; } = [];
+        internal List<Light> Lights { get; } = [];
+        internal AppearanceFact[] Facts { get; set; } = [];
+
+        public void Dispose()
+        {
+            foreach (Light light in Lights) light.Dispose();
+            foreach (Appearance appearance in Appearances) appearance.Dispose();
+            foreach (MeshResource mesh in Meshes) mesh.Dispose();
+        }
+    }
+
     internal EntityStore Entities { get; }
     internal EntityId PlayerEntity { get; }
     internal SpatialSession Session { get; }
     internal Material Surface(string id) => surfaces[id];
-    internal void Publish() => engine.Graphics.PublishSnapshot([.. facts, .. combatFacts, .. spiritFacts]);
+    internal void Publish() => engine.Graphics.PublishSnapshot([.. facts, .. preview?.Facts ?? [], .. combatFacts, .. spiritFacts]);
     internal void PublishSpirit(AppearanceFact[] appearances) { spiritFacts = appearances; Publish(); }
     internal void PublishCombat(AppearanceFact[] appearances) { combatFacts = appearances; Publish(); }
     internal void ShowFind(string id, bool visible)
@@ -159,8 +222,8 @@ internal sealed class HotelScene : IDisposable
 
     private static Transform DoorPose(DoorDefinition door, bool open) => new(Authored.Vector(door.Hinge),
         Quaternion.CreateFromAxisAngle(Vector3.UnitY, (open ? door.OpenYaw : door.ClosedYaw) * MathF.PI / 180), Vector3.One);
-    private void ReplaceCollision() => engine.Spatial.ReplaceCollision(new(Session, assets.ToArray(),
-        ReadOnlyMemory<Vector3>.Empty, ReadOnlyMemory<Triangle>.Empty, instances.ToArray()));
+    private void ReplaceCollision() => engine.Spatial.ReplaceCollision(new(Session, assets.Concat(preview?.Assets ?? []).ToArray(),
+        ReadOnlyMemory<Vector3>.Empty, ReadOnlyMemory<Triangle>.Empty, instances.Concat(preview?.Instances ?? []).ToArray()));
     private sealed record DoorView(DoorDefinition Definition, ulong Entity, int FirstFact, int Collider, ulong Asset);
 
     public void Dispose()
@@ -168,6 +231,7 @@ internal sealed class HotelScene : IDisposable
         engine.Graphics.PublishSnapshot([]);
         // Collision retains the mesh resources until its session is released.
         Session.Dispose();
+        preview?.Dispose();
         foreach (Light light in lights) light.Dispose();
         foreach (Appearance appearance in appearances) appearance.Dispose();
         foreach (MeshResource mesh in meshes) mesh.Dispose();

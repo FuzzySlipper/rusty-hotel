@@ -4,6 +4,7 @@ using Hotel.Game.Audio;
 using Hotel.Game.Combat;
 using Hotel.Game.Expedition;
 using Hotel.Game.Floors.Mission;
+using Hotel.Game.Floors.Modules;
 using Hotel.Game.Input;
 using Hotel.Game.Interface;
 using Hotel.Game.Player;
@@ -43,4 +44,6 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(PlacementPlan))]
 [JsonSerializable(typeof(AmbienceDefinition))]
 [JsonSerializable(typeof(MissionTuning))]
+[JsonSerializable(typeof(ModuleCatalogFile))]
+[JsonSerializable(typeof(ModuleDefinition))]
 internal sealed partial class ContentJson : JsonSerializerContext;

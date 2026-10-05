@@ -1,0 +1,142 @@
+{
+  "id": "landmark-lounge",
+  "size": [
+    7,
+    6
+  ],
+  "tags": [
+    "Landmark",
+    "Public",
+    "SetPieceOnce",
+    "Keepable"
+  ],
+  "spaces": [
+    {
+      "id": "lounge",
+      "label": "Residents’ lounge",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        7,
+        6
+      ],
+      "height": 2.65,
+      "style": "guest-room",
+      "posts": {
+        "centre": [
+          3.5,
+          1.8
+        ],
+        "watch": [
+          5.5,
+          2
+        ]
+      }
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "pendant",
+      "space": "lounge",
+      "at": [
+        2.5,
+        3
+      ]
+    },
+    {
+      "kind": "pendant",
+      "space": "lounge",
+      "at": [
+        4.5,
+        3
+      ]
+    },
+    {
+      "kind": "guest-bench",
+      "space": "lounge",
+      "at": [
+        2.0,
+        5.5
+      ]
+    },
+    {
+      "kind": "guest-bench",
+      "space": "lounge",
+      "at": [
+        5.0,
+        5.5
+      ]
+    },
+    {
+      "kind": "low-cabinet",
+      "space": "lounge",
+      "at": [
+        0.6,
+        3.0
+      ]
+    },
+    {
+      "kind": "landscape-picture",
+      "space": "lounge",
+      "edge": "South",
+      "along": 3.5
+    },
+    {
+      "kind": "pinned-frame",
+      "space": "lounge",
+      "edge": "West",
+      "along": 4.5
+    },
+    {
+      "kind": "side-table",
+      "id": "table",
+      "space": "lounge",
+      "at": [
+        3.5,
+        3.0
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "lounge",
+      "edge": "North",
+      "along": 5.0
+    }
+  ],
+  "doorways": [
+    {
+      "id": "door",
+      "kind": "CorridorDoor",
+      "space": "lounge",
+      "edge": "North",
+      "at": 1.5
+    },
+    {
+      "id": "arch",
+      "kind": "Archway",
+      "space": "lounge",
+      "edge": "East",
+      "at": 3
+    }
+  ],
+  "sockets": [
+    {
+      "id": "centre",
+      "kind": "Landmark",
+      "socket": "lounge.centre"
+    },
+    {
+      "id": "table",
+      "kind": "Find",
+      "socket": "table.top"
+    },
+    {
+      "id": "watch",
+      "kind": "ResidentPost",
+      "socket": "lounge.watch"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "corridor-straight",
+  "size": [
+    3,
+    4
+  ],
+  "tags": [
+    "Corridor"
+  ],
+  "spaces": [
+    {
+      "id": "hall",
+      "label": "Corridor",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        3,
+        4
+      ],
+      "height": 2.65,
+      "style": "corridor"
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "ceiling-lamp",
+      "space": "hall",
+      "at": [
+        1.5,
+        2
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "hall",
+      "edge": "West",
+      "along": 0.6
+    },
+    {
+      "kind": "sconce",
+      "space": "hall",
+      "edge": "East",
+      "along": 3.4
+    }
+  ],
+  "doorways": [
+    {
+      "id": "north",
+      "kind": "Archway",
+      "space": "hall",
+      "edge": "North",
+      "at": 1.5
+    },
+    {
+      "id": "south",
+      "kind": "Archway",
+      "space": "hall",
+      "edge": "South",
+      "at": 1.5
+    },
+    {
+      "id": "west",
+      "kind": "CorridorDoor",
+      "space": "hall",
+      "edge": "West",
+      "at": 2
+    },
+    {
+      "id": "east",
+      "kind": "CorridorDoor",
+      "space": "hall",
+      "edge": "East",
+      "at": 2
+    }
+  ],
+  "sockets": []
+}

@@ -1,6 +1,7 @@
 using Hotel.Game.Audio;
 using Hotel.Game.Combat;
 using Hotel.Game.Expedition;
+using Hotel.Game.Floors.Modules;
 using Hotel.Game.Input;
 using Hotel.Game.Interface;
 using Hotel.Game.Player;
@@ -18,7 +19,7 @@ namespace Hotel.Game.Content;
 /// Only composition reads this; each owner receives the pieces it uses.
 /// </summary>
 internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, RouteDefinition Route, InterfaceTuning Interface,
-    SurfaceDefinition[] Surfaces, KitDefinition Kit, FixtureCatalog Fixtures, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
+    SurfaceDefinition[] Surfaces, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
@@ -32,8 +33,11 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         // The product implements one pact; its bell placement names which spirit file to read.
         Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
             "exactly one spirit bell is supported.");
-        HotelContent content = new(controls, PlayerTuning.Load(engine), RouteDefinition.Load(engine, keys), InterfaceTuning.Load(engine),
-            SurfaceCatalog.Load(engine).Surfaces, kit, fixtures, SuppliesDefinition.Load(engine), combat,
+        PlayerTuning player = PlayerTuning.Load(engine);
+        RouteDefinition route = RouteDefinition.Load(engine, keys);
+        ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
+        HotelContent content = new(controls, player, route, InterfaceTuning.Load(engine),
+            SurfaceCatalog.Load(engine).Surfaces, kit, fixtures, modules, SuppliesDefinition.Load(engine), combat,
             SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
@@ -67,6 +71,10 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         for (int i = 0; i < Fixtures.Fixtures.Length; i++)
             for (int p = 0; p < Fixtures.Fixtures[i].Parts.Length; p++)
                 Surface(FixtureCatalog.Path, $"fixtures[{i}].parts[{p}].material", Fixtures.Fixtures[i].Parts[p].Material);
+        foreach (ModuleDefinition module in Modules.Modules)
+            for (int i = 0; i < module.Spaces.Length; i++)
+                foreach (var (field, id) in new[] { ("floor", module.Spaces[i].Floor), ("wall", module.Spaces[i].Wall), ("ceiling", module.Spaces[i].Ceiling) })
+                    if (id is not null) Surface(ModuleCatalog.ModulePath(module.Id), $"spaces[{i}].{field}", id);
         for (int i = 0; i < Excursion.Plan.Spaces.Length; i++)
         {
             SpaceDefinition space = Excursion.Plan.Spaces[i];

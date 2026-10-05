@@ -1,0 +1,91 @@
+{
+  "id": "linen-room",
+  "size": [
+    4,
+    6
+  ],
+  "tags": [
+    "Service"
+  ],
+  "spaces": [
+    {
+      "id": "room",
+      "label": "Linen room",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        4,
+        6
+      ],
+      "height": 2.65,
+      "style": "guest-room",
+      "floor": "east"
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "ceiling-lamp",
+      "space": "room",
+      "at": [
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "sconce",
+      "space": "room",
+      "edge": "East",
+      "along": 3
+    },
+    {
+      "kind": "luggage-table",
+      "space": "room",
+      "at": [
+        3.2,
+        5.2
+      ]
+    },
+    {
+      "kind": "side-table",
+      "id": "table",
+      "space": "room",
+      "at": [
+        1.0,
+        4.8
+      ]
+    },
+    {
+      "kind": "bell-pedestal",
+      "id": "bell",
+      "space": "room",
+      "at": [
+        2.0,
+        4.0
+      ]
+    }
+  ],
+  "doorways": [
+    {
+      "id": "door",
+      "kind": "CorridorDoor",
+      "space": "room",
+      "edge": "North",
+      "at": 2
+    }
+  ],
+  "sockets": [
+    {
+      "id": "table",
+      "kind": "Find",
+      "socket": "table.top"
+    },
+    {
+      "id": "bell",
+      "kind": "Bell",
+      "socket": "bell.bell"
+    }
+  ]
+}
