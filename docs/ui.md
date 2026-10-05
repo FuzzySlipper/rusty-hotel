@@ -211,7 +211,9 @@ when the host unmounts the UI.
 ### World focus and reading
 
 The exploration HUD presents the Engine-selected action beside the reticle:
-E to use, a move-closer hint, or the return door's far-side latch reason. Occluded
+E to use, a move-closer hint, a latched door's far-side reason, or a locked door's prompt naming the key it needs.
+A key is an ordinary find (E · Take key to the guest room); the route holds it for that floor, and it is not a
+supplies pocket item. Occluded
 objects do not advertise an actionable prompt. Using the refuge notice or a field log
 opens one reading surface with authored title/text and Put down / Escape. It
 uses the same real Engine pause and final resume/focus flow as the field case.

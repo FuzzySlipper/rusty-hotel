@@ -15,7 +15,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/HotelWorld.cs` | The owners of one excursion's world (scene, player, supplies, combat, spirit, route, expedition, ambience and views), built together for the floor the player stands on and disposed together when they take the stairs |
 | `src/Hotel.Game/Floors/HotelFloors.cs` | The run seed (persisted in its own Engine state scope), the current depth, and each generated floor of the run, generated on first entry and kept for the session |
 | `src/Hotel.Game/Floors/FloorExcursion.cs` | A generated floor as an `ExcursionDefinition`: display fixtures for finds, depth-namespaced ids, stairs, readings, residents and the bell |
-| `src/Hotel.Game/Route/HotelRoute.cs` | Door/latch state, authored room identity, reading facts and the Engine world-interaction adapter |
+| `src/Hotel.Game/Route/HotelRoute.cs` | Door, latch and lock state, the keys held on the current floor, room identity, reading and stair facts, and the Engine world-interaction adapter |
 | `src/Hotel.Game/Supplies/HotelSupplies.cs` | Carried stacks, collected-find identities, capacity and use rules, health/ammo/summon reserves and inventory revision |
 | `src/Hotel.Game/Combat/HotelCombat.cs` | Selected weapon, admitted windup/commit/recovery/reload timing, damage policy, resident behavior and Engine spatial hit/approach calls |
 | `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident/weapon meshes and attack poses contributed to the existing scene snapshot |
