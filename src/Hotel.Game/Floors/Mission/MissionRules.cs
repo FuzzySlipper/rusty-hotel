@@ -15,9 +15,13 @@ internal static class MissionRules
         void Join(string a, string b, MissionEdgeKind kind = MissionEdgeKind.Open, string? item = null) =>
             edges.Add(new($"{a}~{b}", a, b, kind, item));
         string Pick(string purpose, IReadOnlyList<string> from) => from[draws.Index(FloorStage.Graph, purpose, key, from.Count)];
+        // A place behind its own locked door (a gated cache) is a room with one way in, so nothing hangs off it.
+        bool Sealed(MissionGraph g, string id) =>
+            g.Edges.Where(e => e.From == id || e.To == id) is var touching && touching.Any() && touching.All(e => e.Kind == MissionEdgeKind.Locked)
+            && g.Nodes.First(n => n.Id == id).Kind != MissionNodeKind.Gate;
         string[] Reachable(MissionGraph g, string? blocked = null, string? without = null, params string[] except) =>
             MissionReach.From(g, MissionGraph.ArrivalId, blocked: blocked, without: without).Reached
-                .Where(id => id != blocked && !except.Contains(id)).Order(StringComparer.Ordinal).ToArray();
+                .Where(id => id != blocked && !except.Contains(id) && !Sealed(g, id)).Order(StringComparer.Ordinal).ToArray();
         MissionGraph Proposed() => graph with { Nodes = [.. nodes], Edges = [.. edges] };
         (MissionGraph?, string, MissionProblem?) Refuse(string code, string detail) => (null, "", new(code, detail));
 
@@ -38,7 +42,7 @@ internal static class MissionRules
                 string gate = $"gate.{key}", pass = $"pass.{key}", keyNode = $"key.{key}";
                 if (Split("lock.edge") is not { } split) return Refuse("no_open_route", "the route to the objective has no open edge to lock.");
                 (string from, string to) = (split.From, split.To);
-                nodes.Add(new(gate, MissionNodeKind.Gate));
+                nodes.Add(new(gate, MissionNodeKind.Gate, Gates: $"{gate}~{to}"));
                 Join(from, gate);
                 Join(gate, to, MissionEdgeKind.Locked, pass);
                 string anchor = Pick("lock.key", Reachable(Proposed(), without: $"{gate}~{to}", except: gate));

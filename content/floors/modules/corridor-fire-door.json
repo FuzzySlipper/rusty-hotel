@@ -1,0 +1,85 @@
+{
+  "id": "corridor-fire-door",
+  "size": [
+    3,
+    3
+  ],
+  "tags": [
+    "Corridor"
+  ],
+  "spaces": [
+    {
+      "id": "near",
+      "label": "Corridor",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        3,
+        1.5
+      ],
+      "height": 2.65,
+      "style": "corridor"
+    },
+    {
+      "id": "far",
+      "label": "Corridor",
+      "min": [
+        0,
+        1.5
+      ],
+      "max": [
+        3,
+        3
+      ],
+      "height": 2.65,
+      "style": "corridor"
+    }
+  ],
+  "links": [
+    {
+      "id": "fire-door",
+      "between": [
+        "near",
+        "far"
+      ],
+      "kind": "Door",
+      "at": 1.5,
+      "width": 1.6,
+      "height": 2.15,
+      "frame": "service-door"
+    }
+  ],
+  "fixtures": [
+    {
+      "kind": "sconce",
+      "space": "near",
+      "edge": "West",
+      "along": 0.75
+    },
+    {
+      "kind": "sconce",
+      "space": "far",
+      "edge": "East",
+      "along": 2.25
+    }
+  ],
+  "doorways": [
+    {
+      "id": "near",
+      "kind": "Archway",
+      "space": "near",
+      "edge": "North",
+      "at": 1.5
+    },
+    {
+      "id": "far",
+      "kind": "Archway",
+      "space": "far",
+      "edge": "South",
+      "at": 1.5
+    }
+  ],
+  "sockets": []
+}

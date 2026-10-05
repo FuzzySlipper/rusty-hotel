@@ -35,7 +35,8 @@ internal sealed record PlacedDoorway(PlacedModule Placement, DoorwayDefinition D
 internal static class ModuleRealizer
 {
     internal static FloorPlan Plan(IReadOnlyList<PlacedModule> placements, ModuleCatalog catalog,
-        IEnumerable<SpaceDefinition>? extraSpaces = null, IEnumerable<LinkDefinition>? extraLinks = null)
+        IEnumerable<SpaceDefinition>? extraSpaces = null, IEnumerable<LinkDefinition>? extraLinks = null,
+        IEnumerable<FixturePlacement>? extraFixtures = null)
     {
         List<SpaceDefinition> spaces = [];
         List<LinkDefinition> links = [];
@@ -69,9 +70,12 @@ internal static class ModuleRealizer
         PlacedDoorway[] doorways = placements.SelectMany(p => Doorways(p, catalog)).ToArray();
         for (int i = 0; i < doorways.Length; i++)
             for (int j = i + 1; j < doorways.Length; j++)
-                if (doorways[i].Mates(doorways[j])) links.Add(Link(doorways[i], doorways[j].Space, $"{doorways[i].Id}~{doorways[j].Id}"));
-        return new([.. spaces, .. extraSpaces ?? []], [.. links, .. extraLinks ?? []], [.. fixtures], catalog.Lighting, []);
+                if (doorways[i].Mates(doorways[j])) links.Add(Link(doorways[i], doorways[j].Space, JoinId(doorways[i].Id, doorways[j].Id)));
+        return new([.. spaces, .. extraSpaces ?? []], [.. links, .. extraLinks ?? []], [.. fixtures, .. extraFixtures ?? []], catalog.Lighting, []);
     }
+
+    /// <summary>The link id of two mated doorways, the same whichever was placed first.</summary>
+    internal static string JoinId(string a, string b) => string.CompareOrdinal(a, b) < 0 ? $"{a}~{b}" : $"{b}~{a}";
 
     /// <summary>A placement's doorways, moved into place.</summary>
     internal static IEnumerable<PlacedDoorway> Doorways(PlacedModule placed, ModuleCatalog catalog)

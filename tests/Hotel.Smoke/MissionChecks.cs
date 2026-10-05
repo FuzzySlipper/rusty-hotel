@@ -53,7 +53,7 @@ internal static class MissionChecks
 
         static MissionGraph Graph(MissionNode[] nodes, params MissionEdge[] edges) => new([new("arrival", MissionNodeKind.Arrival), .. nodes], edges, []);
         string[] Codes(MissionGraph graph) => MissionValidation.Check(graph, tuning.Budget).Select(p => p.Code).ToArray();
-        MissionGraph behindGate = Graph([new("gate", MissionNodeKind.Gate), new("objective", MissionNodeKind.Objective), new("key", MissionNodeKind.Key, "pass")],
+        MissionGraph behindGate = Graph([new("gate", MissionNodeKind.Gate, Gates: "b"), new("objective", MissionNodeKind.Objective), new("key", MissionNodeKind.Key, "pass")],
             new MissionEdge("a", "arrival", "gate", MissionEdgeKind.Open), new MissionEdge("b", "gate", "objective", MissionEdgeKind.Locked, "pass"),
             new MissionEdge("c", "objective", "key", MissionEdgeKind.Open));
         Check(Codes(behindGate).Contains("lock_never_opened") && Codes(behindGate).Contains("objective_unreachable"), "a key behind its own gate is refused");

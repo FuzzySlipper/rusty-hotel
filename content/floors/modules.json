@@ -49,6 +49,8 @@
     "service-corridor",
     "refuge",
     "stair-core",
-    "landmark-lounge"
+    "landmark-lounge",
+    "corridor-fire-door",
+    "service-vestibule"
   ]
 }

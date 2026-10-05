@@ -1,0 +1,29 @@
+{
+  "extent": 60,
+  "rooms": { "base": 15, "perDepth": 2, "max": 25 },
+  "roles": [
+    { "node": "Arrival", "joins": "Archway", "modules": [ { "module": "stair-core", "weight": 1 } ] },
+    { "node": "Hall", "joins": "Archway", "modules": [
+      { "module": "corridor-straight", "weight": 3 }, { "module": "corridor-tee", "weight": 2 },
+      { "module": "corridor-cross", "weight": 1 }, { "module": "corridor-corner", "weight": 1 } ] },
+    { "node": "Gate", "joins": "Archway", "modules": [ { "module": "corridor-fire-door", "weight": 1 } ] },
+    { "node": "Hazard", "joins": "Archway", "modules": [ { "module": "corridor-straight", "weight": 1 } ] },
+    { "node": "Objective", "joins": "CorridorDoor", "modules": [ { "module": "guest-room-a", "weight": 1 }, { "module": "guest-room-b", "weight": 1 } ] },
+    { "node": "Key", "joins": "CorridorDoor", "modules": [ { "module": "guest-room-a", "weight": 1 }, { "module": "guest-room-b", "weight": 1 } ] },
+    { "node": "Supplies", "joins": "CorridorDoor", "modules": [
+      { "module": "guest-room-a", "weight": 2 }, { "module": "guest-room-b", "weight": 2 }, { "module": "linen-room", "weight": 1 } ] },
+    { "node": "Bell", "joins": "CorridorDoor", "modules": [ { "module": "linen-room", "weight": 1 } ] },
+    { "node": "Landmark", "joins": "CorridorDoor", "modules": [ { "module": "landmark-lounge", "weight": 1 } ] },
+    { "node": "Shortcut", "joins": "CorridorDoor", "modules": [ { "module": "service-vestibule", "weight": 1 } ] }
+  ],
+  "spine": [
+    { "module": "corridor-straight", "weight": 3 }, { "module": "corridor-tee", "weight": 3 },
+    { "module": "corridor-corner", "weight": 2 }, { "module": "corridor-cross", "weight": 1 }
+  ],
+  "fill": [
+    { "module": "guest-room-a", "weight": 3 }, { "module": "guest-room-b", "weight": 3 }, { "module": "linen-room", "weight": 1 }
+  ],
+  "passage": { "width": 2, "style": "service", "label": "Service passage", "lamp": "service-lamp", "turnCost": 6, "search": 200000 },
+  "tries": 6,
+  "branchOneIn": 3
+}

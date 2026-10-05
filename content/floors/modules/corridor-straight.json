@@ -20,7 +20,13 @@
         4
       ],
       "height": 2.65,
-      "style": "corridor"
+      "style": "corridor",
+      "posts": {
+        "post": [
+          1.5,
+          1.0
+        ]
+      }
     }
   ],
   "links": [],
@@ -76,5 +82,11 @@
       "at": 2
     }
   ],
-  "sockets": []
+  "sockets": [
+    {
+      "id": "post",
+      "kind": "ResidentPost",
+      "socket": "hall.post"
+    }
+  ]
 }

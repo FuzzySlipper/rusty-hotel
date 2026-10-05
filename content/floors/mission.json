@@ -1,12 +1,38 @@
 {
-  "budget": { "nodes": 24, "edges": 36 },
-  "steps": { "base": 4, "perDepth": 1, "max": 9 },
+  "budget": {
+    "nodes": 24,
+    "edges": 36
+  },
+  "steps": {
+    "base": 4,
+    "perDepth": 1,
+    "max": 9
+  },
   "rules": [
-    { "rule": "LockKeyLoop", "weight": 3, "limit": 2 },
-    { "rule": "DetourLoop", "weight": 3, "limit": 3 },
-    { "rule": "GatedBranch", "weight": 2, "limit": 2 },
-    { "rule": "ResourceBeforeHazard", "weight": 3, "limit": 3 },
-    { "rule": "Landmark", "weight": 1, "limit": 1 }
+    {
+      "rule": "LockKeyLoop",
+      "weight": 3,
+      "limit": 2
+    },
+    {
+      "rule": "DetourLoop",
+      "weight": 3,
+      "limit": 3
+    },
+    {
+      "rule": "GatedBranch",
+      "weight": 2,
+      "limit": 2
+    },
+    {
+      "rule": "ResourceBeforeHazard",
+      "weight": 3,
+      "limit": 3
+    }
   ],
-  "finish": ["Bell", "Landmark", "Shortcut"]
+  "finish": [
+    "Bell",
+    "Landmark",
+    "Shortcut"
+  ]
 }

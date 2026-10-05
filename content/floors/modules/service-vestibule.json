@@ -1,0 +1,60 @@
+{
+  "id": "service-vestibule",
+  "size": [
+    3,
+    4
+  ],
+  "tags": [
+    "Service"
+  ],
+  "spaces": [
+    {
+      "id": "room",
+      "label": "Staff vestibule",
+      "min": [
+        0,
+        0
+      ],
+      "max": [
+        3,
+        4
+      ],
+      "height": 2.65,
+      "style": "service"
+    }
+  ],
+  "links": [],
+  "fixtures": [
+    {
+      "kind": "service-lamp",
+      "space": "room",
+      "at": [
+        1.2,
+        2
+      ]
+    },
+    {
+      "kind": "pinned-frame",
+      "space": "room",
+      "edge": "West",
+      "along": 2
+    }
+  ],
+  "doorways": [
+    {
+      "id": "door",
+      "kind": "CorridorDoor",
+      "space": "room",
+      "edge": "North",
+      "at": 1.5
+    },
+    {
+      "id": "service",
+      "kind": "ServiceDoor",
+      "space": "room",
+      "edge": "South",
+      "at": 1.5
+    }
+  ],
+  "sockets": []
+}

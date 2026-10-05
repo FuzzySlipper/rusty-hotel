@@ -8,6 +8,7 @@ namespace Hotel.Game.Floors.Mission;
 /// resource stops; hazards are encounters; the shortcut is the place a latch opens back toward arrival from. A hall is
 /// a place on the way with no role of its own.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<MissionNodeKind>))]
 internal enum MissionNodeKind { Arrival, Objective, Hall, Key, Gate, Bell, Landmark, Supplies, Hazard, Shortcut }
 
 /// <summary>
@@ -15,10 +16,14 @@ internal enum MissionNodeKind { Arrival, Objective, Hall, Key, Gate, Bell, Landm
 /// <see cref="MissionEdge.From"/> to <see cref="MissionEdge.To"/> only. Latch: from From always, and back from To once
 /// the player has stood at From and opened it.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<MissionEdgeKind>))]
 internal enum MissionEdgeKind { Open, Locked, OneWay, Latch }
 
-/// <summary>A place on the floor's mission graph. A key <see cref="Grants"/> the item its lock needs.</summary>
-internal sealed record MissionNode(string Id, MissionNodeKind Kind, string? Grants = null);
+/// <summary>
+/// A place on the floor's mission graph. A key <see cref="Grants"/> the item its lock needs; a gate names the locked
+/// edge its door <see cref="Gates"/>.
+/// </summary>
+internal sealed record MissionNode(string Id, MissionNodeKind Kind, string? Grants = null, string? Gates = null);
 
 /// <summary>A way between two places. Open and locked edges are symmetric; one-way edges and latches run From to To.</summary>
 internal sealed record MissionEdge(string Id, string From, string To, MissionEdgeKind Kind, string? Item = null);
@@ -49,7 +54,7 @@ internal sealed record MissionGraph(MissionNode[] Nodes, MissionEdge[] Edges, Mi
     internal void Write(CanonicalText text)
     {
         foreach (MissionNode node in Nodes.OrderBy(n => n.Id, StringComparer.Ordinal))
-            text.Line("mission.node", node.Id, node.Kind.ToString(), node.Grants ?? "");
+            text.Line("mission.node", node.Id, node.Kind.ToString(), node.Grants ?? "", node.Gates ?? "");
         foreach (MissionEdge edge in Edges.OrderBy(e => e.Id, StringComparer.Ordinal))
             text.Line("mission.edge", edge.Id, edge.From, edge.To, edge.Kind.ToString(), edge.Item ?? "");
         for (int i = 0; i < Steps.Length; i++)

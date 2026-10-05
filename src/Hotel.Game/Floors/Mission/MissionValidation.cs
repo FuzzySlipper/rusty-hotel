@@ -23,6 +23,9 @@ internal static class MissionValidation
             Problem("edge_endpoint", $"joins a missing place ({edge.From} to {edge.To}).", edge.Id);
         foreach (MissionEdge edge in graph.Edges.Where(e => (e.Kind == MissionEdgeKind.Locked) != (e.Item is not null)))
             Problem("lock_item", "a locked edge, and only a locked edge, names the item it needs.", edge.Id);
+        foreach (MissionNode gate in graph.Nodes.Where(n => n.Kind == MissionNodeKind.Gate))
+            if (graph.Edges.FirstOrDefault(e => e.Id == gate.Gates) is not { Kind: MissionEdgeKind.Locked } door || door.From != gate.Id)
+                Problem("gate_door", "a gate names the locked edge leading on from it.", gate.Id);
         foreach (var kind in new[] { MissionNodeKind.Arrival, MissionNodeKind.Objective })
             if (graph.Nodes.Count(n => n.Kind == kind) != 1) Problem("promise_count", $"a floor has exactly one {kind.ToString().ToLowerInvariant()}.");
         if (graph.Nodes.SingleOrDefault(n => n.Kind == MissionNodeKind.Arrival)?.Id != MissionGraph.ArrivalId)

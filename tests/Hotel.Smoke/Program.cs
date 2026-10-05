@@ -172,6 +172,7 @@ host.Call(engine =>
 host.Call(KitChecks.Run);
 host.Call(MissionChecks.Run);
 host.Call(ModuleChecks.Run);
+host.Call(LayoutChecks.Run);
 host.Call(RouteChecks.Run);
 host.Call(SuppliesChecks.Run);
 host.Call(CombatChecks.Run);

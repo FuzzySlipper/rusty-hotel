@@ -46,6 +46,7 @@ its own folder. Geometry is kept apart from tuning.
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, and the fallback location label; `HotelRoute` |
 | `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id, kind and the post they stand on) and spirit bells (socket, and the `place` their text names) |
 | `floors/mission.json` | How generated floors' mission graphs grow: size budget, rule steps by depth, each rule's weight and per-floor limit, and the rules every floor finishes with; `MissionGenerator` |
+| `floors/layout.json` | How mission graphs become modules: floor extent, rooms by depth, the modules that may stand for each kind of place and the doorway they join by, spine and fill weights, the service passage, tries and branching; `FloorEmbedding` |
 | `floors/modules.json` | The room-module catalog: authoring lattice, generated floors' ambient light, the link, size and frame each doorway kind is built with, and the module files that exist; `ModuleCatalog` |
 | `floors/modules/<id>.json` | One room module: kit spaces, links and fixtures in its own north-facing frame, tags, doorways and content sockets; `ModuleCatalog`, `ModuleCheck` |
 | `excursions/<id>/ambience.json` | Its ambient loops: content path, gain and optional world position/range; `HotelAmbience` |

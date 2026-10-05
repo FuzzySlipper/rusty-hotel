@@ -55,6 +55,13 @@
       "space": "landing",
       "edge": "South",
       "at": 2
+    },
+    {
+      "id": "service",
+      "kind": "ServiceDoor",
+      "space": "landing",
+      "edge": "East",
+      "at": 2
     }
   ],
   "sockets": []

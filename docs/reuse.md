@@ -129,7 +129,15 @@ All were committed and unchanged at those revisions.
 The room modules (`Floors/Modules/`) consulted CraftSurvive's `src/CraftSurvive.Game/Modules/Dungeons/DungeonModules.cs`
 at `413a3bfc92cdc72e16192cc02598c61965dd557c` for the shape: a module's size on a lattice, typed sockets on its faces,
 dead-end and once-only set-piece flags. No code was copied. Hotel modules are kit floor plans in metres, not voxel
-canvases, and turn with the kit's own transform. Checks use the same Engine draws through `EngineTestHost`.
+canvases, and turn with the kit's own transform.
+
+The layout (`Floors/Layout/`) follows two patterns without copying code: CraftSurvive's
+`src/CraftSurvive.Game/Modules/Dungeons/ModularDungeon.cs` `Assembly` at `d41113fedca44078a02cc98dd997b2873ae806e0`
+(phased growth from open sockets, every turn and socket of every choice scored by weight, openness and a random
+jitter, once-only set pieces, a reason string for a failed phase), and rusty-dungeon's `World/FeaturePlacement.cs` at
+`5899a98a94997e914bc15564972570d696547c15` (proving a lock cuts its region with a walk that treats that door as
+closed). Hotel draws through `FloorDraws`, grows in metres on the module lattice, and routes its service passage as
+generated kit spaces. Checks use the same Engine draws through `EngineTestHost`.
 
 ## Mounted UI lifecycle
 
