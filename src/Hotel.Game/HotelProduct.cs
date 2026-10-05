@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hotel.Game.Player;
 using Hotel.Game.Expedition;
+using Hotel.Game.Input;
 using Hotel.Game.Content;
 using Hotel.Game.Scene;
 using Hotel.Game.Interface;
@@ -35,6 +36,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly HotelCombat combat;
     private readonly CombatView combatView;
     private readonly HotelAmbience ambience;
+    private readonly HotelControls controls;
     private readonly List<IDisposable> owned = [];
     private bool disposed;
     private ulong step;
@@ -48,9 +50,11 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             HotelContent content = HotelContent.Load(engine, StartingExcursion);
             ExcursionDefinition excursion = content.Excursion;
             scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
-            player = Own(new HotelPlayer(engine, scene, content.Player, excursion.Placements.Arrival));
+            controls = new HotelControls(content.Controls, content.Combat.Weapons);
+            player = Own(new HotelPlayer(engine, scene, content.Player, excursion.Placements.Arrival, content.Controls));
             supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, scene.PlayerEntity);
-            combat = new HotelCombat(engine, scene, player, supplies, content.Combat, excursion.Placements.Residents);
+            combat = new HotelCombat(engine, scene, player, supplies, content.Combat, excursion.Placements.Residents,
+                content.Controls.Weapons.Select(w => w.Label).ToArray());
             spirit = new HotelSpirit(content.Spirit, content.SpiritText, content.SpiritBell, supplies, combat, player);
             route = new HotelRoute(engine, scene, player, supplies, spirit, content.Route, excursion.Route,
                 excursion.Placements.Refuge, ReturnToRefuge, PublishInterface);
@@ -73,15 +77,16 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             if (item.Kind == InputEventKind.Clear) ClearActions();
         FpsInputFrame input = player.ReadInput(update.Input,
             (float)(update.Facts.FixedDeltaSeconds * update.Facts.AdmittedStepCount));
+        PhysicalInputState physical = player.Input.Physical;
+        ControlBindings bound = controls.Bindings;
         pendingUse |= input.UsePressed;
-        pendingSummon |= player.Input.Physical.Pressed(KeyboardControl.KeyQ);
-        pendingAttack |= player.Input.Physical.Pressed(PointerButton.Primary) || player.Input.Physical.Pressed(KeyboardControl.ControlLeft);
-        pendingReload |= player.Input.Physical.Pressed(KeyboardControl.KeyR);
-        if (player.Input.Physical.Pressed(KeyboardControl.Digit1)) pendingWeapon = 0;
-        if (player.Input.Physical.Pressed(KeyboardControl.Digit2)) pendingWeapon = 1;
-        if (player.Input.Physical.Pressed(KeyboardControl.Digit3)) pendingQuick = 0;
-        if (player.Input.Physical.Pressed(KeyboardControl.Digit4)) pendingQuick = 1;
-        if (player.Input.Physical.Pressed(KeyboardControl.Digit5)) pendingQuick = 2;
+        pendingSummon |= HotelControls.Pressed(physical, bound.Summon);
+        pendingAttack |= HotelControls.Pressed(physical, bound.Attack);
+        pendingReload |= HotelControls.Pressed(physical, bound.Reload);
+        for (int i = 0; i < bound.Weapons.Length; i++)
+            if (HotelControls.Pressed(physical, bound.Weapons[i])) pendingWeapon = i;
+        for (int i = 0; i < bound.QuickPockets.Length; i++)
+            if (HotelControls.Pressed(physical, bound.QuickPockets[i])) pendingQuick = i;
         for (uint i = 0; i < update.Facts.AdmittedStepCount; i++)
         {
             if (combat.Defeated && pendingReload) { Restart(); break; }
@@ -95,6 +100,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             combat.Step((float)update.Facts.FixedDeltaSeconds);
             spirit.Step((float)update.Facts.FixedDeltaSeconds);
             supplies.Step((float)update.Facts.FixedDeltaSeconds);
+            controls.Step((float)update.Facts.FixedDeltaSeconds);
             route.Update();
             if (pendingUse) { pendingUse = false; if (!combat.Defeated) route.Use(); }
         }
@@ -146,11 +152,11 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
 
     // Paused claims, route results and developer fixtures change only UI facts; the camera
     // sample and scene snapshot stay at the last admitted simulation step.
-    private void PublishInterface() => hud.Publish(route, supplies, combat, spirit, expedition);
+    private void PublishInterface() => hud.Publish(route, supplies, combat, spirit, expedition, controls);
 
     public void RegisterDebugCommands(IDebugCommandModuleRegistrar registrar)
     {
-        registrar.Register(new PlaytestDebugModule(Observe, Action, ["forward", "back", "left", "right", "use", "attack", "melee", "pistol", "reload", "summon"], LookBy));
+        registrar.Register(new PlaytestDebugModule(Observe, controls.Action, controls.ActionIds, LookBy));
         registrar.Register(new InteractionDebugModule(route.Interaction));
         registrar.Register(new HotelDebugCommands(Observe, ResetExcursion));
         registrar.Register(new SuppliesDebugCommands(supplies, PublishInterface));
@@ -171,21 +177,6 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         Publish();
         return Observe();
     }
-
-    private static PlaytestAction Action(string id) => id switch
-    {
-        "summon" => new(id, "KeyQ", 60, true),
-        "attack" => new(id, "ControlLeft", 60, true),
-        "melee" => new(id, "Digit1", 60, true),
-        "pistol" => new(id, "Digit2", 60, true),
-        "reload" => new(id, "KeyR", 60, true),
-        "use" => new(id, "KeyE", 60, true),
-        "forward" => new(id, "KeyW", 200, true),
-        "back" => new(id, "KeyS", 200, true),
-        "left" => new(id, "KeyA", 200, true),
-        "right" => new(id, "KeyD", 200, true),
-        _ => new(id, "", 0, false, false, "Unknown walking action")
-    };
 
     private DebugCommandResult Observe() => DebugCommandResult.Success(JsonSerializer.Serialize(new HotelObservation(
         step, [player.Position.X, player.Position.Y, player.Position.Z],

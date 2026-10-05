@@ -1,0 +1,118 @@
+{
+  "walk": {
+    "name": "Walk & strafe",
+    "shortName": "Walk",
+    "label": "W A S D",
+    "forward": "KeyW",
+    "backward": "KeyS",
+    "left": "KeyA",
+    "right": "KeyD"
+  },
+  "look": {
+    "name": "Look around",
+    "shortName": "Look",
+    "label": "Mouse"
+  },
+  "attack": {
+    "name": "Attack",
+    "shortName": "Attack",
+    "label": "Left click / Ctrl",
+    "keys": [
+      "ControlLeft"
+    ],
+    "pointer": [
+      "Primary"
+    ]
+  },
+  "weapons": [
+    {
+      "label": "1",
+      "keys": [
+        "Digit1"
+      ]
+    },
+    {
+      "label": "2",
+      "keys": [
+        "Digit2"
+      ]
+    }
+  ],
+  "reload": {
+    "name": "Load cartridges / restore checkpoint when downed",
+    "shortName": "Reload",
+    "label": "R",
+    "keys": [
+      "KeyR"
+    ]
+  },
+  "quickPockets": [
+    {
+      "label": "3",
+      "keys": [
+        "Digit3"
+      ]
+    },
+    {
+      "label": "4",
+      "keys": [
+        "Digit4"
+      ]
+    },
+    {
+      "label": "5",
+      "keys": [
+        "Digit5"
+      ]
+    }
+  ],
+  "summon": {
+    "name": "Call equipped spirit",
+    "shortName": "Spirit",
+    "label": "Q",
+    "keys": [
+      "KeyQ"
+    ]
+  },
+  "use": {
+    "name": "Use / read",
+    "shortName": "Use",
+    "label": "E",
+    "keys": [
+      "KeyE"
+    ]
+  },
+  "fieldCase": {
+    "name": "Field case",
+    "shortName": "Field case",
+    "label": "I",
+    "code": "KeyI"
+  },
+  "menu": {
+    "name": "Menu / close screen",
+    "shortName": "Menu",
+    "label": "Esc",
+    "code": "Escape"
+  },
+  "console": {
+    "name": "Developer console",
+    "shortName": "Console",
+    "label": "F2",
+    "code": "F2"
+  },
+  "text": {
+    "hint": "{key} · {action}",
+    "quickPocketsName": "Use pockets {first}–{last}",
+    "quickPocketsNote": "Pockets {first}–{last} · press {firstKey}–{lastKey} in the hotel to use."
+  },
+  "openingHint": {
+    "seconds": 20,
+    "actions": [
+      "walk",
+      "look",
+      "use",
+      "fieldCase",
+      "menu"
+    ]
+  }
+}

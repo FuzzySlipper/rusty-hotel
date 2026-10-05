@@ -38,6 +38,8 @@ export function mountProductUi(root, context) {
   let refugeSequence = -1;
   let disposed = false;
   let pause;
+  // Screen shortcuts are browser key codes from the authored binding table; inert until the first facts arrive.
+  let keys = { fieldCase: null, menu: null, console: null };
 
   const syncPointer = () => hud.setNavigationHidden(screen !== null || document.pointerLockElement !== null);
   const present = (next, parent = null) => {
@@ -74,10 +76,10 @@ export function mountProductUi(root, context) {
     else if (button.dataset.open) show(button.dataset.open, screen === null ? null : { screen, back: returnScreen });
   };
   const onKey = event => {
-    if (pause.snapshot().pending && ['Escape', 'KeyI', 'F2'].includes(event.code)) {
+    if (pause.snapshot().pending && Object.values(keys).includes(event.code)) {
       event.preventDefault(); event.stopPropagation(); return;
     }
-    if (event.key === 'Escape') {
+    if (event.code === keys.menu) {
       event.preventDefault();
       event.stopPropagation();
       if (event.repeat) return;
@@ -86,11 +88,11 @@ export function mountProductUi(root, context) {
     }
     const editing = event.target instanceof Element && event.target.closest('input,textarea,select,[contenteditable="true"]');
     if (!editing && !event.ctrlKey && !event.altKey && !event.metaKey) {
-      if (event.code === 'KeyI' && (screen === null || screen === 'case' || screen === 'menu')) {
+      if (event.code === keys.fieldCase && (screen === null || screen === 'case' || screen === 'menu')) {
         event.preventDefault();
         event.stopPropagation();
         if (!event.repeat) { if (screen === 'case') close(); else show('case', screen === null ? null : { screen, back: returnScreen }); }
-      } else if (event.code === 'F2' && developerEnabled) {
+      } else if (event.code === keys.console && developerEnabled) {
         event.preventDefault();
         event.stopPropagation();
         if (!event.repeat) { if (screen === 'console') close(); else show('console', screen === null ? null : { screen, back: returnScreen }); }
@@ -121,9 +123,11 @@ export function mountProductUi(root, context) {
   const draw = envelope => {
     if (disposed || envelope?.stream !== 'rusty-hotel' || envelope.contract !== 'rusty.hotel.hud') return;
     const facts = envelope.value;
+    keys = Object.fromEntries(Object.entries(facts.controls.screens).map(([name, screen]) => [name, screen.code]));
+    for (const view of Object.values(screens)) view.draw?.(facts);
     hud.draw(facts);
-    menu.draw(facts);
-    fieldCase.draw(facts);
+    // Every <kbd data-key> names a screen shortcut from the binding table.
+    for (const kbd of layer.querySelectorAll('[data-key]')) kbd.textContent = facts.controls.screens[kbd.dataset.key].label;
     if (readingSequence !== facts.reading.sequence) {
       readingSequence = facts.reading.sequence;
       reading.show(facts.reading.title, facts.reading.text);

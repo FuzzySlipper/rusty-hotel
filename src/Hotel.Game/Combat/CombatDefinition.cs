@@ -7,10 +7,10 @@ namespace Hotel.Game.Combat;
 /// <summary>The combat domain's authored files: timing, weapons, resident kinds and player-facing text.</summary>
 internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] Weapons, ResidentKind[] Residents, CombatMessages Text)
 {
-    internal static CombatDefinition Load(IEngineContext engine)
+    internal static CombatDefinition Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys)
     {
-        CombatMessages text = Authored.Read(engine, CombatMessages.Path, ContentJson.Default.CombatMessages);
-        Template.Check(CombatMessages.Path, "emptyWeapon", text.EmptyWeapon, "weapon", "fallback");
+        CombatMessages text = Authored.Read(engine, CombatMessages.Path, ContentJson.Default.CombatMessages, keys);
+        Template.Check(CombatMessages.Path, "emptyWeapon", text.EmptyWeapon, "weapon", "fallback", "fallbackKey");
         Template.Check(CombatMessages.Path, "hit", text.Hit, "resident");
         Template.Check(CombatMessages.Path, "residentFalls", text.ResidentFalls, "resident");
         Template.Check(CombatMessages.Path, "residentHits", text.ResidentHits, "resident", "damage");

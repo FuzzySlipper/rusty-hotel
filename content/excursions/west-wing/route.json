@@ -59,7 +59,7 @@
         1.09
       ],
       "title": "Expedition notice · Bring back the reel",
-      "text": "The survey team has gone quiet. Their last field log is in the room at the far end of this corridor. Start there; it should tell us where they left the recording.\n\nTake what you need before leaving. Dressings are beside the case on the left desk; cartridges are on the right table. Open your field case to use supplies, or load a packet with R while holding the pistol.\n\nThe residents give warning before they strike. Step back, use a doorway, and make your opening count. There is something answering the bell in the linen room, too.\n\nBring the survey reel back to the notebook on the left desk. Recording a return secures your finds and saves the whole excursion. Leaving without recording loses changes since your last return."
+      "text": "The survey team has gone quiet. Their last field log is in the room at the far end of this corridor. Start there; it should tell us where they left the recording.\n\nTake what you need before leaving. Dressings are beside the case on the left desk; cartridges are on the right table. Open your field case to use supplies, or load a packet with {key.reload} while holding the pistol.\n\nThe residents give warning before they strike. Step back, use a doorway, and make your opening count. There is something answering the bell in the linen room, too.\n\nBring the survey reel back to the notebook on the left desk. Recording a return secures your finds and saves the whole excursion. Leaving without recording loses changes since your last return."
     },
     {
       "id": "field-log",

@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
+using Rusty.Engine;
 using Hotel.Game.Audio;
 using Hotel.Game.Combat;
 using Hotel.Game.Expedition;
+using Hotel.Game.Input;
 using Hotel.Game.Interface;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
@@ -14,7 +16,9 @@ namespace Hotel.Game.Content;
 // Missing constructor values, nulls in non-nullable fields and unknown members are errors, not defaults.
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     RespectRequiredConstructorParameters = true, RespectNullableAnnotations = true,
-    UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow)]
+    UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+    Converters = [typeof(JsonStringEnumConverter<KeyboardControl>), typeof(JsonStringEnumConverter<PointerButton>)])]
+[JsonSerializable(typeof(ControlBindings))]
 [JsonSerializable(typeof(PlayerTuning))]
 [JsonSerializable(typeof(InteractionTuning))]
 [JsonSerializable(typeof(InterfaceTuning))]

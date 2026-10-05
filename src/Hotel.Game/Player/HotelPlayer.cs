@@ -1,5 +1,6 @@
 using System.Numerics;
 using Hotel.Game.Content;
+using Hotel.Game.Input;
 using Hotel.Game.Scene;
 using Rusty.Engine;
 using Rusty.Engine.Entities;
@@ -18,7 +19,7 @@ internal sealed class HotelPlayer : IDisposable
     private ulong commandSequence;
     private bool cut = true;
 
-    internal HotelPlayer(IEngineContext engine, HotelScene scene, PlayerTuning tuning, ArrivalPlacement arrival)
+    internal HotelPlayer(IEngineContext engine, HotelScene scene, PlayerTuning tuning, ArrivalPlacement arrival, ControlBindings controls)
     {
         this.engine = engine;
         this.scene = scene;
@@ -36,6 +37,7 @@ internal sealed class HotelPlayer : IDisposable
         engine.Spatial.ValidateCharacterControllerConfig(config);
         Input = new FpsInput(FpsInputConfig.Standard with
         {
+            Bindings = HotelControls.Fps(controls, FpsInputConfig.Standard.Bindings),
             PointerLookConfig = FpsInputConfig.Standard.PointerLookConfig with
             { HorizontalRadiansPerUnit = tuning.PointerRadiansPerUnit, VerticalRadiansPerUnit = tuning.PointerRadiansPerUnit }
         });

@@ -5,7 +5,7 @@ import { focusFirstButton, screenElement } from './screen.js';
 export function mountConsoleScreen(document) {
   const element = screenElement(document, `
     <section class="hotel-screen console-screen" data-screen="console" hidden role="dialog" aria-modal="true" aria-labelledby="console-title">
-      <header class="screen-heading"><div><span class="eyebrow">Developer access</span><h2 id="console-title">Command console</h2></div><button type="button" data-close>Back <kbd>Esc</kbd></button></header>
+      <header class="screen-heading"><div><span class="eyebrow">Developer access</span><h2 id="console-title">Command console</h2></div><button type="button" data-close>Back <kbd data-key="menu"></kbd></button></header>
       <p class="console-help">Engine console · Try <code>hotel.inspect</code>. <code>hotel.dev.return-to-entrance</code> resets the route and returns you to the entrance.</p>
       <div class="console-host"></div><footer class="screen-footer" data-lifecycle-status role="status"></footer>
     </section>`);

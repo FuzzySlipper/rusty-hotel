@@ -6,9 +6,9 @@ namespace Hotel.Game.Route;
 /// <summary>The route domain's shared files: interaction tuning and the focus prompt wording.</summary>
 internal sealed record RouteDefinition(InteractionTuning Interaction, RouteMessages Text)
 {
-    internal static RouteDefinition Load(IEngineContext engine)
+    internal static RouteDefinition Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys)
     {
-        RouteMessages text = Authored.Read(engine, RouteMessages.Path, ContentJson.Default.RouteMessages);
+        RouteMessages text = Authored.Read(engine, RouteMessages.Path, ContentJson.Default.RouteMessages, keys);
         Template.Check(RouteMessages.Path, "ready", text.Ready, "label");
         Template.Check(RouteMessages.Path, "outOfReach", text.OutOfReach, "label");
         Template.Check(RouteMessages.Path, "take", text.Take, "item");

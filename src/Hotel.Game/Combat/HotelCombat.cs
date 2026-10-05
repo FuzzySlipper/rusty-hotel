@@ -21,6 +21,8 @@ internal sealed class HotelCombat
     private readonly HotelSupplies supplies;
     private readonly CombatDefinition definition;
     private readonly CombatMessages text;
+    // The control label that selects each weapon, in weapon order; notices name the fallback's.
+    private readonly string[] weaponKeys;
     private int weaponIndex;
     private float remaining, noticeRemaining;
     private int reloadPocket;
@@ -28,10 +30,11 @@ internal sealed class HotelCombat
     private Vector3 attackDirection;
 
     internal HotelCombat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
-        CombatDefinition definition, ResidentPlacement[] residents)
+        CombatDefinition definition, ResidentPlacement[] residents, string[] weaponKeys)
     {
         this.engine = engine; this.scene = scene; this.player = player; this.supplies = supplies;
         this.definition = definition;
+        this.weaponKeys = weaponKeys;
         text = definition.Text;
         Enemies = residents.Select(placed => new HotelEnemy(engine, scene, placed,
             definition.Residents.Single(kind => kind.Id == placed.Kind), player.Tuning.Gravity)).ToArray();
@@ -72,8 +75,9 @@ internal sealed class HotelCombat
         if (Defeated || Phase != AttackPhase.Ready) return false;
         if (Weapon.AmmoCost > 0 && !supplies.SpendAmmo(Weapon.AmmoCost))
         {
-            WeaponDefinition fallback = definition.Weapons.First(w => w.AmmoCost == 0);
-            Announce(Template.Fill(text.EmptyWeapon, ("weapon", Weapon.ShortName), ("fallback", fallback.ShortName)));
+            int fallback = Array.FindIndex(definition.Weapons, w => w.AmmoCost == 0);
+            Announce(Template.Fill(text.EmptyWeapon, ("weapon", Weapon.ShortName),
+                ("fallback", definition.Weapons[fallback].ShortName), ("fallbackKey", weaponKeys[fallback])));
             return false;
         }
         // Accepted attack commits its cost once. Further presses during the sequence are discarded.

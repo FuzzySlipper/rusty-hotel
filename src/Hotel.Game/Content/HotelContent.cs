@@ -1,6 +1,7 @@
 using Hotel.Game.Audio;
 using Hotel.Game.Combat;
 using Hotel.Game.Expedition;
+using Hotel.Game.Input;
 using Hotel.Game.Interface;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
@@ -15,19 +16,21 @@ namespace Hotel.Game.Content;
 /// Every authored definition the product composes, loaded file by file through each domain's own record.
 /// Only composition reads this; each owner receives the pieces it uses.
 /// </summary>
-internal sealed record HotelContent(PlayerTuning Player, RouteDefinition Route, InterfaceTuning Interface,
+internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, RouteDefinition Route, InterfaceTuning Interface,
     SurfaceDefinition[] Surfaces, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
     {
-        ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId);
+        ControlBindings controls = ControlBindings.Load(engine);
+        IReadOnlyDictionary<string, string> keys = controls.Labels;
+        ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys);
         // The product implements one pact; its bell placement names which spirit file to read.
         Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
             "exactly one spirit bell is supported.");
-        HotelContent content = new(PlayerTuning.Load(engine), RouteDefinition.Load(engine), InterfaceTuning.Load(engine),
-            SurfaceCatalog.Load(engine).Surfaces, SuppliesDefinition.Load(engine), CombatDefinition.Load(engine),
-            SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit), SpiritMessages.Load(engine),
+        HotelContent content = new(controls, PlayerTuning.Load(engine), RouteDefinition.Load(engine, keys), InterfaceTuning.Load(engine),
+            SurfaceCatalog.Load(engine).Surfaces, SuppliesDefinition.Load(engine), CombatDefinition.Load(engine, keys),
+            SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
         return content;
@@ -39,6 +42,10 @@ internal sealed record HotelContent(PlayerTuning Player, RouteDefinition Route, 
     private void Validate()
     {
         Unique(Surfaces.Select(s => s.Id), SurfaceCatalog.Path, "surfaces");
+        Authored.Require(Controls.Weapons.Length == Combat.Weapons.Length, ControlBindings.Path, "weapons",
+            $"one binding per weapon in {WeaponCatalog.Path} ({Combat.Weapons.Length}), in the same order.");
+        Authored.Require(Controls.QuickPockets.Length == Interface.QuickPockets && Interface.QuickPockets > 0, ControlBindings.Path, "quickPockets",
+            $"one binding per quick pocket in {InterfaceTuning.Path} ({Interface.QuickPockets}).");
         Unique(Supplies.Items.Select(i => i.Id), ItemCatalog.Path, "items");
         Unique(Combat.Weapons.Select(w => w.Id), WeaponCatalog.Path, "weapons");
         Unique(Combat.Residents.Select(r => r.Id), ResidentCatalog.Path, "residents");
@@ -87,9 +94,9 @@ internal sealed record ExcursionDefinition(string Id, ExcursionGeometry Geometry
     internal string RoutePath => Folder(Id) + "route.json";
     internal string PlacementsPath => Folder(Id) + "placements.json";
 
-    internal static ExcursionDefinition Load(IEngineContext engine, string id) => new(id,
+    internal static ExcursionDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys) => new(id,
         Authored.Read(engine, Folder(id) + "geometry.json", ContentJson.Default.ExcursionGeometry),
-        Authored.Read(engine, Folder(id) + "route.json", ContentJson.Default.ExcursionRoute),
+        Authored.Read(engine, Folder(id) + "route.json", ContentJson.Default.ExcursionRoute, keys),
         Authored.Read(engine, Folder(id) + "placements.json", ContentJson.Default.ExcursionPlacements),
         Authored.Read(engine, Folder(id) + "ambience.json", ContentJson.Default.AmbienceDefinition).Voices);
 

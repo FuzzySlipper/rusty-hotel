@@ -17,6 +17,7 @@ its own folder. Geometry is kept apart from tuning.
 
 | File | Meaning and owner |
 | --- | --- |
+| `input/bindings.json` | Every control: Engine keys/pointer buttons for game actions, browser codes for screen shortcuts, labels, Controls-screen names, one binding per weapon (in weapon order) and per quick pocket, and the opening hint; `HotelControls` |
 | `player/tuning.json` | Body/camera dimensions, movement and look tuning; `HotelPlayer` |
 | `route/interaction.json` | Reach and focus distances/angles for every world interaction; `HotelRoute` |
 | `route/messages.json` | Focus prompt wording and the labels of the take/notebook interactions; `HotelRoute` |
@@ -46,7 +47,9 @@ own file in the matching folder rather than appending it to a neighbour.
 Gameplay text lives with the domain that shows it, in its `messages.json` or in the
 definition it describes. Write values as `{placeholders}` rather than repeating a
 name or number: `{spirit}`, `{item}`, `{range}` and so on are filled from the
-definitions at runtime. Each text field accepts a fixed set of placeholders. An
+definitions at runtime. Name a control as `{key.reload}`, `{key.use}`, `{key.fieldCase}` and
+so on; it becomes that control's label from `input/bindings.json` when the file loads.
+Each text field accepts a fixed set of placeholders. An
 unknown one fails loading with the file, the field and the allowed set. Text that
 belongs to one place (a door's locked prompt, where a spirit's bell hides) is
 authored with that placement. A screen's fixed chrome stays in its UI module, and

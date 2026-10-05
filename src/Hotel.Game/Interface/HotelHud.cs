@@ -1,5 +1,6 @@
 using Hotel.Game.Combat;
 using Hotel.Game.Expedition;
+using Hotel.Game.Input;
 using Hotel.Game.Route;
 using Hotel.Game.Spirits;
 using Hotel.Game.Supplies;
@@ -26,7 +27,8 @@ internal sealed class HotelHud : IDisposable
         stream = engine.Ui.OpenStream(new UiStreamRequest("rusty-hotel", "rusty.hotel.hud"));
     }
 
-    internal void Publish(HotelRoute route, HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelExpedition expedition)
+    internal void Publish(HotelRoute route, HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelExpedition expedition,
+        HotelControls controls)
     {
         UiValueWriter w = new();
         UiValue value = w.Finish(
@@ -43,7 +45,8 @@ internal sealed class HotelHud : IDisposable
                 w.Number("summon", supplies.Summon), w.Number("maximumSummon", supplies.MaximumSummon),
                 w.Text("spirit", spirit.HudLabel),
                 w.Text("spiritStatus", spirit.Status)),
-            Supplies(w, supplies),
+            Supplies(w, supplies, controls),
+            Controls(w, controls),
             w.Object("spirit",
                 w.Flag("acquired", spirit.Acquired), w.Flag("equipped", spirit.Equipped), w.Number("revision", spirit.Revision),
                 w.Text("name", spirit.Definition.Name), w.Text("description", spirit.Description),
@@ -60,7 +63,20 @@ internal sealed class HotelHud : IDisposable
 
     public void Dispose() => stream.Dispose();
 
-    private uint Supplies(UiValueWriter w, HotelSupplies supplies)
+    // Labels for the Controls screen, the opening hint and the keys the DOM companion handles itself.
+    private static uint Controls(UiValueWriter w, HotelControls controls)
+    {
+        ControlBindings bound = controls.Bindings;
+        return w.Object("controls",
+            w.Array("hint", controls.Hint.Select(line => w.Text("", line)).ToArray()),
+            w.Array("rows", controls.Rows.Select(row => w.Object("", w.Text("name", row.Name), w.Text("label", row.Label))).ToArray()),
+            w.Object("screens",
+                w.Object("fieldCase", w.Text("code", bound.FieldCase.Code), w.Text("label", bound.FieldCase.Label)),
+                w.Object("menu", w.Text("code", bound.Menu.Code), w.Text("label", bound.Menu.Label)),
+                w.Object("console", w.Text("code", bound.Console.Code), w.Text("label", bound.Console.Label))));
+    }
+
+    private uint Supplies(UiValueWriter w, HotelSupplies supplies, HotelControls controls)
     {
         List<uint> pockets = [];
         for (int i = 0; i < supplies.Capacity; i++)
@@ -75,6 +91,8 @@ internal sealed class HotelHud : IDisposable
         return w.Object("supplies",
             w.Number("revision", supplies.Revision), w.Number("capacity", supplies.Capacity),
             w.Number("quickPockets", tuning.QuickPockets), w.Number("occupied", supplies.Occupied),
+            w.Array("quickKeys", controls.Bindings.QuickPockets.Select(q => w.Text("", q.Label)).ToArray()),
+            w.Text("quickNote", controls.QuickPocketsNote),
             w.Text("message", supplies.Message), w.Array("pockets", pockets));
     }
 

@@ -9,9 +9,9 @@ internal sealed record SpiritDefinition(string Id, string Name, string Descripti
     int Cost, float Range, float Arrival, float Hold, float Departure, SpiritText Text, ManifestationTuning Manifestation)
 {
     internal static string Path(string id) => $"spirits/{id}.json";
-    internal static SpiritDefinition Load(IEngineContext engine, string id)
+    internal static SpiritDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys)
     {
-        SpiritDefinition spirit = Authored.Read(engine, Path(id), ContentJson.Default.SpiritDefinition);
+        SpiritDefinition spirit = Authored.Read(engine, Path(id), ContentJson.Default.SpiritDefinition, keys);
         Authored.Require(spirit.Id == id, Path(id), "id", $"the file for '{id}' names '{spirit.Id}'.");
         Template.Check(Path(id), "description", spirit.Description, "place", "range", "cost", "interrupt");
         Template.Check(Path(id), "text.callResult", spirit.Text.CallResult, "spirit", "resident", "cost");
@@ -41,9 +41,9 @@ internal sealed record SpiritMessages(float NoticeSeconds, string BellLabel, str
     string NoTarget, string Withdraws)
 {
     internal const string Path = "spirits/messages.json";
-    internal static SpiritMessages Load(IEngineContext engine)
+    internal static SpiritMessages Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys)
     {
-        SpiritMessages text = Authored.Read(engine, Path, ContentJson.Default.SpiritMessages);
+        SpiritMessages text = Authored.Read(engine, Path, ContentJson.Default.SpiritMessages, keys);
         string[] named = ["spirit"];
         foreach (var (field, value) in new[] { ("bellLabel", text.BellLabel), ("equipWhileActive", text.EquipWhileActive),
             ("equipped", text.Equipped), ("rests", text.Rests), ("notEquipped", text.NotEquipped), ("alreadyHere", text.AlreadyHere),

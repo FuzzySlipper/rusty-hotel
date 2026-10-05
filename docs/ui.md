@@ -56,6 +56,12 @@ displaces something; adding a region is a design decision recorded here first.
 | Lower band | At most three clusters: condition (left), quick access (centre), held status (right: reserves, hands, spirit) |
 | Viewport edge | Transient damage accent only |
 
+Every key the player sees comes from the one binding table, `content/input/bindings.json`.
+That includes the Controls screen, the `<kbd>` shortcut badges, quick-pocket keys and
+key names inside authored text (`{key.action}`). The DOM companion handles the screen
+shortcuts (field case, menu, console) by the browser codes published with the HUD
+facts, and never spells a key itself.
+
 Prefer contextual over persistent. A control hint appears when it applies (a
 focus prompt, a refusal, an early-play reminder) and then goes away. The complete
 controls reference lives on the Controls screen, and full resource and inventory
@@ -146,7 +152,8 @@ foreground screen (`menu-screen.js`, `case-screen.js`, `controls-screen.js`,
 Each module returns its element and `enter`/`leave` focus hooks, plus drawing
 where it needs it. Adding a screen means a new module and one entry in `main.js`'s
 screen list. Exploration shows a compact title and
-wing label, reticle, walking hints, quick pockets, hands and spirit status. C#
+wing label, reticle, quick pockets, hands and spirit status, plus a short opening reminder
+of the basic controls that expires after the authored number of seconds of play. C#
 `Interface/HotelHud.cs` publishes those facts through the Engine UI stream, along
 with the supplies owner's health, ammunition and summon reserves. Brief pickup
 feedback appears above the HUD and expires on admitted simulation time.

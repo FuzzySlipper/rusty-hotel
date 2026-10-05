@@ -12,7 +12,7 @@ export function mountFieldCase(host, intents) {
         <div class="pocket-grid" role="group" aria-label="Supply pockets"></div>
         <div class="spirit-empty" hidden><span class="pact-mark" aria-hidden="true">◇</span><h3>No pact made</h3><p>No spirits accompany you.</p></div>
         <button type="button" class="spirit-card" data-spirit-card hidden aria-pressed="true"><span class="moth-emblem" aria-hidden="true">⋈</span><span data-spirit-name></span><small data-spirit-equipped></small></button>
-        <section class="case-quick"><h3>Quick access</h3><div class="quick-pockets" aria-label="Quick access pockets"></div><p class="muted">Pockets 01–03 · press 3–5 in the hotel to use.</p></section>
+        <section class="case-quick"><h3>Quick access</h3><div class="quick-pockets" aria-label="Quick access pockets"></div><p class="muted" data-quick-note></p></section>
       </div>
       <aside class="item-detail" aria-live="polite"><span class="eyebrow" data-detail-number>Pocket 01</span>
         <div class="empty-emblem" aria-hidden="true">—</div><h3 data-detail-title>Empty pocket</h3><p data-detail-body>No supplies carried.</p><div class="supply-actions"><button type="button" data-use-supply>Use supply</button><button type="button" data-move-supply>Move stack</button></div><p class="supply-result" data-supply-result role="status"></p><button type="button" data-equip-spirit hidden>Equip spirit</button><p class="spirit-result" data-spirit-result role="status" hidden></p>
@@ -179,6 +179,7 @@ export function mountFieldCase(host, intents) {
         selected = 0;
       }
       quick.replaceChildren(...quickPocketViews(document, supplyFacts));
+      host.querySelector('[data-quick-note]').textContent = supplyFacts.quickNote;
       for (const button of grid.children) {
         const item = items[Number(button.dataset.pocket)];
         button.classList.toggle('occupied', !!item?.id);
@@ -198,9 +199,10 @@ export function quickPocketViews(document, supplies) {
     const item = supplies.pockets[index];
     const pocket = document.createElement('span');
     pocket.className = 'quick-pocket';
-    pocket.setAttribute('aria-label', `Key ${index + 3}, ${item?.id ? `${item.name}, ${item.count}` : 'empty'}`);
+    const label = supplies.quickKeys[index];
+    pocket.setAttribute('aria-label', `Key ${label}, ${item?.id ? `${item.name}, ${item.count}` : 'empty'}`);
     const key = document.createElement('small');
-    key.textContent = index + 3;
+    key.textContent = label;
     const contents = document.createElement('span');
     contents.textContent = item?.id ? `${item.mark} ×${item.count}` : '—';
     pocket.append(key, contents);

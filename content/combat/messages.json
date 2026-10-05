@@ -1,9 +1,9 @@
 {
-  "overwhelmed": "Overwhelmed · R to return to the refuge checkpoint",
+  "overwhelmed": "Overwhelmed · {key.reload} to return to the refuge checkpoint",
   "recovering": "Recovering",
   "reloading": "Loading cartridges",
   "ready": "Ready",
-  "emptyWeapon": "Empty {weapon} · R loads carried cartridges · 1 selects the {fallback}",
+  "emptyWeapon": "Empty {weapon} · {key.reload} loads carried cartridges · {fallbackKey} selects the {fallback}",
   "noCartridges": "No carried cartridges",
   "loaded": "Cartridges loaded",
   "struckSurroundings": "Struck the surroundings",

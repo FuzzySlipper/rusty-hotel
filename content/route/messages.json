@@ -1,5 +1,5 @@
 {
-  "ready": "E · {label}",
+  "ready": "{key.use} · {label}",
   "outOfReach": "{label} · Move closer",
   "take": "Take {item}",
   "recordCheckpoint": "Record refuge checkpoint"
