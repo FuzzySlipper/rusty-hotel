@@ -3,6 +3,7 @@ using Hotel.Game;
 using Hotel.Game.Content;
 using Hotel.Game.Expedition;
 using Hotel.Game.Floors;
+using Hotel.Game.Floors.Layout;
 using Hotel.Game.Route;
 using Hotel.Game.Scene;
 using Rusty.Engine;
@@ -89,8 +90,8 @@ internal static class FloorSaveChecks
                 Check(next.Identity.Seed.Shift == 1 && next.Identity.PlanHash != identity && Geometry(shifted) != geometry, "the next visit finds the floor shifted");
                 string Core(GeneratedFloor g) => g.Layout.Placements.First(p => p.Id == g.Layout.Places["arrival"]) is var c ? $"{c.Id} {c.Module} {c.X} {c.Z} {c.Turn}" : "";
                 Check(Core(next) == Core(stored), "the stair core stays where it was");
-                Check(product.Floors.Memory(FloorExcursion.Id(1)) is null || product.Floors.Memory(FloorExcursion.Id(1))!.Keys.Length == 0,
-                    "the shifted floor's keys start fresh");
+                Check(product.Floors.Memory(FloorExcursion.Id(1)) is { } after && after.Keys.Length == 0 &&
+                    next.Layout.KeptDoors.Any(d => after.OpenDoors.Contains(d.Id) && d.Link == stored.Layout.Locks.First(l => KeptSet.LockDoor(FloorExcursion.Id(1), l) == door).Link), "the shifted floor keeps the door the player opened, open, while its keys start fresh");
                 }
 
                 using var store = new ProductStateStore<CheckpointState>(engine, HotelExpedition.Scope,

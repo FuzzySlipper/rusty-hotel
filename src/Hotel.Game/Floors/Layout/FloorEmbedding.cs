@@ -82,7 +82,7 @@ internal static class FloorEmbedding
 
         internal FloorLayout Layout() => new(
             placed.Select(p => new LayoutPlacement(p.Id, p.Module.Id, Corner(p).X, Corner(p).Y, p.Transform.Turn, placedRegions[p.Id])).ToArray(),
-            passage?.Spaces ?? [], passage?.Links ?? [], passage?.Fixtures ?? [], places, [.. locks], latch, beyond);
+            passage?.Spaces ?? [], passage?.Links ?? [], passage?.Fixtures ?? [], places, [.. locks], latch, beyond, kept?.Doors ?? []);
 
         private static Vector2 Corner(PlacedModule p) => p.Transform.Corner;
 

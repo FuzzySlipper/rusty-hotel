@@ -9,6 +9,9 @@ namespace Hotel.Game.Floors.Layout;
 /// </summary>
 internal sealed record LayoutPlacement(string Id, string Module, float X, float Z, int Turn, string Region);
 
+/// <summary>A door a floor kept through a shift, open: its route door id and the link it hangs in.</summary>
+internal sealed record KeptDoor(string Id, string Link);
+
 /// <summary>The door a mission graph's locked edge became: the realized link, and the item that opens it.</summary>
 internal sealed record LayoutLock(string Edge, string Link, string Item);
 
@@ -17,9 +20,10 @@ internal sealed record LayoutLock(string Edge, string Link, string Item);
 /// place became, the doors its locks became, and the latch the shortcut opens. Pure data; realizing it draws nothing.
 /// </summary>
 /// <param name="Beyond">Spaces that stand in another region than their placement: a gate's far half, behind its door.</param>
+/// <param name="KeptDoors">Doors a shift kept because the player had opened them: hung again, open, under their old ids.</param>
 internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition[] Passage, LinkDefinition[] PassageLinks,
     FixturePlacement[] PassageFixtures, IReadOnlyDictionary<string, string> Places, LayoutLock[] Locks, string? Latch,
-    IReadOnlyDictionary<string, string> Beyond)
+    IReadOnlyDictionary<string, string> Beyond, KeptDoor[] KeptDoors)
 {
     internal PlacedModule[] Placed(ModuleCatalog catalog) => Placements.Select(p =>
         new PlacedModule(p.Id, new(catalog.Find(p.Module)!, new(p.X, p.Z), p.Turn))).ToArray();
@@ -51,6 +55,7 @@ internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition
         foreach (LayoutLock l in Locks.OrderBy(l => l.Edge, StringComparer.Ordinal)) text.Line("layout.lock", l.Edge, l.Link, l.Item);
         text.Line("layout.latch", Latch ?? "");
         foreach (var (space, region) in Beyond.OrderBy(b => b.Key, StringComparer.Ordinal)) text.Line("layout.beyond", space, region);
+        foreach (KeptDoor door in KeptDoors.OrderBy(d => d.Id, StringComparer.Ordinal)) text.Line("layout.kept-door", door.Id, door.Link);
     }
 }
 

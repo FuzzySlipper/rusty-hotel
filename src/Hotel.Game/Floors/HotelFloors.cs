@@ -113,8 +113,7 @@ internal sealed class HotelFloors
     {
         var (floor, excursion) = visited[depth];
         WorldMemory? left = memory.GetValueOrDefault(excursion.Id);
-        bool latchOpened = left?.OpenDoors.Contains($"{excursion.Id}/latch") == true;
-        Layout.KeptSet kept = Layout.KeptSet.From(floor, latchOpened);
+        Layout.KeptSet kept = Layout.KeptSet.From(floor, excursion.Id, left?.OpenDoors ?? []);
         long started = Stopwatch.GetTimestamp();
         FloorSeed seed = floor.Identity.Seed with { Shift = floor.Identity.Seed.Shift + 1 };
         GenerationResult result = FloorGenerator.Generate(engine, seed, Tunings, Sources, kept);
@@ -123,8 +122,10 @@ internal sealed class HotelFloors
         if (result.Floor is not { } next) return;
         HashSet<string> stays = kept.Placements.Select(p => $"{excursion.Id}/{p.Id}/").ToHashSet(StringComparer.Ordinal);
         Collected.RemoveWhere(id => id.StartsWith(excursion.Id + "/", StringComparison.Ordinal) && !stays.Any(id.StartsWith));
+        // Kept doors and a kept latch stay open; residents and keys of the re-rolled floor start fresh.
         memory.Remove(excursion.Id);
-        if (latchOpened && kept.Latch is not null) memory[excursion.Id] = new([$"{excursion.Id}/latch"], null, []);
+        string[] stillOpen = [.. kept.Doors.Select(d => d.Id), .. kept.Latch is not null ? [$"{excursion.Id}/latch"] : Array.Empty<string>()];
+        if (stillOpen.Length > 0) memory[excursion.Id] = new(stillOpen, null, []);
         visited[depth] = (next, FloorExcursion.From(next, Tunings, Sources, content.Player));
     }
 

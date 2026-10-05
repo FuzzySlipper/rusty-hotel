@@ -63,19 +63,22 @@ internal static class FloorExcursion
         {
             string guarded = Guarded(lck);
             string key = Template.Fill(doors.KeyName, ("room", RoomName(guarded)));
-            return new DoorPlacement(Scoped($"lock/{lck.Edge}"), doors.LockedLabel, lck.Link, DoorHinge.Start, guarded, doors.Material, doors.HandleMaterial,
+            return new DoorPlacement(KeptSet.LockDoor(Id(depth), lck), doors.LockedLabel, lck.Link, DoorHinge.Start, guarded, doors.Material, doors.HandleMaterial,
                 LockedPrompt: Template.Fill(doors.LockedPrompt, ("key", key))).Resolve($"generated {Id(depth)}", $"locks[{i}]", built, sources.Kit.DoorLeaf) with { Key = lck.Item };
         }).ToArray();
         DoorDefinition[] latch = floor.Layout.Latch is { } latchLink
             ? [new DoorPlacement(Scoped("latch"), doors.LatchLabel, latchLink, DoorHinge.Start, links[latchLink].Between[0], doors.Material, doors.HandleMaterial,
                 LatchedFrom: links[latchLink].Between[1], LockedPrompt: doors.LatchPrompt).Resolve($"generated {Id(depth)}", "latch", built, sources.Kit.DoorLeaf)]
             : [];
+        // Doors a shift kept because the player had opened them hang again, unlocked, under their old ids.
+        DoorDefinition[] keptDoors = floor.Layout.KeptDoors.Select((d, i) => new DoorPlacement(d.Id, doors.LockedLabel, d.Link, DoorHinge.Start,
+            links[d.Link].Between[1], doors.Material, doors.HandleMaterial).Resolve($"generated {Id(depth)}", $"keptDoors[{i}]", built, sources.Kit.DoorLeaf)).ToArray();
         KeyDefinition[] keys = keyFinds.Select(f =>
         {
             LayoutLock lck = floor.Layout.Locks.First(l => l.Item == f.Grants);
             return new KeyDefinition(Scoped(f.Id), f.Grants!, Template.Fill(doors.KeyName, ("room", RoomName(Guarded(lck)))), At(built.Sockets[$"{Display(f)}.focus"]));
         }).ToArray();
-        ExcursionRoute route = new(tunings.Content.FallbackLocation, [.. lockDoors, .. latch], readings, built.Rooms, stairs, keys);
+        ExcursionRoute route = new(tunings.Content.FallbackLocation, [.. lockDoors, .. latch, .. keptDoors], readings, built.Rooms, stairs, keys);
 
         ArrivalPlacement arrival = new(Standing(floor.Content.Arrival, player.Height), floor.Content.ArrivalYaw);
         FindDefinition[] finds = shown.Select(f => new FindDefinition(Scoped(f.Id), f.Item!, f.Count, At(built.Sockets[$"{Display(f)}.focus"]))).ToArray();
