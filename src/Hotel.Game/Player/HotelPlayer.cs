@@ -25,16 +25,7 @@ internal sealed class HotelPlayer : IDisposable
         this.scene = scene;
         this.tuning = tuning;
         this.arrival = arrival;
-        CharacterControllerConfig baseline = engine.Spatial.DefaultCharacterControllerConfig();
-        config = baseline with
-        {
-            Shape = baseline.Shape with { StandingHeight = tuning.Height, Radius = tuning.Radius },
-            Ground = baseline.Ground with { ForwardSpeed = tuning.Speed, BackwardSpeed = tuning.Speed, StrafeSpeed = tuning.Speed },
-            Air = baseline.Air with { MaximumSpeed = tuning.Speed, WishSpeedCap = tuning.Speed },
-            Vertical = baseline.Vertical with { Gravity = tuning.Gravity },
-            Surface = baseline.Surface with { MaximumStepHeight = tuning.MaximumStepHeight, MaximumSlopeRadians = tuning.MaximumSlopeDegrees * MathF.PI / 180 }
-        };
-        engine.Spatial.ValidateCharacterControllerConfig(config);
+        config = tuning.Controller(engine.Spatial);
         Input = new FpsInput(FpsInputConfig.Standard with
         {
             Bindings = HotelControls.Fps(controls, FpsInputConfig.Standard.Bindings),

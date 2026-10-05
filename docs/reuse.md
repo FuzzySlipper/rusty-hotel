@@ -137,7 +137,13 @@ The layout (`Floors/Layout/`) follows two patterns without copying code: CraftSu
 jitter, once-only set pieces, a reason string for a failed phase), and rusty-dungeon's `World/FeaturePlacement.cs` at
 `5899a98a94997e914bc15564972570d696547c15` (proving a lock cuts its region with a walk that treats that door as
 closed). Hotel draws through `FloorDraws`, grows in metres on the module lattice, and routes its service passage as
-generated kit spaces. Checks use the same Engine draws through `EngineTestHost`.
+generated kit spaces.
+
+Floor confirmation (`Floors/Confirm/`) follows CraftSurvive's `src/CraftSurvive.Game/Modules/Dungeons/DungeonRoutes.cs` at
+`adfa8e1d345edea4425f936689b501b7870bfa6c` as a pattern: collision navigation published for the player's body, every
+promised route asked of it, and a refused route traced step by step to the first step the Engine refuses, explained with
+`ExplainCollisionNavigationEdge`. Hotel's steps are doorway crossings along the floor's own space graph, and it adds
+traversal overlays for shut locks and the one-way latch. No code was copied. Checks use the same Engine draws through `EngineTestHost`.
 
 ## Mounted UI lifecycle
 

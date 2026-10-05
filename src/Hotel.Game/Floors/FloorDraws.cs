@@ -12,7 +12,7 @@ internal enum FloorStage { Graph, Embedding, Content }
 /// never disturb each other's results. Stages resolve their draws into value records; builders never draw.
 /// </summary>
 /// <remarks>Adapted from CraftSurvive's terrain generator contract; see docs/reuse.md.</remarks>
-internal sealed class FloorDraws(IRandomService random, FloorSeed seed)
+internal sealed class FloorDraws(IRandomService random, FloorSeed seed, int candidate = 0, int attempt = 0)
 {
     // Spreads the version across every bit of the seed, so neighbouring versions share no draws.
     private const ulong VersionSpread = 0x9e3779b97f4a7c15UL;
@@ -23,8 +23,18 @@ internal sealed class FloorDraws(IRandomService random, FloorSeed seed)
     internal FloorSeed Seed { get; } = seed;
 
     /// <summary>
+    /// Which retry this is. A new candidate redraws the whole floor; a new attempt keeps the candidate's mission graph
+    /// and redraws its layout and content.
+    /// </summary>
+    internal int Candidate { get; } = candidate;
+    internal int Attempt { get; } = attempt;
+
+    internal FloorDraws Retry(int nextCandidate, int nextAttempt) => new(random, Seed, nextCandidate, nextAttempt);
+
+    /// <summary>
     /// A draw in [<paramref name="minimum"/>, <paramref name="maximum"/>], scoped <c>hotel.floor.stage.purpose</c>.
-    /// The depth and shift lead the key, so each floor and each of its shifts draws afresh from the same run seed.
+    /// The depth and shift lead the key, so each floor and each of its shifts draws afresh from the same run seed; the
+    /// candidate follows, and for stages after the graph, the attempt.
     /// </summary>
     internal long Long(FloorStage stage, string purpose, string key, long minimum, long maximum)
     {
@@ -32,7 +42,9 @@ internal sealed class FloorDraws(IRandomService random, FloorSeed seed)
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         if (maximum < minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "A draw range must not be inverted.");
         string scope = $"hotel.floor.{stage.ToString().ToLowerInvariant()}.{purpose}";
-        string floorKey = string.Create(CultureInfo.InvariantCulture, $"{Seed.Depth}/{Seed.Shift}/{key}");
+        string floorKey = stage == FloorStage.Graph
+            ? string.Create(CultureInfo.InvariantCulture, $"{Seed.Depth}/{Seed.Shift}/c{Candidate}/{key}")
+            : string.Create(CultureInfo.InvariantCulture, $"{Seed.Depth}/{Seed.Shift}/c{Candidate}/a{Attempt}/{key}");
         return random.DrawKeyed(new KeyedRngRequest(Seed.Run ^ (Seed.Version * VersionSpread), scope, floorKey, minimum, maximum)).Value;
     }
 

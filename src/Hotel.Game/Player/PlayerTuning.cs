@@ -9,6 +9,22 @@ internal sealed record PlayerTuning(float Height, float Radius, float EyeHeight,
     float FieldOfViewDegrees)
 {
     internal const string Path = "player/tuning.json";
+
+    /// <summary>The Engine character controller for this body: the player's, and the one floor navigation is proven for.</summary>
+    internal CharacterControllerConfig Controller(ISpatialService spatial)
+    {
+        CharacterControllerConfig baseline = spatial.DefaultCharacterControllerConfig();
+        CharacterControllerConfig config = baseline with
+        {
+            Shape = baseline.Shape with { StandingHeight = Height, Radius = Radius },
+            Ground = baseline.Ground with { ForwardSpeed = Speed, BackwardSpeed = Speed, StrafeSpeed = Speed },
+            Air = baseline.Air with { MaximumSpeed = Speed, WishSpeedCap = Speed },
+            Vertical = baseline.Vertical with { Gravity = Gravity },
+            Surface = baseline.Surface with { MaximumStepHeight = MaximumStepHeight, MaximumSlopeRadians = MaximumSlopeDegrees * MathF.PI / 180 }
+        };
+        spatial.ValidateCharacterControllerConfig(config);
+        return config;
+    }
     internal static PlayerTuning Load(IEngineContext engine)
     {
         PlayerTuning t = Authored.Read(engine, Path, ContentJson.Default.PlayerTuning);

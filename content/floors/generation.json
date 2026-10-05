@@ -1,0 +1,5 @@
+{
+  "attempts": 16,
+  "candidates": 8,
+  "navigation": { "cellSize": 0.5, "maxVisited": 400000 }
+}
