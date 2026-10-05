@@ -52,12 +52,7 @@ internal static class FloorExcursion
         }).ToArray();
         // A lock's door opens into the space behind it, the side in the region its edge guards; its key is named for that room.
         Dictionary<string, LinkDefinition> links = plan.Links.ToDictionary(l => l.Id, StringComparer.Ordinal);
-        string Guarded(LayoutLock lck)
-        {
-            LinkDefinition link = links[lck.Link];
-            string a = link.Between[0], b = link.Between[1];
-            return floor.Layout.RegionOf(a) == $"behind/{lck.Edge}" ? a : b;
-        }
+        string Guarded(LayoutLock lck) => KeptSet.Guarded(floor, lck);
         string RoomName(string space) => plan.Spaces.First(s => s.Id == space).Label.ToLowerInvariant();
         DoorDefinition[] lockDoors = floor.Layout.Locks.Select((lck, i) =>
         {
@@ -70,9 +65,11 @@ internal static class FloorExcursion
             ? [new DoorPlacement(Scoped("latch"), doors.LatchLabel, latchLink, DoorHinge.Start, links[latchLink].Between[0], doors.Material, doors.HandleMaterial,
                 LatchedFrom: links[latchLink].Between[1], LockedPrompt: doors.LatchPrompt).Resolve($"generated {Id(depth)}", "latch", built, sources.Kit.DoorLeaf)]
             : [];
-        // Doors a shift kept because the player had opened them hang again, unlocked, under their old ids.
+        // Doors a shift kept hang again under their old ids: unlocked once opened, still locked to a key the player holds.
         DoorDefinition[] keptDoors = floor.Layout.KeptDoors.Select((d, i) => new DoorPlacement(d.Id, doors.LockedLabel, d.Link, DoorHinge.Start,
-            links[d.Link].Between[1], doors.Material, doors.HandleMaterial).Resolve($"generated {Id(depth)}", $"keptDoors[{i}]", built, sources.Kit.DoorLeaf)).ToArray();
+            d.Locked?.Guards ?? links[d.Link].Between[1], doors.Material, doors.HandleMaterial,
+            LockedPrompt: d.Locked is { } held ? Template.Fill(doors.LockedPrompt, ("key", Template.Fill(doors.KeyName, ("room", RoomName(held.Guards))))) : null)
+            .Resolve($"generated {Id(depth)}", $"keptDoors[{i}]", built, sources.Kit.DoorLeaf) with { Key = d.Locked?.Item }).ToArray();
         KeyDefinition[] keys = keyFinds.Select(f =>
         {
             LayoutLock lck = floor.Layout.Locks.First(l => l.Item == f.Grants);

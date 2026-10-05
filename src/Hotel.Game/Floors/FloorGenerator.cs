@@ -71,7 +71,7 @@ internal static class FloorGenerator
         FloorDraws root = new(engine.Random, seed);
         for (int candidate = 0; candidate < tunings.Generation.Candidates; candidate++)
         {
-            MissionResult mission = MissionGenerator.Generate(tunings.Mission, root.Retry(candidate, 0));
+            MissionResult mission = MissionGenerator.Generate(tunings.Mission, root.Retry(candidate, 0), kept?.Latch is not null);
             if (!mission.Succeeded) { refusals.Add($"c{candidate} mission: {mission.Failure[0]}"); continue; }
             for (int attempt = 0; attempt < tunings.Generation.Attempts; attempt++)
             {

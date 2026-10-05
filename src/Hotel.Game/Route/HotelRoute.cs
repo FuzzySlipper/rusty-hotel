@@ -161,7 +161,7 @@ internal sealed class HotelRoute : IWorldInteractionScene
     internal void Restore(string[] openDoors, string[]? heldKeys = null)
     {
         keys.Clear();
-        keys.UnionWith((heldKeys ?? []).Where(k => layout.Keys.Any(d => d.Item == k)));
+        keys.UnionWith((heldKeys ?? []).Where(k => layout.Keys.Any(d => d.Item == k) || layout.Doors.Any(d => d.Key == k)));
         foreach (KeyDefinition key in layout.Keys) scene.ShowFind(key.Id, !keys.Contains(key.Item));
         foreach (DoorState door in doors)
         {

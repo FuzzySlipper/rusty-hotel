@@ -18,7 +18,10 @@ internal sealed record MissionResult(MissionGraph Graph, MissionRejection[] Reje
 /// </summary>
 internal static class MissionGenerator
 {
-    internal static MissionResult Generate(MissionTuning tuning, FloorDraws draws)
+    /// <param name="keepsShortcut">
+    /// The floor is shifting around a shortcut the player unlatched: its shortcut must stand where no lock guards it.
+    /// </param>
+    internal static MissionResult Generate(MissionTuning tuning, FloorDraws draws, bool keepsShortcut = false)
     {
         MissionGraph graph = MissionGraph.Initial();
         List<MissionRejection> rejected = [];
@@ -29,12 +32,12 @@ internal static class MissionGenerator
             MissionRuleWeight[] open = tuning.Rules.Where(r => r.Weight > 0 && graph.Applied(r.Rule) < r.Limit).ToArray();
             if (open.Length == 0) break;
             MissionRule rule = open[draws.Weighted(FloorStage.Graph, "rule", key, open.Select(r => r.Weight).ToArray())].Rule;
-            graph = Apply(graph, rule, draws, key, tuning.Budget, rejected);
+            graph = Apply(graph, rule, draws, key, tuning.Budget, rejected, keepsShortcut);
         }
         for (int i = 0; i < tuning.Finish.Length; i++)
         {
             int before = rejected.Count;
-            graph = Apply(graph, tuning.Finish[i], draws, $"f{i}", tuning.Budget, rejected);
+            graph = Apply(graph, tuning.Finish[i], draws, $"f{i}", tuning.Budget, rejected, keepsShortcut);
             if (rejected.Count > before) return new(graph, [.. rejected], rejected[^1].Problems);
         }
         return new(graph, [.. rejected], MissionValidation.Check(graph, tuning.Budget));
@@ -42,9 +45,9 @@ internal static class MissionGenerator
 
     /// <summary>Applies one rule if the whole proposed graph is valid; otherwise records why and keeps the graph.</summary>
     internal static MissionGraph Apply(MissionGraph graph, MissionRule rule, FloorDraws draws, string key, MissionBudget budget,
-        List<MissionRejection> rejected)
+        List<MissionRejection> rejected, bool keepsShortcut = false)
     {
-        var (proposed, summary, refusal) = MissionRules.Propose(graph, rule, draws, key);
+        var (proposed, summary, refusal) = MissionRules.Propose(graph, rule, draws, key, keepsShortcut);
         MissionProblem[] problems = refusal is not null ? [refusal] : MissionValidation.Check(proposed!, budget);
         if (problems.Length > 0)
         {

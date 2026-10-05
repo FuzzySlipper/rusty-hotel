@@ -202,9 +202,11 @@ invalid data, so a generator change is a version bump in `FloorSeed`. Generated 
 A version 1 checkpoint has no run and begins a new one.
 
 Recording the refuge checkpoint marks every visited floor due to shift; the next climb to it generates it again under
-the next shift number around its kept set (stair core, landmark, every door the player opened with the rooms on both
-sides, and the shortcut passage once unlatched), whose placements keep their ids. A kept door hangs again, open, as
-`floor-<depth>/door/<link>`. New placements of a shift are numbered `s<shift>p<n>`, so a re-rolled room never reuses an
+the next shift number around its kept set (stair core, landmark, every door the player opened or holds the key to,
+with the rooms on both sides, and the shortcut passage once unlatched), whose placements keep their ids. A kept door
+hangs again as `floor-<depth>/door/<link>`: open once opened, otherwise still locked, its held key becoming
+`floor-<depth>/key/<link>` so no new lock shares it. A kept unlatched shortcut is already open, so the shifted mission
+graph hangs its shortcut off a place no lock guards. New placements of a shift are numbered `s<shift>p<n>`, so a re-rolled room never reuses an
 old room's ids. Secured generated finds are kept by item in the run, since their rooms may shift away.
 
 ### Adding saved state

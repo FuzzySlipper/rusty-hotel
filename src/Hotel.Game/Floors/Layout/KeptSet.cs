@@ -4,10 +4,11 @@ using Hotel.Game.Scene.Kit;
 namespace Hotel.Game.Floors.Layout;
 
 /// <summary>
-/// What a floor keeps when it shifts: the stair core, its landmark, every door the player opened with the rooms on
-/// both sides of it, and the shortcut passage once the player has unlatched it, with the corridor placements that join
-/// them to the stairs. Everything else re-rolls. The kept pieces keep their placement ids, so what was collected in
-/// them stays collected, and kept doors keep their ids and stay open.
+/// What a floor keeps when it shifts: the stair core, its landmark, every door the player opened or holds the key to,
+/// with the rooms on both sides of it, and the shortcut passage once the player has unlatched it, with the corridor
+/// placements that join them to the stairs. Everything else re-rolls. The kept pieces keep their placement ids, so what
+/// was collected in them stays collected; kept doors keep their ids, an opened one stays open, and one whose key is held
+/// stays locked to that key under an item no later lock can share.
 /// </summary>
 internal sealed record KeptSet(LayoutPlacement[] Placements, IReadOnlyDictionary<MissionNodeKind, string> Places,
     SpaceDefinition[] Passage, LinkDefinition[] PassageLinks, FixturePlacement[] PassageFixtures, string? Latch, KeptDoor[] Doors)
@@ -18,11 +19,14 @@ internal sealed record KeptSet(LayoutPlacement[] Placements, IReadOnlyDictionary
     /// <summary>The route door id a kept door is hung under: its link's, stable across every later shift.</summary>
     internal static string KeptDoorId(string floor, string link) => $"{floor}/door/{link}";
 
+    /// <summary>The item a kept locked door opens with: its link's, stable across every later shift.</summary>
+    internal static string KeptKey(string floor, string link) => $"{floor}/key/{link}";
+
     /// <summary>
     /// The kept set of a floor about to shift, given the route doors open on it (<paramref name="floorId"/>/latch keeps
-    /// its shortcut).
+    /// its shortcut) and the keys held on it.
     /// </summary>
-    internal static KeptSet From(GeneratedFloor floor, string floorId, IReadOnlyCollection<string> openDoors)
+    internal static KeptSet From(GeneratedFloor floor, string floorId, IReadOnlyCollection<string> openDoors, IReadOnlyCollection<string> heldKeys)
     {
         bool latchOpened = openDoors.Contains($"{floorId}/latch");
         FloorLayout layout = floor.Layout;
@@ -50,22 +54,40 @@ internal sealed record KeptSet(LayoutPlacement[] Placements, IReadOnlyDictionary
             for (string? at = layout.Places[node.Id]; at is not null; at = came[at]) kept.Add(at);
         }
         Keep(MissionNodeKind.Landmark);
-        // Every door the player opened, with the rooms on both sides of it and their way to the stairs; doors kept by an
-        // earlier shift are opened doors too.
+        // Every door the player opened or holds the key to, with the rooms on both sides of it and their way to the
+        // stairs; doors kept by an earlier shift count as well.
         List<KeptDoor> doors = [];
-        IEnumerable<KeptDoor> opened = layout.Locks.Select(l => new KeptDoor(LockDoor(floorId, l), l.Link)).Concat(layout.KeptDoors);
-        foreach (KeptDoor door in opened.Where(d => openDoors.Contains(d.Id)))
+        IEnumerable<(string Id, string Link, string? Item, string? Guards)> lockable = layout.Locks
+            .Select(l => (LockDoor(floorId, l), l.Link, (string?)l.Item, (string?)Guarded(floor, l)))
+            .Concat(layout.KeptDoors.Select(d => (d.Id, d.Link, d.Locked?.Item, d.Locked?.Guards)));
+        foreach (var door in lockable)
         {
+            bool open = openDoors.Contains(door.Id);
+            if (!open && (door.Item is null || !heldKeys.Contains(door.Item))) continue;
             LinkDefinition link = floor.Plan.Links.First(l => l.Id == door.Link);
             foreach (string side in link.Between.Select(Placement).Where(came.ContainsKey))
                 for (string? at = side; at is not null; at = came[at]) kept.Add(at);
-            // Named for its link, which kept placements keep, so no lock of a later shift can share its id.
-            doors.Add(new(KeptDoorId(floorId, door.Link), door.Link));
+            // Named for its link, which kept placements keep, so no lock of a later shift can share its id or its key.
+            doors.Add(new(KeptDoorId(floorId, door.Link), door.Link, open ? null : new(KeptKey(floorId, door.Link), door.Guards!)));
         }
         bool shortcut = latchOpened && layout.Latch is not null;
         if (shortcut) Keep(MissionNodeKind.Shortcut);
         return new(layout.Placements.Where(p => kept.Contains(p.Id)).Select(p => p with { Region = FloorEmbedding.OpenRegion }).ToArray(), places,
             shortcut ? layout.Passage : [], shortcut ? layout.PassageLinks : [], shortcut ? layout.PassageFixtures : [], shortcut ? layout.Latch : null,
             [.. doors]);
+    }
+
+    /// <summary>The key a held item becomes on the shifted floor: a held lock's kept key, or none.</summary>
+    internal static string? Carried(KeptSet kept, GeneratedFloor floor, string floorId, string item) =>
+        floor.Layout.Locks.Where(l => l.Item == item).Select(l => l.Link)
+            .Concat(floor.Layout.KeptDoors.Where(d => d.Locked?.Item == item).Select(d => d.Link))
+            .Select(link => kept.Doors.FirstOrDefault(d => d.Link == link)?.Locked?.Item).FirstOrDefault(k => k is not null);
+
+    /// <summary>The space a lock's door opens into: the side in the region its edge guards.</summary>
+    internal static string Guarded(GeneratedFloor floor, LayoutLock lck)
+    {
+        LinkDefinition link = floor.Plan.Links.First(l => l.Id == lck.Link);
+        string a = link.Between[0], b = link.Between[1];
+        return floor.Layout.RegionOf(a) == $"behind/{lck.Edge}" ? a : b;
     }
 }

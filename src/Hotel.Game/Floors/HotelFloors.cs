@@ -106,14 +106,15 @@ internal sealed class HotelFloors
 
     /// <summary>
     /// Shifts a floor once around what it keeps: the stair core and landmark always stay, and the shortcut stays once
-    /// the player has unlatched it. Rooms that re-roll forget what was collected in them, and the floor's doors,
-    /// residents and keys start fresh; secured finds stay secured. A floor that cannot shift stays as it was.
+    /// the player has unlatched it, and every door the player opened or holds the key to. Rooms that re-roll forget what
+    /// was collected in them and the floor's residents start fresh; secured finds stay secured. A floor that cannot shift
+    /// stays as it was.
     /// </summary>
     private void Shift(int depth)
     {
         var (floor, excursion) = visited[depth];
         WorldMemory? left = memory.GetValueOrDefault(excursion.Id);
-        Layout.KeptSet kept = Layout.KeptSet.From(floor, excursion.Id, left?.OpenDoors ?? []);
+        Layout.KeptSet kept = Layout.KeptSet.From(floor, excursion.Id, left?.OpenDoors ?? [], left?.Keys ?? []);
         long started = Stopwatch.GetTimestamp();
         FloorSeed seed = floor.Identity.Seed with { Shift = floor.Identity.Seed.Shift + 1 };
         GenerationResult result = FloorGenerator.Generate(engine, seed, Tunings, Sources, kept);
@@ -122,10 +123,12 @@ internal sealed class HotelFloors
         if (result.Floor is not { } next) return;
         HashSet<string> stays = kept.Placements.Select(p => $"{excursion.Id}/{p.Id}/").ToHashSet(StringComparer.Ordinal);
         Collected.RemoveWhere(id => id.StartsWith(excursion.Id + "/", StringComparison.Ordinal) && !stays.Any(id.StartsWith));
-        // Kept doors and a kept latch stay open; residents and keys of the re-rolled floor start fresh.
+        // Opened kept doors and a kept latch stay open, and a held key still opens its kept door; residents of the
+        // re-rolled floor start fresh.
         memory.Remove(excursion.Id);
-        string[] stillOpen = [.. kept.Doors.Select(d => d.Id), .. kept.Latch is not null ? [$"{excursion.Id}/latch"] : Array.Empty<string>()];
-        if (stillOpen.Length > 0) memory[excursion.Id] = new(stillOpen, null, []);
+        string[] stillOpen = [.. kept.Doors.Where(d => d.Locked is null).Select(d => d.Id), .. kept.Latch is not null ? [$"{excursion.Id}/latch"] : Array.Empty<string>()];
+        string[] stillHeld = (left?.Keys ?? []).Select(k => Layout.KeptSet.Carried(kept, floor, excursion.Id, k)).OfType<string>().Order(StringComparer.Ordinal).ToArray();
+        if (stillOpen.Length > 0 || stillHeld.Length > 0) memory[excursion.Id] = new(stillOpen, null, stillHeld);
         visited[depth] = (next, FloorExcursion.From(next, Tunings, Sources, content.Player));
     }
 
@@ -183,7 +186,7 @@ internal sealed class HotelFloors
     {
         if (left.OpenDoors is null || left.Keys is null || left.OpenDoors.Distinct().Count() != left.OpenDoors.Length ||
             left.OpenDoors.Any(id => floor.Route.Doors.All(d => d.Id != id)) ||
-            left.Keys.Distinct().Count() != left.Keys.Length || left.Keys.Any(k => floor.Route.Keys.All(d => d.Item != k)))
+            left.Keys.Distinct().Count() != left.Keys.Length || left.Keys.Any(k => floor.Route.Keys.All(d => d.Item != k) && floor.Route.Doors.All(d => d.Key != k)))
             throw new InvalidOperationException($"Checkpoint floor {depth}'s doors or keys do not belong to it.");
         if (left.Residents is not { } residents) return;
         ResidentPlacement[] roster = floor.Placements.Residents;

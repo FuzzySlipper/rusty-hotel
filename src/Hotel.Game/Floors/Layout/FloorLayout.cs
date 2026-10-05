@@ -9,8 +9,14 @@ namespace Hotel.Game.Floors.Layout;
 /// </summary>
 internal sealed record LayoutPlacement(string Id, string Module, float X, float Z, int Turn, string Region);
 
-/// <summary>A door a floor kept through a shift, open: its route door id and the link it hangs in.</summary>
-internal sealed record KeptDoor(string Id, string Link);
+/// <summary>
+/// A door a floor kept through a shift: its route door id and the link it hangs in. Open, unless the player held its key
+/// without using it: then it stays <see cref="Locked"/>.
+/// </summary>
+internal sealed record KeptDoor(string Id, string Link, KeptLock? Locked = null);
+
+/// <summary>A kept door still locked: the item that opens it, stable across later shifts, and the space it guards.</summary>
+internal sealed record KeptLock(string Item, string Guards);
 
 /// <summary>The door a mission graph's locked edge became: the realized link, and the item that opens it.</summary>
 internal sealed record LayoutLock(string Edge, string Link, string Item);
@@ -20,7 +26,7 @@ internal sealed record LayoutLock(string Edge, string Link, string Item);
 /// place became, the doors its locks became, and the latch the shortcut opens. Pure data; realizing it draws nothing.
 /// </summary>
 /// <param name="Beyond">Spaces that stand in another region than their placement: a gate's far half, behind its door.</param>
-/// <param name="KeptDoors">Doors a shift kept because the player had opened them: hung again, open, under their old ids.</param>
+/// <param name="KeptDoors">Doors a shift kept because the player had opened them, or held their keys: hung again under their old ids.</param>
 internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition[] Passage, LinkDefinition[] PassageLinks,
     FixturePlacement[] PassageFixtures, IReadOnlyDictionary<string, string> Places, LayoutLock[] Locks, string? Latch,
     IReadOnlyDictionary<string, string> Beyond, KeptDoor[] KeptDoors)
@@ -55,7 +61,7 @@ internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition
         foreach (LayoutLock l in Locks.OrderBy(l => l.Edge, StringComparer.Ordinal)) text.Line("layout.lock", l.Edge, l.Link, l.Item);
         text.Line("layout.latch", Latch ?? "");
         foreach (var (space, region) in Beyond.OrderBy(b => b.Key, StringComparer.Ordinal)) text.Line("layout.beyond", space, region);
-        foreach (KeptDoor door in KeptDoors.OrderBy(d => d.Id, StringComparer.Ordinal)) text.Line("layout.kept-door", door.Id, door.Link);
+        foreach (KeptDoor door in KeptDoors.OrderBy(d => d.Id, StringComparer.Ordinal)) text.Line("layout.kept-door", door.Id, door.Link, door.Locked?.Item ?? "", door.Locked?.Guards ?? "");
     }
 }
 

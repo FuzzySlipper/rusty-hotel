@@ -8,7 +8,7 @@ namespace Hotel.Game.Floors.Mission;
 internal static class MissionRules
 {
     internal static (MissionGraph? Proposed, string Summary, MissionProblem? Refusal) Propose(MissionGraph graph, MissionRule rule,
-        FloorDraws draws, string key)
+        FloorDraws draws, string key, bool keepsShortcut = false)
     {
         List<MissionNode> nodes = [.. graph.Nodes];
         List<MissionEdge> edges = [.. graph.Edges];
@@ -103,13 +103,30 @@ internal static class MissionRules
             {
                 if (Route(graph).Length < 2) return Refuse("shortcut_pointless", "the objective is already beside arrival.");
                 string door = $"shortcut.{key}";
+                // An unlatched shortcut a shift keeps is already open, so it must not open a way past any lock: it hangs
+                // off the objective when no lock guards that, otherwise off another place reached without keys.
+                string[] unlocked = Unlocked(graph).Where(id => id != MissionGraph.ArrivalId && !Sealed(graph, id)).ToArray();
+                string anchor = !keepsShortcut || unlocked.Contains(MissionGraph.ObjectiveId) ? MissionGraph.ObjectiveId
+                    : unlocked.Length > 0 ? Pick("shortcut.at", unlocked) : "";
+                if (anchor == "") return Refuse("shortcut_locked", "every place but arrival is behind a lock, and the kept shortcut is open.");
                 nodes.Add(new(door, MissionNodeKind.Shortcut));
-                Join(MissionGraph.ObjectiveId, door);
+                Join(anchor, door);
                 Join(door, MissionGraph.ArrivalId, MissionEdgeKind.Latch);
-                return (Proposed(), $"latched {door} beside the objective back to arrival", null);
+                return (Proposed(), $"latched {door} beside {anchor} back to arrival", null);
             }
             default: throw new ArgumentOutOfRangeException(nameof(rule), rule, "Unknown mission rule.");
         }
+    }
+
+    /// <summary>The places reached from arrival through open edges alone, in id order.</summary>
+    private static string[] Unlocked(MissionGraph graph)
+    {
+        HashSet<string> seen = new(StringComparer.Ordinal) { MissionGraph.ArrivalId };
+        Queue<string> open = new([MissionGraph.ArrivalId]);
+        while (open.TryDequeue(out string? at))
+            foreach (MissionEdge edge in graph.Edges.Where(e => e.Kind == MissionEdgeKind.Open))
+                if ((edge.From == at ? edge.To : edge.To == at ? edge.From : null) is { } next && seen.Add(next)) open.Enqueue(next);
+        return seen.Order(StringComparer.Ordinal).ToArray();
     }
 
     /// <summary>

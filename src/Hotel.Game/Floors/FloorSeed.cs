@@ -9,9 +9,8 @@ internal sealed record FloorSeed(uint Version, ulong Run, int Depth, int Shift)
     /// <summary>
     /// The generator version new floors are drawn with. A change to what any stage draws or how it resolves those
     /// draws is a version bump, which redraws every floor deliberately instead of silently reinterpreting a save.
-    /// Version 1 is the first generator.
     /// </summary>
-    internal const uint CurrentVersion = 1;
+    internal const uint CurrentVersion = 2;
 
     internal static FloorSeed Current(ulong run, int depth, int shift) => new(CurrentVersion, run, depth, shift);
 }
