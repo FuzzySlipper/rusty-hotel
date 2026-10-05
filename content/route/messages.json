@@ -2,5 +2,7 @@
   "ready": "{key.use} · {label}",
   "outOfReach": "{label} · Move closer",
   "take": "Take {item}",
-  "recordCheckpoint": "Record refuge checkpoint"
+  "recordCheckpoint": "Record refuge checkpoint",
+  "stairsUp": "Climb the stairs",
+  "stairsDown": "Go back down the stairs"
 }

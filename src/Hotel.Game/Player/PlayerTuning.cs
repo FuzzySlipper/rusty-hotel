@@ -44,9 +44,9 @@ internal sealed record PlayerTuning(float Height, float Radius, float EyeHeight,
 /// <summary>Where an excursion starts the player: body centre and facing.</summary>
 internal sealed record ArrivalPlacement(float[] Position, float YawDegrees)
 {
-    internal void Validate(string path)
+    internal void Validate(string path, string field = "arrival")
     {
-        Authored.Point(path, "arrival.position", Position);
-        Authored.Finite(path, "arrival.yawDegrees", YawDegrees);
+        Authored.Point(path, $"{field}.position", Position);
+        Authored.Finite(path, $"{field}.yawDegrees", YawDegrees);
     }
 }

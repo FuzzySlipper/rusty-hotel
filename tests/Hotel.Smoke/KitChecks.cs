@@ -23,7 +23,7 @@ internal static class KitChecks
             "the picture rail continues over the door");
         Check(At(0, 1.2f, 0.95f).Length == 0, "the open refuge link removes the shared wall");
         Check(content.Excursion.Route.Rooms.Any(r => r.Id == "corridor" && r.Label == "West wing corridor"), "spaces are the named rooms");
-        Check(content.Excursion.Geometry.Lighting.Points.Length == 22, "fixture lights are the floor's point lights");
+        Check(content.Excursion.Geometry.Lighting.Points.Length == 23, "fixture lights are the floor's point lights");
 
         // A hatch is a typed raised opening: wall and skirting run below its sill, a lintel closes above it, and a
         // frame gets a sill piece.

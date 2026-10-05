@@ -63,7 +63,8 @@ internal sealed record LayoutTuning(float Extent, DepthCurve Rooms, PlaceRole[] 
             {
                 // The arrival is the stair core: the flight, a corridor archway and the service door the shortcut returns by.
                 MissionNodeKind.Arrival => Has(m, DoorwayKind.Stair) ?? Has(m, DoorwayKind.Archway) ?? Has(m, DoorwayKind.ServiceDoor)
-                    ?? (m.Sockets.Count(s => s.Kind == ContentSocketKind.Arrival) == 1 ? null : $"'{m.Id}' needs one arrival socket."),
+                    ?? (new[] { ContentSocketKind.Arrival, ContentSocketKind.StairUp, ContentSocketKind.StairDown }.All(k => m.Sockets.Count(s => s.Kind == k) == 1)
+                        ? null : $"'{m.Id}' needs one arrival, one stair-up and one stair-down socket."),
                 // A gate is a corridor piece with one door inside it between its two archways.
                 MissionNodeKind.Gate => Has(m, DoorwayKind.Archway, 2) ?? (m.Links.Count(l => l.Kind == LinkKind.Door) == 1 ? null : $"'{m.Id}' needs one inner door."),
                 MissionNodeKind.Shortcut => Has(m, role.Joins) ?? Has(m, DoorwayKind.ServiceDoor),

@@ -15,7 +15,7 @@ internal static class GenerationChecks
     {
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
         var content = Owners.Content(engine);
-        FloorTunings tunings = FloorTunings.Load(engine, content.Modules, content.Kit, content.Supplies.Items, content.Combat.Residents);
+        FloorTunings tunings = FloorTunings.Load(engine, content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents);
         CharacterControllerConfig body = content.Player.Controller(engine.Spatial);
         FloorSources sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, body);
         GenerationResult Generate(FloorSeed seed) => FloorGenerator.Generate(engine, seed, tunings, sources);
@@ -72,7 +72,7 @@ internal static class GenerationChecks
         MissionResult graph = MissionGenerator.Generate(tunings.Mission, draws);
         FloorLayouts.Laid laid = FloorLayouts.Lay(graph.Graph, narrow, tunings.Layout, content.Kit, content.Fixtures, draws);
         Check(laid.Failure is null, "the narrow-door floor still lays out: " + laid.Failure);
-        Confirmation verdict = FloorConfirmation.Confirm(engine, graph.Graph, laid.Layout!, laid.Plan!, laid.Floor!, body, tunings.Generation.Navigation);
+        Confirmation verdict = FloorConfirmation.Confirm(engine, graph.Graph, laid.Layout!, laid.Plan!, laid.Floor!, narrow, body, tunings.Generation.Navigation);
         RouteVerdict? blocked = verdict.Routes.FirstOrDefault(r => !r.Reached);
         Check(!verdict.Confirmed && blocked?.Blocking is { } at && at.StartsWith("doorway ", StringComparison.Ordinal) && at.Contains("/door"),
             $"a doorway too narrow for the body is refused naming it: {blocked}");

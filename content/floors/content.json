@@ -1,5 +1,6 @@
 {
   "spirit": "hushwing",
+  "fallbackLocation": "Upper floor",
   "objective": [
     {
       "item": "ledger-page",
@@ -69,5 +70,23 @@
       "perDepth": 0,
       "max": 24
     }
-  }
+  },
+  "displays": [
+    {
+      "item": "bandage",
+      "fixture": "dressing-packet"
+    },
+    {
+      "item": "rounds",
+      "fixture": "cartridge-packet"
+    },
+    {
+      "item": "incense",
+      "fixture": "incense-packet"
+    },
+    {
+      "item": "ledger-page",
+      "fixture": "ledger-page"
+    }
+  ]
 }

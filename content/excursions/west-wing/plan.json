@@ -138,6 +138,26 @@
       ],
       "height": 2.65,
       "style": "service"
+    },
+    {
+      "id": "stairwell",
+      "label": "Service stairs",
+      "min": [
+        6.9,
+        7.1
+      ],
+      "max": [
+        9.1,
+        10.1
+      ],
+      "height": 2.65,
+      "style": "service",
+      "posts": {
+        "landing": [
+          8.0,
+          7.7
+        ]
+      }
     }
   ],
   "links": [
@@ -230,6 +250,14 @@
       "width": 1.5,
       "height": 2.15,
       "frame": "service-door"
+    },
+    {
+      "id": "long-stairwell",
+      "between": [
+        "long-service",
+        "stairwell"
+      ],
+      "kind": "Open"
     }
   ],
   "fixtures": [
@@ -564,6 +592,24 @@
       "id": "survey-reel",
       "on": "reel-desk.top",
       "find": "survey-reel"
+    },
+    {
+      "kind": "service-lamp",
+      "space": "stairwell",
+      "at": [
+        7.8,
+        8.0
+      ]
+    },
+    {
+      "kind": "stair-up",
+      "id": "service-stairs",
+      "space": "stairwell",
+      "at": [
+        8.0,
+        8.9
+      ],
+      "turn": 2
     }
   ],
   "lighting": {

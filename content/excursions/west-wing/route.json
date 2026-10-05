@@ -37,5 +37,12 @@
       "title": "Field log · The long way back",
       "text": "The wallpaper changes before the corridor does. Mark the door, not the pattern.\n\nWe left the survey reel in its blue case in the service workroom, behind the refuge. The passage east of this room runs behind the guest rooms to reach it.\n\nThe return door only unlatches from the service side. Leave it open. Next time, take the short way."
     }
+  ],
+  "stairs": [
+    {
+      "id": "service-stairs",
+      "direction": "Up",
+      "socket": "service-stairs.flight"
+    }
   ]
 }

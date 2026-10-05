@@ -26,6 +26,7 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private readonly HotelSupplies supplies;
     private readonly HotelSpirit spirit;
     private readonly Func<bool> recordCheckpoint;
+    private readonly Func<StairDirection, bool> travel;
     private readonly Action changed;
     private readonly DoorState[] doors;
     private readonly (FindDefinition Definition, ulong Entity)[] finds;
@@ -36,10 +37,13 @@ internal sealed class HotelRoute : IWorldInteractionScene
     /// <param name="recordCheckpoint">Expedition's refuge return. It is resolved when the notebook is
     /// used, because Expedition itself captures and restores this route's door state.</param>
     /// <param name="changed">Publishes interface facts after a world action changes them.</param>
+    /// <param name="travel">Takes the stairs: the product leaves this floor for the next one up or down.</param>
+    /// <param name="shared">The product's one world interaction, which reads whichever route is current.</param>
     internal HotelRoute(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
-        HotelSpirit spirit, RouteDefinition definition, ExcursionRoute layout, RefugeDefinition refuge,
-        Func<bool> recordCheckpoint, Action changed)
+        HotelSpirit spirit, RouteDefinition definition, ExcursionRoute layout, RefugeDefinition? refuge,
+        Func<bool> recordCheckpoint, Action changed, Func<StairDirection, bool> travel, WorldInteraction? shared = null)
     {
+        this.travel = travel;
         this.engine = engine;
         this.scene = scene;
         this.player = player;
@@ -53,7 +57,7 @@ internal sealed class HotelRoute : IWorldInteractionScene
         doors = layout.Doors.Select(d => new DoorState(d, scene.DoorEntity(d.Id))).ToArray();
         finds = supplies.Finds.Select(f => (f, scene.Entities.Create().Value)).ToArray();
 
-        // Candidate order is stable: doors, readings, finds, the spirit bell, then the refuge notebook.
+        // Candidate order is stable: doors, readings, finds, the spirit bell, the refuge notebook, then the stairs.
         foreach (DoorState door in doors)
             Add(new(door.Entity, () => !door.Open, () => door.Definition.Label, () => DoorFocus(door),
                 () => CanUnlatch(door), () => OpenDoor(door)));
@@ -72,10 +76,19 @@ internal sealed class HotelRoute : IWorldInteractionScene
         Vector3 bell = spirit.Bell;
         Add(new(scene.Entities.Create().Value, () => !spirit.Acquired, () => spirit.BellLabel,
             () => bell, () => true, FreeSpirit));
-        Vector3 notebook = Authored.Vector(refuge.Point);
-        Add(new(scene.Entities.Create().Value, () => true, () => text.RecordCheckpoint,
-            () => notebook, () => true, RecordCheckpoint));
-        Interaction = new(this);
+        if (refuge is not null)
+        {
+            Vector3 notebook = Authored.Vector(refuge.Point);
+            Add(new(scene.Entities.Create().Value, () => true, () => text.RecordCheckpoint,
+                () => notebook, () => true, RecordCheckpoint));
+        }
+        foreach (StairDefinition stair in layout.Stairs)
+        {
+            Vector3 point = Authored.Vector(stair.Point);
+            Add(new(scene.Entities.Create().Value, () => true, () => stair.Direction == StairDirection.Up ? text.StairsUp : text.StairsDown,
+                () => point, () => true, () => Climb(stair)));
+        }
+        Interaction = shared ?? new(this);
     }
 
     internal WorldInteraction Interaction { get; }
@@ -165,6 +178,10 @@ internal sealed class HotelRoute : IWorldInteractionScene
         changed();
         return new(recorded, recorded ? "Refuge checkpoint recorded." : "Checkpoint not saved.");
     }
+
+    // The product replaces this route's world when the stairs are taken, so nothing here changes afterwards.
+    private InteractionActionResult Climb(StairDefinition stair) =>
+        travel(stair.Direction) ? new(true, "Took the stairs.") : new(false, "The stairs lead nowhere yet.");
 
     private InteractionActionResult FreeSpirit()
     {

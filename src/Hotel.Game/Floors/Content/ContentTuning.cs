@@ -1,5 +1,6 @@
 using Hotel.Game.Combat;
 using Hotel.Game.Content;
+using Hotel.Game.Scene.Kit;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
 
@@ -22,14 +23,27 @@ internal sealed record PacingTuning(string RecoveryItem, int RecoveryBeforeHazar
 /// finds draw from, how many finds a stop and the floor's spare rooms get, which residents stand where and how many
 /// beyond the hazards, and the pacing budgets.
 /// </summary>
-internal sealed record ContentTuning(string Spirit, ItemWeight[] Objective, ItemWeight[] Supplies, int SuppliesPerStop, DepthCurve LooseSupplies,
-    ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing)
+/// <param name="FallbackLocation">The location label where the player stands in no named space.</param>
+/// <param name="Displays">The socket fixture that shows each item where it lies.</param>
+internal sealed record ContentTuning(string Spirit, string FallbackLocation, ItemWeight[] Objective, ItemWeight[] Supplies, int SuppliesPerStop,
+    DepthCurve LooseSupplies, ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing, ItemDisplay[] Displays)
 {
+    internal string Display(string item) => Displays.First(d => d.Item == item).Fixture;
+
     internal const string Path = "floors/content.json";
 
-    internal static ContentTuning Load(IEngineContext engine, ItemDefinition[] items, ResidentKind[] residents)
+    internal static ContentTuning Load(IEngineContext engine, ItemDefinition[] items, ResidentKind[] residents, FixtureCatalog fixtures)
     {
         ContentTuning t = Authored.Read(engine, Path, ContentJson.Default.ContentTuning);
+        Template.Plain(Path, ("fallbackLocation", t.FallbackLocation));
+        for (int i = 0; i < t.Displays.Length; i++)
+        {
+            FixtureDefinition? shown = fixtures.Fixtures.FirstOrDefault(f => f.Id == t.Displays[i].Fixture);
+            Authored.Require(shown is { Mount: FixtureMount.Socket } && shown.Parts.Any(p => p.Find) && shown.Sockets?.ContainsKey("focus") == true,
+                Path, $"displays[{i}].fixture", $"'{t.Displays[i].Fixture}' must be a socket fixture with find parts and a focus socket.");
+        }
+        foreach (string item in t.Objective.Concat(t.Supplies).Select(w => w.Item).Distinct())
+            Authored.Require(t.Displays.Count(d => d.Item == item) == 1, Path, "displays", $"'{item}' needs exactly one display fixture.");
         void Items(string field, ItemWeight[] weights, SupplyKind[] kinds)
         {
             Authored.Require(weights.Any(w => w.Weight > 0), Path, field, "needs an item with a positive weight.");
@@ -64,6 +78,9 @@ internal sealed record ContentTuning(string Spirit, ItemWeight[] Objective, Item
         return t;
     }
 }
+
+/// <summary>The fixture an item is shown with where it lies.</summary>
+internal sealed record ItemDisplay(string Item, string Fixture);
 
 /// <summary>Notices generated floors may show, each used at most once per floor.</summary>
 internal sealed record FloorReadings(FloorReading[] Readings)

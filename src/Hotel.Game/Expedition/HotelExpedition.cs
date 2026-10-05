@@ -63,6 +63,19 @@ internal sealed class HotelExpedition : IDisposable
         }
     }
 
+    /// <summary>
+    /// Takes over the stored checkpoint and the last receipt from the world the player just left, applying nothing:
+    /// changing floor neither saves nor restores.
+    /// </summary>
+    internal void Adopt(HotelExpedition previous)
+    {
+        checkpoint = previous.checkpoint;
+        ReceiptSequence = previous.ReceiptSequence;
+        ReceiptTitle = previous.ReceiptTitle;
+        ReceiptText = previous.ReceiptText;
+        Status = previous.Status;
+    }
+
     // Called only through the route's Engine-admitted, in-reach notebook interaction.
     internal bool Return()
     {

@@ -3,8 +3,11 @@ using Rusty.Engine.Debugging;
 
 namespace Hotel.Game.Interface;
 
-internal sealed class SuppliesDebugCommands(HotelSupplies supplies, Action publish) : IDebugCommandModule
+/// <param name="current">The current floor's supplies owner; the product replaces it when the player changes floor.</param>
+internal sealed class SuppliesDebugCommands(Func<HotelSupplies> current, Action publish) : IDebugCommandModule
 {
+    private HotelSupplies supplies => current();
+
     [DebugCommand("hotel.dev.give-supply", Description = "Developer fixture: add carried supplies through inventory capacity rules.")]
     public DebugCommandResult Give(string item, int count) => Result(supplies.Give(item, count));
 

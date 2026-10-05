@@ -158,19 +158,22 @@ internal sealed record ExcursionDefinition(string Id, FloorPlan Plan, ExcursionG
 }
 
 /// <summary>Where one excursion puts the player, refuge, finds, residents and spirit bells, resolved to points.</summary>
-internal sealed record ExcursionPlacements(ArrivalPlacement Arrival, RefugeDefinition Refuge, FindDefinition[] Finds,
-    ResidentPlacement[] Residents, SpiritBellPlacement[] SpiritBells);
+/// <param name="Refuge">The notebook, on the floor that has the refuge; none on generated floors.</param>
+/// <param name="FromAbove">Where the player stands after coming down the stairs to this floor.</param>
+internal sealed record ExcursionPlacements(ArrivalPlacement Arrival, RefugeDefinition? Refuge, FindDefinition[] Finds,
+    ResidentPlacement[] Residents, SpiritBellPlacement[] SpiritBells, ArrivalPlacement FromAbove);
 
 /// <summary>
 /// The authored placements. The refuge notebook, finds and bells sit at fixture sockets in the floor plan, and
 /// residents stand on posts; the arrival point is a body centre in the world.
 /// </summary>
 internal sealed record PlacementPlan(ArrivalPlacement Arrival, RefugePlacement Refuge, FindPlacement[] Finds,
-    ResidentPost[] Residents, SpiritBellSocket[] SpiritBells)
+    ResidentPost[] Residents, SpiritBellSocket[] SpiritBells, ArrivalPlacement FromAbove)
 {
     internal ExcursionPlacements Resolve(string path, BuiltFloor floor, ResidentKind[] kinds)
     {
         Arrival.Validate(path);
+        FromAbove.Validate(path, "fromAbove");
         ResidentPlacement[] residents = new ResidentPlacement[Residents.Length];
         for (int i = 0; i < Residents.Length; i++)
         {
@@ -189,7 +192,7 @@ internal sealed record PlacementPlan(ArrivalPlacement Arrival, RefugePlacement R
         }
         SpiritBellPlacement[] bells = SpiritBells.Select((b, i) =>
             new SpiritBellPlacement(b.Spirit, RoutePlan.Socket(path, $"spiritBells[{i}].socket", floor, b.Socket), b.Place)).ToArray();
-        return new(Arrival, new(Refuge.Id, RoutePlan.Socket(path, "refuge.socket", floor, Refuge.Socket)), finds, residents, bells);
+        return new(Arrival, new(Refuge.Id, RoutePlan.Socket(path, "refuge.socket", floor, Refuge.Socket)), finds, residents, bells, FromAbove);
     }
 }
 

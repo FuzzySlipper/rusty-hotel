@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Numerics;
 using Hotel.Game.Floors.Layout;
 using Hotel.Game.Floors.Mission;
+using Hotel.Game.Floors.Modules;
 using Hotel.Game.Scene;
 using Hotel.Game.Scene.Kit;
 using Rusty.Engine;
@@ -42,7 +43,7 @@ internal static class FloorConfirmation
     private const float StepUnits = 4096, Inside = 0.75f;
 
     internal static Confirmation Confirm(IEngineContext engine, MissionGraph graph, FloorLayout layout, FloorPlan plan, BuiltFloor floor,
-        CharacterControllerConfig body, NavigationTuning tuning)
+        ModuleCatalog catalog, CharacterControllerConfig body, NavigationTuning tuning)
     {
         long started = Stopwatch.GetTimestamp();
         using SpatialSession session = engine.Spatial.CreateSession(new SpatialSessionConfig(.25f, 16, VoxelSurfaceMode.GreedyCubes));
@@ -54,7 +55,7 @@ internal static class FloorConfirmation
         };
         CollisionNavigationReplaceReceipt navigation = engine.Spatial.ReplaceCollisionNavigation(new(session, min, max, config));
 
-        Dictionary<string, Vector3> stands = graph.Nodes.ToDictionary(n => n.Id, n => Stand(layout, plan, floor, n), StringComparer.Ordinal);
+        Dictionary<string, Vector3> stands = graph.Nodes.ToDictionary(n => n.Id, n => Stand(layout, plan, floor, catalog, n), StringComparer.Ordinal);
         Vector3 arrival = stands[MissionGraph.ArrivalId];
         // The shortcut's latch opens only from the passage: going out from the stairs it is shut, coming back it is open.
         PlanarNavCell[] latch = layout.Latch is { } id ? Cells(engine, session, floor.Openings[id], tuning.CellSize).ToArray() : [];
@@ -120,12 +121,15 @@ internal static class FloorConfirmation
     private static Vector3 Authored(float[] v) => new(v[0], v[1], v[2]);
 
     /// <summary>
-    /// Where a place is stood at: the middle of a corridor place's first space, or just inside a room's door, at floor
-    /// level. Furniture never stands in a corridor, and the self-check keeps a doorway's floor clear.
+    /// Where a place is stood at: the arrival post for arrival, the middle of a corridor place's first space, or just
+    /// inside a room's door, at floor level. Furniture never stands in a corridor, and the self-check keeps a doorway's
+    /// floor clear.
     /// </summary>
-    private static Vector3 Stand(FloorLayout layout, FloorPlan plan, BuiltFloor floor, MissionNode node)
+    private static Vector3 Stand(FloorLayout layout, FloorPlan plan, BuiltFloor floor, ModuleCatalog catalog, MissionNode node)
     {
         string placement = layout.Places[node.Id];
+        ModuleDefinition module = catalog.Find(layout.Placements.First(p => p.Id == placement).Module)!;
+        if (module.Sockets.FirstOrDefault(s => s.Kind == ContentSocketKind.Arrival) is { } post) return floor.Sockets[$"{placement}/{post.Socket}"] with { Y = 0 };
         SpaceDefinition space = plan.Spaces.First(s => s.Id.StartsWith(placement + "/", StringComparison.Ordinal));
         BuiltOpening? door = floor.Openings.Values.Where(o => o.Link.Between.Any(b => b.StartsWith(placement + "/", StringComparison.Ordinal)) &&
             o.Link.Between.Any(b => !b.StartsWith(placement + "/", StringComparison.Ordinal)) && !o.Link.Id.StartsWith("service/", StringComparison.Ordinal))

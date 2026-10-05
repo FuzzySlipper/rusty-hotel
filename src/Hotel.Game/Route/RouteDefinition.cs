@@ -15,7 +15,7 @@ internal sealed record RouteDefinition(InteractionTuning Interaction, RouteMessa
         Template.Check(RouteMessages.Path, "ready", text.Ready, "label");
         Template.Check(RouteMessages.Path, "outOfReach", text.OutOfReach, "label");
         Template.Check(RouteMessages.Path, "take", text.Take, "item");
-        Template.Plain(RouteMessages.Path, ("recordCheckpoint", text.RecordCheckpoint));
+        Template.Plain(RouteMessages.Path, ("recordCheckpoint", text.RecordCheckpoint), ("stairsUp", text.StairsUp), ("stairsDown", text.StairsDown));
         InteractionTuning interaction = Authored.Read(engine, InteractionTuning.Path, ContentJson.Default.InteractionTuning);
         Authored.Positive(InteractionTuning.Path, "reach", interaction.Reach);
         Authored.Within(InteractionTuning.Path, "focusDistance", interaction.FocusDistance, interaction.Reach, float.MaxValue);
@@ -32,13 +32,21 @@ internal sealed record InteractionTuning(float Reach, float FocusDistance, float
 }
 
 /// <summary>Focus prompts and the labels of interactables that have no authored label of their own.</summary>
-internal sealed record RouteMessages(string Ready, string OutOfReach, string Take, string RecordCheckpoint)
+internal sealed record RouteMessages(string Ready, string OutOfReach, string Take, string RecordCheckpoint, string StairsUp, string StairsDown)
 {
     internal const string Path = "route/messages.json";
 }
 
-/// <summary>One excursion's doors, readings and named rooms, resolved from its route plan and built floor.</summary>
-internal sealed record ExcursionRoute(string FallbackLocation, DoorDefinition[] Doors, ReadingDefinition[] Readings, RoomDefinition[] Rooms);
+/// <summary>One excursion's doors, readings, stairs and named rooms, resolved from its route plan and built floor.</summary>
+internal sealed record ExcursionRoute(string FallbackLocation, DoorDefinition[] Doors, ReadingDefinition[] Readings, RoomDefinition[] Rooms,
+    StairDefinition[] Stairs);
+
+/// <summary>Which way a flight of stairs leads: up to the next floor, or down toward the refuge.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<StairDirection>))]
+internal enum StairDirection { Up, Down }
+
+/// <summary>A flight of stairs the player uses at <see cref="Point"/> to change floor.</summary>
+internal sealed record StairDefinition(string Id, StairDirection Direction, float[] Point);
 /// <param name="Thickness">Leaf thickness; the leaf is centred in its wall when closed.</param>
 internal sealed record DoorDefinition(string Id, string Label, float[] Hinge, float Width, float Height, float Thickness,
     float ClosedYaw, float OpenYaw, string Material, string HandleMaterial, float[] FocusPoint, bool FarSideLatch = false,
@@ -50,7 +58,7 @@ internal sealed record RoomDefinition(string Id, string Label, float[] Min, floa
 /// An excursion's authored route: doors hung in the floor plan's door links, and readings at fixture sockets.
 /// Room names come from the plan's spaces.
 /// </summary>
-internal sealed record RoutePlan(string FallbackLocation, DoorPlacement[] Doors, ReadingPlacement[] Readings)
+internal sealed record RoutePlan(string FallbackLocation, DoorPlacement[] Doors, ReadingPlacement[] Readings, StairPlacement[] Stairs)
 {
     internal ExcursionRoute Resolve(string path, BuiltFloor floor, DoorLeafTuning leaf)
     {
@@ -62,7 +70,8 @@ internal sealed record RoutePlan(string FallbackLocation, DoorPlacement[] Doors,
             ReadingPlacement r = Readings[i];
             readings[i] = new(r.Id, r.Label, Socket(path, $"readings[{i}].socket", floor, r.Socket), r.Title, r.Text);
         }
-        return new(FallbackLocation, doors, readings, floor.Rooms);
+        StairDefinition[] stairs = Stairs.Select((s, i) => new StairDefinition(s.Id, s.Direction, Socket(path, $"stairs[{i}].socket", floor, s.Socket))).ToArray();
+        return new(FallbackLocation, doors, readings, floor.Rooms, stairs);
     }
 
     internal static float[] Socket(string path, string field, BuiltFloor floor, string socket)
@@ -111,3 +120,4 @@ internal sealed record DoorPlacement(string Id, string Label, string Link, DoorH
 }
 
 internal sealed record ReadingPlacement(string Id, string Label, string Socket, string Title, string Text);
+internal sealed record StairPlacement(string Id, StairDirection Direction, string Socket);

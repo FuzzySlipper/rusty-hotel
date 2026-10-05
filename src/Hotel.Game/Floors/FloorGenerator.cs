@@ -21,14 +21,15 @@ internal sealed record GenerationTuning(int Attempts, int Candidates, Navigation
 /// <summary>Every authored file floor generation reads, loaded and checked together.</summary>
 internal sealed record FloorTunings(MissionTuning Mission, LayoutTuning Layout, ContentTuning Content, FloorReadings Readings, GenerationTuning Generation)
 {
-    internal static FloorTunings Load(IEngineContext engine, ModuleCatalog modules, KitDefinition kit, ItemDefinition[] items, ResidentKind[] residents)
+    internal static FloorTunings Load(IEngineContext engine, ModuleCatalog modules, KitDefinition kit, FixtureCatalog fixtures, ItemDefinition[] items,
+        ResidentKind[] residents)
     {
         GenerationTuning generation = Authored.Read(engine, GenerationTuning.Path, ContentJson.Default.GenerationTuning);
         Authored.AtLeast(GenerationTuning.Path, "attempts", generation.Attempts, 1);
         Authored.AtLeast(GenerationTuning.Path, "candidates", generation.Candidates, 1);
         Authored.Positive(GenerationTuning.Path, "navigation.cellSize", generation.Navigation.CellSize);
         Authored.Require(generation.Navigation.MaxVisited > 0, GenerationTuning.Path, "navigation.maxVisited", "must be positive.");
-        return new(MissionTuning.Load(engine), LayoutTuning.Load(engine, modules, kit), ContentTuning.Load(engine, items, residents),
+        return new(MissionTuning.Load(engine), LayoutTuning.Load(engine, modules, kit), ContentTuning.Load(engine, items, residents, fixtures),
             FloorReadings.Load(engine), generation);
     }
 }
@@ -70,7 +71,8 @@ internal static class FloorGenerator
                     sources.Residents, tunings.Readings, draws);
                 if (ContentPacing.Check(content, mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, tunings.Content, sources.Items, sources.Residents, seed.Depth) is { } pacing)
                 { refusals.Add($"{at} content: {pacing}"); continue; }
-                Confirmation confirmation = FloorConfirmation.Confirm(engine, mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, sources.Body, tunings.Generation.Navigation);
+                Confirmation confirmation = FloorConfirmation.Confirm(engine, mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, sources.Modules, sources.Body,
+                    tunings.Generation.Navigation);
                 if (!confirmation.Confirmed) { refusals.Add($"{at} navigation: {confirmation.FirstProblem}"); continue; }
                 CanonicalText plan = new CanonicalText().Line("retry", CanonicalText.Number(candidate), CanonicalText.Number(attempt));
                 mission.Graph.Write(plan);

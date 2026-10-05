@@ -27,5 +27,5 @@ internal static class Owners
     internal static HotelRoute Route(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
         HotelSpirit spirit, HotelContent content, Func<bool>? recordCheckpoint = null) =>
         new(engine, scene, player, supplies, spirit, content.Route, content.Excursion.Route,
-            content.Excursion.Placements.Refuge, recordCheckpoint ?? (() => false), () => { });
+            content.Excursion.Placements.Refuge, recordCheckpoint ?? (() => false), () => { }, _ => false);
 }

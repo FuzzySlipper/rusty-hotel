@@ -25,7 +25,7 @@
       "posts": {
         "arrival": [
           2,
-          2.5
+          1.4
         ]
       }
     }
@@ -45,7 +45,27 @@
       "id": "notice",
       "space": "landing",
       "edge": "West",
-      "along": 2
+      "along": 1.2
+    },
+    {
+      "kind": "stair-up",
+      "id": "up",
+      "space": "landing",
+      "at": [
+        1.0,
+        3.05
+      ],
+      "turn": 2
+    },
+    {
+      "kind": "stair-down",
+      "id": "down",
+      "space": "landing",
+      "at": [
+        3.0,
+        3.0
+      ],
+      "turn": 2
     }
   ],
   "doorways": [
@@ -68,7 +88,7 @@
       "kind": "ServiceDoor",
       "space": "landing",
       "edge": "East",
-      "at": 2
+      "at": 1
     }
   ],
   "sockets": [
@@ -81,6 +101,16 @@
       "id": "notice",
       "kind": "Reading",
       "socket": "notice.focus"
+    },
+    {
+      "id": "up",
+      "kind": "StairUp",
+      "socket": "up.flight"
+    },
+    {
+      "id": "down",
+      "kind": "StairDown",
+      "socket": "down.flight"
     }
   ]
 }

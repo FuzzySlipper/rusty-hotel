@@ -67,5 +67,13 @@
       "socket": "bell-pedestal.bell",
       "place": "the linen room"
     }
-  ]
+  ],
+  "fromAbove": {
+    "position": [
+      8.0,
+      0.875,
+      7.7
+    ],
+    "yawDegrees": 0
+  }
 }

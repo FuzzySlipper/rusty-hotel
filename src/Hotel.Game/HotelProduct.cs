@@ -1,17 +1,10 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Hotel.Game.Player;
-using Hotel.Game.Expedition;
-using Hotel.Game.Input;
 using Hotel.Game.Content;
-using Hotel.Game.Scene;
+using Hotel.Game.Floors;
+using Hotel.Game.Input;
 using Hotel.Game.Interface;
-using Hotel.Game.Audio;
 using Hotel.Game.Route;
-using Hotel.Game.Supplies;
 using Hotel.Game.Combat;
-using Hotel.Game.Spirits;
-using Hotel.Game.Floors.Modules;
+using Hotel.Game.Expedition;
 using Rusty.Engine.Interaction;
 using Rusty.Engine;
 using Rusty.Engine.Debugging;
@@ -24,64 +17,57 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     /// <summary>The authored hotel section a new game opens in: <c>content/excursions/west-wing/</c>.</summary>
     internal const string StartingExcursion = "west-wing";
 
-    private readonly HotelExpedition expedition;
-    private readonly HotelScene scene;
-    private readonly HotelPlayer player;
-    private readonly HotelHud hud;
-    private readonly HotelRoute route;
-    private readonly HotelSupplies supplies;
-    private bool pendingUse, pendingAttack, pendingReload, pendingSummon;
-    private readonly HotelSpirit spirit;
-    private readonly SpiritView spiritView;
-    private int pendingWeapon = -1, pendingQuick = -1;
-    private readonly HotelCombat combat;
-    private readonly CombatView combatView;
-    private readonly HotelAmbience ambience;
-    private readonly HotelControls controls;
-    private readonly RoomDefinition[] rooms;
+    private readonly IEngineContext engine;
     private readonly HotelContent content;
-    private readonly List<IDisposable> owned = [];
+    private readonly HotelHud hud;
+    private readonly HotelControls controls;
+    private readonly HotelFloors floors;
+    private readonly CurrentRoute current = new();
+    private readonly WorldInteraction interaction;
+    private readonly HotelDeveloper developer;
+    // Session memory of floors the player has left, and finds collected on floors other than the current one.
+    private readonly Dictionary<string, WorldMemory> memory = new(StringComparer.Ordinal);
+    private readonly HashSet<string> collected = new(StringComparer.Ordinal);
+    private HotelWorld world;
+    private (ExcursionDefinition Excursion, int Depth, StairDirection Way)? pendingTravel;
+    private bool pendingUse, pendingAttack, pendingReload, pendingSummon;
+    private int pendingWeapon = -1, pendingQuick = -1;
     private bool disposed;
     private ulong step;
     private double sampleTime;
 
     public HotelProduct(ProductCreateContext context)
     {
-        IEngineContext engine = context.Engine;
+        engine = context.Engine;
         try
         {
             content = HotelContent.Load(engine, StartingExcursion);
-            ExcursionDefinition excursion = content.Excursion;
-            scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
             controls = new HotelControls(content.Controls, content.Combat.Weapons);
-            rooms = excursion.Route.Rooms;
-            player = Own(new HotelPlayer(engine, scene, content.Player, excursion.Placements.Arrival, content.Controls));
-            supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, scene.PlayerEntity);
-            combat = new HotelCombat(engine, scene, player, supplies, content.Combat, excursion.Placements.Residents,
-                content.Controls.Weapons.Select(w => w.Label).ToArray());
-            spirit = new HotelSpirit(content.Spirit, content.SpiritText, content.SpiritBell, supplies, combat, player);
-            route = new HotelRoute(engine, scene, player, supplies, spirit, content.Route, excursion.Route,
-                excursion.Placements.Refuge, ReturnToRefuge, PublishInterface);
-            hud = Own(new HotelHud(engine, content.Interface));
-            ambience = Own(new HotelAmbience(engine, excursion.Ambience));
-            combatView = Own(new CombatView(engine, scene, player, combat));
-            spiritView = Own(new SpiritView(engine, scene, spirit));
-            expedition = Own(new HotelExpedition(engine, excursion.Placements.Refuge, content.ExpeditionText, player, supplies, combat, spirit, route));
+            hud = new HotelHud(engine, content.Interface);
+            floors = new HotelFloors(engine, content);
+            interaction = new WorldInteraction(current);
+            world = Build(content.Excursion);
+            developer = new HotelDeveloper(this);
         }
         catch { Dispose(); throw; }
     }
 
-    public void Start() { expedition.Start(); Publish(); ambience.Start(); }
+    internal HotelWorld World => world;
+    internal HotelContent Content => content;
+    internal HotelFloors Floors => floors;
+    internal ulong Step => step;
+
+    public void Start() { floors.Start(); world.Expedition.Start(); Publish(); world.Ambience.Start(); }
 
     public ProductUpdateResult Update(ProductUpdate update)
     {
-        supplies.HandleIntents(update.Input);
-        spirit.HandleIntents(update.Input);
+        world.Supplies.HandleIntents(update.Input);
+        world.Spirit.HandleIntents(update.Input);
         foreach (ProductInputEvent item in update.Input)
             if (item.Kind == InputEventKind.Clear) ClearActions();
-        FpsInputFrame input = player.ReadInput(update.Input,
+        FpsInputFrame input = world.Player.ReadInput(update.Input,
             (float)(update.Facts.FixedDeltaSeconds * update.Facts.AdmittedStepCount));
-        PhysicalInputState physical = player.Input.Physical;
+        PhysicalInputState physical = world.Player.Input.Physical;
         ControlBindings bound = controls.Bindings;
         pendingUse |= input.UsePressed;
         pendingSummon |= HotelControls.Pressed(physical, bound.Summon);
@@ -93,20 +79,23 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             if (HotelControls.Pressed(physical, bound.QuickPockets[i])) pendingQuick = i;
         for (uint i = 0; i < update.Facts.AdmittedStepCount; i++)
         {
-            if (combat.Defeated && pendingReload) { Restart(); break; }
-            if (pendingQuick >= 0) { supplies.Use(pendingQuick, supplies.Revision); pendingQuick = -1; }
-            if (pendingWeapon >= 0) { combat.SelectWeapon(pendingWeapon); pendingWeapon = -1; }
-            if (pendingAttack) { pendingAttack = false; combat.Attack(); }
-            if (pendingReload) { pendingReload = false; combat.Reload(); }
-            if (pendingSummon) { pendingSummon = false; spirit.Call(); }
-            player.Step(combat.Defeated ? input with { Movement = System.Numerics.Vector2.Zero } : input,
-                (float)update.Facts.FixedDeltaSeconds, combat.Obstacles);
-            combat.Step((float)update.Facts.FixedDeltaSeconds);
-            spirit.Step((float)update.Facts.FixedDeltaSeconds);
-            supplies.Step((float)update.Facts.FixedDeltaSeconds);
+            HotelWorld w = world;
+            if (w.Combat.Defeated && pendingReload) { Restart(); break; }
+            if (pendingQuick >= 0) { w.Supplies.Use(pendingQuick, w.Supplies.Revision); pendingQuick = -1; }
+            if (pendingWeapon >= 0) { w.Combat.SelectWeapon(pendingWeapon); pendingWeapon = -1; }
+            if (pendingAttack) { pendingAttack = false; w.Combat.Attack(); }
+            if (pendingReload) { pendingReload = false; w.Combat.Reload(); }
+            if (pendingSummon) { pendingSummon = false; w.Spirit.Call(); }
+            w.Player.Step(w.Combat.Defeated ? input with { Movement = System.Numerics.Vector2.Zero } : input,
+                (float)update.Facts.FixedDeltaSeconds, w.Combat.Obstacles);
+            w.Combat.Step((float)update.Facts.FixedDeltaSeconds);
+            w.Spirit.Step((float)update.Facts.FixedDeltaSeconds);
+            w.Supplies.Step((float)update.Facts.FixedDeltaSeconds);
             controls.Step((float)update.Facts.FixedDeltaSeconds);
-            route.Update();
-            if (pendingUse) { pendingUse = false; if (!combat.Defeated) route.Use(); }
+            w.Route.Update();
+            if (pendingUse) { pendingUse = false; if (!w.Combat.Defeated) w.Route.Use(); }
+            // The stairs were taken during this step's use: change floor once the route has finished with its world.
+            if (pendingTravel is { } travel) { pendingTravel = null; Enter(travel.Excursion, travel.Depth, travel.Way); break; }
         }
         step = checked(update.Facts.SimulationStep + update.Facts.AdmittedStepCount);
         sampleTime = step * update.Facts.FixedDeltaSeconds;
@@ -114,114 +103,125 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         return ProductUpdateResult.None;
     }
 
-    private void ClearActions() { pendingUse = pendingAttack = pendingReload = pendingSummon = false; pendingWeapon = pendingQuick = -1; }
+    internal void ClearActions() { pendingUse = pendingAttack = pendingReload = pendingSummon = false; pendingWeapon = pendingQuick = -1; }
 
     public void HandlePausedIntents(ReadOnlySpan<ProductInputEvent> intents)
     {
-        supplies.HandleIntents(intents);
-        spirit.HandleIntents(intents);
+        world.Supplies.HandleIntents(intents);
+        world.Spirit.HandleIntents(intents);
         PublishInterface();
     }
 
-    public void Pause() { ClearActions(); player.ClearInput(); }
-    public void Resume() { ClearActions(); player.ClearInput(); }
-    public void Restart() { ClearActions(); expedition.Recover(); Publish(); }
+    public void Pause() { ClearActions(); world.Player.ClearInput(); }
+    public void Resume() { ClearActions(); world.Player.ClearInput(); }
+
+    /// <summary>Defeat or a restart returns to the refuge's floor and its checkpoint, whichever floor the player was on.</summary>
+    public void Restart()
+    {
+        ClearActions();
+        ReturnToRefugeFloor();
+        world.Expedition.Recover();
+        Publish();
+    }
+
     public void Shutdown() => Dispose();
     public void Dispose()
     {
         if (disposed) return;
         disposed = true;
-        // Reverse construction order: dependents release before the scene they draw into.
-        for (int i = owned.Count - 1; i >= 0; i--) owned[i].Dispose();
-        owned.Clear();
+        world?.Dispose();
+        floors?.Dispose();
+        hud?.Dispose();
+    }
+
+    private HotelWorld Build(ExcursionDefinition excursion)
+    {
+        HotelWorld built = new(engine, content, excursion, interaction, ReturnToRefuge, PublishInterface, Travel);
+        current.Route = built.Route;
+        interaction.Focus.Clear();
+        return built;
     }
 
     // The notebook's use handler; Expedition is created after Route because it captures route state.
-    private bool ReturnToRefuge() => expedition.Return();
+    private bool ReturnToRefuge() => world.Expedition.Return();
 
-    private T Own<T>(T resource) where T : IDisposable
+    /// <summary>
+    /// The stairs' use handler. The floor is generated now, so a floor that cannot be made leaves the player where they
+    /// are; the world itself changes after the route's use returns.
+    /// </summary>
+    private bool Travel(StairDirection way)
     {
-        owned.Add(resource);
-        return resource;
+        int depth = floors.Depth + (way == StairDirection.Up ? 1 : -1);
+        if (depth < 0) return false;
+        ExcursionDefinition? next = depth == 0 ? content.Excursion : floors.Floor(depth);
+        if (next is null) return false;
+        pendingTravel = (next, depth, way);
+        return true;
+    }
+
+    /// <summary>
+    /// Leaves this floor for another: what the player carries comes along, this floor is remembered for the session,
+    /// and the new world is built and entered at its stairs.
+    /// </summary>
+    internal void Enter(ExcursionDefinition excursion, int depth, StairDirection way)
+    {
+        WorldCarry carry = world.Carry();
+        foreach (string id in carry.Supplies.Collected) collected.Add(id);
+        memory[world.Excursion.Id] = world.Remember();
+        // The old world releases its scene, lights and collision before the next claims theirs.
+        HotelExpedition previous = world.Expedition;
+        world.Dispose();
+        world = Build(excursion);
+        world.Expedition.Adopt(previous);
+        floors.Arrive(depth);
+        world.Enter(carry, collected, memory.GetValueOrDefault(excursion.Id));
+        var arrival = way == StairDirection.Up ? excursion.Placements.Arrival : excursion.Placements.FromAbove;
+        world.Player.Place(Authored.Vector(arrival.Position), arrival.YawDegrees);
+        ClearActions();
+        world.Ambience.Start();
+        Publish();
+    }
+
+    /// <summary>Rebuilds the refuge's floor when the player is elsewhere; the session's floor memory is forgotten.</summary>
+    internal void ReturnToRefugeFloor()
+    {
+        memory.Clear();
+        collected.Clear();
+        if (world.HasRefuge) return;
+        HotelExpedition previous = world.Expedition;
+        world.Dispose();
+        world = Build(content.Excursion);
+        world.Expedition.Adopt(previous);
+        floors.Arrive(0);
+        world.Ambience.Start();
     }
 
     /// <summary>Publishes every presentation of the current domain state: scene views, camera and HUD.</summary>
-    private void Publish()
+    internal void Publish()
     {
-        spiritView.Publish();
-        combatView.Publish();
-        player.Publish(sampleTime);
+        world.SpiritView.Publish();
+        world.CombatView.Publish();
+        world.Player.Publish(sampleTime);
         PublishInterface();
     }
 
     // Paused claims, route results and developer fixtures change only UI facts; the camera
     // sample and scene snapshot stay at the last admitted simulation step.
-    private void PublishInterface() => hud.Publish(route, supplies, combat, spirit, expedition, controls);
+    internal void PublishInterface() => hud.Publish(world.Route, world.Supplies, world.Combat, world.Spirit, world.Expedition, controls);
 
     public void RegisterDebugCommands(IDebugCommandModuleRegistrar registrar)
     {
-        registrar.Register(new PlaytestDebugModule(Observe, controls.Action, controls.ActionIds, LookBy));
-        registrar.Register(new InteractionDebugModule(route.Interaction));
-        registrar.Register(new HotelDebugCommands(Observe, ResetExcursion, GoTo, ShowModule));
-        registrar.Register(new SuppliesDebugCommands(supplies, PublishInterface));
+        registrar.Register(new PlaytestDebugModule(developer.Observe, controls.Action, controls.ActionIds, developer.LookBy));
+        registrar.Register(new InteractionDebugModule(interaction));
+        registrar.Register(new HotelDebugCommands(developer));
+        registrar.Register(new SuppliesDebugCommands(() => world.Supplies, PublishInterface));
     }
 
-    private DebugCommandResult GoTo(string space)
+    /// <summary>The world interaction reads whichever floor's route is current.</summary>
+    private sealed class CurrentRoute : IWorldInteractionScene
     {
-        RoomDefinition? room = rooms.FirstOrDefault(r => r.Id == space);
-        if (room is null)
-            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"Unknown space '{space}'. Spaces: {string.Join(", ", rooms.Select(r => r.Id))}.");
-        ClearActions();
-        player.Place(new((room.Min[0] + room.Max[0]) / 2, player.Tuning.Height / 2, (room.Min[2] + room.Max[2]) / 2), player.LookState.YawRadians * 180 / MathF.PI);
-        Publish();
-        return Observe();
+        internal HotelRoute? Route { get; set; }
+        public InteractionSceneSnapshot ReadInteraction() => Route!.ReadInteraction();
+        public InteractionActionResult UseInteraction(InteractionTarget target) => Route!.UseInteraction(target);
     }
-
-    // Far enough beside the hotel that a previewed module never touches it.
-    private static readonly System.Numerics.Vector2 PreviewCorner = new(100, 0);
-
-    private DebugCommandResult ShowModule(string id, int turn)
-    {
-        if (content.Modules.Find(id) is not { } module)
-            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments,
-                $"Unknown module '{id}'. Modules: {string.Join(", ", content.Modules.Modules.Select(m => m.Id))}.");
-        if (turn is < 0 or > 3) return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "Turn is 0 to 3 quarter turns.");
-        var (floor, porches) = ModuleCheck.Realize(module, ModuleCatalog.ModulePath(id), content.Modules, content.Kit, content.Fixtures, turn, PreviewCorner);
-        scene.ShowPreview(floor.Boxes, floor.Lights);
-        // Stand on the first doorway's porch, facing through it.
-        var (doorway, stand) = porches[0];
-        System.Numerics.Vector2 toward = doorway.Point - stand;
-        ClearActions();
-        player.Place(new(stand.X, player.Tuning.Height / 2, stand.Y), MathF.Atan2(toward.X, -toward.Y) * 180 / MathF.PI);
-        Publish();
-        return Observe();
-    }
-
-    private void ResetExcursion()
-    {
-        ClearActions();
-        expedition.ApplyInitial();
-        Publish();
-    }
-
-    private DebugCommandResult LookBy(double yaw, double pitch)
-    {
-        if (!double.IsFinite(yaw) || !double.IsFinite(pitch) || Math.Abs(yaw) > 360 || Math.Abs(pitch) > 180)
-            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "Look degrees exceed bounds.");
-        player.LookBy(yaw, pitch);
-        Publish();
-        return Observe();
-    }
-
-    private DebugCommandResult Observe() => DebugCommandResult.Success(JsonSerializer.Serialize(new HotelObservation(
-        step, [player.Position.X, player.Position.Y, player.Position.Z],
-        [player.Eye.X, player.Eye.Y, player.Eye.Z], player.LookState.YawRadians,
-        player.LookState.PitchRadians, player.Motion.Grounded, route.Location, route.Prompt, route.OpenDoors, route.ReadingSequence, supplies.Health, supplies.Ammo, supplies.Summon, supplies.Occupied, supplies.Revision, supplies.Message, combat.Weapon.Id, combat.Phase.ToString(), combat.AcceptedAttacks, combat.LandedHits, spirit.Acquired, spirit.Equipped, spirit.Revision, spirit.Phase.ToString(), spirit.Elapsed, spirit.Calls, spirit.Message, expedition.Returns, expedition.SecuredFinds, expedition.Status, combat.Enemies.Select(e => new EnemyObservation(e.Id, [e.Position.X, e.Position.Y, e.Position.Z], e.Health.ValueInt, e.Phase.ToString())).ToArray()), ObservationJson.Default.HotelObservation));
 }
-
-internal sealed record HotelObservation(ulong Step, float[] Position, float[] Eye, float Yaw, float Pitch, bool Grounded, string Location, string Prompt, string[] OpenDoors, ulong ReadingSequence, int Health, int Ammo, int Summon, int OccupiedPockets, ulong InventoryRevision, string SupplyMessage, string Weapon, string AttackPhase, int AcceptedAttacks, int LandedHits, bool SpiritAcquired, bool SpiritEquipped, ulong SpiritRevision, string SpiritPhase, float SpiritElapsed, int SpiritCalls, string SpiritMessage, int CheckpointReturns, string[] SecuredFinds, string CheckpointStatus, EnemyObservation[] Enemies);
-internal sealed record EnemyObservation(string Id, float[] Position, int Health, string Phase);
-
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(HotelObservation))]
-internal sealed partial class ObservationJson : JsonSerializerContext;
