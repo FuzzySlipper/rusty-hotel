@@ -34,6 +34,17 @@ internal static class FingerprintChecks
             return;
         }
         JsonNode recorded = JsonNode.Parse(File.ReadAllText(path))!;
+        Compare(recorded, found, stamp);
+        // A focused mismatch: the same floors under another source stamp are refused.
+        bool refused = false;
+        try { Compare(recorded, found, new string('0', 64)); } catch (InvalidOperationException) { refused = true; }
+        if (!refused) throw new InvalidOperationException("A generator source change without a version bump must fail the fingerprints.");
+        Console.WriteLine($"Fingerprint checks passed: {found.Count} named floors and the generator source match generator version {FloorSeed.CurrentVersion}'s goldens; a changed source stamp is refused.");
+    }
+
+    // Goldens hold for one generator version, one source stamp and the named floors' plans; any difference fails.
+    private static void Compare(JsonNode recorded, JsonArray found, string stamp)
+    {
         uint version = recorded["version"]!.GetValue<uint>();
         if (version != FloorSeed.CurrentVersion)
             throw new InvalidOperationException($"Floor goldens are for generator version {version}; this is {FloorSeed.CurrentVersion}. Record them with HOTEL_FLOOR_GOLDENS=write.");
@@ -43,9 +54,10 @@ internal static class FingerprintChecks
             throw new InvalidOperationException("Floor generation output changed under the same generator version. Bump FloorSeed.CurrentVersion " +
                 "(saves of the old floors are then refused, not reinterpreted) and record new goldens with HOTEL_FLOOR_GOLDENS=write. Changed: " +
                 string.Join("; ", expected.Zip(actual).Where(p => p.First != p.Second).Select(p => $"{p.First} -> {p.Second}")));
-        bool sourceSame = recorded["sourceStamp"]!.GetValue<string>() == stamp;
-        Console.WriteLine($"Fingerprint checks passed: {actual.Length} named floors match generator version {version}'s goldens" +
-            (sourceSame ? "; generator source unchanged." : "; generator source changed without changing output (record a fresh stamp when convenient)."));
+        if (recorded["sourceStamp"]!.GetValue<string>() != stamp)
+            throw new InvalidOperationException("The floor generator's source or content changed under the same generator version. Bump " +
+                "FloorSeed.CurrentVersion and record new goldens with HOTEL_FLOOR_GOLDENS=write: floors outside the named seeds may have changed, " +
+                "and a save must not rebuild one as a different floor.");
     }
 
     // The generator's code and the authored content it reads, with line endings normalized so Windows and Linux agree.

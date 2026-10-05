@@ -28,9 +28,9 @@ Choose checks for the changed behavior:
 ### Floor generation tools
 
 The golden fingerprints in `tests/Hotel.Smoke/goldens/floors.json` record named seeds' plan hashes for the current
-generator version, with a stamp of the generator source and floor content. Smoke fails when output changes under
-the same version: bump `FloorSeed.CurrentVersion` (old saves' floors are then refused, not reinterpreted), then
-record new goldens. The census and the floor bank are off the default path.
+generator version, with a stamp of the generator source and floor content. Smoke fails when either the named floors'
+output or the stamp changes under the same version: bump `FloorSeed.CurrentVersion` (old saves' floors are then
+refused, not reinterpreted), then record new goldens. The census and the floor bank are off the default path.
 
 ```text
 HOTEL_FLOOR_GOLDENS=write dotnet run --project tests/Hotel.Smoke/Hotel.Smoke.csproj
