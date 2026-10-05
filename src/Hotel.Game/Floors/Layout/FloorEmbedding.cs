@@ -105,7 +105,8 @@ internal static class FloorEmbedding
                     return $"rooms: '{id}' is behind a locked edge but is a corridor place not reached through a gate.";
                 string host = throughGate ? behind[parentId] : hosts[parentId];
                 string region = throughGate || !locked ? regions[id] : regions[parentId];
-                if (Attach(host, role.Joins, role.Modules, region, id, regions[id], role.Joins == DoorwayKind.Archway) is not { } attached)
+                float distance = node.Kind == MissionNodeKind.Hazard ? tuning.HazardDistance : 0;
+                if (Attach(host, role.Joins, role.Modules, region, id, regions[id], role.Joins == DoorwayKind.Archway, distance) is not { } attached)
                     return $"rooms: no room for '{id}' ({node.Kind}) off {host}.";
                 var (module, join) = attached;
                 places[id] = module.Id;
@@ -219,11 +220,14 @@ internal static class FloorEmbedding
         /// When none takes, the corridor grows by a spine piece from the host and tries again.
         /// </summary>
         private (PlacedModule Module, (PlacedModule Placement, string LinkId) Join)? Attach(string host, DoorwayKind kind,
-            ModuleWeight[] choices, string region, string key, string moduleRegion, bool corridor)
+            ModuleWeight[] choices, string region, string key, string moduleRegion, bool corridor, float distance = 0)
         {
+            // A doorway nearer the stair core than the distance is grown past rather than used.
+            Vector2 core = placed[0].Transform.Corner + placed[0].Transform.Footprint / 2;
             for (int attempt = 0; attempt < tuning.Tries; attempt++)
             {
-                foreach (Open at in Preferring(host, open.Where(o => o.Doorway.Doorway.Kind == kind && o.Region == region), $"{key}/{attempt}"))
+                foreach (Open at in Preferring(host, open.Where(o => o.Doorway.Doorway.Kind == kind && o.Region == region &&
+                    Vector2.Distance(o.Doorway.Point, core) >= distance), $"{key}/{attempt}"))
                     if (TryAttach(at, choices, region, $"{key}/{attempt}", moduleRegion, corridor) is { } done)
                         return (done.Module, (at.Doorway.Placement, done.LinkId));
                 bool grown = false;

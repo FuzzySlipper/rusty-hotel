@@ -26,9 +26,10 @@ internal static class MissionRules
         (MissionGraph?, string, MissionProblem?) Refuse(string code, string detail) => (null, "", new(code, detail));
 
         // Splitting an open edge on the route to the objective puts a new place in the player's way.
-        (string From, string To, MissionEdge Edge)? Split(string purpose)
+        // A hazard never stands on the first step off the stairs.
+        (string From, string To, MissionEdge Edge)? Split(string purpose, bool awayFromArrival = false)
         {
-            var route = Route(graph).Where(step => step.Edge.Kind == MissionEdgeKind.Open).ToArray();
+            var route = Route(graph).Where(step => step.Edge.Kind == MissionEdgeKind.Open && !(awayFromArrival && step.From == MissionGraph.ArrivalId)).ToArray();
             if (route.Length == 0) return null;
             var chosen = route[draws.Index(FloorStage.Graph, purpose, key, route.Length)];
             edges.Remove(chosen.Edge);
@@ -79,7 +80,7 @@ internal static class MissionRules
             case MissionRule.ResourceBeforeHazard:
             {
                 string hazard = $"hazard.{key}", stop = $"supplies.{key}";
-                if (Split("hazard.edge") is not { } split) return Refuse("no_open_route", "the route to the objective has no open edge for a hazard.");
+                if (Split("hazard.edge", awayFromArrival: true) is not { } split) return Refuse("no_open_route", "the route to the objective has no open edge for a hazard.");
                 (string from, string to) = (split.From, split.To);
                 nodes.Add(new(hazard, MissionNodeKind.Hazard));
                 Join(from, hazard);

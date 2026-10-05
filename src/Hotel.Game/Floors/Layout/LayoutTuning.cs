@@ -27,8 +27,9 @@ internal sealed record PassageTuning(float Width, string Style, string Label, st
 /// service passage, how many tries a phase gets, and how often filling branches the corridor.
 /// </summary>
 /// <param name="BranchOneIn">While filling, one step in this many grows the corridor at an open end instead of adding a room.</param>
+/// <param name="HazardDistance">How far from the stair core a hazard's corridor must begin, so nothing waits at the landing.</param>
 internal sealed record LayoutTuning(float Extent, DepthCurve Rooms, PlaceRole[] Roles, ModuleWeight[] Spine, ModuleWeight[] Fill,
-    PassageTuning Passage, int Tries, int BranchOneIn)
+    PassageTuning Passage, int Tries, int BranchOneIn, float HazardDistance)
 {
     internal const string Path = "floors/layout.json";
 
@@ -41,6 +42,7 @@ internal sealed record LayoutTuning(float Extent, DepthCurve Rooms, PlaceRole[] 
         tuning.Rooms.Validate(Path, "rooms");
         Authored.AtLeast(Path, "tries", tuning.Tries, 1);
         Authored.AtLeast(Path, "branchOneIn", tuning.BranchOneIn, 1);
+        Authored.AtLeast(Path, "hazardDistance", tuning.HazardDistance, 0);
         void Weights(string field, ModuleWeight[] weights, Func<ModuleDefinition, string?> refuse)
         {
             Authored.Require(weights.Length > 0 && weights.Any(w => w.Weight > 0), Path, field, "needs a module with a positive weight.");

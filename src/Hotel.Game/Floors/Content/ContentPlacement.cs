@@ -45,6 +45,7 @@ internal static class ContentPlacement
         string landing = layout.Places[MissionGraph.ArrivalId];
         Offer arrival = Take(landing, ContentSocketKind.Arrival, "arrival") ?? throw new InvalidOperationException($"'{landing}' has no arrival socket.");
         Vector3 standing = floor.Sockets[arrival.Name];
+        bool Clear(string post, ResidentKind kind) => ArrivalClear(floor.Sockets[post], standing, kind, tuning.Pacing.ArrivalMargin);
         BuiltOpening? way = floor.Openings.Values.Where(o => o.Link.Kind != LinkKind.Door && o.Link.Between.Any(b => b.StartsWith(landing + "/", StringComparison.Ordinal)))
             .OrderBy(o => o.Link.Id, StringComparer.Ordinal).FirstOrDefault();
         Vector3 toward = way is null ? -Vector3.UnitZ : (way.Start + way.End) / 2 - standing;
@@ -126,16 +127,22 @@ internal static class ContentPlacement
         string[] landmarks = offers.Where(o => o.Socket.Kind == ContentSocketKind.Landmark).Select(o => o.Name).ToArray();
         return new(arrival.Name, yaw, [.. finds], [.. residents], [.. notices], bell, landmarks);
 
-        // A kind that may stand in the post's module and whose leash keeps it in the post's region.
+        // A kind that may stand in the post's module, whose leash keeps it in the post's region, and that cannot see or
+        // strike the arrival.
         PlacedResident? Resident(Offer post, string purpose)
         {
             ResidentWeight[] fit = tuning.Residents.Where(r => r.Weight > 0 && r.Tags.Any(post.Module.Tags.Contains) &&
+                Clear(post.Name, kinds.First(k => k.Id == r.Kind)) &&
                 LeashCrossing(new(post.Id, r.Kind, post.Name, post.Placement.Region), layout, plan, floor, kinds.First(k => k.Id == r.Kind).Leash) is null).ToArray();
             if (fit.Length == 0) return null;
             ResidentWeight kind = fit[draws.Weighted(FloorStage.Content, purpose, post.Id, fit.Select(r => r.Weight).ToArray())];
             return new(post.Id, kind.Kind, post.Name, post.Placement.Region);
         }
     }
+
+    /// <summary>Whether a resident at a post can neither see nor strike within the margin of the arrival.</summary>
+    internal static bool ArrivalClear(Vector3 post, Vector3 arrival, ResidentKind kind, float margin) =>
+        Vector2.Distance(new(post.X, post.Z), new(arrival.X, arrival.Z)) > Math.Max(kind.SightRange, kind.AttackRange) + kind.Leash + margin;
 
     /// <summary>The first space within a resident's leash of its post that lies outside its region, or null.</summary>
     internal static string? LeashCrossing(PlacedResident resident, FloorLayout layout, FloorPlan plan, BuiltFloor floor, float leash)

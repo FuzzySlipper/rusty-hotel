@@ -8,7 +8,7 @@ namespace Hotel.Game.Floors.Content;
 
 /// <summary>
 /// The pacing budgets a floor's content must meet: one objective; a key for every lock; the bell when the graph has
-/// one; a resident at every hazard; the recovery item reachable before every hazard; ammunition within its depth's range; every resident's leash
+/// one; a resident at every hazard; no resident able to reach the arrival; the recovery item reachable before every hazard; ammunition within its depth's range; every resident's leash
 /// inside its own region. Returns why it fails, or null.
 /// </summary>
 internal static class ContentPacing
@@ -36,6 +36,10 @@ internal static class ContentPacing
             .Sum(f => f.Count * items.First(i => i.Id == f.Item).Amount);
         int minimum = tuning.Pacing.AmmoMinimum.At(depth), maximum = tuning.Pacing.AmmoMaximum.At(depth);
         if (ammo < minimum || ammo > maximum) return $"ammunition: {ammo} rounds on the floor; depth {depth} allows {minimum} to {maximum}.";
+        System.Numerics.Vector3 arrival = floor.Sockets[content.Arrival];
+        foreach (PlacedResident resident in content.Residents)
+            if (!ContentPlacement.ArrivalClear(floor.Sockets[resident.Socket], arrival, kinds.First(k => k.Id == resident.Kind), tuning.Pacing.ArrivalMargin))
+                return $"arrival: '{resident.Id}' can reach the stair landing from its post.";
         foreach (PlacedResident resident in content.Residents)
             if (ContentPlacement.LeashCrossing(resident, layout, plan, floor, kinds.First(k => k.Id == resident.Kind).Leash) is { } space)
                 return $"leash: '{resident.Id}' can follow the player into '{space}', outside its region.";

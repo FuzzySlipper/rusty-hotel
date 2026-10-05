@@ -14,9 +14,11 @@ internal sealed record ResidentWeight(string Kind, Floors.Modules.ModuleTag[] Ta
 
 /// <summary>
 /// The pacing budgets every generated floor must meet: the healing finds reachable before each hazard, the item that
-/// counts as recovery, and the ammunition the floor holds in all (scarce, with the no-ammunition weapon as the fallback).
+/// counts as recovery, the ammunition the floor holds in all (scarce, with the no-ammunition weapon as the fallback),
+/// and the clear ground around the arrival: no resident's sight or attack reaches within <see cref="ArrivalMargin"/>
+/// metres of where the player steps off the stairs.
 /// </summary>
-internal sealed record PacingTuning(string RecoveryItem, int RecoveryBeforeHazard, DepthCurve AmmoMinimum, DepthCurve AmmoMaximum);
+internal sealed record PacingTuning(string RecoveryItem, int RecoveryBeforeHazard, DepthCurve AmmoMinimum, DepthCurve AmmoMaximum, float ArrivalMargin);
 
 /// <summary>
 /// How a generated floor is furnished with content: the spirit its bell calls, the items objectives, stops and loose
@@ -71,6 +73,7 @@ internal sealed record ContentTuning(string Spirit, string FallbackLocation, Ite
         Authored.Require(items.Any(i => i.Id == t.Pacing.RecoveryItem && i.Kind == SupplyKind.Healing), Path, "pacing.recoveryItem",
             $"'{t.Pacing.RecoveryItem}' must be a healing item.");
         Authored.AtLeast(Path, "pacing.recoveryBeforeHazard", t.Pacing.RecoveryBeforeHazard, 0);
+        Authored.AtLeast(Path, "pacing.arrivalMargin", t.Pacing.ArrivalMargin, 0);
         t.Pacing.AmmoMinimum.Validate(Path, "pacing.ammoMinimum");
         t.Pacing.AmmoMaximum.Validate(Path, "pacing.ammoMaximum");
         Authored.Require(t.Pacing.AmmoMaximum.Base >= t.Pacing.AmmoMinimum.Base && t.Pacing.AmmoMaximum.Max >= t.Pacing.AmmoMinimum.Max,

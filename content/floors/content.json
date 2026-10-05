@@ -69,7 +69,8 @@
       "base": 24,
       "perDepth": 0,
       "max": 24
-    }
+    },
+    "arrivalMargin": 3
   },
   "displays": [
     {
