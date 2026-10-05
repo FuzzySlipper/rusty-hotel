@@ -26,8 +26,9 @@ internal static class LayoutCheck
         string arrival = Space(layout, plan, MissionGraph.ArrivalId);
         bool latched = graph.Edges.Any(e => e.Kind == MissionEdgeKind.Latch);
         if (latched != (layout.Latch is not null)) return "latch: the shortcut's latch and the layout's latch door must both exist or neither.";
-        if (layout.Latch is { } latch && (!links.TryGetValue(latch, out LinkDefinition? door) || door.Between[0] != arrival))
-            return $"latch: '{latch}' is not a door into the stairs.";
+        if (layout.Latch is { } latch && (!links.TryGetValue(latch, out LinkDefinition? door) || door.Between[0] != arrival ||
+            !layout.Passage.Any(s => s.Id == door.Between[1])))
+            return $"latch: '{latch}' is not the door from the service passage into the stairs.";
         // Keys are picked up in the space of the place that grants them.
         Dictionary<string, string> keys = graph.Nodes.Where(n => n.Grants is not null)
             .ToDictionary(n => Space(layout, plan, n.Id), n => n.Grants!, StringComparer.Ordinal);

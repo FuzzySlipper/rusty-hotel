@@ -70,6 +70,11 @@ internal static class LayoutChecks
         Check(LayoutCheck.Check(locked.Layout!, reversed, lockedGraph) is { } wrongWay && wrongWay.StartsWith("latch:", StringComparison.Ordinal),
             "a latch that opens from the stairs is refused");
         string? wrongDoor = LayoutCheck.Check(locked.Layout! with { Latch = "service/0~1" }, locked.Plan!, lockedGraph);
+        // The stairs' ordinary corridor archway is a door into the stairs too, but not the passage's: refused.
+        string arrivalSpace = locked.Plan!.Spaces.First(s => s.Id.StartsWith(locked.Layout!.Places[MissionGraph.ArrivalId] + "/", StringComparison.Ordinal)).Id;
+        string corridorDoor = locked.Plan.Links.First(l => l.Between[0] == arrivalSpace && l.Id != locked.Layout!.Latch).Id;
+        string? corridorLatch = LayoutCheck.Check(locked.Layout! with { Latch = corridorDoor }, locked.Plan, lockedGraph);
+        Check(corridorLatch?.StartsWith("latch:", StringComparison.Ordinal) == true, "a latch on the stairs' corridor archway is refused: " + corridorLatch);
         Check(wrongDoor?.StartsWith("latch:", StringComparison.Ordinal) == true, "a latch on a door that does not lead into the stairs is refused: " + wrongDoor);
 
         FloorLayouts.Laid cramped = Lay(seed, tuning with { Extent = 6 });

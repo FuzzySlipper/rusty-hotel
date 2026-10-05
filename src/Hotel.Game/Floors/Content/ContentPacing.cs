@@ -8,11 +8,35 @@ namespace Hotel.Game.Floors.Content;
 
 /// <summary>
 /// The pacing budgets a floor's content must meet: one objective; a key for every lock; the bell when the graph has
-/// one; a resident at every hazard; no resident able to reach the arrival; the recovery item reachable before every hazard; ammunition within its depth's range; every resident's leash
+/// one; a resident at every hazard; no resident able to reach the arrival; the recovery item reachable before every hazard
+/// in the mission graph and, walking the floor, before every resident; ammunition within its depth's range; every resident's leash
 /// inside its own region. Returns why it fails, or null.
 /// </summary>
 internal static class ContentPacing
 {
+    /// <summary>
+    /// How many of the recovery item the player can reach before meeting a resident: walking from the stairs through
+    /// every link but the latch's way in, never entering the resident's space.
+    /// </summary>
+    internal static int RecoveryBefore(PlacedResident resident, IEnumerable<PlacedFind> finds, FloorLayout layout, FloorPlan plan, string item)
+    {
+        string Space(string placement) => plan.Spaces.First(s => s.Id.StartsWith(placement + "/", StringComparison.Ordinal)).Id;
+        // A resident stands on a space post, named "<space>.<post>".
+        string guarded = resident.Socket[..resident.Socket.LastIndexOf('.')];
+        string start = Space(layout.Places[MissionGraph.ArrivalId]);
+        HashSet<string> reached = new(StringComparer.Ordinal) { start };
+        for (bool changed = true; changed;)
+        {
+            changed = false;
+            foreach (LinkDefinition link in plan.Links)
+            {
+                if (reached.Contains(link.Between[0]) && link.Id != layout.Latch && link.Between[1] != guarded) changed |= reached.Add(link.Between[1]);
+                if (reached.Contains(link.Between[1]) && link.Between[0] != guarded) changed |= reached.Add(link.Between[0]);
+            }
+        }
+        return finds.Where(f => f.Item == item && reached.Contains(Space(f.Id.Split('/')[0]))).Sum(f => f.Count);
+    }
+
     internal static string? Check(FloorContent content, MissionGraph graph, FloorLayout layout, FloorPlan plan, BuiltFloor floor,
         ContentTuning tuning, ItemDefinition[] items, ResidentKind[] kinds, int depth)
     {
@@ -32,6 +56,10 @@ internal static class ContentPacing
             if (recovery < tuning.Pacing.RecoveryBeforeHazard)
                 return $"recovery: only {recovery} {tuning.Pacing.RecoveryItem} before hazard '{hazard.Id}'; {tuning.Pacing.RecoveryBeforeHazard} needed.";
         }
+        // Physically too: walking from the stairs without passing a resident's space finds the recovery item first.
+        foreach (PlacedResident resident in content.Residents)
+            if (RecoveryBefore(resident, content.Finds, layout, plan, tuning.Pacing.RecoveryItem) < tuning.Pacing.RecoveryBeforeHazard)
+                return $"recovery: no {tuning.Pacing.RecoveryItem} can be reached before resident '{resident.Id}'.";
         int ammo = content.Finds.Where(f => f.Item is not null && items.First(i => i.Id == f.Item).Kind == SupplyKind.Ammo)
             .Sum(f => f.Count * items.First(i => i.Id == f.Item).Amount);
         int minimum = tuning.Pacing.AmmoMinimum.At(depth), maximum = tuning.Pacing.AmmoMaximum.At(depth);

@@ -102,7 +102,10 @@ internal static class ContentPlacement
             Offer post = posts[draws.Index(FloorStage.Content, "extra.post", $"r{i}", posts.Length)];
             posts = posts.Where(p => p != post).ToArray();
             used.Add(post.Id);
-            if (Resident(post, $"extra.kind{i}") is { } extra) residents.Add(extra);
+            // An extra resident never becomes an encounter the player meets before any recovery.
+            if (Resident(post, $"extra.kind{i}") is { } extra &&
+                ContentPacing.RecoveryBefore(extra, finds, layout, plan, tuning.Pacing.RecoveryItem) >= tuning.Pacing.RecoveryBeforeHazard)
+                residents.Add(extra);
         }
         Offer[] spare = offers.Where(o => o.Socket.Kind == ContentSocketKind.Find && !used.Contains(o.Id) && !nodeOf.ContainsKey(o.Placement.Id)).ToArray();
         for (int i = 0, wanted = tuning.LooseSupplies.At(draws.Seed.Depth); i < wanted && spare.Length > 0; i++)

@@ -60,6 +60,25 @@ internal static class GenerationChecks
         string? unprepared = ContentPacing.Check(bare, h.Graph, h.Layout, h.Plan, h.Floor, tunings.Content, sources.Items, sources.Residents, h.Identity.Seed.Depth);
         Check(unprepared?.StartsWith("recovery:", StringComparison.Ordinal) == true, "a hazard placed before any recovery is refused: " + unprepared);
 
+        // An extra resident on a post the player meets before any recovery is refused, wherever the mission graph puts it.
+        (GeneratedFloor Floor, PlacedResident Resident)? firstMet = null;
+        for (ulong run = 0; run < 12 && firstMet is null; run++)
+            if (Generate(FloorSeed.Current(run, 1, 0)).Floor is { } f)
+                foreach (var placement in f.Layout.Placements)
+                    foreach (var socket in content.Modules.Find(placement.Module)!.Sockets.Where(s => s.Kind == ContentSocketKind.ResidentPost))
+                    {
+                        PlacedResident candidate = new($"{placement.Id}/{socket.Id}", "porter", $"{placement.Id}/{socket.Socket}", placement.Region);
+                        if (firstMet is null && !f.Content.Residents.Any(r => r.Id == candidate.Id) &&
+                            ContentPacing.RecoveryBefore(candidate, f.Content.Finds, f.Layout, f.Plan, tunings.Content.Pacing.RecoveryItem) == 0)
+                            firstMet = (f, candidate);
+                    }
+        Check(firstMet is not null, "some floor has a post the player meets before any recovery");
+        var (ef, er) = firstMet!.Value;
+        string? firstEncounter = ContentPacing.Check(ef.Content with { Residents = [.. ef.Content.Residents, er] }, ef.Graph, ef.Layout, ef.Plan, ef.Floor,
+            tunings.Content, sources.Items, sources.Residents, ef.Identity.Seed.Depth);
+        Check(firstEncounter?.StartsWith("recovery:", StringComparison.Ordinal) == true || firstEncounter?.StartsWith("arrival:", StringComparison.Ordinal) == true,
+            "a resident met before any recovery is refused: " + firstEncounter);
+
         FloorSeed seed = FloorSeed.Current(run: 3, depth: 2, shift: 0);
         Check(Generate(seed).Floor!.Identity == Generate(seed).Floor!.Identity, "the same seed generates the same confirmed floor");
 
