@@ -18,12 +18,16 @@ internal sealed record SurfaceCatalog(SurfaceDefinition[] Surfaces)
             Authored.Positive(Path, $"surfaces[{i}].tileHeight", s.TileHeight);
             Authored.Within(Path, $"surfaces[{i}].roughness", s.Roughness, 0, 1);
             Authored.AtLeast(Path, $"surfaces[{i}].emission", s.Emission, 0);
+            Authored.Require((s.NormalMap is null) == (s.NormalScale is null), Path, $"surfaces[{i}].normalScale",
+                "a normal map and its scale are given together.");
+            if (s.NormalScale is { } scale) Authored.Positive(Path, $"surfaces[{i}].normalScale", scale);
         }
         return catalog;
     }
 }
+/// <param name="NormalMap">A linear tangent-space normal map tiled like <see cref="Texture"/>, bent by <see cref="NormalScale"/>.</param>
 internal sealed record SurfaceDefinition(string Id, float[] Color, string? Texture = null,
-    float TileWidth = 1, float TileHeight = 1, float Roughness = .9f, float Emission = 0);
+    float TileWidth = 1, float TileHeight = 1, float Roughness = .9f, float Emission = 0, string? NormalMap = null, float? NormalScale = null);
 
 /// <summary>One excursion's static boxes, props and lights.</summary>
 internal sealed record ExcursionGeometry(RoomBox[] Boxes, ModelDefinition[] Models, LightingDefinition Lighting)

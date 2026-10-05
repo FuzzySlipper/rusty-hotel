@@ -17,6 +17,12 @@ tints. One carpet texture supplies teal room, olive room and burgundy corridor
 variants. Texture repetition, filtering, decoding and resource ownership remain
 Engine services. Inspect repeats from player eye height after changing scale.
 
+`tools/author-normals.py` derives the tileable normal maps (`*-normal.png`) from
+those runtime textures: printed-ink emboss and seeded paper grain for the
+wallpapers, seeded nap modulated by the weave for the carpet, all differentiated
+with wrap-around operations so each map tiles like its source. It needs numpy
+and Pillow and runs offline only. `surfaces.json` sets each map's strength.
+
 ## Expedition recorder
 
 `expedition-recorder-01/request.json` fixes the goal, source prompt, attempt

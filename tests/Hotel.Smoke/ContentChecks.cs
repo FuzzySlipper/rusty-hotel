@@ -92,6 +92,8 @@ internal static class ContentChecks
                 "content/excursions/west-wing/plan.json spaces[0].style"),
             ("excursions/west-wing/plan.json", root => root["links"]![1]!["between"]![1] = "workroom",
                 "content/excursions/west-wing/plan.json links[1].between"),
+            ("scene/surfaces.json", root => root["surfaces"]![0]!.AsObject().Remove("normalScale"),
+                "content/scene/surfaces.json surfaces[0].normalScale"),
             ("excursions/west-wing/plan.json", root => root["links"]![1]!["at"] = -8.0f,
                 "content/excursions/west-wing/plan.json links[1].at"),
             ("excursions/west-wing/plan.json", root => root["links"]![1]!["height"] = 9,

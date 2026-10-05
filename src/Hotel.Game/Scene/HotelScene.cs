@@ -49,20 +49,21 @@ internal sealed class HotelScene : IDisposable
             foreach (SurfaceDefinition surface in surfaceDefinitions)
             {
                 Vector3 rgb = Authored.Vector(surface.Color);
-                RenderResourceReference texture = default;
-                if (surface.Texture is string path)
+                RenderResourceReference Texture(string path, TextureColorSpace space)
                 {
-                    if (!texturePaths.TryGetValue(path, out texture))
-                    {
-                        using ContentReference content = engine.Content.OpenReference(new(path));
-                        RenderResourceInfo resource = engine.Graphics.OpenResourceFromContent(new(content, TextureFilter.Linear, TextureWrap.Repeat));
-                        textures.Add(resource.Handle);
-                        texture = new RenderResourceReference(resource.Handle.Handle.Value);
-                        texturePaths.Add(path, texture);
-                    }
+                    if (texturePaths.TryGetValue(path, out RenderResourceReference known)) return known;
+                    using ContentReference content = engine.Content.OpenReference(new(path));
+                    RenderResourceInfo resource = engine.Graphics.OpenResourceFromContent(new(content, TextureFilter.Linear, TextureWrap.Repeat, space));
+                    textures.Add(resource.Handle);
+                    RenderResourceReference opened = new(resource.Handle.Handle.Value);
+                    texturePaths.Add(path, opened);
+                    return opened;
                 }
+                RenderResourceReference texture = surface.Texture is string path ? Texture(path, TextureColorSpace.Srgb) : default;
+                RenderResourceReference normal = surface.NormalMap is string map ? Texture(map, TextureColorSpace.Linear) : default;
                 Material material = engine.Graphics.CreateMaterial(new MaterialRequest(
-                    new Color(rgb.X, rgb.Y, rgb.Z, 1), texture, surface.Roughness, new Color(1, 1, 1, 1), surface.Emission > 0 ? rgb : Vector3.Zero, surface.Emission, false));
+                    new Color(rgb.X, rgb.Y, rgb.Z, 1), texture, surface.Roughness, new Color(1, 1, 1, 1), surface.Emission > 0 ? rgb : Vector3.Zero,
+                    surface.Emission, false, MaterialAlphaMode.Opaque, 0, 0, normal, surface.NormalScale ?? 0));
                 materials.Add(material);
                 surfaces.Add(surface.Id, material);
                 this.surfaceDefinitions.Add(surface.Id, surface);

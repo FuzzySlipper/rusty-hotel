@@ -132,7 +132,8 @@ mapping and exposure and the linear haze that swallows distance. Check new light
 readability of doors, finds, resident tells and the spirit, and record its frame time.
 
 Material IDs connect fixtures, styles and doors to surfaces. `tileWidth`/`tileHeight` set
-world-metre repeats; room geometry projects UVs from world position so adjacent
+world-metre repeats, and a textured surface may add a `normalMap` (a linear tangent-space map tiled like its texture)
+with its `normalScale`; give both or neither. Keep wallpaper relief faint (printed paper, not stucco); room geometry projects UVs from world position so adjacent
 wall sections share a pattern phase. Inspect near/far repeats at eye height in
 motion. Preserve the broad wallpaper/fine dark carpet hierarchy from the two
 original images in `docs/references/`.
