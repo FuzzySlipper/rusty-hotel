@@ -21,6 +21,9 @@ internal sealed record ExpeditionMessages(string Continued, string InitialReady,
         Template.Check(Path, "savedStatus", text.SavedStatus, "returns", "count");
         Template.Check(Path, "returned", text.Returned, "returns");
         Template.Check(Path, "recovered", text.Recovered, "status");
+        Template.Plain(Path, ("continued", text.Continued), ("initialReady", text.InitialReady), ("busy", text.Busy),
+            ("nothingSecured", text.NothingSecured), ("savedTitle", text.SavedTitle), ("notSavedTitle", text.NotSavedTitle),
+            ("notSavedStatus", text.NotSavedStatus), ("returnedInitial", text.ReturnedInitial), ("recoveredTitle", text.RecoveredTitle));
         return text;
     }
 }

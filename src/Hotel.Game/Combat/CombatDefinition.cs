@@ -10,14 +10,22 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
     internal static CombatDefinition Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys)
     {
         CombatMessages text = Authored.Read(engine, CombatMessages.Path, ContentJson.Default.CombatMessages, keys);
-        Template.Check(CombatMessages.Path, "emptyWeapon", text.EmptyWeapon, "weapon", "fallback", "fallbackKey");
-        Template.Check(CombatMessages.Path, "hit", text.Hit, "resident");
-        Template.Check(CombatMessages.Path, "residentFalls", text.ResidentFalls, "resident");
-        Template.Check(CombatMessages.Path, "residentHits", text.ResidentHits, "resident", "damage");
+        text.Validate();
         WeaponDefinition[] weapons = Authored.Read(engine, WeaponCatalog.Path, ContentJson.Default.WeaponCatalog).Weapons;
         Authored.Require(weapons.Any(w => w.AmmoCost == 0), WeaponCatalog.Path, "weapons", "one weapon must need no ammunition, as the fallback.");
-        return new(Authored.Read(engine, CombatTuning.Path, ContentJson.Default.CombatTuning), weapons,
-            Authored.Read(engine, ResidentCatalog.Path, ContentJson.Default.ResidentCatalog).Residents, text);
+        for (int i = 0; i < weapons.Length; i++)
+            Template.Plain(WeaponCatalog.Path, ($"weapons[{i}].name", weapons[i].Name), ($"weapons[{i}].shortName", weapons[i].ShortName),
+                ($"weapons[{i}].windupLabel", weapons[i].WindupLabel), ($"weapons[{i}].commitLabel", weapons[i].CommitLabel));
+        CombatTuning tuning = Authored.Read(engine, CombatTuning.Path, ContentJson.Default.CombatTuning);
+        tuning.Validate();
+        ResidentKind[] residents = Authored.Read(engine, ResidentCatalog.Path, ContentJson.Default.ResidentCatalog).Residents;
+        for (int i = 0; i < residents.Length; i++)
+        {
+            Template.Plain(ResidentCatalog.Path, ($"residents[{i}].name", residents[i].Name));
+            // The eye sits within the upper half of the body, measured from its centre.
+            Authored.Within(ResidentCatalog.Path, $"residents[{i}].eyeHeight", residents[i].EyeHeight, 0, residents[i].Height / 2);
+        }
+        return new(tuning, weapons, residents, text);
     }
 }
 
@@ -25,6 +33,14 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
 internal sealed record CombatTuning(float ReloadSeconds, float NoticeSeconds, float HitFlashSeconds, float HurtFlashSeconds)
 {
     internal const string Path = "combat/tuning.json";
+
+    internal void Validate()
+    {
+        Authored.Positive(Path, "reloadSeconds", ReloadSeconds);
+        Authored.Positive(Path, "noticeSeconds", NoticeSeconds);
+        Authored.Positive(Path, "hitFlashSeconds", HitFlashSeconds);
+        Authored.Positive(Path, "hurtFlashSeconds", HurtFlashSeconds);
+    }
 }
 
 /// <summary>The investigator's weapons.</summary>
@@ -43,6 +59,17 @@ internal sealed record CombatMessages(string Overwhelmed, string Recovering, str
     string NoCartridges, string Loaded, string StruckSurroundings, string Miss, string Hit, string ResidentFalls, string ResidentHits)
 {
     internal const string Path = "combat/messages.json";
+
+    // Every field, with the placeholders its caller fills; any other placeholder is an authoring error.
+    internal void Validate()
+    {
+        Template.Plain(Path, ("overwhelmed", Overwhelmed), ("recovering", Recovering), ("reloading", Reloading), ("ready", Ready),
+            ("noCartridges", NoCartridges), ("loaded", Loaded), ("struckSurroundings", StruckSurroundings), ("miss", Miss));
+        Template.Check(Path, "emptyWeapon", EmptyWeapon, "weapon", "fallback", "fallbackKey");
+        Template.Check(Path, "hit", Hit, "resident");
+        Template.Check(Path, "residentFalls", ResidentFalls, "resident");
+        Template.Check(Path, "residentHits", ResidentHits, "resident", "damage");
+    }
 }
 
 /// <summary>Resident kinds: their tells, timing and body, independent of where an excursion places them.</summary>

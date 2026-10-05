@@ -12,6 +12,7 @@ internal sealed record RouteDefinition(InteractionTuning Interaction, RouteMessa
         Template.Check(RouteMessages.Path, "ready", text.Ready, "label");
         Template.Check(RouteMessages.Path, "outOfReach", text.OutOfReach, "label");
         Template.Check(RouteMessages.Path, "take", text.Take, "item");
+        Template.Plain(RouteMessages.Path, ("recordCheckpoint", text.RecordCheckpoint));
         return new(Authored.Read(engine, InteractionTuning.Path, ContentJson.Default.InteractionTuning), text);
     }
 }

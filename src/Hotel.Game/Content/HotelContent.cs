@@ -72,6 +72,16 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
             Authored.Require(!door.FarSideLatch || door.LockedPrompt is not null, route, $"doors[{i}].lockedPrompt",
                 "a far-side latch needs the prompt shown from the locked side.");
         }
+        Template.Plain(route, ("fallbackLocation", Excursion.Route.FallbackLocation));
+        for (int i = 0; i < Excursion.Route.Doors.Length; i++)
+            Template.Plain(route, ($"doors[{i}].label", Excursion.Route.Doors[i].Label), ($"doors[{i}].lockedPrompt", Excursion.Route.Doors[i].LockedPrompt ?? ""));
+        for (int i = 0; i < Excursion.Route.Readings.Length; i++)
+            Template.Plain(route, ($"readings[{i}].label", Excursion.Route.Readings[i].Label),
+                ($"readings[{i}].title", Excursion.Route.Readings[i].Title), ($"readings[{i}].text", Excursion.Route.Readings[i].Text));
+        for (int i = 0; i < Excursion.Route.Rooms.Length; i++)
+            Template.Plain(route, ($"rooms[{i}].label", Excursion.Route.Rooms[i].Label));
+        for (int i = 0; i < placed.SpiritBells.Length; i++)
+            Template.Plain(placements, ($"spiritBells[{i}].place", placed.SpiritBells[i].Place));
         for (int i = 0; i < placed.Finds.Length; i++)
             Authored.Require(Supplies.Items.Any(item => item.Id == placed.Finds[i].Item), placements, $"finds[{i}].item", $"unknown item '{placed.Finds[i].Item}'.");
         for (int i = 0; i < placed.Residents.Length; i++)

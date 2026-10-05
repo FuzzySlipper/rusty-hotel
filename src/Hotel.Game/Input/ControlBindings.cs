@@ -19,6 +19,15 @@ internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Look, Co
         ControlBindings bindings = Authored.Read(engine, Path, ContentJson.Default.ControlBindings);
         Authored.Require(bindings.Use.Keys is [_], Path, "use.keys", "the Engine FPS use control takes exactly one key.");
         Template.Check(Path, "text.hint", bindings.Text.Hint, "key", "action");
+        Authored.Within(Path, "openingHint.seconds", bindings.OpeningHint.Seconds, 0, float.MaxValue);
+        Template.Plain(Path, ("walk.name", bindings.Walk.Name), ("walk.shortName", bindings.Walk.ShortName), ("walk.label", bindings.Walk.Label));
+        foreach (var (field, control) in new[] { ("look", bindings.Look), ("attack", bindings.Attack), ("reload", bindings.Reload),
+            ("summon", bindings.Summon), ("use", bindings.Use) })
+            Template.Plain(Path, ($"{field}.name", control.Name), ($"{field}.shortName", control.ShortName), ($"{field}.label", control.Label));
+        foreach (var (field, screen) in new[] { ("fieldCase", bindings.FieldCase), ("menu", bindings.Menu), ("console", bindings.Console) })
+            Template.Plain(Path, ($"{field}.name", screen.Name), ($"{field}.shortName", screen.ShortName), ($"{field}.label", screen.Label));
+        for (int i = 0; i < bindings.Weapons.Length; i++) Template.Plain(Path, ($"weapons[{i}].label", bindings.Weapons[i].Label));
+        for (int i = 0; i < bindings.QuickPockets.Length; i++) Template.Plain(Path, ($"quickPockets[{i}].label", bindings.QuickPockets[i].Label));
         Template.Check(Path, "text.quickPocketsName", bindings.Text.QuickPocketsName, "first", "last");
         Template.Check(Path, "text.quickPocketsNote", bindings.Text.QuickPocketsNote, "first", "last", "firstKey", "lastKey");
         foreach (string action in bindings.OpeningHint.Actions)

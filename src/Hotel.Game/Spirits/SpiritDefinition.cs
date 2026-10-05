@@ -13,8 +13,17 @@ internal sealed record SpiritDefinition(string Id, string Name, string Descripti
     {
         SpiritDefinition spirit = Authored.Read(engine, Path(id), ContentJson.Default.SpiritDefinition, keys);
         Authored.Require(spirit.Id == id, Path(id), "id", $"the file for '{id}' names '{spirit.Id}'.");
-        Template.Check(Path(id), "description", spirit.Description, "place", "range", "cost", "interrupt");
-        Template.Check(Path(id), "text.callResult", spirit.Text.CallResult, "spirit", "resident", "cost");
+        string path = Path(id);
+        Template.Plain(path, ("name", spirit.Name), ("text.callHint", spirit.Text.CallHint), ("text.arriving", spirit.Text.Arriving),
+            ("text.holding", spirit.Text.Holding), ("text.departing", spirit.Text.Departing));
+        Template.Check(path, "description", spirit.Description, "place", "range", "cost", "interrupt");
+        Template.Check(path, "text.callResult", spirit.Text.CallResult, "spirit", "resident", "cost");
+        ManifestationTuning at = spirit.Manifestation;
+        Authored.Finite(path, "manifestation.approach", at.Approach);
+        Authored.Finite(path, "manifestation.side", at.Side);
+        Authored.Finite(path, "manifestation.lift", at.Lift);
+        Authored.Within(path, "manifestation.entranceFraction", at.EntranceFraction, 0, 1);
+        Authored.Finite(path, "manifestation.entranceDrop", at.EntranceDrop);
         return spirit;
     }
 
@@ -44,6 +53,12 @@ internal sealed record SpiritMessages(float NoticeSeconds, string BellLabel, str
     internal static SpiritMessages Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys)
     {
         SpiritMessages text = Authored.Read(engine, Path, ContentJson.Default.SpiritMessages, keys);
+        Authored.Positive(Path, "noticeSeconds", text.NoticeSeconds);
+        // Every field, with the placeholders its caller fills; any other placeholder is an authoring error.
+        Template.Plain(Path, ("hudNone", text.HudNone), ("hudInCase", text.HudInCase), ("statusOverwhelmed", text.StatusOverwhelmed),
+            ("statusInCase", text.StatusInCase), ("statusNone", text.StatusNone), ("equipOverwhelmed", text.EquipOverwhelmed),
+            ("cannotMake", text.CannotMake), ("pactChanged", text.PactChanged), ("chooseAgain", text.ChooseAgain),
+            ("unreadable", text.Unreadable), ("callOverwhelmed", text.CallOverwhelmed));
         string[] named = ["spirit"];
         foreach (var (field, value) in new[] { ("bellLabel", text.BellLabel), ("equipWhileActive", text.EquipWhileActive),
             ("equipped", text.Equipped), ("rests", text.Rests), ("notEquipped", text.NotEquipped), ("alreadyHere", text.AlreadyHere),

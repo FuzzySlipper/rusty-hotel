@@ -41,6 +41,16 @@ internal static partial class Authored
     [GeneratedRegex(@"\{key\.([A-Za-z]+)\}")]
     private static partial Regex KeyReference();
 
+    internal static void Positive(string path, string field, float value) =>
+        Require(float.IsFinite(value) && value > 0, path, field, $"must be a positive number of seconds or metres; found {value}.");
+
+    internal static void Within(string path, string field, float value, float minimum, float maximum) =>
+        Require(float.IsFinite(value) && value >= minimum && value <= maximum, path, field,
+            $"must be between {minimum} and {maximum}; found {value}.");
+
+    internal static void Finite(string path, string field, float value) =>
+        Require(float.IsFinite(value), path, field, $"must be a finite number; found {value}.");
+
     internal static Vector3 Vector(float[] value) => value.Length == 3
         ? new(value[0], value[1], value[2])
         : throw new InvalidOperationException("Hotel coordinates must contain three components.");

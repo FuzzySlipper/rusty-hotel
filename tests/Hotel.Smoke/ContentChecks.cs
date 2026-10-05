@@ -67,6 +67,22 @@ internal static class ContentChecks
         message = Failure(unbound);
         Check(message.Contains("content/input/bindings.json weapons"), "a weapon without a binding is an authoring error: " + message);
 
+        // Moved tuning is range-checked, and every text field (not only templated ones) rejects unknown placeholders.
+        foreach (var (file, change, expected) in new (string, Action<JsonNode>, string)[] {
+            ("combat/tuning.json", root => root["reloadSeconds"] = -1, "content/combat/tuning.json reloadSeconds"),
+            ("spirits/hushwing.json", root => root["manifestation"]!["entranceFraction"] = 2, "content/spirits/hushwing.json manifestation.entranceFraction"),
+            ("supplies/messages.json", root => root["noticeSeconds"] = 0, "content/supplies/messages.json noticeSeconds"),
+            ("combat/residents.json", root => root["residents"]![0]!["eyeHeight"] = 5, "content/combat/residents.json residents[0].eyeHeight"),
+            ("combat/messages.json", root => root["ready"] = "Ready {resident}", "content/combat/messages.json ready"),
+            ("supplies/messages.json", root => root["emptyPocket"] = "Empty {pocket}.", "content/supplies/messages.json emptyPocket"),
+            ("spirits/hushwing.json", root => root["text"]!["callHint"] = "Q · {verb}", "content/spirits/hushwing.json text.callHint") })
+        {
+            var invalid = Authored();
+            invalid[file] = Json(invalid[file], change);
+            message = Failure(invalid);
+            Check(message.Contains(expected), $"invalid {file} is rejected at {expected}: " + message);
+        }
+
         // A fourth quick pocket is two content edits: the pocket count and its binding.
         var fourth = Authored();
         fourth["interface/tuning.json"] = Json(fourth["interface/tuning.json"], root => root["quickPockets"] = 4);
@@ -94,6 +110,6 @@ internal static class ContentChecks
                     { Kind = InputEventKind.Key, Edge = InputEdge.Pressed, Keyboard = KeyboardControl.Digit6, X = 1 }));
                 Check(Supply() == Owners.Content(engine).Supplies.Text.EmptyPocket, "the authored fourth quick key reaches the fourth pocket");
             });
-        Console.WriteLine("Content checks passed: unknown fields, missing values, cross-file references, template placeholders and control references name their file and field; a quick pocket is added by content alone.");
+        Console.WriteLine("Content checks passed: unknown fields, missing values, cross-file references, template placeholders in every text field, moved tuning ranges and control references name their file and field; a quick pocket is added by content alone.");
     }
 }

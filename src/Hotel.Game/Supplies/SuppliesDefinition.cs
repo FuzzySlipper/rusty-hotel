@@ -11,10 +11,12 @@ internal sealed record SuppliesDefinition(SupplyResources Resources, ItemDefinit
     {
         ItemDefinition[] items = Authored.Read(engine, ItemCatalog.Path, ContentJson.Default.ItemCatalog).Items;
         for (int i = 0; i < items.Length; i++)
+        {
+            Template.Plain(ItemCatalog.Path, ($"items[{i}].name", items[i].Name), ($"items[{i}].mark", items[i].Mark));
             Template.Check(ItemCatalog.Path, $"items[{i}].description", items[i].Description, "amount");
+        }
         SupplyMessages text = Authored.Read(engine, SupplyMessages.Path, ContentJson.Default.SupplyMessages);
-        Template.Check(SupplyMessages.Path, "collected", text.Collected, "item", "count");
-        Template.Check(SupplyMessages.Path, "used", text.Used, "item");
+        text.Validate();
         return new(Authored.Read(engine, SupplyResources.Path, ContentJson.Default.SupplyResources), items, text);
     }
 }
@@ -41,6 +43,18 @@ internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, stri
     string Used, string ChooseStack, string StackFull, string Rearranged, string ChooseAgain, string ChooseAction, string Unreadable)
 {
     internal const string Path = "supplies/messages.json";
+
+    // Every field, with the placeholders its caller fills; any other placeholder is an authoring error.
+    internal void Validate()
+    {
+        Authored.Positive(Path, "noticeSeconds", NoticeSeconds);
+        Template.Plain(Path, ("findGone", FindGone), ("caseFull", CaseFull), ("overwhelmed", Overwhelmed), ("emptyPocket", EmptyPocket),
+            ("healthFull", HealthFull), ("ammoFull", AmmoFull), ("summonFull", SummonFull), ("keepForReturn", KeepForReturn),
+            ("caseChanged", CaseChanged), ("chooseStack", ChooseStack), ("stackFull", StackFull), ("rearranged", Rearranged),
+            ("chooseAgain", ChooseAgain), ("chooseAction", ChooseAction), ("unreadable", Unreadable));
+        Template.Check(Path, "collected", Collected, "item", "count");
+        Template.Check(Path, "used", Used, "item");
+    }
 }
 
 /// <summary>A collectable placement of an item in one excursion.</summary>
