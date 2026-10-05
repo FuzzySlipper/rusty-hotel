@@ -11,7 +11,10 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | --- | --- |
 | `src/Hotel.Game/Expedition/HotelExpedition.cs` | Refuge return/deposit policy, one complete checkpoint over Engine persistence, validation before restore and coherent recovery |
 | `src/Hotel.Game/Expedition/CheckpointState.cs` | Versioned product values and source-generated JSON metadata; no Engine handles or presentation state |
-| `src/Hotel.Game/HotelProduct.cs` | Explicit composition, Engine lifecycle callbacks, admitted updates and the Engine playtest command adapter |
+| `src/Hotel.Game/HotelProduct.cs` | Explicit composition, Engine lifecycle callbacks, admitted updates, floor travel (carrying the player's values into the next world, remembering left floors for the session) and the one world interaction that reads the current route |
+| `src/Hotel.Game/HotelWorld.cs` | The owners of one excursion's world (scene, player, supplies, combat, spirit, route, expedition, ambience and views), built together for the floor the player stands on and disposed together when they take the stairs |
+| `src/Hotel.Game/Floors/HotelFloors.cs` | The run seed (persisted in its own Engine state scope), the current depth, and each generated floor of the run, generated on first entry and kept for the session |
+| `src/Hotel.Game/Floors/FloorExcursion.cs` | A generated floor as an `ExcursionDefinition`: display fixtures for finds, depth-namespaced ids, stairs, readings, residents and the bell |
 | `src/Hotel.Game/Route/HotelRoute.cs` | Door/latch state, authored room identity, reading facts and the Engine world-interaction adapter |
 | `src/Hotel.Game/Supplies/HotelSupplies.cs` | Carried stacks, collected-find identities, capacity and use rules, health/ammo/summon reserves and inventory revision |
 | `src/Hotel.Game/Combat/HotelCombat.cs` | Selected weapon, admitted windup/commit/recovery/reload timing, damage policy, resident behavior and Engine spatial hit/approach calls |
@@ -35,7 +38,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Audio/HotelAmbience.cs` | Authored ambient clips and looping voices; Engine owns playback, spatialization and mixing |
 | `src/Hotel.Game/Interface/HotelHud.cs` | The `rusty.hotel.hud` projection: every UI fact written once, grouped by HUD region or screen |
 | `src/Hotel.Game/Interface/UiValueWriter.cs` | Writes the Engine `UiValue` node/edge/UTF-8 tree and compares two values; the pinned SDK has no builder |
-| `src/Hotel.Game/Interface/HotelDebugCommands.cs` | Generated Hotel inspection and explicit developer initial-excursion reset commands over existing owners |
+| `src/Hotel.Game/Interface/HotelDebugCommands.cs`, `HotelDeveloper.cs` | The generated Hotel command catalog and what it does: observation, look, explicit developer overrides (goto, module viewer, floor entry, return to entrance) and floor inspection with the floor's places, spaces and links |
 | `src/Hotel.Game/Interface/SuppliesDebugCommands.cs` | Explicit developer supply, health and consumption fixtures over the supplies owner |
 | `src/Hotel.Game/Hotel.Game.csproj` | Product identity, entry, content/UI roots and host defaults |
 | `content/` | Authored data by domain: player, route, interface, scene surfaces, supplies, combat, spirits, and one folder per excursion. See [authoring](authoring.md). |

@@ -46,6 +46,8 @@ Use the generated catalog for argument help and current command availability.
 | `interaction.inspect` / `interaction.use` | Engine world-interaction inspection/assisted use, retaining reach, visibility, revision and eligibility checks |
 | `hotel.dev.return-to-entrance` | Reset live player, supplies, residents, pact and route to initial state; leave the existing checkpoint intact |
 | `hotel.dev.floor.module <id> <turn>` | Build one room module alone beside the hotel at a quarter turn, with porches outside its doorways, and stand on its first porch facing in; `hotel.dev.goto` returns. Changes no saved state |
+| `hotel.dev.floor <seed> <depth>` | Begin a run from a seed (stored as the run) and stand on its generated floor at a depth, arriving up its stairs with the current supplies; reports the floor inspection |
+| `hotel.floor.inspect` | The run seed, depth and current generated floor: identity hash, retry, places with their module, centre and door, every space and link with its midpoint, sizes, and the last generation's refusals and time |
 | `hotel.dev.goto <space>` | Stand at the centre of a floor-plan space, keeping the current facing, to inspect the kit-built floor; changes no saved state |
 | `hotel.dev.give-supply` | Fixture grant subject to inventory capacity rules |
 | `hotel.dev.set-health` | Fixture health change within authored bounds |

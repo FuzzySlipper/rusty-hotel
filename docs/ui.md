@@ -255,6 +255,15 @@ pact/equipped choice, active call, defeat or empty reserve gives a brief refusal
 and spends nothing. Opening a foreground screen freezes the manifestation and
 resident through Engine pause. No summon/equip debug panel is introduced.
 
+### Stairs between floors
+
+A flight of stairs is an ordinary world interaction with the same focus prompt: E · Climb the stairs, or E · Go back
+down the stairs. The service stairs at the south end of the west wing's long service passage lead up; every generated
+floor's stair landing has a flight up and a flight down. Using one changes floor at once, with no screen of its own:
+the player arrives on the next floor's landing, or at the foot of the stairs below, carrying their supplies, pact and
+weapon. The location label names the new floor's space. A floor that cannot be generated leaves the player where they
+stand.
+
 ### Refuge return and recovery
 
 The notebook on the refuge's west desk is the ordinary checkpoint interaction.
@@ -265,4 +274,5 @@ retains the carried find. The pause menu reports checkpoint status without addin
 save/load/reset controls. R while overwhelmed restores the full last checkpoint
 and opens a recovery receipt. Both receipts share existing pause, focus and final
 resume handling. Startup load failure is a real host product error, never a fake
-successful new game. Developer return-to-entrance remains an unsaved fixture.
+successful new game. Developer return-to-entrance remains an unsaved fixture. R while overwhelmed on a generated
+floor returns to the refuge's floor and its checkpoint.
