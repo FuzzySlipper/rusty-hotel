@@ -116,6 +116,15 @@ light rendering, collision and scheduling. Hotel supplies authored boxes and
 world-metre UVs, not a renderer or spatial solver. Offline Blender conversion
 and PCM authoring produce ordinary content files and are outside the runtime.
 
+## Incorporated floor generation patterns
+
+| Donor file | Revision | Hotel adaptation | SHA-256 of source |
+| --- | --- | --- | --- |
+| `rusty-rifles/src/Rifles.Procgen/CanonicalIdentity.cs` | `9964b33a8cf51cdc3dd92c9f651f1837e9e9b6bd` | `Floors/CanonicalText.cs`: quoted, JSON-escaped canonical lines hashed with SHA-256, independent of serializer and insertion order. Hotel writes lines per stage instead of hashing one candidate type | `ec8cbf83c8bd3154cf05625319b654c1d5a6e920571440c88b4919abb506cd72` |
+| `rusty-craftsurvive/src/CraftSurvive.Game/Modules/WorldGen/TerrainGeneratorContract.cs` | `207b19a55db470eb605741dab392a8355ac96295` | `Floors/FloorDraws.cs`: Engine `DrawKeyed` as the only draw source, the version spread into the seed, purpose scopes, and wide-range one-in-N. Hotel adds stage scopes, depth/shift key prefixes and weighted choice; no noise seed or test-only draw source | `cb887122ede87742c4b96bfc40556ac97777a4ff75877042cd02dc89a2c02a97` |
+
+Both were committed and unchanged at those revisions. Checks use the same Engine draws through `EngineTestHost`.
+
 ## Mounted UI lifecycle
 
 The Engine's `fixtures/csharp-controller-interaction/product-ui/main.js` and

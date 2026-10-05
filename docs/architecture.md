@@ -24,6 +24,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/*/…Definition.cs`, `…Tuning.cs` | Each domain's typed authored records and the file it loads them from |
 | `src/Hotel.Game/Scene/HotelScene.cs` | Static appearances, paired door appearance/collision poses, GLB props, retained lights, collision placement and resource lifetimes |
 | `src/Hotel.Game/Scene/Kit/` | The architectural kit: authored floor plan, kit tuning and fixture catalog records, and `KitBuilder`, which turns a plan into walls (half per side, per space surface), trim, frames, floors, ceilings, seams, fixtures, lights, sockets, rooms and door openings |
+| `src/Hotel.Game/Floors/` | Floor generation's shared ground: the floor seed (generator version, run, depth, shift), `FloorDraws`, the only randomness a generator may use (Engine keyed draws scoped `hotel.floor.<stage>.<purpose>`), and the canonical plan text hashed into a floor's identity |
 | `src/Hotel.Game/Scene/RoomGeometry.cs` | Authored mesh vertices with world-metre texture coordinates, used by presentation and static collision |
 | `src/Hotel.Game/Audio/HotelAmbience.cs` | Authored ambient clips and looping voices; Engine owns playback, spatialization and mixing |
 | `src/Hotel.Game/Interface/HotelHud.cs` | The `rusty.hotel.hud` projection: every UI fact written once, grouped by HUD region or screen |
