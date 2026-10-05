@@ -13,7 +13,21 @@ internal static class LayoutCheck
 {
     internal static string? Check(FloorLayout layout, FloorPlan plan, MissionGraph graph)
     {
+        // Every locked edge became exactly one door with its item, and every latch the passage's end door at the stairs.
+        Dictionary<string, LinkDefinition> links = plan.Links.ToDictionary(l => l.Id, StringComparer.Ordinal);
+        foreach (MissionEdge edge in graph.Edges.Where(e => e.Kind == MissionEdgeKind.Locked))
+        {
+            LayoutLock[] doors = layout.Locks.Where(l => l.Edge == edge.Id).ToArray();
+            if (doors.Length != 1 || doors[0].Item != edge.Item || !links.ContainsKey(doors[0].Link))
+                return $"lock: locked edge '{edge.Id}' needs exactly one realized door opened by '{edge.Item}'.";
+        }
+        if (layout.Locks.FirstOrDefault(l => !graph.Edges.Any(e => e.Id == l.Edge && e.Kind == MissionEdgeKind.Locked)) is { } stray)
+            return $"lock: '{stray.Link}' stands for no locked edge.";
         string arrival = Space(layout, plan, MissionGraph.ArrivalId);
+        bool latched = graph.Edges.Any(e => e.Kind == MissionEdgeKind.Latch);
+        if (latched != (layout.Latch is not null)) return "latch: the shortcut's latch and the layout's latch door must both exist or neither.";
+        if (layout.Latch is { } latch && (!links.TryGetValue(latch, out LinkDefinition? door) || door.Between[0] != arrival))
+            return $"latch: '{latch}' is not a door into the stairs.";
         // Keys are picked up in the space of the place that grants them.
         Dictionary<string, string> keys = graph.Nodes.Where(n => n.Grants is not null)
             .ToDictionary(n => Space(layout, plan, n.Id), n => n.Grants!, StringComparer.Ordinal);

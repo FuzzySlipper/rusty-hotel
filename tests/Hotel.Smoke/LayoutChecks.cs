@@ -42,6 +42,36 @@ internal static class LayoutChecks
             }
         Check(laid >= floors * 3 / 4, $"most seeds lay out; {laid} of {floors}: {string.Join(", ", failures)}");
 
+        // The check itself refuses a layout whose lock or latch mapping is missing, and a latch that opens the wrong way.
+        MissionGraph graph = MissionGenerator.Generate(mission, new FloorDraws(engine.Random, seed)).Graph;
+        FloorLayout layout = first.Layout!;
+        Check(layout.Locks.Length == graph.Edges.Count(e => e.Kind == MissionEdgeKind.Locked) && layout.Latch is not null,
+            "every locked edge and the latch map to doors");
+        Check(LayoutCheck.Check(layout with { Locks = layout.Locks[1..] }, first.Plan!, graph) is { } noLock && noLock.StartsWith("lock: locked edge", StringComparison.Ordinal),
+            "a locked edge without a door is refused");
+        Check(LayoutCheck.Check(layout with { Latch = null }, first.Plan!, graph) is { } noLatch && noLatch.StartsWith("latch:", StringComparison.Ordinal),
+            "a shortcut without its latch door is refused");
+        // Reversed, the latch would open from the stairs and let the arrival walk round a lock to the shortcut's side.
+        (FloorSeed Seed, FloorLayouts.Laid Laid, MissionGraph Graph)? behindLock = null;
+        for (ulong run = 0; run < 40 && behindLock is null; run++)
+        {
+            FloorSeed s = FloorSeed.Current(run, 2, 0);
+            MissionGraph g = MissionGenerator.Generate(mission, new FloorDraws(engine.Random, s)).Graph;
+            FloorLayouts.Laid l = Lay(s);
+            string shortcut = g.Nodes.First(n => n.Kind == MissionNodeKind.Shortcut).Id;
+            if (l.Failure is null && FloorEmbedding.Regions(g)[shortcut] != FloorEmbedding.OpenRegion) behindLock = (s, l, g);
+        }
+        Check(behindLock is not null, "some seed puts the shortcut behind a lock");
+        var (_, locked, lockedGraph) = behindLock!.Value;
+        Hotel.Game.Scene.Kit.FloorPlan reversed = locked.Plan! with
+        {
+            Links = locked.Plan!.Links.Select(l => l.Id == locked.Layout!.Latch ? l with { Between = [l.Between[1], l.Between[0]] } : l).ToArray()
+        };
+        Check(LayoutCheck.Check(locked.Layout!, reversed, lockedGraph) is { } wrongWay && wrongWay.StartsWith("latch:", StringComparison.Ordinal),
+            "a latch that opens from the stairs is refused");
+        string? wrongDoor = LayoutCheck.Check(locked.Layout! with { Latch = "service/0~1" }, locked.Plan!, lockedGraph);
+        Check(wrongDoor?.StartsWith("latch:", StringComparison.Ordinal) == true, "a latch on a door that does not lead into the stairs is refused: " + wrongDoor);
+
         FloorLayouts.Laid cramped = Lay(seed, tuning with { Extent = 6 });
         Check(cramped.Failure is { } why && why.StartsWith("rooms:", StringComparison.Ordinal), "a graph that cannot fit is refused with a reason: " + cramped.Failure);
         Console.WriteLine($"Layout checks passed: {laid} of {floors} seeds laid out ({rooms / Math.Max(1, laid)} rooms on average, {minRooms}–{maxRooms}) in " +
