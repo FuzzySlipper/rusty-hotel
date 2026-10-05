@@ -10,7 +10,7 @@ Files are strict. An unknown member, a missing required value, a null in a
 non-nullable field or a reference to an unknown id stops loading, with a message
 naming `content/<file>` and the field. Each domain's loader also checks its own
 file's shapes and ranges before any owner sees them: positions and directions are
-three finite numbers, boxes and rooms have max above min, counts, stack limits and
+three finite numbers, boxes and rooms have max strictly above min (rooms on x and z), counts, stack limits and
 health are at least 1, durations are positive, fractions stay within 0–1, volumes
 within 0–1. Checks that span files, such as known ids or a find fitting an empty
 field case, run afterwards in `HotelContent`. When you add an authored value, add

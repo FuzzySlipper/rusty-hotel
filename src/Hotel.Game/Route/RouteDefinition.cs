@@ -55,8 +55,9 @@ internal sealed record ExcursionRoute(string FallbackLocation, DoorDefinition[] 
         {
             Authored.Point(path, $"rooms[{i}].min", Rooms[i].Min);
             Authored.Point(path, $"rooms[{i}].max", Rooms[i].Max);
-            Authored.Require(Rooms[i].Max[0] >= Rooms[i].Min[0] && Rooms[i].Max[2] >= Rooms[i].Min[2], path, $"rooms[{i}].max",
-                "a room's max must not be below its min on x or z.");
+            // Rooms are matched on x and z, so both need real extent.
+            Authored.Require(Rooms[i].Max[0] > Rooms[i].Min[0] && Rooms[i].Max[2] > Rooms[i].Min[2], path, $"rooms[{i}].max",
+                "a room's max must be above its min on x and z.");
         }
     }
 }
