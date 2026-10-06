@@ -232,13 +232,20 @@ Hotel's `HotelCombat` uses its existing supplies owner, real scene identities,
 Engine Track, spatial casts and character controller. Its explicit windup,
 locked direction, recovery, standoff and short sight-limited approach are Hotel
 policy. No E1M1 catalogs, density, random damage, projectiles, drops, armor,
-entity remapping, session framework or donor navigation were imported. The two
-resident silhouettes and weapon poses are authored here using the existing
-material palette and Engine mesh resources. No sibling is a build dependency.
+entity remapping, session framework or donor navigation were imported. The resident
+silhouettes are authored here using the existing material palette and Engine mesh
+resources. The held items are generated models (`art/held-01`): sources from GPT image
+generation and meshes from asset-pipeline's native ComfyUI image-to-3D runner (TRELLIS.2,
+run on the owner's GPU), prepared offline in Blender. They are ordinary GLB content the
+Engine loads through its animation content path and draws on its viewmodel layer; the
+hand poses stay Hotel-authored. asset-pipeline is an offline authoring tool, never a build
+dependency, and no sibling is a build dependency.
 
 ## Spirit interface and presentation
 
-The spirit's pact, bell-headed moth, intervention and phases are Hotel-authored.
+The spirit's pact, intervention and phases are Hotel-authored; its bell-headed moths are generated
+models (`art/spirits-01`, through the same offline image-to-3D route as the held items) split into a
+body and hinged wings, with the flap and visit motion authored here.
 They extend the existing route, supplies, combat, scene and HUD owners. No donor
 summoning system, follower/pathfinding state or timer was copied.
 

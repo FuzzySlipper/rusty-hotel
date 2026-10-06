@@ -51,7 +51,7 @@
   }
  },
  "runRecords": "runs/<piece>/prompt.json (exact ComfyUI graph) and run.json",
- "conversion": "Local Blender 5.2.2 LTS; prepare.py with pieces.json: turn, real scale, grip pivot, textures to 1024, metallic channel scaled by metallicScale; no .blend master (native GLB + prepare.py rebuild the runtime GLBs)",
+ "conversion": "Local Blender 5.2.2 LTS; prepare.py with pieces.json: turn, real scale, grip pivot, textures to 1024 JPEG, metallic channel scaled by metallicScale; prepared .blend master per piece with its textures as JPEG files in textures/",
  "decision": "Retain all four as first-person held items drawn on the Engine viewmodel layer; first attempt for every piece, no retries.",
  "limitations": [
   "Survey pistol: hammer and trigger baked brass-toned where the source shows steel.",
@@ -60,6 +60,10 @@
   "Static meshes: no moving parts (hammer, hinge, bell plunger), no hands or rig."
  ],
  "files": [
+  {
+   "path": "art/held-01/flare-pistol.blend",
+   "sha256": "7839d42b0a7e319ad866316cea9e2e6505959c09aba0fd1fdb8cc9f733b49096"
+  },
   {
    "path": "art/held-01/native/flare-pistol.glb",
    "sha256": "cc948dc86429f49b7e615af1c1d935b5f836bbdaf3c013bb9bd3473b9c670393"
@@ -82,11 +86,19 @@
   },
   {
    "path": "art/held-01/prepare.py",
-   "sha256": "45c1f861099b6ddd8965650dcbcbe31d804eabbda47aaab09a04c6c77ba505ed"
+   "sha256": "9d323a9b0bfed9709034cd1e40ffca7833da03e1bd797e9d1a6f892cf0c6bd41"
+  },
+  {
+   "path": "art/held-01/prybar.blend",
+   "sha256": "0c3889a5ec1baa5a5593256d7586b5fcb1a43559faa2c02f40c1c5123165bdaf"
   },
   {
    "path": "art/held-01/request.json",
    "sha256": "a4de2810650eb1a1dba1f7a6f2cdc9bddba8bbf588efff2935eb93cb8bf8c321"
+  },
+  {
+   "path": "art/held-01/service-bell.blend",
+   "sha256": "c741849ec38dffe1cf9cdc0b59c7368a1e67ca600af4f9456d694c9084e305e4"
   },
   {
    "path": "art/held-01/source-flare-pistol.png",
@@ -105,20 +117,72 @@
    "sha256": "07daf5cf90ab7c5dfedd07928642fc1d9298fd64a672d90e336139e8724450c4"
   },
   {
+   "path": "art/held-01/survey-pistol.blend",
+   "sha256": "9029d2dec6493d8d6aea87b275df3a29e3a841accfac60cb855ef5e1cee84c6e"
+  },
+  {
+   "path": "art/held-01/textures/flare-pistol-0.jpg",
+   "sha256": "ea654577ee038cce1ad8d68b60d592e76918c5546f7427664790f988b6bc140e"
+  },
+  {
+   "path": "art/held-01/textures/flare-pistol-1.jpg",
+   "sha256": "3317f06f70ca572bd1213e4749da67f963cead52e09679cc80d8973a149e778e"
+  },
+  {
+   "path": "art/held-01/textures/flare-pistol-2.jpg",
+   "sha256": "2a9793e98fcbcd70996e3899c6781478436b030d21877178cda2dcb2bc3aec8a"
+  },
+  {
+   "path": "art/held-01/textures/prybar-0.jpg",
+   "sha256": "77f4d27cea9eed247f2cf1a9091588d114cd916df7ff1962db6f61e895fa549a"
+  },
+  {
+   "path": "art/held-01/textures/prybar-1.jpg",
+   "sha256": "6f60d1f0d77a08aeb812e10907e0dc25e80d681d17042c1c35c67a2eaa5c8387"
+  },
+  {
+   "path": "art/held-01/textures/prybar-2.jpg",
+   "sha256": "7164878e1b719f1206cc9438134df7d0bac96d4bfda0e68448ee056e29414cd1"
+  },
+  {
+   "path": "art/held-01/textures/service-bell-0.jpg",
+   "sha256": "8a64a8ccdd7ec38174e9013a2b4299159ab7c8e7628ee3705d75a62fc7647bda"
+  },
+  {
+   "path": "art/held-01/textures/service-bell-1.jpg",
+   "sha256": "718b6b434bbda1246d0919e37debccb60722743ed2df60f56839416f54d6ef1f"
+  },
+  {
+   "path": "art/held-01/textures/service-bell-2.jpg",
+   "sha256": "a70237256ff510117f5af79c7cba9b4f6548f21bcdf0088ee69ce90833a630c3"
+  },
+  {
+   "path": "art/held-01/textures/survey-pistol-0.jpg",
+   "sha256": "5c5fddff872af811d429a670daaa0b0eb4a50da880d68dbf91713a93b3de025c"
+  },
+  {
+   "path": "art/held-01/textures/survey-pistol-1.jpg",
+   "sha256": "a7e1da621a122b8020c09985b3858eea076fafe91bdee7965d070b7283fc5be4"
+  },
+  {
+   "path": "art/held-01/textures/survey-pistol-2.jpg",
+   "sha256": "a7dc6dc7199d12fc2c6e08dc75ea3e326c991c2f0889dfa24745f96780cd9904"
+  },
+  {
    "path": "content/models/held/flare-pistol.glb",
-   "sha256": "dbceb3c2894332af7e1e25c0f1a3bdeace51ea30fccf5f31ebb8a8488bbed977"
+   "sha256": "57ed3365dfad5490043e466de22da989c470903e19a6837caff60a97a071bc8c"
   },
   {
    "path": "content/models/held/prybar.glb",
-   "sha256": "a17612579aeccb8ce09ea3dfa4fc0374d38fc84d7de2296eb66025802692a208"
+   "sha256": "f87f9658de8d19c4fcb1639080a4c10d9a5c14f41fcd3975970f623e361ebbb2"
   },
   {
    "path": "content/models/held/service-bell.glb",
-   "sha256": "568eca5bd7755287ed7127a7427016d6b08211c1b3c6f4731591d7547100b636"
+   "sha256": "cfd4c0b88e09f6ef11bde65ee5a405b103ab99fade8c16cd2c4976df2bae751d"
   },
   {
    "path": "content/models/held/survey-pistol.glb",
-   "sha256": "d00163c32aa4cdf9d0958a383ef9e14c0d7689903c6f97a175ce04e92fc17e12"
+   "sha256": "7d1703e91062fd7f76c381bf9cf5d509f63da1d8551f16662fadac9174855bae"
   }
  ]
 }

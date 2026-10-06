@@ -106,10 +106,10 @@ style followed by the subject. Each mesh is one local TRELLIS.2 bf16 image-to-3D
 asset-pipeline's native ComfyUI runner (15,000 faces, remesh grid 256, 2K bakes); `runs/<piece>/` keeps the exact
 graph and run record, and `native/<piece>.glb` the download. There is no paid call.
 `held-01/prepare.py` turns each download so its business end points along the hand's forward, scales it to its real
-length, puts its origin at the grip (`pieces.json`), downsizes textures to 1024 and scales the metallic channel
+length, puts its origin at the grip (`pieces.json`), downsizes textures to 1024 JPEG and scales the metallic channel
 down (`metallicScale`): the Hotel lights props without a reflected environment, so fully metallic bakes read black.
-It writes `content/models/held/<piece>.glb` and fails above `triangleBudget`. The native download and the script are
-the master; no `.blend` is kept.
+It writes `content/models/held/<piece>.glb`, fails above `triangleBudget`, and saves the prepared `<piece>.blend`
+master, its textures kept beside it as JPEG files in `textures/` rather than packed so the master stays small.
 
 ```text
 blender -b --python art/held-01/prepare.py
@@ -128,7 +128,8 @@ region into a body and two wings (`pieces.json`: the hinge line, boxes such as t
 the body, and for wings set behind the body the back slab that goes with them). Each wing's origin is its hinge; the
 script prints the hinges for the spirit's `look`. Textures are 1024 JPEG, metal is softened as for the held items,
 and a faint emission from the base colour (`glow`) lets the spirits read in dim rooms. It writes
-`content/models/spirits/<spirit>-{body,left,right}.glb`; the native download and the script are the master.
+`content/models/spirits/<spirit>-{body,left,right}.glb` and saves the prepared `<spirit>.blend` master (body and wings),
+its textures as JPEG files in `textures/`.
 
 ```text
 blender -b --python art/spirits-01/prepare.py

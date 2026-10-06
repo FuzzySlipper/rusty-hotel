@@ -9,7 +9,7 @@
 # wing is moved so its hinge (at "hingeHeight", a fraction of the height) is its origin; the hinges, in the body's
 # frame, are printed for content/spirits/<piece>.json. Metal is softened as for the held items (metallicScale).
 # Writes content/models/spirits/<piece>-{body,left,right}.glb.
-# The retained native download and this script are the master; no .blend is kept.
+# Saves the prepared <piece>.blend master (body and wings) beside this script, its textures as JPEG files under textures/.
 import bpy, bmesh, json, math, os, sys
 from mathutils import Matrix, Vector
 
@@ -84,8 +84,26 @@ def prepare(piece, spec):
         bpy.ops.export_scene.gltf(filepath=os.path.join(out, f"{piece}-{name}.glb"), export_format="GLB", export_yup=True,
             export_apply=True, use_selection=True, export_image_format=SET["imageFormat"])
         print(f"PREPARED {piece}-{name} triangles={triangles}")
-        bpy.data.objects.remove(part)
+        part.name = name
     print(f"HINGES {piece} {json.dumps([hinges['left'], hinges['right']])}")
+    # The master keeps the three parts at their origins; the hinges place the wings.
+    bpy.data.objects.remove(obj)
+    save_master(piece)
+
+# The editable master: the prepared objects in a .blend whose textures are saved beside it as JPEG files under
+# textures/, not packed, so the master stays small.
+def save_master(piece):
+    textures = os.path.join(HERE, "textures")
+    os.makedirs(textures, exist_ok=True)
+    for i, image in enumerate([im for im in bpy.data.images if im.size[0] > 0]):
+        path = os.path.join(textures, f"{piece}-{i}.jpg")
+        image.file_format = "JPEG"
+        image.save(filepath=path, quality=90)
+        if image.packed_file is not None: image.unpack(method="REMOVE")
+        image.filepath = bpy.path.relpath(path, start=HERE)
+        image.source = "FILE"
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, piece + ".blend"), compress=True, relative_remap=True)
+
 
 # The Hotel lights props with point lights and ambient only, no reflected environment, so fully metallic surfaces
 # read black. Scale the metallic channel (blue) of each metal-rough texture so their base colour shows.

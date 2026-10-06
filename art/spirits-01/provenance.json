@@ -51,7 +51,7 @@
   }
  },
  "runRecords": "runs/<spirit>/prompt.json (exact ComfyUI graph) and run.json",
- "conversion": "Local Blender 5.2.2 LTS; prepare.py with pieces.json: turn, scale, split into body and two hinged wings, 1024 JPEG textures, metallic scaled, faint emission from base colour; no .blend master",
+ "conversion": "Local Blender 5.2.2 LTS; prepare.py with pieces.json: turn, scale, split into body and two hinged wings, 1024 JPEG textures, metallic scaled, faint emission from base colour; prepared .blend master per piece with its textures as JPEG files in textures/",
  "decision": "Retain all four as the pact spirits' looks; first mesh for each, no retries. The Doorman came out as a winged commissionaire figure rather than an insect, kept as in character.",
  "limitations": [
   "Antennae reconstructed as smooth blades, not feathered.",
@@ -60,6 +60,18 @@
   "Static meshes: wings flap rigidly about one hinge each; no rig."
  ],
  "files": [
+  {
+   "path": "art/spirits-01/doorman.blend",
+   "sha256": "13fd404cc0b4da668c7552285275353036eafc818484354533017de0229561b9"
+  },
+  {
+   "path": "art/spirits-01/hushwing.blend",
+   "sha256": "5f159c86abb9a9709c1e6cf6f959120e121f6ebfc4a21903f218bfc0aaf9e619"
+  },
+  {
+   "path": "art/spirits-01/lintmoth.blend",
+   "sha256": "2b5d5f11b2b1e24f4011e8e4e4a0cda2b9c5c58c4ae4b5ffdd82fab5c48e0088"
+  },
   {
    "path": "art/spirits-01/native/doorman.glb",
    "sha256": "8d364fdfe0f7bc9cae77e39e9267a851b0ee9e65d5d57fca748c16a9fc4f2546"
@@ -82,7 +94,7 @@
   },
   {
    "path": "art/spirits-01/prepare.py",
-   "sha256": "ef638cb635fefb72d6e924b090c36bacd7e36cbf0b5ddf70a9a47bd35c877672"
+   "sha256": "25e35992874fc601e1f99ae33204fd5b6e8c5af55eb56cd4eceb28747080f0aa"
   },
   {
    "path": "art/spirits-01/request.json",
@@ -103,6 +115,58 @@
   {
    "path": "art/spirits-01/source-wickling.png",
    "sha256": "3944110ed91feb10f3840d0a752c95ec068ad249c079e9942b287cc886de68a3"
+  },
+  {
+   "path": "art/spirits-01/textures/doorman-0.jpg",
+   "sha256": "5a62ac7d1239f316688982d984a83fb7fcc5ce3808b5d4f8c3c658ea4ccb97aa"
+  },
+  {
+   "path": "art/spirits-01/textures/doorman-1.jpg",
+   "sha256": "f3041df56b090304eabc7cad29ee48882c2ad7ab6336be0b7a32f8b963b985f7"
+  },
+  {
+   "path": "art/spirits-01/textures/doorman-2.jpg",
+   "sha256": "24fff5aab625ae4adc5405b8ee0be6d21cde85a46e907c9eb532eb7f57ec5b34"
+  },
+  {
+   "path": "art/spirits-01/textures/hushwing-0.jpg",
+   "sha256": "33b954d43505f7ced8ea322a1ad55c750c9d44f8f3cf2879ad4a040590e343af"
+  },
+  {
+   "path": "art/spirits-01/textures/hushwing-1.jpg",
+   "sha256": "f520e966ff37235c40846f2da7ffab959b1d62b1be388caff3fdb18f9cc9b41d"
+  },
+  {
+   "path": "art/spirits-01/textures/hushwing-2.jpg",
+   "sha256": "e5dd406baf0f085d8ea540172b0549c01b7f66e77e429712b40375f052d6cb21"
+  },
+  {
+   "path": "art/spirits-01/textures/lintmoth-0.jpg",
+   "sha256": "a97d444fd993d65c5000278d9cef1bde80acbd5a33370f735c57d38e4d7301d7"
+  },
+  {
+   "path": "art/spirits-01/textures/lintmoth-1.jpg",
+   "sha256": "db0e3ea9e476fa3d6280f9ea42b359a5ff0fac1c1ae73d25d6e896422f1b4698"
+  },
+  {
+   "path": "art/spirits-01/textures/lintmoth-2.jpg",
+   "sha256": "7f1d4f0e9b1685e570ed6871a80d41236abf88040e0c99847e17942c0abfdf1f"
+  },
+  {
+   "path": "art/spirits-01/textures/wickling-0.jpg",
+   "sha256": "7449980a3d16a883cfd1797062044a809cb584e32964f1abd0c9df27f018ac9f"
+  },
+  {
+   "path": "art/spirits-01/textures/wickling-1.jpg",
+   "sha256": "1b5d9f48d594c7734f7c212155e7d82264048e60b53cfeeeb26c9bd7959f533a"
+  },
+  {
+   "path": "art/spirits-01/textures/wickling-2.jpg",
+   "sha256": "b7986b8dffd527950cc38eb688a6b86f4c37b7d24999aacb441507b23ddb3478"
+  },
+  {
+   "path": "art/spirits-01/wickling.blend",
+   "sha256": "ff85922b8b42268aa753dde648585e114178c33202b23a6cfecc7c839837ba99"
   },
   {
    "path": "content/models/spirits/doorman-body.glb",

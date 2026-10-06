@@ -3,8 +3,8 @@
 # For each piece in pieces.json: turn it so its business end ("forward", a native axis) points along the hand's
 # forward and its top stays up, scale it so its length along forward is "length" metres, move its origin to the grip
 # ("grip": the fraction of its bounds back-to-front, left-to-right, bottom-to-top), weld and drop degenerate faces,
-# downsize textures to "textureSize" and soften metal, then export content/models/held/<piece>.glb. The retained native
-# download and this script are the editable master: no .blend is kept, since one would only duplicate the native.
+# downsize textures to "textureSize" (JPEG) and soften metal, then export content/models/held/<piece>.glb and save the prepared
+# .blend master beside this script (its textures as JPEG files under textures/).
 # Blender is Z-up and the export is Y-up: the hand's forward (-z in hand space) is Blender +y.
 import bpy, bmesh, json, math, os, sys
 from mathutils import Matrix, Vector
@@ -53,7 +53,22 @@ def prepare(piece, spec):
     print(f"PREPARED {piece} triangles={triangles} size={size} scale={scale:.4f}")
     out = os.path.join(ROOT, "content", "models", "held", piece + ".glb")
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", export_yup=True, export_apply=True)
+    bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", export_yup=True, export_apply=True, export_image_format="JPEG")
+    save_master(piece)
+
+# The editable master: the prepared object in a .blend whose textures are saved beside it as JPEG files under
+# textures/, not packed, so the master stays small.
+def save_master(piece):
+    textures = os.path.join(HERE, "textures")
+    os.makedirs(textures, exist_ok=True)
+    for i, image in enumerate([im for im in bpy.data.images if im.size[0] > 0]):
+        path = os.path.join(textures, f"{piece}-{i}.jpg")
+        image.file_format = "JPEG"
+        image.save(filepath=path, quality=90)
+        if image.packed_file is not None: image.unpack(method="REMOVE")
+        image.filepath = bpy.path.relpath(path, start=HERE)
+        image.source = "FILE"
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, piece + ".blend"), compress=True, relative_remap=True)
 
 # The Hotel lights props with point lights and ambient only, no reflected environment, so fully metallic surfaces
 # read black. Scale the metallic channel (blue) of each metal-rough texture so their base colour shows.
