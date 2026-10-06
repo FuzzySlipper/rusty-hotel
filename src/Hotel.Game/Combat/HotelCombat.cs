@@ -276,7 +276,15 @@ internal sealed class HotelCombat
         if (!enemy.Alive || Defeated) return;
         enemy.Stats.Effects.Advance(delta);
         enemy.Stats.Regenerate(delta);
-        if (!enemy.Alive || enemy.Stats.Effects.Held) { enemy.User.Interrupt(); return; }
+        // A tick that fells the resident (a burn, say) counts as felling it: once, at the step it falls.
+        if (!enemy.Alive)
+        {
+            enemy.User.Interrupt(); enemy.BeamTime = 0;
+            supplies.Growth.Award(enemy.Kind.Experience);
+            Announce(Template.Fill(text.ResidentFalls, ("resident", enemy.Kind.Name)));
+            return;
+        }
+        if (enemy.Stats.Effects.Held) { enemy.User.Interrupt(); return; }
         // A push or a lure has the resident: it is moved, and does nothing else meanwhile.
         if (enemy.Stats.Effects.Moving is { } moving) { enemy.User.Interrupt(); conduct.Moved(enemy, moving, delta); return; }
         if (enemy.User.Step(delta) is { } landed)

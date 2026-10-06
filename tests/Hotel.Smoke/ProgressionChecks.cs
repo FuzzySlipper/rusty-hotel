@@ -58,6 +58,13 @@ internal static class ProgressionChecks
         target.Stats.Track("health").SetCurrent(1, false);
         Swing();
         Check(!target.Alive && grown.Experience == still.Experience, $"felling the resident gives its experience: {grown.Experience}");
+        // A resident felled by an admitted tick (a burn) gives its experience too, once.
+        target.Reset();
+        target.Stats.Track("health").SetCurrent(1, false);
+        int before = grown.Experience;
+        target.Stats.Effects.Apply(content.Mechanics.Effect("burning")!, "action.flare-shot");
+        Steps(600);
+        Check(!target.Alive && grown.Experience == before + still.Experience, $"a burn that fells the resident gives its experience once: {grown.Experience}");
         int second = growth.Levels.Experience[1];
         int health = supplies.MaximumHealth;
         grown.Award(second - 1 - grown.Experience);
