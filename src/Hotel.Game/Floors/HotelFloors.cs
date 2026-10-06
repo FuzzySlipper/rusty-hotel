@@ -38,7 +38,18 @@ internal sealed class HotelFloors
         for (int i = 0; i < Tunings.Content.Spirits.Length; i++)
             Authored.Require(content.Spirits.Any(s => s.Id == Tunings.Content.Spirits[i].Spirit), Floors.Content.ContentTuning.Path, $"spirits[{i}].spirit",
                 $"'{Tunings.Content.Spirits[i].Spirit}' is not in the spirit roster.");
-        Sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, content.Player.Controller(engine.Spatial));
+        for (int i = 0; i < Tunings.Content.Containers.Length; i++)
+        {
+            Floors.Content.ContainerKind c = Tunings.Content.Containers[i];
+            Template.Plain(Floors.Content.ContentTuning.Path, ($"containers[{i}].name", c.Name));
+            Authored.Require(content.Loot.Table(c.Table) is not null, Floors.Content.ContentTuning.Path, $"containers[{i}].table", $"unknown loot table '{c.Table}'.");
+            Authored.Require(content.Fixtures.Fixtures.FirstOrDefault(f => f.Id == c.Fixture) is { Mount: Scene.Kit.FixtureMount.Socket } shown &&
+                shown.Sockets?.ContainsKey("focus") == true && !shown.Parts.Any(p => p.Find), Floors.Content.ContentTuning.Path, $"containers[{i}].fixture",
+                $"'{c.Fixture}' must be a socket fixture with a focus socket and no find parts.");
+            c.Weight.Validate(Floors.Content.ContentTuning.Path, $"containers[{i}].weight");
+        }
+        Tunings.Content.ContainersPerFloor.Validate(Floors.Content.ContentTuning.Path, "containersPerFloor");
+        Sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, content.Player.Controller(engine.Spatial), content.Loot);
     }
 
     internal FloorTunings Tunings { get; }

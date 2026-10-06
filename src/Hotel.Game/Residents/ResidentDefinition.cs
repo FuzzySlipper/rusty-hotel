@@ -13,8 +13,9 @@ namespace Hotel.Game.Residents;
 /// <param name="Look">Its silhouette and tell poses, by id in <c>combat/looks.json</c>.</param>
 /// <param name="Actions">Its attacks in order of preference: the first that is ready, affordable and in reach is used.</param>
 /// <param name="EyeHeight">Height of the eye above its body centre: sight lines, attacks and summon targets start here.</param>
+/// <param name="Loot">The loot table its remains give when searched.</param>
 internal sealed record ResidentKind(string Id, string Name, string Look, string Faction, ActorStatBlock Stats,
-    ResidentPerception Perception, ResidentMovement Movement, ActionChoice[] Actions, float Radius, float Height, float EyeHeight)
+    ResidentPerception Perception, ResidentMovement Movement, ActionChoice[] Actions, float Radius, float Height, float EyeHeight, string Loot)
 {
     /// <summary>How far its farthest attack reaches, resolved from its actions when combat content loads.</summary>
     [JsonIgnore] internal float AttackReach { get; init; }

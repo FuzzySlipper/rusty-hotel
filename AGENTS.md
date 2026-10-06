@@ -55,6 +55,10 @@ and pause only decisions that need unavailable authority.
   `Combat/CombatView.cs` supplies poses to the existing scene snapshot. Keep
   resource mutations in Supplies, physical input in Engine FPS, and hits/body
   collision in Engine spatial services. Do not add a combat loop or local ray solver.
+  `Loot/LootDefinition.cs` owns qualities, affixes, tables and item generation; a
+  generated item's resolved roll travels with its stack, and searches (remains and
+  containers) give through Supplies once, keyed by the run seed. Do not re-roll a
+  placed or carried item.
   `Spirits/HotelSpirit.cs` owns the roster's pacts, the pact slot and the visit;
   `Spirits/SpiritView.cs` contributes the articulated creature to the same scene.
   Equip claims use the Engine paused-intent callback and the same domain rule as

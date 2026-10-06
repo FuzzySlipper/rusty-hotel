@@ -17,7 +17,7 @@ internal static class GenerationChecks
         var content = Owners.Content(engine);
         FloorTunings tunings = FloorTunings.Load(engine, content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents);
         CharacterControllerConfig body = content.Player.Controller(engine.Spatial);
-        FloorSources sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, body);
+        FloorSources sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, body, content.Loot);
         GenerationResult Generate(FloorSeed seed) => FloorGenerator.Generate(engine, seed, tunings, sources);
 
         Dictionary<string, int> refused = new(StringComparer.Ordinal);

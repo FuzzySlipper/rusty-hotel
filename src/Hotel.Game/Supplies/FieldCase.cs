@@ -1,3 +1,4 @@
+using Hotel.Game.Loot;
 using Rusty.Engine.Entities;
 using Rusty.Engine.Mechanics;
 using EngineItemDefinition = Rusty.Engine.Mechanics.ItemDefinition;
@@ -8,7 +9,8 @@ namespace Hotel.Game.Supplies;
 internal readonly record struct Pocket(InventoryStackId? Stack, EntityId? Single);
 
 /// <summary>A worn item: the slots it fills, in authored order, its kind and its Engine identity.</summary>
-internal sealed record WornItem(SlotDefinition[] Slots, ItemDefinition Item, EntityId Entity);
+/// <param name="Roll">How a generated item was resolved (its quality and affixes); null for one as authored.</param>
+internal sealed record WornItem(SlotDefinition[] Slots, ItemDefinition Item, EntityId Entity, ItemRoll? Roll);
 
 /// <summary>Why the field case refused an item or an equipment change.</summary>
 internal enum CaseRefusal { None, Pockets, Capacity, NotWorn, Exclusive, NoSlot, NoPocket, EmptySlot }
@@ -28,12 +30,14 @@ internal sealed class FieldCase
     private readonly Pocket?[] pockets;
     private readonly Dictionary<string, EngineItemDefinition> engineItems;
     private readonly Dictionary<string, EquipmentSlotDefinition> engineSlots;
-    private readonly Dictionary<EntityId, ItemDefinition> singles = [];
+    private readonly Dictionary<EntityId, (ItemDefinition Item, ItemRoll? Roll)> singles = [];
+    private readonly LootCatalog loot;
     private InventoryStore store = new();
     private ulong nextStack, nextSingle;
 
-    internal FieldCase(SuppliesDefinition definition, int capacity, EntityId owner)
+    internal FieldCase(SuppliesDefinition definition, LootCatalog loot, int capacity, EntityId owner)
     {
+        this.loot = loot;
         this.definition = definition;
         this.owner = owner;
         pockets = new Pocket?[capacity];
@@ -50,7 +54,7 @@ internal sealed class FieldCase
     internal ItemStack? Slot(int index)
     {
         if (pockets[index] is not { } pocket) return null;
-        if (pocket.Single is { } single) return new(singles[single].Id, 1);
+        if (pocket.Single is { } single) return new(singles[single].Item.Id, 1, singles[single].Roll);
         InventoryStack stack = store.View(owner).Stacks.Single(s => s.Id == pocket.Stack);
         return new(stack.Definition.Value, checked((int)stack.Quantity));
     }
@@ -62,7 +66,7 @@ internal sealed class FieldCase
         {
             store.TryGetEquipment(owner, out EquipmentState? equipment);
             return equipment!.Assignments.GroupBy(a => a.Item)
-                .Select(g => new WornItem(definition.Slots.Where(s => g.Any(a => a.Slot.Value == s.Id)).ToArray(), singles[g.Key], g.Key))
+                .Select(g => new WornItem(definition.Slots.Where(s => g.Any(a => a.Slot.Value == s.Id)).ToArray(), singles[g.Key].Item, g.Key, singles[g.Key].Roll))
                 .OrderBy(w => Array.IndexOf(definition.Slots, w.Slots[0])).ToArray();
         }
     }
@@ -77,7 +81,8 @@ internal sealed class FieldCase
     /// Admits a whole find or refuses it unchanged: stacks fill matching pockets first, then empty ones, and the Engine
     /// checks the case's capacity limits on the one edit. <paramref name="metric"/> names the limit a refusal hit.
     /// </summary>
-    internal CaseRefusal Add(string item, int count, out CapacityMetric? metric)
+    /// <param name="roll">How a generated single item was resolved; it is carried with that quality and those affixes.</param>
+    internal CaseRefusal Add(string item, int count, out CapacityMetric? metric, ItemRoll? roll = null)
     {
         metric = null;
         ItemDefinition kind = definition.Item(item)!;
@@ -103,7 +108,7 @@ internal sealed class FieldCase
             {
                 if (pockets[i] is not null) continue;
                 int added = Math.Min(count, limit);
-                placed.Add((i, stacks ? Grant(edit, item, added) : Materialize(edit, kind)));
+                placed.Add((i, stacks ? Grant(edit, item, added) : Materialize(edit, kind, roll)));
                 count -= added;
             }
             edit.Publish();
@@ -163,7 +168,7 @@ internal sealed class FieldCase
     {
         other = worn = null;
         if (pockets[index] is not { Single: { } entity }) return CaseRefusal.NotWorn;
-        ItemDefinition item = singles[entity];
+        ItemDefinition item = singles[entity].Item;
         if (item.Wear is not { } wear) return CaseRefusal.NotWorn;
         SlotDefinition[] fits = definition.Slots.Where(s => s.Accepts.Intersect(item.Classifications).Any()).ToArray();
         WornItem? displaced = WornIn(fits[0]);
@@ -221,7 +226,7 @@ internal sealed class FieldCase
     }
 
     internal (ItemStack?[] Pockets, WornState[] Worn) Capture() =>
-        (Enumerable.Range(0, Capacity).Select(Slot).ToArray(), Worn.Select(w => new WornState(w.Item.Id, w.Slots.Select(s => s.Id).ToArray())).ToArray());
+        (Enumerable.Range(0, Capacity).Select(Slot).ToArray(), Worn.Select(w => new WornState(w.Item.Id, w.Slots.Select(s => s.Id).ToArray(), w.Roll)).ToArray());
 
     /// <summary>
     /// Refuses saved contents that name unknown items or slots or overfill a stack; the Engine's own rules (capacity,
@@ -232,14 +237,16 @@ internal sealed class FieldCase
         if (saved is null || saved.Length != Capacity || worn is null)
             throw new InvalidOperationException("Checkpoint field case has the wrong shape.");
         foreach (ItemStack? pocket in saved)
-            if (pocket is { } stack && (stack.Count <= 0 || definition.Item(stack.Item) is not { } item || stack.Count > item.StackLimit))
+            if (pocket is { } stack && (stack.Count <= 0 || definition.Item(stack.Item) is not { } item || stack.Count > item.StackLimit ||
+                stack.Roll is { } roll && (roll.Item != stack.Item || !loot.Fits(roll, item))))
                 throw new InvalidOperationException("Checkpoint contains an invalid carried stack.");
         foreach (WornState? state in worn)
-            if (state?.Slots is null || definition.Item(state.Item)?.Wear is null || state.Slots.Any(id => !engineSlots.ContainsKey(id)))
+            if (state?.Slots is null || definition.Item(state.Item)?.Wear is null || state.Slots.Any(id => !engineSlots.ContainsKey(id)) ||
+                state.Roll is { } roll && (roll.Item != state.Item || !loot.Fits(roll, definition.Item(state.Item)!)))
                 throw new InvalidOperationException("Checkpoint contains an invalid worn item.");
         if (worn.SelectMany(w => w.Slots).Distinct().Count() != worn.Sum(w => w.Slots.Length))
             throw new InvalidOperationException("Checkpoint wears two items in one slot.");
-        new FieldCase(definition, Capacity, owner).Restore(saved, worn);
+        new FieldCase(definition, loot, Capacity, owner).Restore(saved, worn);
     }
 
     /// <summary>Rebuilds validated contents: every pocket and worn item in one edit, then each worn item equipped in its slots.</summary>
@@ -253,9 +260,9 @@ internal sealed class FieldCase
             {
                 if (saved[i] is not { } stack) continue;
                 ItemDefinition item = definition.Item(stack.Item)!;
-                pockets[i] = item.Form == ItemKind.Fungible ? Grant(edit, item.Id, stack.Count) : Materialize(edit, item);
+                pockets[i] = item.Form == ItemKind.Fungible ? Grant(edit, item.Id, stack.Count) : Materialize(edit, item, stack.Roll);
             }
-            foreach (WornState state in worn) wearing.Add((state, Materialize(edit, definition.Item(state.Item)!).Single!.Value));
+            foreach (WornState state in worn) wearing.Add((state, Materialize(edit, definition.Item(state.Item)!, state.Roll).Single!.Value));
             edit.Publish();
         }
         foreach (var (state, entity) in wearing)
@@ -280,23 +287,28 @@ internal sealed class FieldCase
         return new(id, null);
     }
 
-    private Pocket Materialize(InventoryEdit edit, ItemDefinition item)
+    private Pocket Materialize(InventoryEdit edit, ItemDefinition item, ItemRoll? roll = null)
     {
         EntityId entity = new(SingleItemIds + ++nextSingle);
         edit.MaterializeUnique(new ItemState(entity, engineItems[item.Id]), owner);
-        singles[entity] = item;
+        singles[entity] = (item, roll);
         return new(null, entity);
     }
 
-    // Every equipment receipt lists the sources of everything worn after it; those replace the published set.
-    private void Settle(EquipmentMutationReceipt receipt) => Sources = receipt.SourceActivations.Select(a => new StatSource(a.Identity,
-        a.Definition, 0, singles[a.Identity.Item!.Value].Wear!.Stats.Select(s => new StatContributionDefinition(StatId.Parse(s.Stat),
-            StackingGroupId.Parse($"worn.{s.Stat}"), MechanicsStackingPolicy.Sum, new StatContribution.Add(s.Amount))).ToArray())).ToArray();
+    // Every equipment receipt lists the sources of everything worn after it; those replace the published set. A worn
+    // item's source carries its own stats as its quality scales them, and its affixes'.
+    private void Settle(EquipmentMutationReceipt receipt) => Sources = receipt.SourceActivations.Select(a =>
+    {
+        var (item, roll) = singles[a.Identity.Item!.Value];
+        return new StatSource(a.Identity, a.Definition, 0, loot.Stats(item, roll).Select(s => new StatContributionDefinition(StatId.Parse(s.Stat),
+            StackingGroupId.Parse($"worn.{s.Stat}"), MechanicsStackingPolicy.Sum, new StatContribution.Add(s.Amount))).ToArray());
+    }).ToArray();
 
     private InventoryStackId NewStackId() => InventoryStackId.Parse($"hotel-stack-{++nextStack}");
 }
 
 /// <summary>A saved worn item: its kind and the slots it fills.</summary>
-internal sealed record WornState(string Item, string[] Slots);
+internal sealed record WornState(string Item, string[] Slots, ItemRoll? Roll = null);
 
-internal readonly record struct ItemStack(string Item, int Count);
+/// <param name="Roll">How a generated single item was resolved; null for items as authored.</param>
+internal readonly record struct ItemStack(string Item, int Count, ItemRoll? Roll = null);

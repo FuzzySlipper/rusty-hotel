@@ -198,6 +198,12 @@ item effects and collected-find state. The DOM only projects these facts.
 | `rusty-dagger/src/WorldRpg.Kit/Combat/CombatResolution.cs` | `f680eeb8675d3b1f634ee850096d680abc7b5c30` | `Actions/ActionResolution.cs`: participants' live stats and attached contributions in one ordered path, source before target, before health is applied once. Hotel's contributions are typed authored records (`Mechanics/DamageContribution.cs`) on worn items and guard effects, at four stages (hit, damage, applying, defeating), outgoing before incoming, around one `ActorStats.Apply`; deliveries are Engine spatial queries. No hit roll or action registry | `c287b35f6f20aa5b8b831a720751ef5092e214b53df190910f6cdda30c60befa` |
 | `rusty-dagger/src/WorldRpg.Kit/Ai/PursuitCoordinator.cs`, `WanderCoordinator.cs` | `f680eeb8675d3b1f634ee850096d680abc7b5c30` | `Residents/ResidentSenses.cs`, `ResidentConduct.cs`: the Engine visibility observer built from the actor's facing, a pursuit decision from visibility and attack reach with retreat when it applies, and waypoint walking with a pause. Hotel adds awareness memory, near sense, factions, ambush, and composes these as authored parts; steps are Engine character steps, with no navigation coordinator, failure states or fact output | `2086e02f0928f5a72f933791058b1c5db96cf3312d55110460c1ae60b878d4a1`, `3ed6570ef0ddd4584cd288bf2dd9fff7c8c957798fbcfd542f7b3bc127819f2d` |
 
+## Incorporated loot pattern
+
+| Donor file | Revision | Hotel adaptation | SHA-256 of source |
+| --- | --- | --- | --- |
+| `rusty-dagger/src/WorldRpg.Kit/Loot/CorpseLootCoordinator.cs` | `f680eeb8675d3b1f634ee850096d680abc7b5c30` | `HotelWorld.Searches`, `HotelRoute` searchables and `HotelSupplies.Search`: a defeated actor's remains keep the actor's identity, become interactable once it falls, and give their contents through the one inventory owner without generation running differently on restore. Hotel keeps no corpse inventory: contents are re-derived from keyed draws on the run seed and taken whole, and the search is saved as collected | `4df6833afaaba22ec7ae025c7086d2a02ccd1cf82f7d63f2295a1327ef13e153` |
+
 ## Incorporated effect lifecycle
 
 | Donor file | Revision | Hotel adaptation | SHA-256 of source |

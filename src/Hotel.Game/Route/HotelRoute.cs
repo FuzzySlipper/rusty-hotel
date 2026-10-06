@@ -42,7 +42,8 @@ internal sealed class HotelRoute : IWorldInteractionScene
     /// <param name="shared">The product's one world interaction, which reads whichever route is current.</param>
     internal HotelRoute(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
         HotelSpirit spirit, RouteDefinition definition, ExcursionRoute layout, RefugeDefinition? refuge,
-        Func<bool> recordCheckpoint, Action changed, Func<StairDirection, bool> travel, WorldInteraction? shared = null)
+        Func<bool> recordCheckpoint, Action changed, Func<StairDirection, bool> travel, WorldInteraction? shared = null,
+        Searchable[]? searchables = null, Func<SearchDefinition, Loot.ItemRoll[]>? roll = null)
     {
         this.travel = travel;
         this.engine = engine;
@@ -78,8 +79,13 @@ internal sealed class HotelRoute : IWorldInteractionScene
         {
             Vector3 point = Authored.Vector(find.Definition.Point);
             Add(new(find.Entity, () => !supplies.Collected(find.Definition.Id),
-                () => Template.Fill(text.Take, ("item", supplies.Item(find.Definition.Item).Name)), () => point, () => true, () => Take(find)));
+                () => Template.Fill(text.Take, ("item", supplies.Name(new ItemStack(find.Definition.Item, find.Definition.Count, find.Definition.Roll)))),
+                () => point, () => true, () => Take(find)));
         }
+        // Containers, and the remains of residents once they have fallen: each searched once for what its table rolls.
+        foreach (Searchable searchable in searchables ?? [])
+            Add(new(scene.Entities.Create().Value, () => searchable.Open() && !supplies.Searched(searchable.Search.Id),
+                () => Template.Fill(text.Search, ("thing", searchable.Search.Name)), searchable.Point, () => true, () => Search(searchable.Search, roll!)));
         for (int i = 0; i < spirit.Bells.Length; i++)
         {
             int bell = i;
@@ -199,6 +205,14 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private InteractionActionResult Climb(StairDefinition stair) =>
         travel(stair.Direction) ? new(true, "Took the stairs.") : new(false, "The stairs lead nowhere yet.");
 
+    private InteractionActionResult Search(SearchDefinition search, Func<SearchDefinition, Loot.ItemRoll[]> roll)
+    {
+        bool searched = supplies.Search(search.Id, roll(search));
+        if (searched) { revision++; Update(); }
+        changed();
+        return new(searched, supplies.Message);
+    }
+
     private InteractionActionResult FreeSpirit(int bell)
     {
         bool acquired = spirit.Acquire(bell);
@@ -276,3 +290,6 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private sealed record Interactable(ulong Entity, Func<bool> Present, Func<string> Label, Func<Vector3> Point,
         Func<bool> Available, Func<InteractionActionResult> Use);
 }
+
+/// <summary>Something the route offers to search: what it is, where its focus is now, and whether it can be searched yet.</summary>
+internal sealed record Searchable(SearchDefinition Search, Func<Vector3> Point, Func<bool> Open);

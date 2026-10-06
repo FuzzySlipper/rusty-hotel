@@ -27,6 +27,7 @@ internal static class FloorExcursion
     {
         int depth = floor.Identity.Seed.Depth;
         string Scoped(string id) => $"{Id(depth)}/{id}";
+        ContainerKind Container(PlacedContainer container) => tunings.Content.Containers.First(k => k.Id == container.Kind);
         DoorTuning doors = tunings.Content.Doors;
         PlacedFind[] shown = floor.Content.Finds.Where(f => f.Item is not null).ToArray();
         PlacedFind[] keyFinds = floor.Content.Finds.Where(f => f.Role == FindRole.Key).ToArray();
@@ -34,7 +35,8 @@ internal static class FloorExcursion
         {
             Fixtures = [.. floor.Plan.Fixtures,
                 .. shown.Select(f => new FixturePlacement(tunings.Content.Display(f.Item!), Id: Display(f), On: f.Socket, Find: Scoped(f.Id))),
-                .. keyFinds.Select(f => new FixturePlacement(doors.KeyFixture, Id: Display(f), On: f.Socket, Find: Scoped(f.Id)))]
+                .. keyFinds.Select(f => new FixturePlacement(doors.KeyFixture, Id: Display(f), On: f.Socket, Find: Scoped(f.Id))),
+                .. floor.Content.Containers.Select(c => new FixturePlacement(Container(c).Fixture, Id: Shown(c), On: c.Socket))]
         };
         BuiltFloor built = KitBuilder.Build(plan, $"generated {Id(depth)}", sources.Kit, sources.Fixtures);
         float[] At(Vector3 p) => [p.X, p.Y, p.Z];
@@ -78,11 +80,13 @@ internal static class FloorExcursion
         ExcursionRoute route = new(tunings.Content.FallbackLocation, [.. lockDoors, .. latch, .. keptDoors], readings, built.Rooms, stairs, keys);
 
         ArrivalPlacement arrival = new(Standing(floor.Content.Arrival, player.Height), floor.Content.ArrivalYaw);
-        FindDefinition[] finds = shown.Select(f => new FindDefinition(Scoped(f.Id), f.Item!, f.Count, At(built.Sockets[$"{Display(f)}.focus"]))).ToArray();
+        FindDefinition[] finds = shown.Select(f => new FindDefinition(Scoped(f.Id), f.Item!, f.Count, At(built.Sockets[$"{Display(f)}.focus"]), f.Roll)).ToArray();
+        ContainerPlacement[] containers = floor.Content.Containers.Select(c =>
+            new ContainerPlacement(Scoped(c.Id), Container(c).Name, Container(c).Table, At(built.Sockets[$"{Shown(c)}.focus"]))).ToArray();
         ResidentPlacement[] residents = floor.Content.Residents.Select(r =>
             new ResidentPlacement(Scoped(r.Id), r.Kind, Standing(r.Socket, sources.Residents.First(k => k.Id == r.Kind).Height))).ToArray();
         SpiritBellPlacement[] bells = floor.Content.Bell is { } bell ? [new(bell.Spirit, At(built.Sockets[bell.Socket]), bell.Place)] : [];
-        ExcursionPlacements placements = new(arrival, null, finds, residents, bells, arrival);
+        ExcursionPlacements placements = new(arrival, null, finds, residents, bells, arrival, containers);
 
         LightingDefinition lighting = new(sources.Modules.Lighting.AmbientColor, sources.Modules.Lighting.AmbientIntensity, built.Lights);
         return new(Id(depth), plan, new(built.Boxes, built.Mouldings, built.Models, lighting), route, placements, []);
@@ -90,4 +94,6 @@ internal static class FloorExcursion
 
     // The display fixture's own id: the find's, marked so it cannot be mistaken for a module fixture.
     private static string Display(PlacedFind find) => $"{find.Id}#shown";
+    private static string Shown(PlacedContainer container) => $"{container.Id}#shown";
+
 }

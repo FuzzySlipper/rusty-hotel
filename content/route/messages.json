@@ -4,5 +4,7 @@
   "take": "Take {item}",
   "recordCheckpoint": "Record refuge checkpoint",
   "stairsUp": "Climb the stairs",
-  "stairsDown": "Go back down the stairs"
+  "stairsDown": "Go back down the stairs",
+  "search": "Search {thing}",
+  "remains": "{resident}'s remains"
 }

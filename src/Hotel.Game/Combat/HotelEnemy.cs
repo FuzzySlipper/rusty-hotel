@@ -54,6 +54,7 @@ internal sealed class HotelEnemy : IActionActor
     public bool Alive => Health.Value > 0;
     // Residents wear nothing; their contributions come from the effects they bear.
     public IEnumerable<ActiveContribution> Contributions => Stats.Effects.HitContributions;
+    public IEnumerable<string> HitEffects => [];
     /// <summary>What the resident is doing: fallen, held, or its action's phase.</summary>
     internal AttackPhase Phase => !Alive ? AttackPhase.Defeated : Stats.Effects.Held ? AttackPhase.Interrupted : User.Phase switch
     {

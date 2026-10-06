@@ -15,6 +15,8 @@ internal sealed record RouteDefinition(InteractionTuning Interaction, RouteMessa
         Template.Check(RouteMessages.Path, "ready", text.Ready, "label");
         Template.Check(RouteMessages.Path, "outOfReach", text.OutOfReach, "label");
         Template.Check(RouteMessages.Path, "take", text.Take, "item");
+        Template.Check(RouteMessages.Path, "search", text.Search, "thing");
+        Template.Check(RouteMessages.Path, "remains", text.Remains, "resident");
         Template.Plain(RouteMessages.Path, ("recordCheckpoint", text.RecordCheckpoint), ("stairsUp", text.StairsUp), ("stairsDown", text.StairsDown));
         InteractionTuning interaction = Authored.Read(engine, InteractionTuning.Path, ContentJson.Default.InteractionTuning);
         Authored.Positive(InteractionTuning.Path, "reach", interaction.Reach);
@@ -32,7 +34,10 @@ internal sealed record InteractionTuning(float Reach, float FocusDistance, float
 }
 
 /// <summary>Focus prompts and the labels of interactables that have no authored label of their own.</summary>
-internal sealed record RouteMessages(string Ready, string OutOfReach, string Take, string RecordCheckpoint, string StairsUp, string StairsDown)
+/// <param name="Search">The label of something searchable; <c>{thing}</c> is its name.</param>
+/// <param name="Remains">How a fallen resident's remains are named, for searching them.</param>
+internal sealed record RouteMessages(string Ready, string OutOfReach, string Take, string RecordCheckpoint, string StairsUp, string StairsDown,
+    string Search, string Remains)
 {
     internal const string Path = "route/messages.json";
 }

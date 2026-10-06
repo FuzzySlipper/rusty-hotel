@@ -8,13 +8,17 @@ using Rusty.Engine;
 namespace Hotel.Game.Floors.Content;
 
 /// <summary>An item a find may hold, how many, and how often it is chosen.</summary>
-internal sealed record ItemWeight(string Item, int Count, int Weight);
+/// <summary>An item a pool may give, how many, and how often at a depth.</summary>
+internal sealed record ItemWeight(string Item, int Count, DepthCurve Weight);
 
 /// <summary>A spirit a floor's bell may hold, and how often.</summary>
 internal sealed record SpiritWeight(string Spirit, int Weight);
 
 /// <summary>A resident kind, the module tags it may stand in, and how often it is chosen.</summary>
-internal sealed record ResidentWeight(string Kind, Floors.Modules.ModuleTag[] Tags, int Weight);
+internal sealed record ResidentWeight(string Kind, Floors.Modules.ModuleTag[] Tags, DepthCurve Weight);
+
+/// <summary>A kind of container a floor may hold: how it is named, the socket fixture it is, its loot table and how often at a depth.</summary>
+internal sealed record ContainerKind(string Id, string Name, string Fixture, string Table, DepthCurve Weight);
 
 /// <summary>
 /// The pacing budgets every generated floor must meet: the healing finds reachable before each hazard, the item that
@@ -34,7 +38,8 @@ internal sealed record PacingTuning(string RecoveryItem, int RecoveryBeforeHazar
 /// <param name="Doors">How locked doors, the shortcut's latch and their keys look and read.</param>
 /// <param name="Spirits">The spirits a floor's bell may hold, weighted.</param>
 internal sealed record ContentTuning(SpiritWeight[] Spirits, string FallbackLocation, ItemWeight[] Objective, ItemWeight[] Supplies, int SuppliesPerStop,
-    DepthCurve LooseSupplies, ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing, ItemDisplay[] Displays, DoorTuning Doors)
+    DepthCurve LooseSupplies, ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing, ItemDisplay[] Displays, DoorTuning Doors,
+    ContainerKind[] Containers, DepthCurve ContainersPerFloor)
 {
     internal string Display(string item) => Displays.First(d => d.Item == item).Fixture;
 
@@ -60,7 +65,7 @@ internal sealed record ContentTuning(SpiritWeight[] Spirits, string FallbackLoca
             Authored.Require(t.Displays.Count(d => d.Item == item) == 1, Path, "displays", $"'{item}' needs exactly one display fixture.");
         void Items(string field, ItemWeight[] weights, bool deposit)
         {
-            Authored.Require(weights.Any(w => w.Weight > 0), Path, field, "needs an item with a positive weight.");
+            Authored.Require(weights.Any(w => w.Weight.Max > 0), Path, field, "needs an item with a positive weight.");
             for (int i = 0; i < weights.Length; i++)
             {
                 ItemDefinition? item = items.FirstOrDefault(d => d.Id == weights[i].Item);
@@ -68,7 +73,7 @@ internal sealed record ContentTuning(SpiritWeight[] Spirits, string FallbackLoca
                 Authored.Require(item!.Deposit == deposit, Path, $"{field}[{i}].item",
                     deposit ? $"'{item.Id}' is not kept for the refuge (deposit)." : $"'{item.Id}' is kept for the refuge, not a supply.");
                 Authored.Within(Path, $"{field}[{i}].count", weights[i].Count, 1, item.StackLimit);
-                Authored.AtLeast(Path, $"{field}[{i}].weight", weights[i].Weight, 0);
+                weights[i].Weight.Validate(Path, $"{field}[{i}].weight");
             }
         }
         Items("objective", t.Objective, true);
@@ -76,12 +81,12 @@ internal sealed record ContentTuning(SpiritWeight[] Spirits, string FallbackLoca
         Authored.AtLeast(Path, "suppliesPerStop", t.SuppliesPerStop, 1);
         t.LooseSupplies.Validate(Path, "looseSupplies");
         t.ExtraResidents.Validate(Path, "extraResidents");
-        Authored.Require(t.Residents.Any(r => r.Weight > 0), Path, "residents", "needs a resident with a positive weight.");
+        Authored.Require(t.Residents.Any(r => r.Weight.Max > 0), Path, "residents", "needs a resident with a positive weight.");
         for (int i = 0; i < t.Residents.Length; i++)
         {
             Authored.Require(residents.Any(k => k.Id == t.Residents[i].Kind), Path, $"residents[{i}].kind", $"unknown resident kind '{t.Residents[i].Kind}'.");
             Authored.Require(t.Residents[i].Tags.Length > 0, Path, $"residents[{i}].tags", "names the module tags it may stand in.");
-            Authored.AtLeast(Path, $"residents[{i}].weight", t.Residents[i].Weight, 0);
+            t.Residents[i].Weight.Validate(Path, $"residents[{i}].weight");
         }
         Authored.Require(items.Any(i => i.Id == t.Pacing.RecoveryItem && i.Restores(Hotel.Game.Supplies.HotelSupplies.HealthTrack) > 0), Path, "pacing.recoveryItem",
             $"'{t.Pacing.RecoveryItem}' must be a healing item.");

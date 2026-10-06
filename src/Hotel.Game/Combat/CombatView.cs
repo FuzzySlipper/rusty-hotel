@@ -80,6 +80,13 @@ internal sealed class CombatView : IDisposable
         foreach (HotelEnemy enemy in combat.Enemies)
         {
             Quaternion facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, -enemy.Yaw);
+            Vector3 origin = enemy.Position;
+            // A fallen resident lies on its back where it fell, its remains there to be searched.
+            if (!enemy.Alive)
+            {
+                facing *= Quaternion.CreateFromAxisAngle(Vector3.UnitX, -MathF.PI / 2);
+                origin.Y += -enemy.Kind.Height / 2 + residents[enemy.Id].Max(p => MathF.Abs(p.Offset.Z) + p.Size.Z / 2);
+            }
             bool winding = enemy.Phase == AttackPhase.Windup, committed = enemy.Phase == AttackPhase.Commit;
             ResidentLook silhouette = looks[enemy.Id];
             foreach (Part part in residents[enemy.Id])
@@ -87,7 +94,7 @@ internal sealed class CombatView : IDisposable
                 Vector3 offset = part.Offset;
                 if (part.Role == LookRole.Arm) offset += winding ? Authored.Vector(silhouette.ArmWindup) : committed ? Authored.Vector(silhouette.ArmStrike) : Vector3.Zero;
                 if (enemy.Phase is AttackPhase.Recovery or AttackPhase.Interrupted) offset.Y -= silhouette.Droop;
-                Place(part, enemy.Position, facing, enemy.Alive && (part.Role != LookRole.Tell || winding || committed), offset);
+                Place(part, origin, facing, part.Role != LookRole.Tell || enemy.Alive && (winding || committed), offset);
             }
             Part beam = beams[enemy.Id];
             bool showBeam = enemy.Alive && enemy.BeamTime > 0;

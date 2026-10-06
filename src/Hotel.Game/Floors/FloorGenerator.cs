@@ -37,7 +37,7 @@ internal sealed record FloorTunings(MissionTuning Mission, LayoutTuning Layout, 
 
 /// <summary>The authored catalogs a floor is generated from, and the body it is proven for.</summary>
 internal sealed record FloorSources(ModuleCatalog Modules, KitDefinition Kit, FixtureCatalog Fixtures, ItemDefinition[] Items, ResidentKind[] Residents,
-    CharacterControllerConfig Body);
+    CharacterControllerConfig Body, Loot.LootCatalog Loot);
 
 /// <summary>A generated floor, proven by the Engine: its identity, mission graph, layout, plan, built geometry and verdict.</summary>
 /// <param name="Confirmation">The Engine's verdict when it was generated; none when it was rebuilt from a save.</param>
@@ -81,7 +81,7 @@ internal static class FloorGenerator
                 FloorLayouts.Laid laid = FloorLayouts.Lay(mission.Graph, sources.Modules, tunings.Layout, sources.Kit, sources.Fixtures, draws, kept);
                 if (laid.Failure is { } failure) { refusals.Add($"{at} layout: {failure}"); continue; }
                 FloorContent content = ContentPlacement.Place(mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, sources.Modules, tunings.Content,
-                    sources.Residents, tunings.Readings, draws);
+                    sources.Residents, tunings.Readings, draws, sources.Items, sources.Loot);
                 if (ContentPacing.Check(content, mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, tunings.Content, sources.Items, sources.Residents, seed.Depth) is { } pacing)
                 { refusals.Add($"{at} content: {pacing}"); continue; }
                 Confirmation confirmation = FloorConfirmation.Confirm(engine, mission.Graph, laid.Layout!, laid.Plan!, laid.Floor!, sources.Modules, sources.Body,

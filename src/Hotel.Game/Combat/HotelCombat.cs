@@ -63,6 +63,8 @@ internal sealed class HotelCombat
     };
     internal float PhaseProgress => User.PhaseProgress;
     internal string Notice { get; private set; } = "";
+    /// <summary>Admitted seconds since the current notice was posted.</summary>
+    internal float NoticeAge { get; private set; }
     internal float HurtFlash { get; private set; }
     internal float HitFlash { get; private set; }
     internal int AcceptedAttacks { get; private set; }
@@ -70,7 +72,7 @@ internal sealed class HotelCombat
     internal bool Defeated => supplies.Health == 0;
     /// <summary>The item in the main hand, or else the off hand: the one primary and secondary act through.</summary>
     internal WornItem? Holding => supplies.Held(Hand.Main) ?? supplies.Held(Hand.Off);
-    internal string HandsText => Holding?.Item.Name ?? text.EmptyHands;
+    internal string HandsText => Holding is { } held ? supplies.Name(held) : text.EmptyHands;
     internal string ActionText => Defeated ? text.Overwhelmed : Phase switch
     {
         AttackPhase.Windup => User.Current!.WindupLabel,
@@ -160,6 +162,7 @@ internal sealed class HotelCombat
         HurtFlash = Math.Max(0, HurtFlash - delta);
         HitFlash = Math.Max(0, HitFlash - delta);
         noticeRemaining = Math.Max(0, noticeRemaining - delta);
+        NoticeAge += delta;
         if (noticeRemaining == 0) Notice = "";
         if (Defeated) { User.Interrupt(); PactUser.Interrupt(); belt = null; pactLanded = null; resolution.Clear(); return; }
         if (supplies.Stats.Effects.Held) { User.Interrupt(); belt = null; }
@@ -329,5 +332,5 @@ internal sealed class HotelCombat
         noticeRemaining = HurtFlash = HitFlash = 0;
         AcceptedAttacks = LandedHits = 0; Notice = "";
     }
-    private void Announce(string message) { Notice = message; noticeRemaining = definition.Tuning.NoticeSeconds; }
+    private void Announce(string message) { Notice = message; noticeRemaining = definition.Tuning.NoticeSeconds; NoticeAge = 0; }
 }

@@ -1,6 +1,7 @@
 using Hotel.Game.Audio;
 using Hotel.Game.Combat;
 using Hotel.Game.Content;
+using Hotel.Game.Residents;
 using Hotel.Game.Expedition;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
@@ -37,12 +38,15 @@ internal sealed class HotelWorld : IDisposable
             content.Look.Apply(engine.CameraView);
             Player = Own(new HotelPlayer(engine, Scene, content.Player, excursion.Placements.Arrival, content.Controls));
             Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity,
-                content.Mechanics, content.PlayerStats);
+                content.Mechanics, content.PlayerStats, content.Loot, Searches(content, excursion));
             Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents);
             Spirit = new HotelSpirit(content.Spirits, content.SpiritText, excursion.Placements.SpiritBells, Supplies, Combat, Player,
                 content.Combat.Actions, content.Mechanics);
+            // A search's table rolls under the run seed and the floor's depth (the west wing counts as the first).
             Route = new HotelRoute(engine, Scene, Player, Supplies, Spirit, content.Route, excursion.Route,
-                excursion.Placements.Refuge, returnToRefuge, publishInterface, travel, interaction);
+                excursion.Placements.Refuge, returnToRefuge, publishInterface, travel, interaction, Searchables(content, excursion, Supplies, Combat),
+                search => content.Loot.Roll(search.Table, Math.Max(1, floors.Depth), new Loot.SearchLootDraws(engine.Random, floors.RunSeed),
+                    search.Id, content.Supplies));
             Ambience = Own(new HotelAmbience(engine, excursion.Ambience));
             CombatView = Own(new CombatView(engine, Scene, Player, Combat, content.Combat));
             SpiritView = Own(new SpiritView(engine, Scene, Spirit));
@@ -82,6 +86,26 @@ internal sealed class HotelWorld : IDisposable
         Combat.Restore(memory?.Residents ?? []);
         Route.Restore(memory?.OpenDoors ?? [], memory?.Keys);
     }
+
+    /// <summary>What can be searched on this floor: each resident's remains, and the containers placed here.</summary>
+    internal static SearchDefinition[] Searches(HotelContent content, ExcursionDefinition excursion) =>
+    [
+        .. excursion.Placements.Residents.Select(r =>
+        {
+            ResidentKind kind = content.Combat.Residents.Single(k => k.Id == r.Kind);
+            return new SearchDefinition(Remains(r.Id), Template.Fill(content.Route.Text.Remains, ("resident", kind.Name)), kind.Loot);
+        }),
+        .. excursion.Placements.Containers.Select(c => new SearchDefinition(c.Id, c.Name, c.Table))
+    ];
+
+    // Remains are searched where the resident fell, once it has; a container where it stands.
+    private static Searchable[] Searchables(HotelContent content, ExcursionDefinition excursion, HotelSupplies supplies, HotelCombat combat) =>
+        supplies.Searches.Select(search => combat.Enemies.FirstOrDefault(e => Remains(e.Id) == search.Id) is { } fallen
+            ? new Searchable(search, () => fallen.Position, () => !fallen.Alive)
+            : new Searchable(search, () => Authored.Vector(excursion.Placements.Containers.Single(c => c.Id == search.Id).Point), () => true)).ToArray();
+
+    /// <summary>The search id of a resident's remains.</summary>
+    internal static string Remains(string resident) => $"{resident}#remains";
 
     private T Own<T>(T resource) where T : IDisposable
     {

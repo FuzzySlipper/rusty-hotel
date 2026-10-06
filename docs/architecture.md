@@ -21,6 +21,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Supplies/FieldCase.cs` | The field case over one Engine `InventoryStore`: pocket layout of stacks and single items, equipment slots and worn items, Engine capacity limits (weight, space), the worn items' stat sources, capture and restore |
 | `src/Hotel.Game/Actions/` | The action catalog (`ActionDefinition`: delivery, cost, timing, scaled damage packets, effects), `ActionUser` (one actor's phase, committed aim and cooldowns on admitted seconds) and `ActionResolution` (Engine spatial queries per delivery, contributions, damage application, projectiles in flight) |
 | `src/Hotel.Game/Combat/HotelCombat.cs` | Encounter policy over the action pipeline: the investigator's primary/secondary actions through what the hands hold, swapping hands, residents attacking with their kind's action, approach, impacts' feedback, resident capture and restore |
+| `src/Hotel.Game/Loot/` | The loot catalog (`LootCatalog`: qualities, affixes, tables), item generation and table rolls through one keyed-draw interface: floor generation's content draws, or `SearchLootDraws` under the run seed for searches made in play |
 | `src/Hotel.Game/Residents/` | Resident kinds composed from parts (`ResidentDefinition`: look, faction, perception, movement, action choices), `ResidentSenses` (one Engine visibility query a step for every resident, near sense and awareness memory) and `ResidentConduct` (the movement parts and action choice, as Engine character steps) |
 | `src/Hotel.Game/Combat/HotelEnemy.cs`, `PlayerActor.cs` | The two kinds of action actor: a placed resident (body, `ActorStats`, `ActionUser`) and the investigator (player body, supplies' stats, worn contributions) |
 | `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident and held-item meshes, flares in flight and attack poses contributed to the existing scene snapshot |
@@ -151,7 +152,8 @@ The reading screen uses the existing foreground pause, close and focus flow.
 `HotelSupplies` owns item stacks and resource values. A world find is admitted
 through Engine `InventoryStore`, registered to the existing player entity.
 `FieldCase` pockets retain Engine identities only (a stack id or a single item's
-entity); quantities, containment and capacity live in the Engine ledger, which
+entity, with a generated item's resolved roll, whose quality and affixes shape its
+worn source); quantities, containment and capacity live in the Engine ledger, which
 refuses an edit over a weight or space limit. Single items are worn through the
 same store's equipment: the Engine checks slot classifications, slot counts and
 exclusivity, and each equipment receipt's source activations become the stat

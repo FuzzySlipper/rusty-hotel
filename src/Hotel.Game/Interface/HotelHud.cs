@@ -35,14 +35,15 @@ internal sealed class HotelHud : IDisposable
         UiValue value = w.Finish(
             w.Text("location", route.Location),
             w.Text("focusPrompt", route.Prompt),
-            // One notice slot: the most recent spirit result outranks combat, which outranks supplies.
-            w.Text("notice", First(spirit.Notice, combat.Notice, supplies.Notice)),
+            // One notice slot: a spirit result outranks the rest; of combat and supplies, the newer result shows.
+            w.Text("notice", First(spirit.Notice, supplies.Notice.Length > 0 && (combat.Notice.Length == 0 || supplies.NoticeAge < combat.NoticeAge)
+                ? supplies.Notice : combat.Notice)),
             w.Object("condition",
                 w.Number("health", supplies.Health), w.Number("maximumHealth", supplies.MaximumHealth),
                 w.Number("stamina", supplies.Stamina), w.Number("maximumStamina", supplies.MaximumStamina),
                 w.Flag("hurt", combat.HurtFlash > 0), Effects(w, supplies, combat)),
             w.Object("held",
-                w.Text("weapon", combat.HandsText), w.Text("offHand", supplies.Held(Hand.Off) is { } off && off != combat.Holding ? off.Item.Name : ""), w.Text("action", combat.ActionText), w.Flag("hit", combat.HitFlash > 0),
+                w.Text("weapon", combat.HandsText), w.Text("offHand", supplies.Held(Hand.Off) is { } off && off != combat.Holding ? supplies.Name(off) : ""), w.Text("action", combat.ActionText), w.Flag("hit", combat.HitFlash > 0),
                 w.Number("ammo", supplies.Ammo), w.Number("maximumAmmo", supplies.MaximumAmmo),
                 w.Number("summon", supplies.Summon), w.Number("maximumSummon", supplies.MaximumSummon),
                 w.Text("spirit", spirit.HudLabel),
@@ -87,14 +88,14 @@ internal sealed class HotelHud : IDisposable
             ItemStack? stack = supplies.Slot(i);
             ItemDefinition? item = stack is { } carried ? supplies.Item(carried.Item) : null;
             pockets.Add(w.Object("",
-                w.Text("id", item?.Id ?? ""), w.Text("name", item?.Name ?? ""), w.Text("description", item?.Details ?? ""),
+                w.Text("id", item?.Id ?? ""), w.Text("name", stack is { } named ? supplies.Name(named) : ""), w.Text("description", item?.Details ?? ""),
                 w.Text("mark", item?.Mark ?? "·"), w.Number("count", stack?.Count ?? 0), w.Number("stackLimit", item?.StackLimit ?? 0),
                 w.Text("useReason", supplies.UseReason(i)), w.Flag("wearable", item?.Wear is not null),
                 w.Text("wearReason", supplies.WearReason(i))));
         }
         SuppliesDefinition definition = supplies.Definition;
         uint[] worn = definition.Slots.Select(slot => supplies.WornIn(slot) is { } on
-            ? w.Object("", w.Text("slot", slot.Name), w.Text("id", on.Item.Id), w.Text("name", on.Item.Name), w.Text("mark", on.Item.Mark),
+            ? w.Object("", w.Text("slot", slot.Name), w.Text("id", on.Item.Id), w.Text("name", supplies.Name(on)), w.Text("mark", on.Item.Mark),
                 w.Text("description", on.Item.Details))
             : w.Object("", w.Text("slot", slot.Name), w.Text("id", ""), w.Text("name", ""), w.Text("mark", ""), w.Text("description", ""))).ToArray();
         uint[] load = definition.Capacity.Select(m => w.Text("", Template.Fill(definition.Text.Load,

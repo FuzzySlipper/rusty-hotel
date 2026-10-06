@@ -34,7 +34,7 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, Classification
             for (int s = 0; s < kit[i].Slots.Length; s++)
                 Authored.Require(definition.Slots.Any(x => x.Id == kit[i].Slots[s]), StartingKit.Path, $"worn[{i}].slots[{s}]", $"unknown slot '{kit[i].Slots[s]}'.");
         }
-        try { new FieldCase(definition, 1, new Rusty.Engine.Entities.EntityId(0)).Restore([null], kit); }
+        try { new FieldCase(definition, new Loot.LootCatalog([], [], []), 1, new Rusty.Engine.Entities.EntityId(0)).Restore([null], kit); }
         catch (MechanicsException refused) { Authored.Require(false, StartingKit.Path, "worn", $"cannot be worn together: {refused.Message}"); }
         return definition;
     }
@@ -224,7 +224,8 @@ internal sealed record CapacityCatalog(CapacityMetric[] Metrics)
 internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, string CaseFull, string TooMuch, string Collected, string Overwhelmed,
     string EmptyPocket, string TrackFull, string KeepForReturn, string WornNotUsed, string CaseChanged, string Used, string ChooseStack,
     string StackFull, string Rearranged, string ChooseAgain, string ChooseAction, string Unreadable, string Load,
-    string NotWorn, string Wearing, string Exclusive, string TookOff, string NoPocketFree, string EmptySlot)
+    string NotWorn, string Wearing, string Exclusive, string TookOff, string NoPocketFree, string EmptySlot, string Found, string FoundItem,
+    string FoundSeparator, string FoundNothing, string SearchFull, string Searched)
 {
     internal const string Path = "supplies/messages.json";
 
@@ -247,8 +248,14 @@ internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, stri
         Template.Check(Path, "exclusive", Exclusive, "item", "other");
         Template.Check(Path, "tookOff", TookOff, "item");
         Template.Check(Path, "noPocketFree", NoPocketFree, "item");
+        Template.Check(Path, "found", Found, "items");
+        Template.Check(Path, "foundItem", FoundItem, "item", "count");
+        Template.Plain(Path, ("foundNothing", FoundNothing), ("searchFull", SearchFull), ("searched", Searched));
     }
 }
 
-/// <summary>A collectable placement of an item in one excursion.</summary>
-internal sealed record FindDefinition(string Id, string Item, int Count, float[] Point);
+/// <summary>A collectable placement of an item in one excursion; a generated single item comes with its resolved roll.</summary>
+internal sealed record FindDefinition(string Id, string Item, int Count, float[] Point, Loot.ItemRoll? Roll = null);
+
+/// <summary>Something that can be searched once for what its loot table gives: a container, or a fallen resident's remains.</summary>
+internal sealed record SearchDefinition(string Id, string Name, string Table);

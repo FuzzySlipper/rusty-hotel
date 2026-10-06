@@ -23,19 +23,23 @@ internal sealed class HotelSupplies
     private readonly Mechanics.MechanicsDefinition mechanics;
     private readonly SupplyMessages text;
     private readonly FindDefinition[] finds;
+    private readonly SearchDefinition[] searches;
+    private readonly Loot.LootCatalog loot;
     private readonly FieldCase fieldCase;
     private readonly Track health, ammo, summon;
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
 
     internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner,
-        Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats)
+        Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats, Loot.LootCatalog loot, SearchDefinition[] searches)
     {
+        this.loot = loot;
+        this.searches = searches;
         Stats = new(mechanics, playerStats, owner);
         this.definition = definition;
         this.mechanics = mechanics;
         text = definition.Text;
         this.finds = finds;
-        fieldCase = new(definition, capacity, owner);
+        fieldCase = new(definition, loot, capacity, owner);
         health = Stats.Track(HealthTrack);
         ammo = Stats.Track(AmmoTrack);
         summon = Stats.Track(SummonTrack);
@@ -66,13 +70,16 @@ internal sealed class HotelSupplies
     internal string Message
     {
         get => message;
-        private set { message = value; noticeSeconds = value.Length == 0 ? 0 : text.NoticeSeconds; }
+        private set { message = value; noticeSeconds = value.Length == 0 ? 0 : text.NoticeSeconds; NoticeAge = 0; }
     }
     internal string Notice => noticeSeconds > 0 ? Message : "";
+    /// <summary>Admitted seconds since the current notice was posted.</summary>
+    internal float NoticeAge { get; private set; }
     /// <summary>Advances notices and the investigator's effects by admitted seconds; a tick that moves a track is a new revision.</summary>
     internal void Step(float admittedSeconds)
     {
         noticeSeconds = Math.Max(0, noticeSeconds - admittedSeconds);
+        NoticeAge += admittedSeconds;
         if (Health == 0) return;
         if (Stats.Effects.Advance(admittedSeconds)) Revision++;
         Stats.Regenerate(admittedSeconds);
@@ -91,6 +98,11 @@ internal sealed class HotelSupplies
     /// <summary>Marks the investigator changed by another owner (an action's cost, a hit landed by combat): a new revision.</summary>
     internal void Changed() => Revision++;
     internal ItemDefinition Item(string id) => definition.Item(id)!;
+    internal Loot.LootCatalog Loot => loot;
+    /// <summary>How a carried stack or worn item reads: a generated item by its quality and affixes.</summary>
+    internal string Name(ItemStack stack) => loot.Name(Item(stack.Item), stack.Roll);
+    internal string Name(WornItem worn) => loot.Name(worn.Item, worn.Roll);
+    internal SearchDefinition[] Searches => searches;
     internal bool Collected(string id) => collected.Contains(id);
     internal FindDefinition[] Finds => finds;
     // Expedition finds are deposited at the refuge rather than used in the field.
@@ -100,10 +112,35 @@ internal sealed class HotelSupplies
     {
         FindDefinition? find = finds.FirstOrDefault(f => f.Id == id);
         if (find is null || collected.Contains(id)) return Refuse(text.FindGone);
-        if (!Add(find.Item, find.Count)) return false;
+        if (!Add(find.Item, find.Count, find.Roll)) return false;
         collected.Add(id);
         Revision++;
-        Message = Template.Fill(text.Collected, ("item", Item(find.Item).Name), ("count", find.Count));
+        Message = Template.Fill(text.Collected, ("item", Name(new ItemStack(find.Item, find.Count, find.Roll))), ("count", find.Count));
+        return true;
+    }
+
+    /// <summary>Whether a search has been made; searched things give nothing again.</summary>
+    internal bool Searched(string id) => collected.Contains(id);
+
+    /// <summary>
+    /// Searches something once for what its table rolled: all of it goes into the field case, or none of it and the
+    /// search waits. Searched, it is collected like a find and saved with them.
+    /// </summary>
+    internal bool Search(string id, Loot.ItemRoll[] found)
+    {
+        if (Health == 0) return Refuse(text.Overwhelmed);
+        if (collected.Contains(id) || searches.All(s => s.Id != id)) return Refuse(text.Searched);
+        // Room for everything first, on a scratch case holding what is carried now.
+        var (pockets, worn) = fieldCase.Capture();
+        FieldCase scratch = new(definition, loot, Capacity, new EntityId(0));
+        scratch.Restore(pockets, worn);
+        if (found.Any(r => scratch.Add(r.Item, r.Count, out _, r.Generated ? r : null) != CaseRefusal.None)) return Refuse(text.SearchFull);
+        foreach (Loot.ItemRoll roll in found) fieldCase.Add(roll.Item, roll.Count, out _, roll.Generated ? roll : null);
+        collected.Add(id);
+        Revision++;
+        Message = found.Length == 0 ? text.FoundNothing : Template.Fill(text.Found, ("items",
+            string.Join(text.FoundSeparator, found.Select(r => Template.Fill(text.FoundItem,
+                ("item", Name(new ItemStack(r.Item, r.Count, r.Generated ? r : null))), ("count", r.Count))))));
         return true;
     }
 
@@ -298,11 +335,12 @@ internal sealed class HotelSupplies
         if (state.Stats is null) throw new InvalidOperationException("Checkpoint supplies have no stats.");
         fieldCase.Validate(state.Pockets, state.Worn);
         // Track maximums follow what the saved case wears.
-        FieldCase scratch = new(definition, Capacity, new EntityId(0));
+        FieldCase scratch = new(definition, loot, Capacity, new EntityId(0));
         scratch.Restore(state.Pockets, state.Worn);
         Stats.Validate(state.Stats, scratch.Sources);
         if (!(state.Stats.Tracks.GetValueOrDefault(HealthTrack) > 0) || state.Collected is null ||
-            state.Collected.Distinct().Count() != state.Collected.Length || state.Collected.Any(id => !finds.Any(f => f.Id == id)))
+            state.Collected.Distinct().Count() != state.Collected.Length ||
+            state.Collected.Any(id => !finds.Any(f => f.Id == id) && !searches.Any(s => s.Id == id)))
             throw new InvalidOperationException("Checkpoint supplies or collected finds are invalid.");
     }
 
@@ -327,12 +365,12 @@ internal sealed class HotelSupplies
     }
 
     // Room for the whole find or none of it: a refusal leaves it in the world and names what is short.
-    private bool Add(string item, int count)
+    private bool Add(string item, int count, Loot.ItemRoll? roll = null)
     {
-        switch (fieldCase.Add(item, count, out CapacityMetric? metric))
+        switch (fieldCase.Add(item, count, out CapacityMetric? metric, roll is { Generated: true } ? roll : null))
         {
             case CaseRefusal.Pockets: return Refuse(text.CaseFull);
-            case CaseRefusal.Capacity: return Refuse(Template.Fill(text.TooMuch, ("item", Item(item).Name), ("metric", metric!.Name)));
+            case CaseRefusal.Capacity: return Refuse(Template.Fill(text.TooMuch, ("item", Name(new ItemStack(item, count, roll))), ("metric", metric!.Name)));
         }
         return true;
     }

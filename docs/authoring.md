@@ -46,6 +46,9 @@ its own folder. Geometry is kept apart from tuning.
 | `combat/looks.json` | Resident silhouettes as boxes in their own frame, with arm, body and tell roles and the tell poses; `CombatView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
+| `loot/tables.json` | Loot tables: how many draws, and each entry's item (or nothing), count range and depth weight; residents' remains and containers name one; `LootCatalog` |
+| `loot/qualities.json` | Quality tiers for generated single items: name around `{item}`, stat scale, affix count, depth weight; `LootCatalog` |
+| `loot/affixes.json` | Affixes: name around `{item}`, the classifications they join, worn stats, hit contributions, on-hit effects, depth weight; `LootCatalog` |
 | `spirits/roster.json` | Every spirit a pact can be made with; `HotelSpirit` |
 | `spirits/<id>.json` | One spirit: welcome charges, its call `action` (costing only summon charge), its moth's `look` (surfaces and scale), visit timing and placement offsets, its description (`{range}`, `{cost}`, `{seconds}` from its action) and its own wording; `HotelSpirit`, `SpiritView` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}`; `HotelSpirit` |
@@ -56,7 +59,7 @@ its own folder. Geometry is kept apart from tuning.
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, stairs (direction and the fixture socket they are used at), and the fallback location label; `HotelRoute` |
 | `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id, kind and the post they stand on) spirit bells (socket, and the `place` their text names), and `fromAbove`, where the player stands after coming down the stairs |
 | `floors/mission.json` | How generated floors' mission graphs grow: size budget, rule steps by depth, each rule's weight and per-floor limit, and the rules every floor finishes with; `MissionGenerator` |
-| `floors/content.json` | How generated floors are furnished: the bell's spirit, the fallback location label, the display fixture each item is shown with, objective and supply item pools, finds per stop, loose supplies and extra residents by depth, which resident kinds stand in which module tags, the pacing budgets (recovery before hazards and residents, ammunition range by depth, the arrival margin), and how locked doors, the shortcut's latch and their keys look and read; `ContentPlacement`, `ContentPacing`, `FloorExcursion` |
+| `floors/content.json` | How generated floors are furnished: the bell's spirit, the fallback location label, the display fixture each item is shown with, objective and supply item pools, finds per stop, loose supplies and extra residents by depth, searchable containers and how many each floor holds, which resident kinds stand in which module tags, the pacing budgets (recovery before hazards and residents, ammunition range by depth, the arrival margin), and how locked doors, the shortcut's latch and their keys look and read; `ContentPlacement`, `ContentPacing`, `FloorExcursion` |
 | `floors/readings.json` | Notices generated floors may show at reading sockets, each used at most once per floor |
 | `floors/generation.json` | How hard floor generation tries (layout attempts per mission graph, candidates per floor) and the navigation cell size and search budget floors are confirmed with; `FloorGenerator` |
 | `floors/layout.json` | How mission graphs become modules: floor extent, rooms by depth, the modules that may stand for each kind of place and the doorway they join by, spine and fill weights, the service passage, tries and branching; `FloorEmbedding` |
@@ -130,6 +133,24 @@ names what is worn and held at the start, by item and slots.
 Wearing into a full slot trades places with what it held. The first `quickPockets` pockets are the belt the quick keys
 use: consumables are stacks, and Engine equipment holds single items only, so the belt is pocket layout rather than an
 equipment slot. A description names a restored amount by its track (`{health}`).
+
+## Loot and generated items
+
+A single worn or held item placed on a generated floor, or given by a loot table, is generated: a quality is drawn by
+its depth weight (`loot/qualities.json`), then that many distinct affixes that fit the item's classifications
+(`loot/affixes.json`). Its name reads through its quality and affixes; its quality scales its own worn stats, and each
+affix adds stats, hit contributions or effects its holder's hits put on what they strike. The resolved roll (item,
+quality, affixes) is placed, carried, worn and saved; nothing is drawn again for it.
+
+A loot table (`loot/tables.json`) draws `rolls` times; each draw picks an entry by its depth weight (an entry with no
+`item` gives nothing) and a count in its range. A resident kind names the table its remains give (`loot`); generated
+floors place `containers` (`floors/content.json`: a name, a socket fixture with a focus and no find parts, a table and
+a depth weight; `containersPerFloor`). Remains are searchable once their resident has fallen, containers at once;
+each is searched once, by the run seed, the depth (the west wing counts as the first) and its own id, so a restored
+checkpoint gives the same things. A search gives everything it found or, short of room, nothing and waits.
+
+Weights in `floors/content.json` (supplies, objectives, residents) are depth curves (`base`, `perDepth`, `max`), so
+deeper floors draw different things inside the same pacing budgets.
 
 ## Residents
 
@@ -348,7 +369,8 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
 restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
-same way, on the floor it was left on and in the refuge, beside its pose. Version 8 saves the pacts as the spirits freed and the one in the pact slot. Version 7 drops the selected weapon: weapons are held items, saved with the worn items. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
+same way, on the floor it was left on and in the refuge, beside its pose. Version 9 saves a generated item's roll (quality and affixes) with its pocket or worn slot, and searches made among
+the collected ids. Version 8 saves the pacts as the spirits freed and the one in the pact slot. Version 7 drops the selected weapon: weapons are held items, saved with the worn items. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
 equipped before the stats so track maximums include what is worn. Version 5 keeps each actor's effects with
 its stats: the effect, who applied it, its stacks, time left, time since its last tick and ward left, re-admitted in
 their saved order after the bases and before the track points, so the stat sources they hold are rebuilt. A checkpoint of another version is refused

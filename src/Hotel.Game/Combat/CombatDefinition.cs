@@ -21,7 +21,7 @@ internal sealed record CombatDefinition(CombatTuning Tuning, ResidentKind[] Resi
     internal ResidentLook Look(ResidentKind kind) => Looks.Single(l => l.Id == kind.Look);
 
     internal static CombatDefinition Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys, MechanicsDefinition mechanics,
-        ActionCatalog actions, string[] surfaces)
+        ActionCatalog actions, string[] surfaces, Loot.LootCatalog loot)
     {
         CombatMessages text = Authored.Read(engine, CombatMessages.Path, ContentJson.Default.CombatMessages, keys);
         text.Validate();
@@ -36,6 +36,8 @@ internal sealed record CombatDefinition(CombatTuning Tuning, ResidentKind[] Resi
         for (int i = 0; i < residents.Length; i++)
         {
             residents[i].Validate(i, mechanics, actions, factions, looks);
+            Authored.Require(loot.Table(residents[i].Loot) is not null, ResidentCatalog.Path, $"residents[{i}].loot",
+                $"unknown loot table '{residents[i].Loot}'; see content/{Loot.LootCatalog.TablesPath}.");
             residents[i] = residents[i] with { AttackReach = residents[i].Actions.Max(a => HotelCombat.Reach(actions.Action(a.Action)!)) };
         }
         CombatDefinition definition = new(tuning, residents, text, mechanics, actions, factions, looks.Looks);

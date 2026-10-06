@@ -52,7 +52,7 @@ displaces something; adding a region is a design decision recorded here first.
 | Top left | Location: product mark and current wing/room |
 | Top right | Field case and Menu entries, only while the pointer is not captured |
 | Centre | Reticle, hit marker, and the one Engine-selected focus prompt |
-| Notice slot | One brief result notice, chosen by priority and expiring on admitted time; never a stack or log |
+| Notice slot | One brief result notice, chosen by priority (a spirit result first, then the newer of the combat and supplies results) and expiring on admitted time; never a stack or log |
 | Lower band | At most three clusters: condition (left: health and the investigator's active effects, each a small chip that appears while it lasts), quick access (centre), held status (right: reserves, hands, spirit) |
 | Viewport edge | Transient damage accent only |
 
@@ -224,6 +224,9 @@ The UI only observes reading facts; it does not acquire items or own door state.
 Using a supply find instead calls the C# supplies owner. Success removes the
 world prop and publishes its carried stack; a full case leaves the find in place
 and presents the refusal through the brief result notice.
+A container, or a fallen resident lying where it fell, is searched the same way (E · Search the sewing tin). The
+notice names everything found, or that there was nothing; with no room for all of it the notice says so and nothing
+is taken, and the search waits. A searched container or body no longer offers a prompt.
 
 ### Combat controls and feedback
 

@@ -15,6 +15,8 @@ internal interface IActionActor
     bool Alive { get; }
     /// <summary>The hit contributions this actor brings, from what it wears and the effects it bears.</summary>
     IEnumerable<ActiveContribution> Contributions { get; }
+    /// <summary>Effects this actor's hits put on what they strike, beyond the action's own (a held item's affixes).</summary>
+    IEnumerable<string> HitEffects { get; }
 }
 
 /// <summary>
@@ -141,7 +143,11 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
             });
         }
         if (target.Alive)
+        {
             foreach (string effect in action.Effects) target.Stats.Effects.Apply(mechanics.Effect(effect)!, $"action.{action.Id}", origin ?? user.Position);
+            if (action.Damage.Length > 0)
+                foreach (string effect in user.HitEffects) target.Stats.Effects.Apply(mechanics.Effect(effect)!, $"held.{effect}", origin ?? user.Position);
+        }
         return taken;
     }
 

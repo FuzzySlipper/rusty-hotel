@@ -1,0 +1,135 @@
+{
+  "affixes": [
+    {
+      "id": "of-embers",
+      "name": "{item} of Embers",
+      "classifications": [
+        "held"
+      ],
+      "stats": [],
+      "contributions": [],
+      "onHit": [
+        "burning"
+      ],
+      "weight": {
+        "base": 2,
+        "perDepth": 0,
+        "max": 2
+      }
+    },
+    {
+      "id": "keen-edged",
+      "name": "Keen-edged {item}",
+      "classifications": [
+        "held"
+      ],
+      "stats": [],
+      "contributions": [
+        {
+          "stage": "Damage",
+          "side": "Outgoing",
+          "kinds": [],
+          "add": 3
+        }
+      ],
+      "onHit": [],
+      "weight": {
+        "base": 2,
+        "perDepth": 0,
+        "max": 2
+      }
+    },
+    {
+      "id": "of-the-mule",
+      "name": "{item} of the Mule",
+      "classifications": [
+        "cap",
+        "coat",
+        "gloves",
+        "shoes",
+        "ring"
+      ],
+      "stats": [
+        {
+          "stat": "might",
+          "amount": 2
+        }
+      ],
+      "contributions": [],
+      "onHit": [],
+      "weight": {
+        "base": 2,
+        "perDepth": 0,
+        "max": 2
+      }
+    },
+    {
+      "id": "of-the-watch",
+      "name": "{item} of the Watch",
+      "classifications": [
+        "cap",
+        "coat",
+        "gloves",
+        "shoes",
+        "ring"
+      ],
+      "stats": [
+        {
+          "stat": "nerve",
+          "amount": 2
+        }
+      ],
+      "contributions": [],
+      "onHit": [],
+      "weight": {
+        "base": 2,
+        "perDepth": 0,
+        "max": 2
+      }
+    },
+    {
+      "id": "lined",
+      "name": "Lined {item}",
+      "classifications": [
+        "coat",
+        "gloves",
+        "cap"
+      ],
+      "stats": [],
+      "contributions": [
+        {
+          "stage": "Applying",
+          "side": "Incoming",
+          "kinds": [],
+          "add": -1
+        }
+      ],
+      "onHit": [],
+      "weight": {
+        "base": 1,
+        "perDepth": 1,
+        "max": 3
+      }
+    },
+    {
+      "id": "of-quick-feet",
+      "name": "{item} of Quick Feet",
+      "classifications": [
+        "shoes"
+      ],
+      "stats": [
+        {
+          "stat": "agility",
+          "amount": 2
+        }
+      ],
+      "contributions": [],
+      "onHit": [],
+      "weight": {
+        "base": 2,
+        "perDepth": 0,
+        "max": 2
+      }
+    }
+  ]
+}

@@ -22,7 +22,7 @@ namespace Hotel.Game.Content;
 /// </summary>
 internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, MechanicsDefinition Mechanics, ActorStatBlock PlayerStats,
     RouteDefinition Route, InterfaceTuning Interface,
-    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition[] Spirits,
+    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, Hotel.Game.Loot.LootCatalog Loot, CombatDefinition Combat, SpiritDefinition[] Spirits,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
@@ -35,14 +35,15 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         SuppliesDefinition supplies = SuppliesDefinition.Load(engine, mechanics);
         Actions.ActionCatalog actions = Actions.ActionCatalog.Load(engine, mechanics, supplies.Classifications.Select(c => c.Id).ToArray());
         supplies.ValidateActions(actions, mechanics);
+        Hotel.Game.Loot.LootCatalog loot = Hotel.Game.Loot.LootCatalog.Load(engine, supplies, mechanics);
         SurfaceDefinition[] surfaces = SurfaceCatalog.Load(engine).Surfaces;
-        CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray());
+        CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray(), loot);
         ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures, combat.Residents);
         PlayerTuning player = PlayerTuning.Load(engine);
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
-            surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, combat,
+            surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, loot, combat,
             SpiritRoster.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray()), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
@@ -166,8 +167,12 @@ internal sealed record ExcursionDefinition(string Id, FloorPlan Plan, ExcursionG
 /// <summary>Where one excursion puts the player, refuge, finds, residents and spirit bells, resolved to points.</summary>
 /// <param name="Refuge">The notebook, on the floor that has the refuge; none on generated floors.</param>
 /// <param name="FromAbove">Where the player stands after coming down the stairs to this floor.</param>
+/// <param name="Containers">Things to search once for what their loot table gives.</param>
 internal sealed record ExcursionPlacements(ArrivalPlacement Arrival, RefugeDefinition? Refuge, FindDefinition[] Finds,
-    ResidentPlacement[] Residents, SpiritBellPlacement[] SpiritBells, ArrivalPlacement FromAbove);
+    ResidentPlacement[] Residents, SpiritBellPlacement[] SpiritBells, ArrivalPlacement FromAbove, ContainerPlacement[] Containers);
+
+/// <summary>A container in one excursion: its saved identity, how it is named, its loot table and where it is searched.</summary>
+internal sealed record ContainerPlacement(string Id, string Name, string Table, float[] Point);
 
 /// <summary>
 /// The authored placements. The refuge notebook, finds and bells sit at fixture sockets in the floor plan, and
@@ -198,7 +203,7 @@ internal sealed record PlacementPlan(ArrivalPlacement Arrival, RefugePlacement R
         }
         SpiritBellPlacement[] bells = SpiritBells.Select((b, i) =>
             new SpiritBellPlacement(b.Spirit, RoutePlan.Socket(path, $"spiritBells[{i}].socket", floor, b.Socket), b.Place)).ToArray();
-        return new(Arrival, new(Refuge.Id, RoutePlan.Socket(path, "refuge.socket", floor, Refuge.Socket)), finds, residents, bells, FromAbove);
+        return new(Arrival, new(Refuge.Id, RoutePlan.Socket(path, "refuge.socket", floor, Refuge.Socket)), finds, residents, bells, FromAbove, []);
     }
 }
 

@@ -22,8 +22,9 @@ internal static class ContentPlacement
     }
 
     internal static FloorContent Place(MissionGraph graph, FloorLayout layout, FloorPlan plan, BuiltFloor floor, ModuleCatalog catalog,
-        ContentTuning tuning, ResidentKind[] kinds, FloorReadings readings, FloorDraws draws)
+        ContentTuning tuning, ResidentKind[] kinds, FloorReadings readings, FloorDraws draws, Supplies.ItemDefinition[] items, Loot.LootCatalog loot)
     {
+        int depth = draws.Seed.Depth;
         Offer[] offers = layout.Placements.OrderBy(p => p.Id, StringComparer.Ordinal).SelectMany(p =>
         {
             ModuleDefinition module = catalog.Find(p.Module)!;
@@ -40,7 +41,7 @@ internal static class ContentPlacement
             return chosen;
         }
         ItemWeight Item(ItemWeight[] pool, string purpose, string key) =>
-            pool[draws.Weighted(FloorStage.Content, purpose, key, pool.Select(w => w.Weight).ToArray())];
+            pool[draws.Weighted(FloorStage.Content, purpose, key, pool.Select(w => w.Weight.At(depth)).ToArray())];
 
         // Arrival: the stair core's arrival post, facing the corridor the core opens on.
         string landing = layout.Places[MissionGraph.ArrivalId];
@@ -92,7 +93,7 @@ internal static class ContentPlacement
             for (int missing = tuning.Pacing.RecoveryBeforeHazard - stops.Count(f => f.Item == tuning.Pacing.RecoveryItem), i = 0; missing > 0 && i < stops.Length; i++)
                 if (stops[i].Item != tuning.Pacing.RecoveryItem)
                 {
-                    finds[finds.IndexOf(stops[i])] = stops[i] with { Item = tuning.Pacing.RecoveryItem, Count = 1 };
+                    finds[finds.IndexOf(stops[i])] = stops[i] with { Item = tuning.Pacing.RecoveryItem, Count = 1, Roll = null };
                     missing--;
                 }
         }
@@ -119,6 +120,21 @@ internal static class ContentPlacement
             finds.Add(new(at.Id, FindRole.Loose, at.Name, supply.Item, supply.Count, null));
         }
 
+        // Containers to search in rooms still free, each of a kind drawn by its depth weight.
+        List<PlacedContainer> containers = [];
+        int[] containerWeights = tuning.Containers.Select(c => c.Weight.At(depth)).ToArray();
+        for (int i = 0, wanted = tuning.ContainersPerFloor.At(depth); i < wanted && spare.Length > 0 && containerWeights.Sum() > 0; i++)
+        {
+            Offer at = spare[draws.Index(FloorStage.Content, "container.socket", $"c{i}", spare.Length)];
+            spare = spare.Where(s => s != at).ToArray();
+            used.Add(at.Id);
+            containers.Add(new(at.Id, at.Name, tuning.Containers[draws.Weighted(FloorStage.Content, "container.kind", at.Id, containerWeights)].Id));
+        }
+        // A single worn or held item is generated where it lies: its quality and affixes are drawn now and kept with it.
+        for (int i = 0; i < finds.Count; i++)
+            if (finds[i].Item is { } id && items.First(item => item.Id == id) is { } item && Loot.LootCatalog.Generates(item))
+                finds[i] = finds[i] with { Roll = loot.Generate(item, finds[i].Count, depth, new Loot.FloorLootDraws(draws), finds[i].Id) };
+
         // Readings: each notice shows a different authored reading while they last.
         List<FloorReading> unread = [.. readings.Readings];
         List<PlacedReading> notices = [];
@@ -130,17 +146,17 @@ internal static class ContentPlacement
             notices.Add(new(notice.Id, notice.Name, reading.Id));
         }
         string[] landmarks = offers.Where(o => o.Socket.Kind == ContentSocketKind.Landmark).Select(o => o.Name).ToArray();
-        return new(arrival.Name, yaw, [.. finds], [.. residents], [.. notices], bell, landmarks);
+        return new(arrival.Name, yaw, [.. finds], [.. residents], [.. notices], bell, landmarks, [.. containers]);
 
         // A kind that may stand in the post's module, whose leash keeps it in the post's region, and that cannot see or
         // strike the arrival.
         PlacedResident? Resident(Offer post, string purpose)
         {
-            ResidentWeight[] fit = tuning.Residents.Where(r => r.Weight > 0 && r.Tags.Any(post.Module.Tags.Contains) &&
+            ResidentWeight[] fit = tuning.Residents.Where(r => r.Weight.At(depth) > 0 && r.Tags.Any(post.Module.Tags.Contains) &&
                 Clear(post.Name, kinds.First(k => k.Id == r.Kind)) &&
                 LeashCrossing(new(post.Id, r.Kind, post.Name, post.Placement.Region), layout, plan, floor, kinds.First(k => k.Id == r.Kind).Movement.Range) is null).ToArray();
             if (fit.Length == 0) return null;
-            ResidentWeight kind = fit[draws.Weighted(FloorStage.Content, purpose, post.Id, fit.Select(r => r.Weight).ToArray())];
+            ResidentWeight kind = fit[draws.Weighted(FloorStage.Content, purpose, post.Id, fit.Select(r => r.Weight.At(depth)).ToArray())];
             return new(post.Id, kind.Kind, post.Name, post.Placement.Region);
         }
     }

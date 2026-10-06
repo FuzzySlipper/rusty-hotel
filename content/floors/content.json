@@ -22,54 +22,94 @@
     {
       "item": "ledger-page",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
     }
   ],
   "supplies": [
     {
       "item": "bandage",
       "count": 1,
-      "weight": 3
+      "weight": {
+        "base": 3,
+        "perDepth": 0,
+        "max": 3
+      }
     },
     {
       "item": "rounds",
       "count": 1,
-      "weight": 2
+      "weight": {
+        "base": 2,
+        "perDepth": 0,
+        "max": 2
+      }
     },
     {
       "item": "incense",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
     },
     {
       "item": "matches",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
     },
     {
       "item": "salts",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
     },
     {
       "item": "porter-gloves",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 0,
+        "perDepth": 1,
+        "max": 2
+      }
     },
     {
       "item": "bellhop-cap",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
     },
     {
       "item": "crepe-soles",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 0,
+        "perDepth": 1,
+        "max": 2
+      }
     },
     {
       "item": "signet-ring",
       "count": 1,
-      "weight": 1
+      "weight": {
+        "base": 0,
+        "perDepth": 1,
+        "max": 1
+      }
     }
   ],
   "suppliesPerStop": 1,
@@ -86,7 +126,11 @@
         "Guest",
         "Service"
       ],
-      "weight": 2
+      "weight": {
+        "base": 2,
+        "perDepth": 0,
+        "max": 2
+      }
     },
     {
       "kind": "lamp",
@@ -95,7 +139,11 @@
         "Public",
         "Landmark"
       ],
-      "weight": 1
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
     },
     {
       "kind": "night-maid",
@@ -104,7 +152,11 @@
         "Guest",
         "Service"
       ],
-      "weight": 1
+      "weight": {
+        "base": 0,
+        "perDepth": 1,
+        "max": 3
+      }
     }
   ],
   "extraResidents": {
@@ -178,5 +230,23 @@
     "latchPrompt": "Service door · Latched from the passage side",
     "keyName": "key to the {room}",
     "keyFixture": "room-key"
+  },
+  "containers": [
+    {
+      "id": "sewing-tin",
+      "name": "the sewing tin",
+      "fixture": "sewing-tin",
+      "table": "sewing-tin",
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
+    }
+  ],
+  "containersPerFloor": {
+    "base": 1,
+    "perDepth": 0,
+    "max": 2
   }
 }

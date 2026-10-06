@@ -189,6 +189,7 @@ host.Call(SuppliesChecks.Run);
 host.Call(CombatChecks.Run);
 host.Call(SpiritChecks.Run);
 host.Call(PactChecks.Run);
+host.Call(LootChecks.Run);
 CheckpointChecks.Run();
 ContentChecks.Run();
 FloorChecks.Run();

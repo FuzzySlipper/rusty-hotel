@@ -23,5 +23,11 @@
   "exclusive": "{item} cannot be worn with {other}.",
   "tookOff": "Took off {item}.",
   "noPocketFree": "No free pocket to take off {item} into.",
-  "emptySlot": "Nothing is worn there."
+  "emptySlot": "Nothing is worn there.",
+  "found": "Found {items}.",
+  "foundItem": "{item} ×{count}",
+  "foundSeparator": ", ",
+  "foundNothing": "Nothing of use here.",
+  "searchFull": "No room in your field case for what is here.",
+  "searched": "Already searched."
 }
