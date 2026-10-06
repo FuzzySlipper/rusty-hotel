@@ -24,7 +24,8 @@ namespace Hotel.Game.Content;
     RespectRequiredConstructorParameters = true, RespectNullableAnnotations = true,
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
     Converters = [typeof(JsonStringEnumConverter<KeyboardControl>), typeof(JsonStringEnumConverter<PointerButton>),
-        typeof(JsonStringEnumConverter<ToneMappingOperator>), typeof(JsonStringEnumConverter<FogMode>)])]
+        typeof(JsonStringEnumConverter<ToneMappingOperator>), typeof(JsonStringEnumConverter<FogMode>),
+        typeof(JsonStringEnumConverter<Rusty.Engine.Mechanics.ItemKind>)])]
 [JsonSerializable(typeof(ControlBindings))]
 [JsonSerializable(typeof(PlayerTuning))]
 [JsonSerializable(typeof(InteractionTuning))]
@@ -37,6 +38,8 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(Hotel.Game.Mechanics.ActorStatBlock))]
 [JsonSerializable(typeof(SceneLook))]
 [JsonSerializable(typeof(ItemCatalog))]
+[JsonSerializable(typeof(EquipmentCatalog))]
+[JsonSerializable(typeof(CapacityCatalog))]
 [JsonSerializable(typeof(SupplyMessages))]
 [JsonSerializable(typeof(CombatTuning))]
 [JsonSerializable(typeof(WeaponCatalog))]

@@ -20,7 +20,7 @@ internal static class SuppliesChecks
         Check(!supplies.Pickup("survey-incense") && !supplies.Collected("survey-incense"), "full case leaves find available");
         Check(!supplies.Give("bandage", 1) && supplies.Slot(0)?.Count == 3, "full stacks do not overflow");
         ulong before = supplies.Revision;
-        Check(supplies.Use(0, before) && supplies.Health == 70 + supplies.Item("bandage").Amount && supplies.Slot(0)?.Count == 2 &&
+        Check(supplies.Use(0, before) && supplies.Health == 70 + supplies.Item("bandage").Restores(HotelSupplies.HealthTrack) && supplies.Slot(0)?.Count == 2 &&
             supplies.Stats.Effects.Active.Single().Definition.Id == "mending", "heal at once, start mending and consume one coherently");
         Check(!supplies.Use(0, before) && supplies.Slot(0)?.Count == 2, "stale consumption rejected");
         supplies.SetHealth(supplies.MaximumHealth);
@@ -61,7 +61,7 @@ internal static class SuppliesChecks
             Claim("{\"action\":\"use\",\"from\":0,\"revision\":\"bad\"}")]);
         Check(supplies.Health == 70 && supplies.Slot(1)?.Count == 1, "malformed UI claims do not fault or mutate inventory");
         supplies.HandleIntents([Claim($"{{\"action\":\"use\",\"from\":1,\"revision\":{supplies.Revision}}}")]);
-        Check(supplies.Health == 70 + supplies.Item("bandage").Amount && supplies.Occupied == 0, "semantic use consumes and heals through the owner");
+        Check(supplies.Health == 70 + supplies.Item("bandage").Restores(HotelSupplies.HealthTrack) && supplies.Occupied == 0, "semantic use consumes and heals through the owner");
         supplies.Give("matches", 1); supplies.SetHealth(supplies.MaximumHealth);
         Check(supplies.UseReason(0) == "" && supplies.Use(0, supplies.Revision) && supplies.Stats.Effects.Light is not null,
             "a consumable is used for its effect alone, at full health");

@@ -17,7 +17,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Floors/FloorExcursion.cs` | A generated floor as an `ExcursionDefinition`: display fixtures for finds, depth-namespaced ids, stairs, readings, residents and the bell |
 | `src/Hotel.Game/Route/HotelRoute.cs` | Door, latch and lock state, the keys held on the current floor, room identity, reading and stair facts, and the Engine world-interaction adapter |
 | `src/Hotel.Game/Mechanics/` | The stat vocabulary (`MechanicsDefinition`: attributes, derived stats, tracks, damage kinds, effects) and `ActorStats`, one actor's Engine `StatsComponent`: attribute-sourced derived stats, tracks, resistance-reduced damage, capture and restore. Each actor's `ActorEffects` keeps its Engine `EffectsComponent` and the product's time, ticks and wards in step, adds its stacks' stat sources, and advances only on the admitted seconds Supplies (the investigator) and Combat (residents) pass it |
-| `src/Hotel.Game/Supplies/HotelSupplies.cs` | Carried stacks, collected-find identities, capacity and use rules, the investigator's stats (health, ammunition and summon tracks) and inventory revision |
+| `src/Hotel.Game/Supplies/HotelSupplies.cs` | Collected-find identities, use, wear and move rules over the field case, the investigator's stats (health, ammunition and summon tracks, worn sources) and inventory revision |
+| `src/Hotel.Game/Supplies/FieldCase.cs` | The field case over one Engine `InventoryStore`: pocket layout of stacks and single items, equipment slots and worn items, Engine capacity limits (weight, space), the worn items' stat sources, capture and restore |
 | `src/Hotel.Game/Combat/HotelCombat.cs` | Selected weapon, admitted windup/commit/recovery/reload timing, typed damage, residents (each with its own `ActorStats`), resident behavior and Engine spatial hit/approach calls |
 | `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident/weapon meshes and attack poses contributed to the existing scene snapshot |
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | Pact acquisition/equipping, semantic equip claims, summon eligibility and transient manifestation phase |
@@ -144,7 +145,12 @@ they do not grant inventory. Room labels come from authored X/Z bounds.
 The reading screen uses the existing foreground pause, close and focus flow.
 `HotelSupplies` owns item stacks and resource values. A world find is admitted
 through Engine `InventoryStore`, registered to the existing player entity.
-Hotel pockets retain stack identities only; quantities live in the Engine ledger.
+`FieldCase` pockets retain Engine identities only (a stack id or a single item's
+entity); quantities, containment and capacity live in the Engine ledger, which
+refuses an edit over a weight or space limit. Single items are worn through the
+same store's equipment: the Engine checks slot classifications, slot counts and
+exclusivity, and each equipment receipt's source activations become the stat
+sources `HotelSupplies` hands to the investigator's `ActorStats`.
 Engine `Track` holds each resource and supplies clamped restore and bounded
 spending. Hotel chooses item effects, eligibility and the pocket arrangement.
 A world find is admitted

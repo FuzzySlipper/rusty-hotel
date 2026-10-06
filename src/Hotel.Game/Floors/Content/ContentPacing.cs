@@ -65,8 +65,8 @@ internal static class ContentPacing
         foreach (PlacedResident resident in content.Residents)
             if (RecoveryBefore(resident, content.Finds, layout, plan, tuning.Pacing.RecoveryItem) < tuning.Pacing.RecoveryBeforeHazard)
                 return $"recovery: no {tuning.Pacing.RecoveryItem} can be reached before resident '{resident.Id}'.";
-        int ammo = content.Finds.Where(f => f.Item is not null && items.First(i => i.Id == f.Item).Kind == SupplyKind.Ammo)
-            .Sum(f => f.Count * items.First(i => i.Id == f.Item).Amount);
+        int ammo = content.Finds.Where(f => f.Item is not null)
+            .Sum(f => f.Count * items.First(i => i.Id == f.Item).Restores(Supplies.HotelSupplies.AmmoTrack));
         int minimum = tuning.Pacing.AmmoMinimum.At(depth), maximum = tuning.Pacing.AmmoMaximum.At(depth);
         if (ammo < minimum || ammo > maximum) return $"ammunition: {ammo} rounds on the floor; depth {depth} allows {minimum} to {maximum}.";
         System.Numerics.Vector3 arrival = floor.Sockets[content.Arrival];

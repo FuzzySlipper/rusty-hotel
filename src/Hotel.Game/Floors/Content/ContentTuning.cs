@@ -53,20 +53,21 @@ internal sealed record ContentTuning(string Spirit, string FallbackLocation, Ite
             Path, "doors.keyFixture", $"'{t.Doors.KeyFixture}' must be a socket fixture with find parts and a focus socket.");
         foreach (string item in t.Objective.Concat(t.Supplies).Select(w => w.Item).Distinct())
             Authored.Require(t.Displays.Count(d => d.Item == item) == 1, Path, "displays", $"'{item}' needs exactly one display fixture.");
-        void Items(string field, ItemWeight[] weights, SupplyKind[] kinds)
+        void Items(string field, ItemWeight[] weights, bool deposit)
         {
             Authored.Require(weights.Any(w => w.Weight > 0), Path, field, "needs an item with a positive weight.");
             for (int i = 0; i < weights.Length; i++)
             {
                 ItemDefinition? item = items.FirstOrDefault(d => d.Id == weights[i].Item);
                 Authored.Require(item is not null, Path, $"{field}[{i}].item", $"unknown item '{weights[i].Item}'.");
-                Authored.Require(kinds.Contains(item!.Kind), Path, $"{field}[{i}].item", $"'{item.Id}' is not one of {string.Join(", ", kinds)}.");
+                Authored.Require(item!.Deposit == deposit, Path, $"{field}[{i}].item",
+                    deposit ? $"'{item.Id}' is not kept for the refuge (deposit)." : $"'{item.Id}' is kept for the refuge, not a supply.");
                 Authored.Within(Path, $"{field}[{i}].count", weights[i].Count, 1, item.StackLimit);
                 Authored.AtLeast(Path, $"{field}[{i}].weight", weights[i].Weight, 0);
             }
         }
-        Items("objective", t.Objective, [SupplyKind.Expedition]);
-        Items("supplies", t.Supplies, [SupplyKind.Healing, SupplyKind.Ammo, SupplyKind.Summon, SupplyKind.Consumable]);
+        Items("objective", t.Objective, true);
+        Items("supplies", t.Supplies, false);
         Authored.AtLeast(Path, "suppliesPerStop", t.SuppliesPerStop, 1);
         t.LooseSupplies.Validate(Path, "looseSupplies");
         t.ExtraResidents.Validate(Path, "extraResidents");
@@ -77,7 +78,7 @@ internal sealed record ContentTuning(string Spirit, string FallbackLocation, Ite
             Authored.Require(t.Residents[i].Tags.Length > 0, Path, $"residents[{i}].tags", "names the module tags it may stand in.");
             Authored.AtLeast(Path, $"residents[{i}].weight", t.Residents[i].Weight, 0);
         }
-        Authored.Require(items.Any(i => i.Id == t.Pacing.RecoveryItem && i.Kind == SupplyKind.Healing), Path, "pacing.recoveryItem",
+        Authored.Require(items.Any(i => i.Id == t.Pacing.RecoveryItem && i.Restores(Hotel.Game.Supplies.HotelSupplies.HealthTrack) > 0), Path, "pacing.recoveryItem",
             $"'{t.Pacing.RecoveryItem}' must be a healing item.");
         Authored.AtLeast(Path, "pacing.recoveryBeforeHazard", t.Pacing.RecoveryBeforeHazard, 0);
         Authored.AtLeast(Path, "pacing.arrivalMargin", t.Pacing.ArrivalMargin, 0);

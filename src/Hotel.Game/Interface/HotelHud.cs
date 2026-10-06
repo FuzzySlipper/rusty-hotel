@@ -87,14 +87,22 @@ internal sealed class HotelHud : IDisposable
             pockets.Add(w.Object("",
                 w.Text("id", item?.Id ?? ""), w.Text("name", item?.Name ?? ""), w.Text("description", item?.Details ?? ""),
                 w.Text("mark", item?.Mark ?? "·"), w.Number("count", stack?.Count ?? 0), w.Number("stackLimit", item?.StackLimit ?? 0),
-                w.Text("useReason", supplies.UseReason(i))));
+                w.Text("useReason", supplies.UseReason(i)), w.Flag("wearable", item?.Wear is not null),
+                w.Text("wearReason", supplies.WearReason(i))));
         }
+        SuppliesDefinition definition = supplies.Definition;
+        uint[] worn = definition.Slots.Select(slot => supplies.WornIn(slot) is { } on
+            ? w.Object("", w.Text("slot", slot.Name), w.Text("id", on.Item.Id), w.Text("name", on.Item.Name), w.Text("mark", on.Item.Mark),
+                w.Text("description", on.Item.Details))
+            : w.Object("", w.Text("slot", slot.Name), w.Text("id", ""), w.Text("name", ""), w.Text("mark", ""), w.Text("description", ""))).ToArray();
+        uint[] load = definition.Capacity.Select(m => w.Text("", Template.Fill(definition.Text.Load,
+            ("metric", m.Name), ("used", supplies.Used(m)), ("limit", m.Limit)))).ToArray();
         return w.Object("supplies",
             w.Number("revision", supplies.Revision), w.Number("capacity", supplies.Capacity),
             w.Number("quickPockets", tuning.QuickPockets), w.Number("occupied", supplies.Occupied),
             w.Array("quickKeys", controls.Bindings.QuickPockets.Select(q => w.Text("", q.Label)).ToArray()),
             w.Text("quickNote", controls.QuickPocketsNote),
-            w.Text("message", supplies.Message), w.Array("pockets", pockets));
+            w.Text("message", supplies.Message), w.Array("pockets", pockets), w.Array("worn", worn), w.Array("load", load));
     }
 
     // The investigator's effects while they last, in the condition cluster: each one's mark and name with its stacks,

@@ -33,6 +33,26 @@
       "item": "salts",
       "count": 1,
       "weight": 1
+    },
+    {
+      "item": "porter-gloves",
+      "count": 1,
+      "weight": 1
+    },
+    {
+      "item": "bellhop-cap",
+      "count": 1,
+      "weight": 1
+    },
+    {
+      "item": "crepe-soles",
+      "count": 1,
+      "weight": 1
+    },
+    {
+      "item": "signet-ring",
+      "count": 1,
+      "weight": 1
     }
   ],
   "suppliesPerStop": 1,
@@ -105,15 +125,31 @@
     {
       "item": "ledger-page",
       "fixture": "ledger-page"
+    },
+    {
+      "item": "porter-gloves",
+      "fixture": "glove-pair"
+    },
+    {
+      "item": "bellhop-cap",
+      "fixture": "folded-cap"
+    },
+    {
+      "item": "crepe-soles",
+      "fixture": "shoe-pair"
+    },
+    {
+      "item": "signet-ring",
+      "fixture": "ring-box"
     }
   ],
   "doors": {
     "material": "door",
     "handleMaterial": "brass",
     "lockedLabel": "Open the locked door",
-    "lockedPrompt": "Locked \u00b7 Needs the {key}",
+    "lockedPrompt": "Locked · Needs the {key}",
     "latchLabel": "Unlatch the service door",
-    "latchPrompt": "Service door \u00b7 Latched from the passage side",
+    "latchPrompt": "Service door · Latched from the passage side",
     "keyName": "key to the {room}",
     "keyFixture": "room-key"
   }

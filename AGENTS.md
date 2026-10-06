@@ -40,7 +40,8 @@ and pause only decisions that need unavailable authority.
   carried light) is an effect in `mechanics/effects.json`, advanced on admitted
   time; do not add a separate timer for one.
   `Supplies/HotelSupplies.cs` owns carried stacks, collected finds and resource
-  values. UI and developer actions share its capacity, eligibility and revision
+  values; `Supplies/FieldCase.cs` holds them as the Engine inventory and equipment
+  (pockets, worn slots, capacity), and worn items feed the stats through it. UI and developer actions share its capacity, eligibility and revision
   checks; room entry and case navigation must not reset it. Route inventory claims
   through HandleIntents during both running and paused admission. Quick access
   mirrors the first three saved pockets; never add a second inventory in the DOM.

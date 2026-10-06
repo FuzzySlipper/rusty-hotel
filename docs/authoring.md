@@ -35,7 +35,9 @@ its own folder. Geometry is kept apart from tuning.
 | `mechanics/effects.json` | Every effect an actor can bear: name, mark, stacking group and rule, duration and one kind's settings; `ActorEffects` |
 | `mechanics/messages.json` | How an active effect's time, stacks and ward read on the HUD |
 | `player/stats.json` | The investigator's stat block: attributes, derived bases, resistances and starting track points; `HotelSupplies` |
-| `supplies/items.json` | Item kinds, effects, stack limits, names and descriptions (`{amount}`); `HotelSupplies` |
+| `supplies/items.json` | Item kinds: form (stack or single), stack limit, classifications, capacity costs, and one role (use, wear or deposit); names and descriptions (`{track}` for what a use restores); `HotelSupplies`, `FieldCase` |
+| `supplies/equipment.json` | Item classifications and the investigator's equipment slots with the classifications each accepts; `FieldCase` |
+| `supplies/capacity.json` | The field case's capacity metrics (weight, space) and their limits; `FieldCase` |
 | `supplies/messages.json` | Supply notices, refusal reasons and how long a notice stays up; `HotelSupplies` |
 | `combat/tuning.json` | Reload time and how long combat notices, hit and hurt flashes last; `HotelCombat` |
 | `combat/weapons.json` | Weapon commitments, damage and its kind, range, ammunition cost, short name and HUD phase labels; `HotelCombat` |
@@ -95,6 +97,25 @@ attribute, an unknown id or a value out of bounds fails validation naming the fi
 kinds name the `damageKind` they deal. Add a stat, track or damage kind to the vocabulary once; every block then
 validates against it. A derived stat names the `quantum` its value rounds to (0 for none); `pace` is the derived stat
 movement is scaled by, and the vocabulary must have it.
+
+## Items and equipment
+
+An item (`supplies/items.json`) is an Engine item definition. `form` is `Fungible` for things that stack up to
+`stackLimit` or `Unique` for single things (stack limit 1). `classifications` name what kind of thing it is
+(`supplies/equipment.json`); `costs` give its units of every capacity metric (`supplies/capacity.json`), and the field
+case refuses a find whole when the Engine finds it would pass a limit, naming that metric. Each item has exactly one
+role:
+
+| Role | Settings | Meaning |
+| --- | --- | --- |
+| `use` | `restores` (track to points), `effects` | Used from a pocket or a quick key; consumed one at a time |
+| `wear` | `slots`, `exclusive`, `stats` | A single item worn in that many equipment slots that accept one of its classifications; `stats` add to stats or resistances (`resistance.<kind>`) as an Engine source while worn; no two worn items share an `exclusive` group |
+| `deposit` | `true` | An expedition find, carried back and deposited at the refuge |
+
+Slots (`supplies/equipment.json`) are the hands, the worn slots and the rings; a slot `accepts` classifications.
+Wearing into a full slot trades places with what it held. The first `quickPockets` pockets are the belt the quick keys
+use: consumables are stacks, and Engine equipment holds single items only, so the belt is pocket layout rather than an
+equipment slot. A description names a restored amount by its track (`{health}`).
 
 ## Effects
 
@@ -275,7 +296,8 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
 restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
-same way, on the floor it was left on and in the refuge, beside its pose. Version 5 keeps each actor's effects with
+same way, on the floor it was left on and in the refuge, beside its pose. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
+equipped before the stats so track maximums include what is worn. Version 5 keeps each actor's effects with
 its stats: the effect, who applied it, its stacks, time left, time since its last tick and ward left, re-admitted in
 their saved order after the bases and before the track points, so the stat sources they hold are rebuilt. A checkpoint of another version is refused
 like any other invalid data.

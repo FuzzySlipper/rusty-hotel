@@ -1,0 +1,98 @@
+{
+  "classifications": [
+    {
+      "id": "remedy",
+      "name": "Remedy"
+    },
+    {
+      "id": "ammunition",
+      "name": "Ammunition"
+    },
+    {
+      "id": "expedition",
+      "name": "Expedition find"
+    },
+    {
+      "id": "held",
+      "name": "Held"
+    },
+    {
+      "id": "cap",
+      "name": "Headwear"
+    },
+    {
+      "id": "coat",
+      "name": "Coat"
+    },
+    {
+      "id": "gloves",
+      "name": "Gloves"
+    },
+    {
+      "id": "shoes",
+      "name": "Shoes"
+    },
+    {
+      "id": "ring",
+      "name": "Ring"
+    }
+  ],
+  "slots": [
+    {
+      "id": "main-hand",
+      "name": "Main hand",
+      "accepts": [
+        "held"
+      ]
+    },
+    {
+      "id": "off-hand",
+      "name": "Off hand",
+      "accepts": [
+        "held"
+      ]
+    },
+    {
+      "id": "head",
+      "name": "Head",
+      "accepts": [
+        "cap"
+      ]
+    },
+    {
+      "id": "body",
+      "name": "Body",
+      "accepts": [
+        "coat"
+      ]
+    },
+    {
+      "id": "hands",
+      "name": "Hands",
+      "accepts": [
+        "gloves"
+      ]
+    },
+    {
+      "id": "feet",
+      "name": "Feet",
+      "accepts": [
+        "shoes"
+      ]
+    },
+    {
+      "id": "ring-left",
+      "name": "Left hand ring",
+      "accepts": [
+        "ring"
+      ]
+    },
+    {
+      "id": "ring-right",
+      "name": "Right hand ring",
+      "accepts": [
+        "ring"
+      ]
+    }
+  ]
+}

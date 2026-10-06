@@ -383,6 +383,21 @@
       "find": "refuge-rounds"
     },
     {
+      "kind": "coat-stand",
+      "id": "refuge-coat-stand",
+      "space": "refuge",
+      "at": [
+        -3.15,
+        4.65
+      ]
+    },
+    {
+      "kind": "hung-coat",
+      "id": "refuge-coat",
+      "on": "refuge-coat-stand.hook",
+      "find": "refuge-coat"
+    },
+    {
       "kind": "ceiling-lamp",
       "space": "west",
       "at": [

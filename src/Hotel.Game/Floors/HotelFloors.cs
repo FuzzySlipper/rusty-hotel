@@ -97,7 +97,7 @@ internal sealed class HotelFloors
     {
         string[] collected = Collected.Where(id => !content.Excursion.Placements.Finds.Any(f => f.Id == id)).Order(StringComparer.Ordinal).ToArray();
         SecuredFind[] newlySecured = collected.Where(id => secured.All(s => s.Id != id))
-            .Select(id => (id, FindItem(id))).Where(f => f.Item2?.Kind == SupplyKind.Expedition).Select(f => new SecuredFind(f.id, f.Item2!.Id)).ToArray();
+            .Select(id => (id, FindItem(id))).Where(f => f.Item2?.Deposit == true).Select(f => new SecuredFind(f.id, f.Item2!.Id)).ToArray();
         return new(RunSeed, visited.OrderBy(v => v.Key).Select(v => Record(v.Value.Floor, memory.GetValueOrDefault(v.Value.Excursion.Id)) with
             { ShiftDue = due.Contains(v.Key) }).ToArray(), collected, [.. secured, .. newlySecured]);
     }
@@ -157,7 +157,7 @@ internal sealed class HotelFloors
     private List<(int Depth, GeneratedFloor Floor, ExcursionDefinition Excursion, WorldMemory? Memory)> Rebuild(FloorsState state)
     {
         if (state.Floors is null || state.Collected is null || state.Secured is null) throw new InvalidOperationException("Checkpoint floors are incomplete.");
-        if (state.Secured.Any(s => content.Supplies.Items.FirstOrDefault(i => i.Id == s.Item)?.Kind != SupplyKind.Expedition) ||
+        if (state.Secured.Any(s => content.Supplies.Items.FirstOrDefault(i => i.Id == s.Item)?.Deposit != true) ||
             state.Secured.Select(s => s.Id).Distinct().Count() != state.Secured.Length)
             throw new InvalidOperationException("Checkpoint secures an unknown expedition find.");
         List<(int, GeneratedFloor, ExcursionDefinition, WorldMemory?)> rebuilt = [];

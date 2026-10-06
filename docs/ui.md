@@ -16,7 +16,7 @@ combat slab. Final sizes and colors should be tuned against the rendered scene.
 | Surface | Deliberate contents | Entry and return |
 | --- | --- | --- |
 | Exploration HUD | Small reticle/focus prompt; health at lower left; held weapon/ammo at lower right; equipped spirit and summon resource nearby; brief pickup/result notice | Default during play. No persistent list of action buttons, transcript, developer values, or menu column. |
-| Field case | Focused Supplies and Spirits views; readable collection/slots, one selected entry's details, and only its relevant use/equip action | Inventory control opens one bounded overlay; clear Back/Close returns to exploration. Show honest empty states as domains arrive. |
+| Field case | Focused Supplies, Worn and Spirits views; readable collection/slots, one selected entry's details, and only its relevant use/wear/equip action | Inventory control opens one bounded overlay; clear Back/Close returns to exploration. Show honest empty states as domains arrive. |
 | Reading/inspection | One note, tape transcript or found object's content, with contextual navigation only where needed | Ordinary world use opens it; closing returns to the same situation. Do not turn it into a general command palette. |
 | Refuge | The current return/checkpoint interaction and its result | Use the refuge fixture to open a small contextual surface. Inventory remains in the field case; no duplicate state editor. |
 | Pause | Resume, controls/settings that actually work, and appropriate session actions | Pause control opens it; resume uses Engine lifecycle. In a debug-enabled session, one labeled Developer console entry may lead to the Engine console. |
@@ -160,7 +160,10 @@ feedback appears above the HUD and expires on admitted simulation time.
 
 I opens the field case; Escape opens the pause menu or closes the current surface.
 The menu offers Resume hotel, Field case and Controls. Supplies has a bounded
-pocket grid, quick pockets and selected-pocket details. Spirits has an honest
+pocket grid, quick pockets, the case's pocket count and capacity load, and
+selected-pocket details; a wearable item's action is Wear instead of Use. Worn
+(`worn-view.js`) lists every equipment slot with what it holds; a selected slot
+shows the worn item and its Take off action, which returns it to a pocket. Spirits has an honest
 empty state until Hushwing is acquired, then a pact card and its relevant equip
 action. Real supply stacks populate the grid; selected details show their
 description, quantity and any use refusal reason. `field-case.js` owns presentation

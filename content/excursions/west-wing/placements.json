@@ -47,6 +47,12 @@
       "item": "rounds",
       "count": 1,
       "socket": "refuge-rounds.focus"
+    },
+    {
+      "id": "refuge-coat",
+      "item": "night-coat",
+      "count": 1,
+      "socket": "refuge-coat.focus"
     }
   ],
   "residents": [

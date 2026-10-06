@@ -126,10 +126,10 @@ internal static class EffectChecks
         LiveEffect paused = supplies.Stats.Effects.Active.Single();
         product.HandlePausedIntents([SuppliesChecks.Claim($"{{\"action\":\"move\",\"from\":0,\"to\":1,\"revision\":{supplies.Revision}}}")]);
         Check(paused.Definition.Id == "mending" && paused.Remaining == Effect("mending").Duration &&
-            supplies.Health == 30 + supplies.Item("bandage").Amount, "a paused use applies its effect and holds it");
+            supplies.Health == 30 + supplies.Item("bandage").Restores(HotelSupplies.HealthTrack), "a paused use applies its effect and holds it");
         product.Resume();
         Admit(60);
-        Check(MathF.Abs(paused.Remaining - (Effect("mending").Duration - 1)) < .001f && supplies.Health == 30 + supplies.Item("bandage").Amount + 3,
+        Check(MathF.Abs(paused.Remaining - (Effect("mending").Duration - 1)) < .001f && supplies.Health == 30 + supplies.Item("bandage").Restores(HotelSupplies.HealthTrack) + 3,
             "admitted time runs the effect again");
         Vector3 start = product.World.Player.Position;
         Admit(30, Key(KeyboardControl.KeyW));

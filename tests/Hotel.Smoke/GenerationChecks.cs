@@ -124,8 +124,9 @@ internal static class GenerationChecks
         FloorLayouts.Laid laid = FloorLayouts.Lay(graph.Graph, narrow, tunings.Layout, content.Kit, content.Fixtures, draws);
         Check(laid.Failure is null, "the narrow-door floor still lays out: " + laid.Failure);
         Confirmation verdict = FloorConfirmation.Confirm(engine, graph.Graph, laid.Layout!, laid.Plan!, laid.Floor!, narrow, body, tunings.Generation.Navigation);
-        RouteVerdict? blocked = verdict.Routes.FirstOrDefault(r => !r.Reached);
-        Check(!verdict.Confirmed && blocked?.Blocking is { } at && at.StartsWith("doorway ", StringComparison.Ordinal) && at.Contains("/door"),
+        // Some route is refused at a corridor door (another may first meet the latch, which is not narrowed).
+        RouteVerdict? blocked = verdict.Routes.FirstOrDefault(r => !r.Reached && r.Blocking?.Contains("/door") == true);
+        Check(!verdict.Confirmed && blocked?.Blocking is { } at && at.StartsWith("doorway ", StringComparison.Ordinal),
             $"a doorway too narrow for the body is refused naming it: {blocked}");
         Console.WriteLine($"Generation checks passed: {accepted} of {floors} seeds furnished within budget ({finds / accepted} finds, {residents / accepted} residents each) and Engine-confirmed ({firstTry} first try) with {routes} promised routes and " +
             $"{locks} shut-lock checks, {milliseconds / Math.Max(1, accepted):0} ms navigation each; refusals before success {(refused.Count == 0 ? "none" : string.Join(", ", refused.Select(r => $"{r.Key} ×{r.Value}")))}; " +

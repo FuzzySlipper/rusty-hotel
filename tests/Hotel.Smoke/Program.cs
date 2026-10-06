@@ -171,6 +171,7 @@ host.Call(engine =>
 });
 host.Call(MechanicsChecks.Run);
 host.Call(EffectChecks.Run);
+host.Call(EquipmentChecks.Run);
 host.Call(KitChecks.Run);
 host.Call(LightingChecks.Run);
 host.Call(MissionChecks.Run);

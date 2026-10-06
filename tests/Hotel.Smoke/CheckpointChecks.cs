@@ -45,6 +45,8 @@ internal static class CheckpointChecks
                 lamp.Stats.Stat("might").BaseValue = 14; lamp.Stats.RefreshDerived(); lamp.Stats.Track("stamina").SetCurrent(20);
                 lamp.Stats.Effects.Apply(f.Content.Mechanics.Effect("staggered")!, "weapon.prybar");
                 f.Supplies.Afflict("warded", "item.incense"); f.Supplies.Damage(new(4, "fire"));
+                f.Supplies.Give("porter-gloves", 1);
+                f.Supplies.Wear(Enumerable.Range(0, f.Supplies.Capacity).First(i => f.Supplies.Slot(i)?.Item == "porter-gloves"), f.Supplies.Revision);
                 f.Route.Restore(["survey", "return"]);
                 f.At(0, -8, new(-2.33f, .93f, 2.85f));
                 f.Route.Use();
@@ -92,7 +94,7 @@ internal static class CheckpointChecks
                 Check(before == after, "whole checkpoint round trips across Engine host shutdown/relaunch");
                 foreach (CheckpointState invalid in new[] {
                     saved with { Version = 99 }, saved with { OpenDoors = ["unknown"] },
-                    Stats(saved, tracks: ("health", 0)), Stats(saved, tracks: ("health", 101)), Stats(saved, tracks: ("courage", 3)),
+                    Stats(saved, tracks: ("health", 0)), Stats(saved, tracks: ("health", 999)), Stats(saved, tracks: ("courage", 3)),
                     Stats(saved, bases: ("might", 500)), Stats(saved, bases: ("luck", 5)),
                     saved with { Spirit = saved.Spirit with { Acquired = false, Equipped = true } },
                     saved with { Residents = [] }, Resident(saved, tracks: ("stamina", 500)), Resident(saved, bases: ("might", 0)), saved with { SecuredFinds = [] } })
@@ -130,6 +132,7 @@ internal static class CheckpointChecks
             f.Combat.Enemies[1].Health.MaximumValue == f.Content.Combat.MaximumHealth(f.Combat.Enemies[1].Kind) + 8 &&
             f.Combat.Enemies[1].Stats.Effects.Active.Single() is { Definition.Id: "staggered", Remaining: 1.5f } &&
             f.Combat.Enemies[1].Stats.Pace < 1 && f.Supplies.Stats.Effects.Active.Single() is { Definition.Id: "warded", WardLeft: 20, Remaining: 40 } &&
+            f.Supplies.Worn.Single() is { Item.Id: "porter-gloves" } && f.Supplies.Stats.Stat("might").Value == 12 &&
             f.Combat.Enemies[1].Phase == AttackPhase.Ready &&
             f.Combat.Phase == AttackPhase.Ready && Vector3.Distance(f.Player.Position, new(0, .875f, 3.5f)) < .01f,
             "checkpoint restores coherent inventory, resources, pact, refuge, weapon, loot, doors and residents");

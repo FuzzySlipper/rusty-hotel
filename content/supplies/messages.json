@@ -5,9 +5,6 @@
   "collected": "Collected {item} ×{count}.",
   "overwhelmed": "Overwhelmed · return to the refuge checkpoint first.",
   "emptyPocket": "Empty pocket.",
-  "healthFull": "Health is already full.",
-  "ammoFull": "Ammunition reserve is full.",
-  "summonFull": "Summon reserve is full.",
   "keepForReturn": "Keep this expedition find for your return.",
   "caseChanged": "Your field case changed. Select the item again.",
   "used": "Used {item}.",
@@ -16,5 +13,15 @@
   "rearranged": "Field case rearranged.",
   "chooseAgain": "Choose the supply again.",
   "chooseAction": "Choose Use or another pocket.",
-  "unreadable": "The supply choice could not be read."
+  "unreadable": "The supply choice could not be read.",
+  "tooMuch": "Your field case cannot take {item}: too much {metric}.",
+  "trackFull": "{track} is already full.",
+  "wornNotUsed": "{item} is worn, not used. Wear it from the field case.",
+  "load": "{metric} {used} / {limit}",
+  "notWorn": "{item} has nowhere to be worn.",
+  "wearing": "Wearing {item} · {slot}.",
+  "exclusive": "{item} cannot be worn with {other}.",
+  "tookOff": "Took off {item}.",
+  "noPocketFree": "No free pocket to take off {item} into.",
+  "emptySlot": "Nothing is worn there."
 }

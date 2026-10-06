@@ -5,42 +5,36 @@ using Hotel.Game.Expedition;
 using Rusty.Engine.Entities;
 using Rusty.Engine.Mechanics;
 using ItemDefinition = Hotel.Game.Supplies.ItemDefinition;
-using EngineItemDefinition = Rusty.Engine.Mechanics.ItemDefinition;
 
 namespace Hotel.Game.Supplies;
 
 /// <summary>
-/// One owner for carried stacks, collected finds and player resources. The resources are the investigator's Engine
-/// stats: health, ammunition and summon charges are tracks bounded by derived stats (see <see cref="Mechanics.ActorStats"/>).
+/// One owner for the field case, collected finds and the investigator's resources and effects. Carried and worn items
+/// are the Engine inventory and equipment in <see cref="FieldCase"/>; the resources are the investigator's Engine stats
+/// (see <see cref="Mechanics.ActorStats"/>), and worn items add their sources to them. Pickup, use, moves and equipment
+/// changes from the world, quick keys, the field case and developer commands share these rules and revision checks.
 /// </summary>
 internal sealed class HotelSupplies
 {
     // The tracks this owner spends and restores, by vocabulary id.
     internal const string HealthTrack = Mechanics.ActorStats.HealthTrack, AmmoTrack = "ammunition", SummonTrack = "summon";
-    private readonly ItemDefinition[] items;
+    private readonly SuppliesDefinition definition;
     private readonly Mechanics.MechanicsDefinition mechanics;
     private readonly SupplyMessages text;
     private readonly FindDefinition[] finds;
-    private readonly InventoryStackId?[] slots;
-    private readonly EntityId owner;
-    private readonly Dictionary<string, EngineItemDefinition> itemMechanics;
-    private InventoryStore inventory = new();
+    private readonly FieldCase fieldCase;
     private readonly Track health, ammo, summon;
-    private ulong nextStack;
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
 
     internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner,
         Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats)
     {
         Stats = new(mechanics, playerStats, owner);
-        items = definition.Items;
+        this.definition = definition;
         this.mechanics = mechanics;
         text = definition.Text;
         this.finds = finds;
-        this.owner = owner;
-        slots = new InventoryStackId?[capacity];
-        itemMechanics = definition.Items.ToDictionary(i => i.Id,
-            i => new EngineItemDefinition(ItemDefinitionId.Parse(i.Id), ItemKind.Fungible, (ulong)i.StackLimit));
+        fieldCase = new(definition, capacity, owner);
         health = Stats.Track(HealthTrack);
         ammo = Stats.Track(AmmoTrack);
         summon = Stats.Track(SummonTrack);
@@ -49,6 +43,7 @@ internal sealed class HotelSupplies
 
     /// <summary>The investigator's stats; the resource tracks above are its tracks.</summary>
     internal Mechanics.ActorStats Stats { get; }
+    internal SuppliesDefinition Definition => definition;
 
     internal ulong Revision { get; private set; }
     internal int Health => health.ValueInt;
@@ -57,8 +52,12 @@ internal sealed class HotelSupplies
     internal int MaximumAmmo => (int)ammo.MaximumValue;
     internal int Summon => summon.ValueInt;
     internal int MaximumSummon => (int)summon.MaximumValue;
-    internal int Capacity => slots.Length;
-    internal int Occupied => slots.Count(s => s is not null);
+    internal int Capacity => fieldCase.Capacity;
+    internal int Occupied => fieldCase.Occupied;
+    internal IReadOnlyList<WornItem> Worn => fieldCase.Worn;
+    internal WornItem? WornIn(SlotDefinition slot) => fieldCase.WornIn(slot);
+    /// <summary>How much of one capacity metric the case holds, worn items included.</summary>
+    internal int Used(CapacityMetric metric) => fieldCase.Used(metric);
     private float noticeSeconds;
     private string message = "";
     internal string Message
@@ -81,24 +80,19 @@ internal sealed class HotelSupplies
         Revision++;
         return true;
     }
-    // Pocket order is Hotel policy; quantities and definitions are read from the Engine ledger.
-    internal ItemStack? Slot(int index)
-    {
-        if (slots[index] is not { } id) return null;
-        InventoryStack stack = inventory.View(owner).Stacks.Single(s => s.Id == id);
-        return new(stack.Definition.Value, checked((int)stack.Quantity));
-    }
-    internal ItemDefinition Item(string id) => items.First(i => i.Id == id);
+
+    internal ItemStack? Slot(int index) => fieldCase.Slot(index);
+    internal ItemDefinition Item(string id) => definition.Item(id)!;
     internal bool Collected(string id) => collected.Contains(id);
     internal FindDefinition[] Finds => finds;
     // Expedition finds are deposited at the refuge rather than used in the field.
-    internal bool IsExpeditionFind(string findId) => Item(finds.Single(f => f.Id == findId).Item).Kind == SupplyKind.Expedition;
+    internal bool IsExpeditionFind(string findId) => Item(finds.Single(f => f.Id == findId).Item).Deposit;
 
     internal bool Pickup(string id)
     {
         FindDefinition? find = finds.FirstOrDefault(f => f.Id == id);
         if (find is null || collected.Contains(id)) return Refuse(text.FindGone);
-        if (!Add(find.Item, find.Count)) return Refuse(text.CaseFull);
+        if (!Add(find.Item, find.Count)) return false;
         collected.Add(id);
         Revision++;
         Message = Template.Fill(text.Collected, ("item", Item(find.Item).Name), ("count", find.Count));
@@ -108,20 +102,16 @@ internal sealed class HotelSupplies
     internal string UseReason(int index)
     {
         if (Health == 0) return text.Overwhelmed;
-        if (index < 0 || index >= slots.Length || Slot(index) is not { } stack) return text.EmptyPocket;
+        if (index < 0 || index >= Capacity || Slot(index) is not { } stack) return text.EmptyPocket;
         ItemDefinition item = Item(stack.Item);
-        string full = item.Kind switch
-        {
-            SupplyKind.Healing when Health >= MaximumHealth => text.HealthFull,
-            SupplyKind.Ammo when Ammo >= MaximumAmmo => text.AmmoFull,
-            SupplyKind.Summon when Summon >= MaximumSummon => text.SummonFull,
-            SupplyKind.Expedition => text.KeepForReturn,
-            _ => ""
-        };
-        // A full track refuses an item only when its effects would do no more than restore a full track.
-        bool effective = item.Kind != SupplyKind.Expedition && item.Effects.Any(id => mechanics.Effect(id)!.Restore is not { } restore ||
-            Stats.Track(restore.Track).Value < Stats.Track(restore.Track).MaximumValue);
-        return effective ? "" : full;
+        if (item.Deposit) return text.KeepForReturn;
+        if (item.Use is not { } use) return Template.Fill(text.WornNotUsed, ("item", item.Name));
+        // A full track refuses an item only when everything it does would restore a full track.
+        bool Full(string track) => Stats.Track(track).Value >= Stats.Track(track).MaximumValue;
+        bool effective = use.Restores.Keys.Any(t => !Full(t)) ||
+            use.Effects.Any(id => mechanics.Effect(id)!.Restore is not { } restore || !Full(restore.Track));
+        string? full = use.Restores.Keys.Concat(use.Effects.Select(id => mechanics.Effect(id)!.Restore?.Track).OfType<string>()).FirstOrDefault(Full);
+        return effective || full is null ? "" : Template.Fill(text.TrackFull, ("track", mechanics.Tracks.First(t => t.Id == full).Name));
     }
 
     internal bool Use(int index, ulong revision)
@@ -129,47 +119,64 @@ internal sealed class HotelSupplies
         if (revision != Revision) return Refuse(text.CaseChanged);
         string reason = UseReason(index);
         if (reason.Length != 0) return Refuse(reason);
-        ItemStack stack = Slot(index)!.Value;
-        ItemDefinition item = Item(stack.Item);
-        switch (item.Kind)
-        {
-            case SupplyKind.Healing: health.Restore(item.Amount); break;
-            case SupplyKind.Ammo: ammo.Restore(item.Amount); break;
-            case SupplyKind.Summon: summon.Restore(item.Amount); break;
-        }
-        foreach (string effect in item.Effects) Stats.Effects.Apply(mechanics.Effect(effect)!, $"item.{item.Id}");
-        inventory.Consume(owner, slots[index]!, 1);
-        if (stack.Count == 1) slots[index] = null;
+        ItemDefinition item = Item(Slot(index)!.Value.Item);
+        foreach (var (track, amount) in item.Use!.Restores) Stats.Track(track).Restore(amount);
+        foreach (string effect in item.Use.Effects) Stats.Effects.Apply(mechanics.Effect(effect)!, $"item.{item.Id}");
+        fieldCase.ConsumeOne(index);
         Revision++;
         Message = Template.Fill(text.Used, ("item", item.Name));
+        return true;
+    }
+
+    /// <summary>Why the item in a pocket cannot be worn now, or empty when it can.</summary>
+    internal string WearReason(int index)
+    {
+        if (Health == 0) return text.Overwhelmed;
+        if (index < 0 || index >= Capacity || Slot(index) is not { } stack) return text.EmptyPocket;
+        return Item(stack.Item).Wear is null ? Template.Fill(text.NotWorn, ("item", Item(stack.Item).Name)) : "";
+    }
+
+    /// <summary>Wears a pocket's item in the slots that take it, trading places with what its slot held if it must.</summary>
+    internal bool Wear(int index, ulong revision)
+    {
+        if (revision != Revision) return Refuse(text.CaseChanged);
+        string reason = WearReason(index);
+        if (reason.Length != 0) return Refuse(reason);
+        ItemDefinition item = Item(Slot(index)!.Value.Item);
+        switch (fieldCase.Wear(index, out WornItem? other, out WornItem? worn))
+        {
+            case CaseRefusal.Exclusive: return Refuse(Template.Fill(text.Exclusive, ("item", item.Name), ("other", other!.Item.Name)));
+            case CaseRefusal.NoSlot: return Refuse(Template.Fill(text.NotWorn, ("item", item.Name)));
+        }
+        Stats.SetEquipmentSources(fieldCase.Sources);
+        Revision++;
+        Message = Template.Fill(text.Wearing, ("item", item.Name), ("slot", string.Join(" · ", worn!.Slots.Select(s => s.Name))));
+        return true;
+    }
+
+    /// <summary>Takes off what a slot (by its authored order) holds into the first empty pocket.</summary>
+    internal bool TakeOff(int slot, ulong revision)
+    {
+        if (revision != Revision) return Refuse(text.CaseChanged);
+        if (Health == 0) return Refuse(text.Overwhelmed);
+        if (slot < 0 || slot >= definition.Slots.Length) return Refuse(text.EmptySlot);
+        switch (fieldCase.TakeOff(definition.Slots[slot], out WornItem? worn))
+        {
+            case CaseRefusal.EmptySlot: return Refuse(text.EmptySlot);
+            case CaseRefusal.NoPocket: return Refuse(Template.Fill(text.NoPocketFree, ("item", worn!.Item.Name)));
+        }
+        Stats.SetEquipmentSources(fieldCase.Sources);
+        Revision++;
+        Message = Template.Fill(text.TookOff, ("item", worn!.Item.Name));
         return true;
     }
 
     internal bool Move(int from, int to, ulong revision)
     {
         if (revision != Revision) return Refuse(text.CaseChanged);
-        if (from < 0 || to < 0 || from >= slots.Length || to >= slots.Length || from == to || Slot(from) is not { } source)
+        if (from < 0 || to < 0 || from >= Capacity || to >= Capacity || from == to || Slot(from) is null)
             return Refuse(text.ChooseStack);
-        if (Slot(to) is { } target && source.Item == target.Item)
-        {
-            int moved = Math.Min(source.Count, Item(source.Item).StackLimit - target.Count);
-            if (moved == 0) return Refuse(text.StackFull);
-            if (moved == source.Count)
-            {
-                inventory.MergeFungible(owner, slots[from]!, slots[to]!);
-                slots[from] = null;
-            }
-            else
-            {
-                // A partial merge is one Engine edit; there is no intermediate carried stack.
-                using InventoryEdit edit = inventory.Prepare();
-                InventoryStackId split = NewStackId();
-                edit.SplitFungible(owner, slots[from]!, split, (ulong)moved);
-                edit.MergeFungible(owner, split, slots[to]!);
-                edit.Publish();
-            }
-        }
-        else (slots[from], slots[to]) = (slots[to], slots[from]);
+        if (!fieldCase.Move(from, to)) return Refuse(text.StackFull);
         Revision++;
         Message = text.Rearranged;
         return true;
@@ -191,9 +198,15 @@ internal sealed class HotelSupplies
                     || rev.ValueKind != JsonValueKind.Number || !rev.TryGetUInt64(out ulong revision)
                     || !Integer(root, "from", out int from))
                 { Refuse(text.ChooseAgain); continue; }
-                if (action.GetString() == "use") Use(from, revision);
-                else if (action.GetString() == "move" && Integer(root, "to", out int to)) Move(from, to, revision);
-                else Refuse(text.ChooseAction);
+                switch (action.GetString())
+                {
+                    case "use": Use(from, revision); break;
+                    case "wear": Wear(from, revision); break;
+                    // For take-off, "from" is the slot in authored order.
+                    case "takeOff": TakeOff(from, revision); break;
+                    case "move" when Integer(root, "to", out int to): Move(from, to, revision); break;
+                    default: Refuse(text.ChooseAction); break;
+                }
             }
             catch (JsonException) { Refuse(text.Unreadable); }
         }
@@ -215,8 +228,9 @@ internal sealed class HotelSupplies
         return applied;
     }
 
+    /// <summary>The first pocket holding an item whose use restores ammunition, or -1.</summary>
     internal int AmmoPocket => Enumerable.Range(0, Capacity).FirstOrDefault(
-        i => Slot(i) is { } stack && Item(stack.Item).Kind == SupplyKind.Ammo, -1);
+        i => Slot(i) is { } stack && Item(stack.Item).Restores(AmmoTrack) > 0, -1);
     internal void RestoreSummon(int amount)
     {
         if (amount <= 0) return;
@@ -236,8 +250,8 @@ internal sealed class HotelSupplies
 
     internal bool Give(string item, int count)
     {
-        if (count <= 0 || count > MaximumDeveloperGift || !items.Any(i => i.Id == item)) return Refuse("Unknown item or invalid quantity.");
-        if (!Add(item, count)) return Refuse("Field case full.");
+        if (count <= 0 || count > MaximumDeveloperGift || definition.Item(item) is null) return Refuse("Unknown item or invalid quantity.");
+        if (!Add(item, count)) return false;
         Revision++;
         Message = $"Developer supplied {Item(item).Name} ×{count}.";
         return true;
@@ -252,84 +266,55 @@ internal sealed class HotelSupplies
         return true;
     }
 
-    internal SuppliesState Capture() => new(Stats.Capture(),
-        Enumerable.Range(0, Capacity).Select(Slot).ToArray(), collected.Order().ToArray());
+    internal SuppliesState Capture()
+    {
+        var (pockets, worn) = fieldCase.Capture();
+        return new(Stats.Capture(), pockets, worn, collected.Order().ToArray());
+    }
 
     internal void Validate(SuppliesState state)
     {
         if (state.Stats is null) throw new InvalidOperationException("Checkpoint supplies have no stats.");
-        Stats.Validate(state.Stats);
-        if (!(state.Stats.Tracks.GetValueOrDefault(HealthTrack) > 0) || state.Pockets is null || state.Pockets.Length != Capacity ||
-            state.Collected is null || state.Collected.Distinct().Count() != state.Collected.Length ||
-            state.Collected.Any(id => !finds.Any(f => f.Id == id)))
+        fieldCase.Validate(state.Pockets, state.Worn);
+        // Track maximums follow what the saved case wears.
+        FieldCase scratch = new(definition, Capacity, new EntityId(0));
+        scratch.Restore(state.Pockets, state.Worn);
+        Stats.Validate(state.Stats, scratch.Sources);
+        if (!(state.Stats.Tracks.GetValueOrDefault(HealthTrack) > 0) || state.Collected is null ||
+            state.Collected.Distinct().Count() != state.Collected.Length || state.Collected.Any(id => !finds.Any(f => f.Id == id)))
             throw new InvalidOperationException("Checkpoint supplies or collected finds are invalid.");
-        foreach (ItemStack? pocket in state.Pockets)
-            if (pocket is { } stack && (stack.Count <= 0 || !items.Any(i => i.Id == stack.Item && stack.Count <= i.StackLimit)))
-                throw new InvalidOperationException("Checkpoint contains an invalid carried stack.");
     }
 
+    /// <summary>Restores validated supplies: the case and what it wears first, so the stats restore under their maximums.</summary>
     internal void Restore(SuppliesState state)
     {
         Reset();
-        using InventoryEdit edit = inventory.Prepare();
-        for (int i = 0; i < Capacity; i++)
-        {
-            if (state.Pockets[i] is not { } stack) continue;
-            InventoryStackId id = NewStackId();
-            edit.Grant(owner, itemMechanics[stack.Item], id, (ulong)stack.Count);
-            slots[i] = id;
-        }
-        edit.Publish();
+        fieldCase.Restore(state.Pockets, state.Worn);
+        Stats.SetEquipmentSources(fieldCase.Sources);
         collected.UnionWith(state.Collected);
         Stats.Restore(state.Stats);
     }
 
     internal void Reset()
     {
-        Array.Clear(slots);
+        fieldCase.Reset();
         collected.Clear();
-        inventory = new();
-        inventory.RegisterInventory(new(owner));
-        nextStack = 0;
+        Stats.SetEquipmentSources([]);
         Stats.Reset();
         Revision++;
         Message = "";
     }
 
-    // Check total room before changing any stack: a refused pickup leaves all of it in the world.
+    // Room for the whole find or none of it: a refusal leaves it in the world and names what is short.
     private bool Add(string item, int count)
     {
-        int limit = Item(item).StackLimit;
-        ItemStack?[] carried = Enumerable.Range(0, Capacity).Select(Slot).ToArray();
-        int room = carried.Sum(s => s is null ? limit : s.Value.Item == item ? limit - s.Value.Count : 0);
-        if (count <= 0 || room < count) return false;
-        using InventoryEdit edit = inventory.Prepare();
-        List<(int Pocket, InventoryStackId Id)> newPockets = [];
-        for (int i = 0; i < slots.Length && count > 0; i++)
+        switch (fieldCase.Add(item, count, out CapacityMetric? metric))
         {
-            if (carried[i] is not { } stack || stack.Item != item) continue;
-            int added = Math.Min(count, limit - stack.Count);
-            if (added == 0) continue;
-            edit.Grant(owner, itemMechanics[item], slots[i]!, (ulong)added);
-            count -= added;
+            case CaseRefusal.Pockets: return Refuse(text.CaseFull);
+            case CaseRefusal.Capacity: return Refuse(Template.Fill(text.TooMuch, ("item", Item(item).Name), ("metric", metric!.Name)));
         }
-        for (int i = 0; i < slots.Length && count > 0; i++)
-        {
-            if (slots[i] is not null) continue;
-            int added = Math.Min(count, limit);
-            InventoryStackId id = NewStackId();
-            edit.Grant(owner, itemMechanics[item], id, (ulong)added);
-            newPockets.Add((i, id));
-            count -= added;
-        }
-        edit.Publish();
-        foreach (var pocket in newPockets) slots[pocket.Pocket] = pocket.Id;
         return true;
     }
 
-    private InventoryStackId NewStackId() => InventoryStackId.Parse($"hotel-stack-{++nextStack}");
-
     private bool Refuse(string message) { Message = message; return false; }
 }
-
-internal readonly record struct ItemStack(string Item, int Count);

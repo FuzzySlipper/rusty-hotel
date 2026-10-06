@@ -126,3 +126,12 @@
 .hotel-ui .quick-pocket { position:relative; padding-top:8px; color:var(--ink); font-size:12px; }
 .hotel-ui .quick-pocket small { position:absolute; top:1px; left:5px; color:var(--muted); font:10px ui-monospace,monospace; }
 .hotel-ui [data-collection="supplies"] .empty-emblem { min-height:40px; }
+.hotel-ui [data-collection="worn"] .case-collection { grid-template-columns:1fr; }
+.hotel-ui .worn-view { display:grid; grid-template-columns:1.2fr 1fr; gap:20px; }
+.hotel-ui .worn-slots { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; align-content:start; }
+.hotel-ui .worn-slot { min-height:52px; padding:8px 10px; text-align:left; background:#1c221b; color:#93846b; border:1px solid #6e685055; }
+.hotel-ui .worn-slot.occupied { color:var(--ink); }
+.hotel-ui .worn-slot[aria-pressed=true] { border-color:var(--accent); background:#2c3529; }
+.hotel-ui .worn-detail { display:flex; flex-direction:column; gap:10px; padding:18px; background:#1e221c; border:1px solid #776c5155; }
+.hotel-ui .worn-detail p { color:var(--muted); }
+@media (max-width: 720px) { .hotel-ui .worn-view { grid-template-columns:1fr; } }

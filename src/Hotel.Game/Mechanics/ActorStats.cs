@@ -69,7 +69,10 @@ internal sealed class ActorStats
     /// </summary>
     internal void ApplyEffectSources()
     {
+        // Equipment and effect sources are evaluated together; both are rebuilt by their owners, never saved.
         foreach (AttributeDefinition a in mechanics.Attributes) Stats.GetStat(StatOf(a.Id)).SetSources(StatOf(a.Id), EffectSources(a.Id));
+        foreach (DamageKindDefinition k in mechanics.DamageKinds)
+            Stats.GetStat(ResistanceOf(k.Id)).SetSources(ResistanceOf(k.Id), EffectSources(ResistanceStat(k.Id)));
         RefreshDerived();
     }
 
@@ -89,7 +92,16 @@ internal sealed class ActorStats
     }
 
     private IEnumerable<StatSource> EffectSources(string stat) =>
-        Effects?.Sources.Where(s => s.Contributions.Any(c => c.Stat.Value == stat)) ?? [];
+        (Effects?.Sources ?? []).Concat(equipment).Where(s => s.Contributions.Any(c => c.Stat.Value == stat));
+
+    private StatSource[] equipment = [];
+
+    /// <summary>Replaces the sources worn equipment holds (see <see cref="Supplies.FieldCase.Sources"/>) and re-evaluates.</summary>
+    internal void SetEquipmentSources(StatSource[] sources)
+    {
+        equipment = sources;
+        ApplyEffectSources();
+    }
 
     /// <summary>The block's starting values: bases as authored and tracks at their initial points.</summary>
     internal void Reset()
@@ -114,7 +126,8 @@ internal sealed class ActorStats
     }
 
     /// <summary>Refuses a saved state that does not name exactly this vocabulary's stats and tracks within their bounds.</summary>
-    internal void Validate(ActorStatsState state)
+    /// <param name="worn">The equipment sources the state would be restored beside, for track maximums.</param>
+    internal void Validate(ActorStatsState state, StatSource[]? worn = null)
     {
         if (state.Bases is null || state.Tracks is null || state.Effects is null || state.Bases.Count != Stats.Stats.Count || state.Tracks.Count != Stats.Tracks.Count)
             throw new InvalidOperationException("Checkpoint stats do not match the stat vocabulary.");
@@ -129,7 +142,9 @@ internal sealed class ActorStats
         ActorEffects.Validate(mechanics, state.Effects);
         // A track's maximum follows the restored bases and effects, and effects may conflict in their groups, so these
         // are checked on a scratch copy, never the live stats.
-        new ActorStats(mechanics, block, owner).Restore(state);
+        ActorStats scratch = new(mechanics, block, owner);
+        scratch.SetEquipmentSources(worn ?? equipment);
+        scratch.Restore(state);
     }
 
     /// <summary>
@@ -155,7 +170,9 @@ internal sealed class ActorStats
 
     private static StatId StatOf(string id) => StatId.Parse(id);
     private static TrackId TrackOf(string id) => TrackId.Parse(id);
-    private static StatId ResistanceOf(string kind) => StatId.Parse($"resistance.{kind}");
+    private static StatId ResistanceOf(string kind) => StatId.Parse(ResistanceStat(kind));
+    /// <summary>The id of the stat holding an actor's resistance to a damage kind.</summary>
+    internal static string ResistanceStat(string kind) => $"resistance.{kind}";
 }
 
 /// <summary>An actor's saved stats: every stat's base and every track's current points, by Engine id, and its effects.</summary>

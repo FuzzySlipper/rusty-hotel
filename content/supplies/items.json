@@ -3,81 +3,273 @@
     {
       "id": "bandage",
       "name": "Field dressing",
-      "description": "A sealed dressing. Restores {amount} health at once, and the wound keeps mending for a while after.",
-      "kind": "Healing",
-      "stackLimit": 3,
-      "amount": 20,
+      "description": "A sealed dressing. Restores {health} health at once, and the wound keeps mending for a while after.",
       "mark": "+",
-      "effects": [
-        "mending"
-      ]
+      "form": "Fungible",
+      "stackLimit": 3,
+      "classifications": [
+        "remedy"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {
+          "health": 20
+        },
+        "effects": [
+          "mending"
+        ]
+      }
     },
     {
       "id": "rounds",
       "name": "Loose cartridges",
-      "description": "{amount} cartridges in a paper packet. Transfers up to {amount} rounds to your ammunition reserve.",
-      "kind": "Ammo",
-      "stackLimit": 3,
-      "amount": 6,
+      "description": "{ammunition} cartridges in a paper packet. Transfers up to {ammunition} rounds to your ammunition reserve.",
       "mark": "6",
-      "effects": []
+      "form": "Fungible",
+      "stackLimit": 3,
+      "classifications": [
+        "ammunition"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "use": {
+        "restores": {
+          "ammunition": 6
+        },
+        "effects": []
+      }
     },
     {
       "id": "incense",
       "name": "Binding incense",
-      "description": "A waxed incense packet. Restores {amount} charge to the shared summon reserve, and its smoke wards you for a while.",
-      "kind": "Summon",
-      "stackLimit": 3,
-      "amount": 1,
+      "description": "A waxed incense packet. Restores {summon} charge to the shared summon reserve, and its smoke wards you for a while.",
       "mark": "◇",
-      "effects": [
-        "warded"
-      ]
+      "form": "Fungible",
+      "stackLimit": 3,
+      "classifications": [
+        "remedy"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {
+          "summon": 1
+        },
+        "effects": [
+          "warded"
+        ]
+      }
     },
     {
       "id": "matches",
       "name": "Hotel matches",
       "description": "A booklet of the hotel's own matches. Strike one to carry a small flame for a while.",
-      "kind": "Consumable",
-      "stackLimit": 3,
-      "amount": 0,
       "mark": "✧",
-      "effects": [
-        "match-light"
-      ]
+      "form": "Fungible",
+      "stackLimit": 3,
+      "classifications": [
+        "remedy"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [
+          "match-light"
+        ]
+      }
     },
     {
       "id": "salts",
       "name": "Smelling salts",
       "description": "A stoppered bottle of salts. One breath steadies your nerve and sharpens your senses: you feel residents stirring nearby, even through walls.",
-      "kind": "Consumable",
-      "stackLimit": 3,
-      "amount": 0,
       "mark": "◉",
-      "effects": [
-        "keen",
-        "steadied"
-      ]
+      "form": "Fungible",
+      "stackLimit": 3,
+      "classifications": [
+        "remedy"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [
+          "keen",
+          "steadied"
+        ]
+      }
     },
     {
       "id": "reel",
       "name": "Survey reel",
       "description": "The WEST WING survey reel, recovered from its blue case. Bring it back to the refuge.",
-      "kind": "Expedition",
-      "stackLimit": 1,
-      "amount": 0,
       "mark": "◎",
-      "effects": []
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "expedition"
+      ],
+      "costs": {
+        "weight": 8,
+        "space": 3
+      },
+      "deposit": true
     },
     {
       "id": "ledger-page",
       "name": "Ledger page",
       "description": "A page torn from the hotel register, the names on it still wet. Bring it back to the refuge.",
-      "kind": "Expedition",
-      "stackLimit": 1,
-      "amount": 0,
       "mark": "▤",
-      "effects": []
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "expedition"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "deposit": true
+    },
+    {
+      "id": "night-coat",
+      "name": "Night porter's coat",
+      "description": "A heavy wool coat with brass buttons, still warm from someone. Worn, it turns a blow and keeps off a little heat.",
+      "mark": "▥",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "coat"
+      ],
+      "costs": {
+        "weight": 14,
+        "space": 4
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "resistance.blunt",
+            "amount": 0.15
+          },
+          {
+            "stat": "resistance.fire",
+            "amount": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "id": "porter-gloves",
+      "name": "Porter's gloves",
+      "description": "Stiff leather gloves worn smooth at the palms. Worn, your grip is surer and your blows land harder.",
+      "mark": "✋",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "gloves"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "might",
+            "amount": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "bellhop-cap",
+      "name": "Bellhop's cap",
+      "description": "A pillbox cap with a frayed chin strap. Worn, it steadies you, as uniforms do.",
+      "mark": "◠",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "cap"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "nerve",
+            "amount": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "crepe-soles",
+      "name": "Crepe-soled shoes",
+      "description": "Quiet shoes for night staff. Worn, you are lighter on your feet and tire later.",
+      "mark": "◡",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "shoes"
+      ],
+      "costs": {
+        "weight": 4,
+        "space": 2
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "agility",
+            "amount": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "signet-ring",
+      "name": "Hotel signet",
+      "description": "A heavy ring stamped with the hotel's mark. Worn, the spirits hear you a little better. One signet answers at a time.",
+      "mark": "○",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "ring"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 0
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": "signet",
+        "stats": [
+          {
+            "stat": "attunement",
+            "amount": 4
+          }
+        ]
+      }
     }
   ]
 }
