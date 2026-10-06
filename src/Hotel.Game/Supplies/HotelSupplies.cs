@@ -105,8 +105,8 @@ internal sealed class HotelSupplies
     internal SearchDefinition[] Searches => searches;
     internal bool Collected(string id) => collected.Contains(id);
     internal FindDefinition[] Finds => finds;
-    // Expedition finds are deposited at the refuge rather than used in the field.
-    internal bool IsExpeditionFind(string findId) => Item(finds.Single(f => f.Id == findId).Item).Deposit;
+    // Expedition finds are deposited at the refuge rather than used in the field; a search made is not a find.
+    internal bool IsExpeditionFind(string id) => finds.FirstOrDefault(f => f.Id == id) is { } find && Item(find.Item).Deposit;
 
     internal bool Pickup(string id)
     {

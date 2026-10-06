@@ -41,6 +41,9 @@ internal static class CheckpointChecks
                 f.Supplies.SpendAmmo(2); f.Supplies.SpendSummon(1); f.Supplies.Damage(new(13, "blunt"));
                 f.Combat.SwapHands();
                 f.Combat.Enemies[0].Health.SetCurrent(0);
+                // A search made travels with the checkpoint beside the finds collected.
+                string remains = Hotel.Game.HotelWorld.Remains(f.Combat.Enemies[0].Id);
+                Check(f.Supplies.Search(remains, []), "the fallen porter's remains are searched");
                 var lamp = f.Combat.Enemies[1]; lamp.Health.SetCurrent(36); lamp.Yaw = .4f;
                 lamp.Stats.Stat("might").BaseValue = 14; lamp.Stats.RefreshDerived(); lamp.Stats.Track("stamina").SetCurrent(20);
                 lamp.Stats.Effects.Apply(f.Content.Mechanics.Effect("staggered")!, "weapon.prybar");
@@ -59,6 +62,7 @@ internal static class CheckpointChecks
                 using var store = new ProductStateStore<CheckpointState>(engine, HotelExpedition.Scope,
                     new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
                 saved = store.Load(HotelExpedition.Key).State!;
+                Check(saved.Supplies.Collected.Contains(remains), "the checkpoint keeps the search made");
                 var tracks = saved.Supplies.Stats.Tracks;
                 ActorStatsState lampSaved = saved.Residents.Single(r => r.Id == lamp.Id).Stats;
                 Check(lampSaved.Bases["might"] == 14 && lampSaved.Tracks["stamina"] == 20 && lampSaved.Tracks["health"] == 36,
