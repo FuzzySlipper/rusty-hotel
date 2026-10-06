@@ -9,7 +9,10 @@ from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-PIECES = json.load(open(os.path.join(HERE, "pieces.json")))
+SET = json.load(open(os.path.join(HERE, "pieces.json")))
+PIECES = SET["pieces"]
+# One budget for the whole furniture set, the lounge armchair included: every runtime GLB in content/models/furniture.
+BUDGET = SET["triangleBudget"]
 only = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 
 def prepare(piece, spec):
@@ -83,3 +86,15 @@ def review(piece, obj):
 for piece, spec in PIECES.items():
     if spec.get("native") and (not only or piece in only):
         prepare(piece, spec)
+
+# The set-wide budget holds for every shipped piece, generated here or elsewhere.
+over = []
+folder = os.path.join(ROOT, "content", "models", "furniture")
+for name in sorted(os.listdir(folder)):
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(folder, name))
+    triangles = sum(len(o.data.polygons) for o in bpy.context.scene.objects if o.type == "MESH")
+    print(f"BUDGET {name} {triangles}/{BUDGET}")
+    if triangles > BUDGET: over.append(f"{name} ({triangles})")
+if over:
+    raise SystemExit("Over the furniture triangle budget: " + ", ".join(over))

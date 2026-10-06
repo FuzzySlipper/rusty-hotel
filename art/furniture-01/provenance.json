@@ -37,11 +37,11 @@
   },
   {
    "path": "art/furniture-01/pieces.json",
-   "sha256": "2c005a9774a28312aa1882397b6af3417d76c0f2228fd2ecd33f8d1887084fc1"
+   "sha256": "0b730d9f56b0f7b47611118d9fb2d3280359862b6f5d3e1697ce7a5a503d2af7"
   },
   {
    "path": "art/furniture-01/prepare.py",
-   "sha256": "2c68aa06a655e88be5a9a6d48496f3249564f18cb1bf7253ec20f850d4ffc682"
+   "sha256": "c9e9d8c001bbe8e39b922d495fb840983ac3e45947d5f08e3dddb959ea74693f"
   },
   {
    "path": "art/furniture-01/native/bell-pedestal.glb",
@@ -151,5 +151,6 @@
    "path": "content/models/furniture/writing-desk.glb",
    "sha256": "1c8376353596f6f6a2910c401b8a8472b95ee0b940d22b72ed8d644f9efa3553"
   }
- ]
+ ],
+ "setTriangleBudget": "12500 triangles per piece across the furniture set (art/furniture-01/pieces.json triangleBudget), checked by art/furniture-01/prepare.py"
 }

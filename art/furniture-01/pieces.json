@@ -1,153 +1,156 @@
 {
- "side-table": {
-  "fit": [
-   [
-    -0.55,
-    0,
-    -0.45
+ "triangleBudget": 12500,
+ "pieces": {
+  "side-table": {
+   "fit": [
+    [
+     -0.55,
+     0,
+     -0.45
+    ],
+    [
+     0.55,
+     0.85,
+     0.45
+    ]
    ],
-   [
-    0.55,
-    0.85,
-    0.45
-   ]
-  ],
-  "turn": 1,
-  "surface": 0.85,
-  "native": "native/side-table.glb"
- },
- "writing-desk": {
-  "fit": [
-   [
-    -0.675,
-    0,
-    -1.05
+   "turn": 1,
+   "surface": 0.85,
+   "native": "native/side-table.glb"
+  },
+  "writing-desk": {
+   "fit": [
+    [
+     -0.675,
+     0,
+     -1.05
+    ],
+    [
+     0.675,
+     0.83,
+     1.05
+    ]
    ],
-   [
-    0.675,
-    0.83,
-    1.05
-   ]
-  ],
-  "turn": 0,
-  "surface": 0.83,
-  "native": "native/writing-desk.glb"
- },
- "cartridge-table": {
-  "fit": [
-   [
-    -0.43,
-    0,
-    -0.32
+   "turn": 0,
+   "surface": 0.83,
+   "native": "native/writing-desk.glb"
+  },
+  "cartridge-table": {
+   "fit": [
+    [
+     -0.43,
+     0,
+     -0.32
+    ],
+    [
+     0.4,
+     0.84,
+     0.32
+    ]
    ],
-   [
-    0.4,
-    0.84,
-    0.32
-   ]
-  ],
-  "turn": 1,
-  "native": "native/cartridge-table.glb",
-  "surface": 0.84
- },
- "log-desk": {
-  "fit": [
-   [
-    -0.6,
-    0,
-    -0.4
+   "turn": 1,
+   "native": "native/cartridge-table.glb",
+   "surface": 0.84
+  },
+  "log-desk": {
+   "fit": [
+    [
+     -0.6,
+     0,
+     -0.4
+    ],
+    [
+     0.6,
+     0.87,
+     0.4
+    ]
    ],
-   [
-    0.6,
-    0.87,
-    0.4
-   ]
-  ],
-  "turn": 1,
-  "native": "native/log-desk.glb",
-  "surface": 0.87
- },
- "reel-desk": {
-  "fit": [
-   [
-    -0.55,
-    0,
-    -0.8
+   "turn": 1,
+   "native": "native/log-desk.glb",
+   "surface": 0.87
+  },
+  "reel-desk": {
+   "fit": [
+    [
+     -0.55,
+     0,
+     -0.8
+    ],
+    [
+     0.55,
+     0.87,
+     0.8
+    ]
    ],
-   [
-    0.55,
-    0.87,
-    0.8
-   ]
-  ],
-  "turn": 0,
-  "native": "native/reel-desk.glb",
-  "surface": 0.87
- },
- "guest-bench": {
-  "fit": [
-   [
-    -1.075,
-    0,
-    -0.275
+   "turn": 0,
+   "native": "native/reel-desk.glb",
+   "surface": 0.87
+  },
+  "guest-bench": {
+   "fit": [
+    [
+     -1.075,
+     0,
+     -0.275
+    ],
+    [
+     1.075,
+     0.55,
+     0.275
+    ]
    ],
-   [
-    1.075,
-    0.55,
-    0.275
-   ]
-  ],
-  "turn": 0,
-  "native": "native/guest-bench.glb"
- },
- "low-cabinet": {
-  "fit": [
-   [
-    -0.375,
-    0,
-    -0.9
+   "turn": 0,
+   "native": "native/guest-bench.glb"
+  },
+  "low-cabinet": {
+   "fit": [
+    [
+     -0.375,
+     0,
+     -0.9
+    ],
+    [
+     0.375,
+     0.85,
+     0.9
+    ]
    ],
-   [
-    0.375,
-    0.85,
-    0.9
-   ]
-  ],
-  "turn": 0,
-  "native": "native/low-cabinet.glb"
- },
- "luggage-table": {
-  "fit": [
-   [
-    -0.55,
-    0,
-    -0.4
+   "turn": 0,
+   "native": "native/low-cabinet.glb"
+  },
+  "luggage-table": {
+   "fit": [
+    [
+     -0.55,
+     0,
+     -0.4
+    ],
+    [
+     0.55,
+     0.8,
+     0.4
+    ]
    ],
-   [
-    0.55,
-    0.8,
-    0.4
-   ]
-  ],
-  "turn": 1,
-  "surface": 0.8,
-  "native": "native/luggage-table.glb"
- },
- "bell-pedestal": {
-  "fit": [
-   [
-    -0.32,
-    0,
-    -0.28
+   "turn": 1,
+   "surface": 0.8,
+   "native": "native/luggage-table.glb"
+  },
+  "bell-pedestal": {
+   "fit": [
+    [
+     -0.32,
+     0,
+     -0.28
+    ],
+    [
+     0.32,
+     0.78,
+     0.28
+    ]
    ],
-   [
-    0.32,
-    0.78,
-    0.28
-   ]
-  ],
-  "turn": 0,
-  "surface": 0.78,
-  "native": "native/bell-pedestal.glb"
+   "turn": 0,
+   "surface": 0.78,
+   "native": "native/bell-pedestal.glb"
+  }
  }
 }

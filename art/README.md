@@ -45,7 +45,11 @@ height finds and props rest on), saves a `.blend` master per piece, writes
 `content/models/furniture/<piece>.glb`, and renders inspection views into
 ignored `.runtime/mesh-review/furniture/`. `provenance.json` records the
 provider tasks, hashes and use limits; raw receipts carry signed URLs and are
-not retained. The lounge armchair below belongs to the same set.
+not retained. The lounge armchair below belongs to the same set. The whole set
+shares one budget, `triangleBudget` in `pieces.json` (12,500 triangles per
+piece); generation targets sit under it (10,000 faces for these pieces, 12,000
+for the armchair) and `prepare.py` fails if any GLB in
+`content/models/furniture/` exceeds it.
 
 ```text
 blender -b --python art/furniture-01/prepare.py

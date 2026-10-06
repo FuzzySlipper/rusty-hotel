@@ -45,5 +45,6 @@
    "sha256": "6953b0d9ecaebabe13b91c1ba66803fcd2c3943b7f2e5611387d51fd39ef237b"
   }
  ],
- "providerReceipts": "Raw provider requests/responses contain signed download URLs and are not retained in the repository."
+ "providerReceipts": "Raw provider requests/responses contain signed download URLs and are not retained in the repository.",
+ "setTriangleBudget": "12500 triangles per piece across the furniture set (art/furniture-01/pieces.json triangleBudget), checked by art/furniture-01/prepare.py"
 }
