@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using Hotel.Game.Combat;
+using Hotel.Game.Residents;
 using Hotel.Game.Expedition;
 using Hotel.Game.Content;
 using Hotel.Game.Floors.Layout;
@@ -199,7 +200,7 @@ internal sealed class HotelFloors
             ResidentKind? kind = placed is null ? null : content.Combat.Residents.FirstOrDefault(k => k.Id == placed.Kind);
             if (state is null || placed is null || kind is null || state.Stats is null ||
                 !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
-                System.Numerics.Vector3.Distance(new(state.X, state.Y, state.Z), Authored.Vector(placed.Position)) > kind.Leash + 1)
+                System.Numerics.Vector3.Distance(new(state.X, state.Y, state.Z), Authored.Vector(placed.Position)) > kind.Movement.Range + 1)
                 throw new InvalidOperationException($"Checkpoint floor {depth}'s resident values are invalid.");
             new ActorStats(content.Combat.Mechanics, kind.Stats, null).Validate(state.Stats);
         }

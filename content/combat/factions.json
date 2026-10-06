@@ -1,0 +1,39 @@
+{
+  "factions": [
+    {
+      "id": "investigator",
+      "name": "Investigator"
+    },
+    {
+      "id": "staff",
+      "name": "Hotel staff"
+    },
+    {
+      "id": "lamps",
+      "name": "The lamps"
+    },
+    {
+      "id": "guests",
+      "name": "Lost guests"
+    }
+  ],
+  "hostile": [
+    [
+      "staff",
+      "investigator"
+    ],
+    [
+      "lamps",
+      "investigator"
+    ],
+    [
+      "guests",
+      "investigator"
+    ],
+    [
+      "guests",
+      "staff"
+    ]
+  ],
+  "investigator": "investigator"
+}

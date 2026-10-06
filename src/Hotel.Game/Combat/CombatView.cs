@@ -1,5 +1,7 @@
 using System.Numerics;
 using Hotel.Game.Player;
+using Hotel.Game.Content;
+using Hotel.Game.Residents;
 using Hotel.Game.Scene;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
@@ -17,6 +19,7 @@ internal sealed class CombatView : IDisposable
     private readonly List<Appearance> appearances = [];
     private readonly Dictionary<string, MeshResource> boxes = [];
     private readonly Dictionary<string, Part[]> residents = [];
+    private readonly Dictionary<string, ResidentLook> looks = [];
     // The look of each held item, and the flash at a firearm's commit.
     private readonly Dictionary<HeldLook, Part[]> held = [];
     private readonly Part muzzle;
@@ -25,36 +28,16 @@ internal sealed class CombatView : IDisposable
     private readonly Part[] flares;
     private readonly Dictionary<string, Part> beams = [];
 
-    internal CombatView(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelCombat combat)
+    internal CombatView(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelCombat combat, CombatDefinition definition)
     {
         this.engine = engine; this.scene = scene; this.player = player; this.combat = combat;
         try
         {
             foreach (HotelEnemy enemy in combat.Enemies)
             {
-                residents[enemy.Id] = enemy.Kind.Behavior == ResidentBehavior.Porter
-                    ? [Box("porter-coat", new(0, .06f, 0), new(.62f, .85f, .36f)),
-                       Box("equipment", new(-.17f, -.61f, 0), new(.20f, .55f, .24f)),
-                       Box("equipment", new(.17f, -.61f, 0), new(.20f, .55f, .24f)),
-                       Box("resident-ivory", new(0, .66f, -.015f), new(.31f, .34f, .27f)),
-                       Box("porter-coat", new(0, .86f, -.025f), new(.40f, .12f, .34f)),
-                       Box("brass", new(0, .90f, -.025f), new(.24f, .03f, .26f)),
-                       Box("equipment", new(0, .67f, -.16f), new(.22f, .07f, .035f)),
-                       Box("brass", new(0, .28f, -.19f), new(.06f, .08f, .02f)),
-                       Box("brass", new(0, .08f, -.19f), new(.06f, .08f, .02f)),
-                       Box("porter-coat", new(-.43f, .12f, -.06f), new(.19f, .68f, .22f)),
-                       Box("porter-coat", new(.43f, .12f, -.10f), new(.19f, .68f, .22f), "arm"),
-                       Box("brass", new(.43f, -.15f, -.38f), new(.36f, .20f, .30f), "arm"),
-                       Box("tell-amber", new(0, .67f, -.185f), new(.16f, .04f, .02f), "tell")]
-                    : [Box("brass", new(0, -.78f, 0), new(.65f, .14f, .58f)),
-                       Box("brass", new(0, -.12f, 0), new(.11f, 1.24f, .11f)),
-                       Box("resident-ivory", new(0, .48f, 0), new(.74f, .13f, .61f)),
-                       Box("resident-ivory", new(0, .60f, 0), new(.61f, .13f, .51f)),
-                       Box("resident-ivory", new(0, .72f, 0), new(.46f, .13f, .40f)),
-                       Box("equipment", new(0, .58f, -.275f), new(.32f, .16f, .10f)),
-                       Box("tell-amber", new(0, .58f, -.34f), new(.22f, .08f, .035f), "tell"),
-                       Box("brass", new(-.30f, -.22f, 0), new(.08f, .5f, .08f)),
-                       Box("brass", new(.30f, -.22f, 0), new(.08f, .5f, .08f))];
+                ResidentLook look = definition.Look(enemy.Kind);
+                looks[enemy.Id] = look;
+                residents[enemy.Id] = look.Parts.Select(part => Box(part.Material, Authored.Vector(part.Offset), Authored.Vector(part.Size), part.Role)).ToArray();
                 beams.Add(enemy.Id, Box("tell-amber", default, Vector3.One));
             }
             held[HeldLook.Bar] = [Box("equipment", new(0, 0, -.15f), new(.055f, .055f, .65f)),
@@ -76,7 +59,7 @@ internal sealed class CombatView : IDisposable
         catch { Dispose(); throw; }
     }
 
-    private Part Box(string material, Vector3 offset, Vector3 size, string role = "")
+    private Part Box(string material, Vector3 offset, Vector3 size, LookRole role = LookRole.Body)
     {
         if (!boxes.TryGetValue(material, out MeshResource? mesh))
         {
@@ -98,12 +81,13 @@ internal sealed class CombatView : IDisposable
         {
             Quaternion facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, -enemy.Yaw);
             bool winding = enemy.Phase == AttackPhase.Windup, committed = enemy.Phase == AttackPhase.Commit;
+            ResidentLook silhouette = looks[enemy.Id];
             foreach (Part part in residents[enemy.Id])
             {
                 Vector3 offset = part.Offset;
-                if (part.Role == "arm") offset += winding ? new Vector3(0, .55f, .18f) : committed ? new Vector3(0, -.04f, -.60f) : Vector3.Zero;
-                if (enemy.Phase is AttackPhase.Recovery or AttackPhase.Interrupted) offset.Y -= .10f;
-                Place(part, enemy.Position, facing, enemy.Alive && (part.Role != "tell" || winding || committed), offset);
+                if (part.Role == LookRole.Arm) offset += winding ? Authored.Vector(silhouette.ArmWindup) : committed ? Authored.Vector(silhouette.ArmStrike) : Vector3.Zero;
+                if (enemy.Phase is AttackPhase.Recovery or AttackPhase.Interrupted) offset.Y -= silhouette.Droop;
+                Place(part, enemy.Position, facing, enemy.Alive && (part.Role != LookRole.Tell || winding || committed), offset);
             }
             Part beam = beams[enemy.Id];
             bool showBeam = enemy.Alive && enemy.BeamTime > 0;
@@ -141,5 +125,5 @@ internal sealed class CombatView : IDisposable
         foreach (Appearance appearance in appearances) appearance.Dispose();
         foreach (MeshResource mesh in meshes) mesh.Dispose();
     }
-    private sealed record Part(ulong Entity, Appearance Appearance, Vector3 Offset, Vector3 Size, string Role);
+    private sealed record Part(ulong Entity, Appearance Appearance, Vector3 Offset, Vector3 Size, LookRole Role);
 }

@@ -42,7 +42,9 @@ its own folder. Geometry is kept apart from tuning.
 | `combat/tuning.json` | How long combat notices, hit and hurt flashes last; `HotelCombat` |
 | `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
-| `combat/residents.json` | Resident kinds: behavior/silhouette, stat block, damage and its kind, sight, timing, leash, body and eye height; `HotelCombat`, `CombatView` |
+| `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
+| `combat/looks.json` | Resident silhouettes as boxes in their own frame, with arm, body and tell roles and the tell poses; `CombatView` |
+| `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
 | `spirits/<id>.json` | One spirit's pact terms, cost/range, manifestation timing and placement offsets, its description and its own wording (call hint and result, phase names); `HotelSpirit` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}` and `{place}`; `HotelSpirit` |
@@ -123,6 +125,22 @@ names what is worn and held at the start, by item and slots.
 Wearing into a full slot trades places with what it held. The first `quickPockets` pockets are the belt the quick keys
 use: consumables are stacks, and Engine equipment holds single items only, so the belt is pocket layout rather than an
 equipment slot. A description names a restored amount by its track (`{health}`).
+
+## Residents
+
+A resident kind (`combat/residents.json`) is composed from parts; adding a kind from existing parts is a content edit.
+
+| Part | Fields | Meaning |
+| --- | --- | --- |
+| `look` | a look id | its silhouette and tells (`combat/looks.json`): boxes with a `Body`, `Arm` or `Tell` role; `armWindup` and `armStrike` move the arm, `droop` lowers it in recovery, and `Tell` parts light during an attack |
+| `faction` | a faction id | who it is hostile to (`combat/factions.json`); it notices and attacks hostile bodies, residents included |
+| `perception` | `range`, `fieldOfView`, `memory`, `nearSense` | an Engine visibility cone from where it faces, a near radius it senses all around, and how long it stays aware after losing sight |
+| `movement` | `speed`, `leash`, one of `post`, `patrol` (`points`, `pause`), `stalk`, `ambush` (`trigger`); optional `flee` (`below`, `distance`) | how it keeps its post when unaware and closes in within its leash when aware; an ambusher notices nothing until a hostile is within its trigger; a fleeing resident below that fraction of health backs away instead of attacking |
+| `actions` | `action`, `minimum` | its attacks in order of preference: the first ready, affordable and within reach whose target is at least `minimum` away |
+| `stats` | a stat block | as for every actor |
+
+A resident placed by an excursion or a generated floor is restored within its movement's range (its leash or its
+patrol's farthest point) of its post.
 
 ## Actions
 

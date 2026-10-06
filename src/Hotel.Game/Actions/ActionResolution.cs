@@ -43,6 +43,8 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
     // Every query sees every collider; bodies are offered explicitly as the entities each query may hit.
     private static readonly SpatialQueryFilter Everything = new(0, uint.MaxValue);
     private readonly List<Projectile> projectiles = [];
+    // A sweep meeting a surface this close to its start began in contact with it.
+    private const double StartContact = .05;
 
     internal IReadOnlyList<Projectile> Projectiles => projectiles;
 
@@ -62,6 +64,9 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
             {
                 SpatialHit hit = engine.Spatial.CastCapsule(new(session, user.Eye, 0, d.Width / 2, aim * d.Range, 0, Everything,
                     living.Select(t => t.Hitbox).ToArray(), new[] { user.Entity }));
+                // A user hugging a wall starts the sweep in it; then the swing is judged along its line alone.
+                if (hit.Present && hit.Kind != SpatialHitKind.Entity && (hit.StartSolid || hit.Distance < StartContact))
+                    hit = Cast(user, aim, d.Range, living);
                 return [First(action, user, hit, user.Eye + aim * d.Range, living)];
             }
             case DeliveryKind.Projectile:

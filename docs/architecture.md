@@ -21,6 +21,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Supplies/FieldCase.cs` | The field case over one Engine `InventoryStore`: pocket layout of stacks and single items, equipment slots and worn items, Engine capacity limits (weight, space), the worn items' stat sources, capture and restore |
 | `src/Hotel.Game/Actions/` | The action catalog (`ActionDefinition`: delivery, cost, timing, scaled damage packets, effects), `ActionUser` (one actor's phase, committed aim and cooldowns on admitted seconds) and `ActionResolution` (Engine spatial queries per delivery, contributions, damage application, projectiles in flight) |
 | `src/Hotel.Game/Combat/HotelCombat.cs` | Encounter policy over the action pipeline: the investigator's primary/secondary actions through what the hands hold, swapping hands, residents attacking with their kind's action, approach, impacts' feedback, resident capture and restore |
+| `src/Hotel.Game/Residents/` | Resident kinds composed from parts (`ResidentDefinition`: look, faction, perception, movement, action choices), `ResidentSenses` (one Engine visibility query a step for every resident, near sense and awareness memory) and `ResidentConduct` (the movement parts and action choice, as Engine character steps) |
 | `src/Hotel.Game/Combat/HotelEnemy.cs`, `PlayerActor.cs` | The two kinds of action actor: a placed resident (body, `ActorStats`, `ActionUser`) and the investigator (player body, supplies' stats, worn contributions) |
 | `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident and held-item meshes, flares in flight and attack poses contributed to the existing scene snapshot |
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | Pact acquisition/equipping, semantic equip claims, summon eligibility and transient manifestation phase |
@@ -209,9 +210,14 @@ lands. Commitment and recovery follow; misses and blocked shots keep their cost.
 Actions in progress and cooldowns are not saved.
 
 Residents hold real identities in the existing scene EntityStore. Positions and
-motion come from Engine character receipts; health uses Engine Track. A resident
-attacks with its kind's action, starting it when the investigator is within its
-reach. The porter approaches only with clear sight inside its authored territory,
+motion come from Engine character receipts; health uses Engine Track. Each step
+`ResidentSenses` runs one Engine visibility query for every watching resident's
+cone against every living body; a hostile body seen, or within near sense with a
+clear line, is noticed, and awareness of the nearest lasts the kind's memory.
+`ResidentConduct` then turns an aware resident to its target, chooses the first
+of its actions in reach, or closes in within its leash; an unaware one keeps its
+post, walks its patrol or walks back. Hostility is by faction, so residents of
+hostile factions fight each other through the same actions. The porter approaches only with clear sight inside its authored territory,
 stops at striking range, raises its hammer, commits to a direction and recovers. It uses static hotel
 collision while approaching; player movement includes live resident body obstacles.
 It does not search for routes or pursue around corners. The stationary Lamplighter

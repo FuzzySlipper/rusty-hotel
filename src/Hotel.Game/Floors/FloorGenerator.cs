@@ -1,3 +1,4 @@
+using Hotel.Game.Residents;
 using System.Globalization;
 using Hotel.Game.Content;
 using Hotel.Game.Combat;

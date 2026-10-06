@@ -1,4 +1,5 @@
 using Hotel.Game.Combat;
+using Hotel.Game.Residents;
 using Hotel.Game.Floors.Layout;
 using Hotel.Game.Floors.Mission;
 using Hotel.Game.Scene.Kit;
@@ -74,7 +75,7 @@ internal static class ContentPacing
             if (!ContentPlacement.ArrivalClear(floor.Sockets[resident.Socket], arrival, kinds.First(k => k.Id == resident.Kind), tuning.Pacing.ArrivalMargin))
                 return $"arrival: '{resident.Id}' can reach the stair landing from its post.";
         foreach (PlacedResident resident in content.Residents)
-            if (ContentPlacement.LeashCrossing(resident, layout, plan, floor, kinds.First(k => k.Id == resident.Kind).Leash) is { } space)
+            if (ContentPlacement.LeashCrossing(resident, layout, plan, floor, kinds.First(k => k.Id == resident.Kind).Movement.Range) is { } space)
                 return $"leash: '{resident.Id}' can follow the player into '{space}', outside its region.";
         return null;
     }

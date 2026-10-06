@@ -42,9 +42,9 @@ internal static class ContentChecks
         }
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
 
-        Edit("combat/residents.json", s => s.Replace("\"sightRange\": 3.6", "\"sightRange\": 3.6, \"sightRnage\": 2"), out var typo);
+        Edit("combat/residents.json", s => s.Replace("\"range\": 3.6,", "\"range\": 3.6, \"rnage\": 2,"), out var typo);
         string message = Failure(typo);
-        Check(message.Contains("content/combat/residents.json") && message.Contains("sightRnage"), "unknown field names its file: " + message);
+        Check(message.Contains("content/combat/residents.json") && message.Contains("rnage"), "unknown field names its file: " + message);
 
         Edit("combat/residents.json", s => s.Replace("\"speed\": 0.85,", ""), out var missing);
         message = Failure(missing);
@@ -167,7 +167,14 @@ internal static class ContentChecks
             ("actions/actions.json", root => root["actions"]![3]!["damage"] = JsonNode.Parse("[{\"kind\":\"fire\",\"amount\":1,\"scaling\":[]}]"), "content/actions/actions.json actions[3]: a self action"),
             ("actions/actions.json", root => root["actions"]![0]!["damage"]![0]!["kind"] = "acid", "content/actions/actions.json actions[0].damage[0].kind"),
             ("actions/actions.json", root => root["actions"]![3]!["cost"]!["item"] = "potions", "content/actions/actions.json actions[3].cost.item"),
-            ("combat/residents.json", root => root["residents"]![0]!["attack"] = "juggle", "content/combat/residents.json residents[0].attack[0]"),
+            ("combat/residents.json", root => root["residents"]![0]!["actions"]![0]!["action"] = "juggle", "content/combat/residents.json residents[0].actions[0]"),
+            ("combat/residents.json", root => root["residents"]![0]!["movement"]!["post"] = new JsonObject(), "content/combat/residents.json residents[0].movement: must set exactly one"),
+            ("combat/residents.json", root => root["residents"]![0]!["look"] = "ghost", "content/combat/residents.json residents[0].look"),
+            ("combat/residents.json", root => root["residents"]![0]!["faction"] = "investigator", "content/combat/residents.json residents[0].faction"),
+            ("combat/residents.json", root => root["residents"]![2]!["movement"]!["patrol"]!["points"] = JsonNode.Parse("[[0,0]]"), "content/combat/residents.json residents[2].movement.patrol.points"),
+            ("combat/residents.json", root => root["residents"]![0]!["perception"]!["fieldOfView"] = 400, "content/combat/residents.json residents[0].perception.fieldOfView"),
+            ("combat/factions.json", root => root["hostile"]![0]![1] = "ghosts", "content/combat/factions.json hostile[0][1]"),
+            ("combat/looks.json", root => root["looks"]![0]!["parts"]![0]!["material"] = "felt", "content/combat/looks.json looks[0].parts[0].material"),
             ("supplies/equipment.json", root => root["slots"]![0]!["accepts"]![0] = "hats", "content/supplies/equipment.json slots[0].accepts[0]"),
             ("supplies/capacity.json", root => root["metrics"]![0]!["limit"] = 0, "content/supplies/capacity.json metrics[0].limit"),
             ("spirits/hushwing.json", root => root["effect"] = "mending", "content/spirits/hushwing.json effect"),

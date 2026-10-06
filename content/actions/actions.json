@@ -251,6 +251,69 @@
       "selfEffects": [],
       "windupLabel": "Brightening",
       "commitLabel": "Beam"
+    },
+    {
+      "id": "maid-slap",
+      "name": "Slap",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.5,
+        "width": 0.5
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.6,
+        "commit": 0.15,
+        "recovery": 0.9,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 7,
+          "scaling": []
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Raising a hand",
+      "commitLabel": "Slap"
+    },
+    {
+      "id": "maid-cup",
+      "name": "Thrown cup",
+      "delivery": {
+        "kind": "Projectile",
+        "range": 7,
+        "width": 0.12,
+        "speed": 9
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 15
+        }
+      },
+      "timing": {
+        "windup": 0.8,
+        "commit": 0.1,
+        "recovery": 1.0,
+        "cooldown": 3
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 9,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Taking aim",
+      "commitLabel": "Throw"
     }
   ]
 }

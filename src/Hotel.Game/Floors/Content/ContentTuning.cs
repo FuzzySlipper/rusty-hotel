@@ -1,3 +1,4 @@
+using Hotel.Game.Residents;
 using Hotel.Game.Combat;
 using Hotel.Game.Content;
 using Hotel.Game.Scene.Kit;

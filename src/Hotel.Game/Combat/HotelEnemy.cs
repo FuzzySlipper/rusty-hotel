@@ -2,6 +2,7 @@ using System.Numerics;
 using Hotel.Game.Actions;
 using Hotel.Game.Content;
 using Hotel.Game.Mechanics;
+using Hotel.Game.Residents;
 using Hotel.Game.Scene;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
@@ -24,7 +25,7 @@ internal sealed class HotelEnemy : IActionActor
         Controller = baseline with
         {
             Shape = baseline.Shape with { StandingHeight = kind.Height, Radius = kind.Radius },
-            Ground = baseline.Ground with { ForwardSpeed = kind.Speed, BackwardSpeed = kind.Speed, StrafeSpeed = kind.Speed },
+            Ground = baseline.Ground with { ForwardSpeed = kind.Movement.Speed, BackwardSpeed = kind.Movement.Speed, StrafeSpeed = kind.Movement.Speed },
             Vertical = baseline.Vertical with { Gravity = gravity }
         };
         engine.Spatial.ValidateCharacterControllerConfig(Controller);
@@ -39,6 +40,11 @@ internal sealed class HotelEnemy : IActionActor
     public ActorStats Stats { get; }
     /// <summary>This resident's action in progress and cooldowns.</summary>
     internal ActionUser User { get; } = new();
+    /// <summary>What it has noticed and for how long it remembers; not saved.</summary>
+    internal Awareness Awareness { get; } = new();
+    /// <summary>The patrol point it walks toward and how long it still pauses there; not saved.</summary>
+    internal int PatrolIndex;
+    internal float PatrolPause, PatrolBlocked;
     internal Track Health => Stats.Track(HotelSupplies.HealthTrack);
     internal CharacterControllerConfig Controller { get; }
     internal Vector3 Spawn { get; }
@@ -62,7 +68,7 @@ internal sealed class HotelEnemy : IActionActor
     internal CharacterObstacle Obstacle => new(Entity, new(Position, Quaternion.Identity, Vector3.One), -Half, Half, true, default, default);
     internal void Reset()
     {
-        Stats.Reset(); User.Reset(); BeamTime = Yaw = 0;
+        Stats.Reset(); User.Reset(); Awareness.Reset(); BeamTime = Yaw = PatrolPause = PatrolBlocked = 0; PatrolIndex = 0;
         scene.Entities.Set(EntityId, EngineComponentTypes.Transform, new(Spawn, Quaternion.Identity, Vector3.One));
         scene.Entities.Set(EntityId, EngineComponentTypes.CharacterMotion, new(Vector3.Zero, Vector3.Zero,
             false, CharacterStance.Standing, 0, 0, 0, false, 0, Vector3.Zero, Vector3.Zero, Quaternion.Identity,

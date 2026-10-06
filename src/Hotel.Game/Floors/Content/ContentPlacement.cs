@@ -4,6 +4,7 @@ using Hotel.Game.Floors.Mission;
 using Hotel.Game.Floors.Modules;
 using Hotel.Game.Scene.Kit;
 using Hotel.Game.Combat;
+using Hotel.Game.Residents;
 
 namespace Hotel.Game.Floors.Content;
 
@@ -136,7 +137,7 @@ internal static class ContentPlacement
         {
             ResidentWeight[] fit = tuning.Residents.Where(r => r.Weight > 0 && r.Tags.Any(post.Module.Tags.Contains) &&
                 Clear(post.Name, kinds.First(k => k.Id == r.Kind)) &&
-                LeashCrossing(new(post.Id, r.Kind, post.Name, post.Placement.Region), layout, plan, floor, kinds.First(k => k.Id == r.Kind).Leash) is null).ToArray();
+                LeashCrossing(new(post.Id, r.Kind, post.Name, post.Placement.Region), layout, plan, floor, kinds.First(k => k.Id == r.Kind).Movement.Range) is null).ToArray();
             if (fit.Length == 0) return null;
             ResidentWeight kind = fit[draws.Weighted(FloorStage.Content, purpose, post.Id, fit.Select(r => r.Weight).ToArray())];
             return new(post.Id, kind.Kind, post.Name, post.Placement.Region);
@@ -145,7 +146,7 @@ internal static class ContentPlacement
 
     /// <summary>Whether a resident at a post can neither see nor strike within the margin of the arrival.</summary>
     internal static bool ArrivalClear(Vector3 post, Vector3 arrival, ResidentKind kind, float margin) =>
-        Vector2.Distance(new(post.X, post.Z), new(arrival.X, arrival.Z)) > Math.Max(kind.SightRange, kind.AttackReach) + kind.Leash + margin;
+        Vector2.Distance(new(post.X, post.Z), new(arrival.X, arrival.Z)) > Math.Max(kind.Perception.Range, kind.AttackReach) + kind.Movement.Range + margin;
 
     /// <summary>
     /// The first space a resident could follow the player into that lies outside its region: walking from its post's

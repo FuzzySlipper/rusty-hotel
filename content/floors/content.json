@@ -79,6 +79,15 @@
         "Landmark"
       ],
       "weight": 1
+    },
+    {
+      "kind": "night-maid",
+      "tags": [
+        "Corridor",
+        "Guest",
+        "Service"
+      ],
+      "weight": 1
     }
   ],
   "extraResidents": {

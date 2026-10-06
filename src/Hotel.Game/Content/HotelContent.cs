@@ -1,3 +1,4 @@
+using Hotel.Game.Residents;
 using Hotel.Game.Audio;
 using Hotel.Game.Combat;
 using Hotel.Game.Expedition;
@@ -34,7 +35,8 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         SuppliesDefinition supplies = SuppliesDefinition.Load(engine, mechanics);
         Actions.ActionCatalog actions = Actions.ActionCatalog.Load(engine, mechanics, supplies.Classifications.Select(c => c.Id).ToArray());
         supplies.ValidateActions(actions, mechanics);
-        CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics, actions);
+        SurfaceDefinition[] surfaces = SurfaceCatalog.Load(engine).Surfaces;
+        CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray());
         ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures, combat.Residents);
         // The product implements one pact; its bell placement names which spirit file to read.
         Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
@@ -43,7 +45,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
-            SurfaceCatalog.Load(engine).Surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, combat,
+            surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, combat,
             SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys, mechanics), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();

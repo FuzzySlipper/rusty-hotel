@@ -48,7 +48,10 @@ and pause only decisions that need unavailable authority.
   `Actions/` owns the action catalog and the one action pipeline every hand and
   resident uses (timing, Engine-query deliveries, damage and contributions); weapons
   are held items granting actions, and input never names a weapon.
-  `Combat/HotelCombat.cs` owns encounter policy over it and resident behavior;
+  `Residents/` owns resident kinds composed from typed parts (look, faction,
+  perception, movement, action choices), their senses and conduct; a new kind from
+  existing parts is a content edit.
+  `Combat/HotelCombat.cs` owns encounter policy over the pipeline and residents;
   `Combat/CombatView.cs` supplies poses to the existing scene snapshot. Keep
   resource mutations in Supplies, physical input in Engine FPS, and hits/body
   collision in Engine spatial services. Do not add a combat loop or local ray solver.

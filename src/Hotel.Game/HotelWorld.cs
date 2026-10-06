@@ -44,7 +44,7 @@ internal sealed class HotelWorld : IDisposable
             Route = new HotelRoute(engine, Scene, Player, Supplies, Spirit, content.Route, excursion.Route,
                 excursion.Placements.Refuge, returnToRefuge, publishInterface, travel, interaction);
             Ambience = Own(new HotelAmbience(engine, excursion.Ambience));
-            CombatView = Own(new CombatView(engine, Scene, Player, Combat));
+            CombatView = Own(new CombatView(engine, Scene, Player, Combat, content.Combat));
             SpiritView = Own(new SpiritView(engine, Scene, Spirit));
             // The checkpoint always belongs to the authored refuge, whichever floor this world is.
             Expedition = Own(new HotelExpedition(engine, content.Excursion.Placements.Refuge!, content.ExpeditionText,

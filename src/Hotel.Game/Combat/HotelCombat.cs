@@ -4,6 +4,7 @@ using Hotel.Game.Player;
 using Hotel.Game.Expedition;
 using Hotel.Game.Content;
 using Hotel.Game.Mechanics;
+using Hotel.Game.Residents;
 using Hotel.Game.Scene;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
@@ -28,6 +29,8 @@ internal sealed class HotelCombat
     private readonly CombatMessages text;
     private readonly ActionResolution resolution;
     private readonly PlayerActor investigator;
+    private readonly ResidentSenses perception;
+    private readonly ResidentConduct conduct;
     private float noticeRemaining;
 
     internal HotelCombat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
@@ -38,6 +41,8 @@ internal sealed class HotelCombat
         text = definition.Text;
         resolution = new(engine, scene.Session, definition.Mechanics);
         investigator = new(scene, player, supplies);
+        perception = new(engine, scene.Session, resolution, definition.Factions);
+        conduct = new(engine, scene, definition.Actions);
         Enemies = residents.Select(placed => new HotelEnemy(engine, scene, placed,
             definition.Residents.Single(kind => kind.Id == placed.Kind), player.Tuning.Gravity, definition.Mechanics)).ToArray();
     }
@@ -120,8 +125,9 @@ internal sealed class HotelCombat
         if (Defeated) { User.Interrupt(); resolution.Clear(); return; }
         if (supplies.Stats.Effects.Held) User.Interrupt();
         if (User.Step(delta) is { } landed) Land(landed, User.Aim);
+        perception.Update(Enemies, Bodies, Faction, delta);
         foreach (HotelEnemy enemy in Enemies) StepEnemy(enemy, delta);
-        foreach (ActionImpact impact in resolution.Step(delta, [investigator, .. Enemies])) Settle(impact);
+        foreach (ActionImpact impact in resolution.Step(delta, Bodies)) Settle(impact);
     }
 
     internal HotelEnemy? SpiritTarget(float range)
@@ -205,32 +211,18 @@ internal sealed class HotelCombat
         enemy.Stats.Regenerate(delta);
         if (!enemy.Alive || enemy.Stats.Effects.Held) { enemy.User.Interrupt(); return; }
         if (enemy.User.Step(delta) is { } landed)
-            foreach (ActionImpact impact in resolution.Land(landed, enemy, enemy.User.Aim, [investigator])) Settle(impact);
-        if (enemy.User.Busy) return;
-        Vector3 toPlayer = player.Eye - enemy.Eye;
-        float distance = toPlayer.Length();
-        bool visible = distance <= enemy.Kind.SightRange && resolution.Clear(enemy.Eye, player.Eye);
-        if (!visible) return;
-        enemy.Yaw = MathF.Atan2(toPlayer.X, -toPlayer.Z);
-        ActionDefinition attack = definition.Attack(enemy.Kind);
-        if (distance <= Reach(attack))
-        {
-            // A committed direction: strafing can evade it. A resident short of its cost or cooling down waits.
-            if (enemy.User.Readiness(attack) != ActionRefusal.None || attack.Cost.Tracks.Any(c => enemy.Stats.Track(c.Key).Value < c.Value)) return;
-            foreach (var (track, amount) in attack.Cost.Tracks) enemy.Stats.Track(track).TrySpend(amount);
-            enemy.User.Begin(attack, Vector3.Normalize(toPlayer));
-        }
-        else if (enemy.Kind.Speed > 0 && Vector3.Distance(new(player.Position.X, 0, player.Position.Z),
-            new(enemy.Spawn.X, 0, enemy.Spawn.Z)) <= enemy.Kind.Leash)
-        {
-            // This resident stops to attack before body contact; only hotel geometry constrains its approach.
-            CharacterStepReceipt move = engine.Spatial.ProposeCharacterStep(new(scene.Session,
-                enemy.Position, enemy.Motion, default, ReadOnlyMemory<CharacterObstacle>.Empty, ReadOnlyMemory<CharacterMeshInstance>.Empty,
-                enemy.Controller, new(new(0, enemy.Stats.Pace), enemy.Yaw, false, false, false, default, default, delta, ++enemy.Sequence)));
-            scene.Entities.Set(enemy.EntityId, EngineComponentTypes.Transform, move.Transform);
-            scene.Entities.Set(enemy.EntityId, EngineComponentTypes.CharacterMotion, move.Motion);
-        }
+            foreach (ActionImpact impact in resolution.Land(landed, enemy, enemy.User.Aim, Hostiles(enemy))) Settle(impact);
+        conduct.Step(enemy, delta);
     }
+
+    /// <summary>The faction a body belongs to: the investigator's, or its resident kind's.</summary>
+    internal string Faction(IActionActor body) => body is HotelEnemy resident ? resident.Kind.Faction : definition.Factions.Investigator;
+
+    /// <summary>Every living body hostile to a resident: what its actions may hit.</summary>
+    private IActionActor[] Hostiles(HotelEnemy enemy) => Bodies.Where(b => b.Alive && b != enemy &&
+        definition.Factions.AreHostile(enemy.Kind.Faction, Faction(b))).ToArray();
+
+    private IActionActor[] Bodies => [investigator, .. Enemies];
 
     /// <summary>How close a user must be for an action to reach: its range, or an area's range and radius.</summary>
     internal static float Reach(ActionDefinition action) =>
@@ -248,7 +240,7 @@ internal sealed class HotelCombat
             HotelEnemy? enemy = Enemies.FirstOrDefault(e => e.Id == state?.Id);
             if (state is null || enemy is null || state.Stats is null ||
                 !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
-                Vector3.Distance(new(state.X, state.Y, state.Z), enemy.Spawn) > enemy.Kind.Leash + 1)
+                Vector3.Distance(new(state.X, state.Y, state.Z), enemy.Spawn) > enemy.Kind.Movement.Range + 1)
                 throw new InvalidOperationException("Checkpoint resident values are invalid.");
             enemy.Stats.Validate(state.Stats);
         }

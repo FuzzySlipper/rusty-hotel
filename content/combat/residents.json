@@ -3,7 +3,8 @@
     {
       "id": "porter",
       "name": "The Porter",
-      "behavior": "Porter",
+      "look": "porter",
+      "faction": "staff",
       "stats": {
         "attributes": {
           "might": 10,
@@ -21,18 +22,32 @@
         },
         "initial": {}
       },
-      "speed": 0.85,
-      "sightRange": 3.6,
-      "leash": 4.5,
+      "perception": {
+        "range": 3.6,
+        "fieldOfView": 360,
+        "memory": 1.5,
+        "nearSense": 0
+      },
+      "movement": {
+        "speed": 0.85,
+        "leash": 4.5,
+        "stalk": {}
+      },
+      "actions": [
+        {
+          "action": "porter-swipe",
+          "minimum": 0
+        }
+      ],
       "radius": 0.34,
       "height": 1.8,
-      "eyeHeight": 0.576,
-      "attack": "porter-swipe"
+      "eyeHeight": 0.576
     },
     {
       "id": "lamp",
       "name": "The Lamplighter",
-      "behavior": "Lamp",
+      "look": "lamplighter",
+      "faction": "lamps",
       "stats": {
         "attributes": {
           "might": 10,
@@ -49,13 +64,97 @@
         },
         "initial": {}
       },
-      "speed": 0,
-      "sightRange": 7,
-      "leash": 0,
+      "perception": {
+        "range": 7,
+        "fieldOfView": 360,
+        "memory": 1.5,
+        "nearSense": 0
+      },
+      "movement": {
+        "speed": 0,
+        "leash": 0,
+        "post": {}
+      },
+      "actions": [
+        {
+          "action": "lamp-beam",
+          "minimum": 0
+        }
+      ],
       "radius": 0.38,
       "height": 1.8,
-      "eyeHeight": 0.576,
-      "attack": "lamp-beam"
+      "eyeHeight": 0.576
+    },
+    {
+      "id": "night-maid",
+      "name": "The Night Maid",
+      "look": "night-maid",
+      "faction": "staff",
+      "stats": {
+        "attributes": {
+          "might": 8,
+          "agility": 14,
+          "nerve": 10,
+          "attunement": 10
+        },
+        "bases": {
+          "maximum-health": 10
+        },
+        "resistances": {
+          "blunt": 0,
+          "pierce": 0.1,
+          "spirit": 0.3
+        },
+        "initial": {}
+      },
+      "perception": {
+        "range": 6,
+        "fieldOfView": 140,
+        "memory": 4,
+        "nearSense": 1.5
+      },
+      "movement": {
+        "speed": 1.1,
+        "leash": 6,
+        "patrol": {
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              2.5,
+              0
+            ],
+            [
+              2.5,
+              2.5
+            ],
+            [
+              0,
+              2.5
+            ]
+          ],
+          "pause": 1.2
+        },
+        "flee": {
+          "below": 0.3,
+          "distance": 4
+        }
+      },
+      "actions": [
+        {
+          "action": "maid-slap",
+          "minimum": 0
+        },
+        {
+          "action": "maid-cup",
+          "minimum": 2.5
+        }
+      ],
+      "radius": 0.3,
+      "height": 1.7,
+      "eyeHeight": 0.55
     }
   ]
 }

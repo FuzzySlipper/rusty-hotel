@@ -132,8 +132,8 @@ internal sealed class HotelDeveloper(HotelProduct product)
             w.Supplies.Health, w.Supplies.Ammo, w.Supplies.Summon, w.Supplies.Occupied, w.Supplies.Revision, w.Supplies.Message, w.Combat.Holding?.Item.Id ?? "",
             w.Combat.Phase.ToString(), w.Combat.AcceptedAttacks, w.Combat.LandedHits, w.Spirit.Acquired, w.Spirit.Equipped, w.Spirit.Revision,
             w.Spirit.Phase.ToString(), w.Spirit.Elapsed, w.Spirit.Calls, w.Spirit.Message, w.Expedition.Returns, w.Expedition.SecuredFinds,
-            w.Expedition.Status, w.Combat.Enemies.Select(e => new EnemyObservation(e.Id, [e.Position.X, e.Position.Y, e.Position.Z],
-                e.Health.ValueInt, e.Phase.ToString())).ToArray()), DeveloperJson.Default.HotelObservation));
+            w.Expedition.Status, w.Combat.Enemies.Select(e => new EnemyObservation(e.Id, e.Kind.Id, [e.Position.X, e.Position.Y, e.Position.Z],
+                e.Health.ValueInt, e.Phase.ToString(), e.Awareness.Target is not null)).ToArray()), DeveloperJson.Default.HotelObservation));
     }
 }
 
@@ -142,7 +142,7 @@ internal sealed record HotelObservation(ulong Step, int Depth, float[] Position,
     string Weapon, string AttackPhase, int AcceptedAttacks, int LandedHits, bool SpiritAcquired, bool SpiritEquipped, ulong SpiritRevision,
     string SpiritPhase, float SpiritElapsed, int SpiritCalls, string SpiritMessage, int CheckpointReturns, string[] SecuredFinds,
     string CheckpointStatus, EnemyObservation[] Enemies);
-internal sealed record EnemyObservation(string Id, float[] Position, int Health, string Phase);
+internal sealed record EnemyObservation(string Id, string Kind, float[] Position, int Health, string Phase, bool Aware);
 internal sealed record PlaceInspection(string Place, string Placement, string Module, float[] Centre, float[]? Door);
 internal sealed record SpaceInspection(string Id, string Label, float[] Min, float[] Max);
 internal sealed record LinkInspection(string Id, string[] Between, float[] Point);
