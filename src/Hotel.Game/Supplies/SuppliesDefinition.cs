@@ -7,7 +7,7 @@ namespace Hotel.Game.Supplies;
 /// <summary>The supplies domain's authored files: item kinds and player-facing text. Resource bounds are stats.</summary>
 internal sealed record SuppliesDefinition(ItemDefinition[] Items, SupplyMessages Text)
 {
-    internal static SuppliesDefinition Load(IEngineContext engine)
+    internal static SuppliesDefinition Load(IEngineContext engine, Mechanics.MechanicsDefinition mechanics)
     {
         ItemDefinition[] items = Authored.Read(engine, ItemCatalog.Path, ContentJson.Default.ItemCatalog).Items;
         for (int i = 0; i < items.Length; i++)
@@ -21,6 +21,11 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, SupplyMessages
         {
             Authored.AtLeast(ItemCatalog.Path, $"items[{i}].stackLimit", items[i].StackLimit, 1);
             Authored.AtLeast(ItemCatalog.Path, $"items[{i}].amount", items[i].Amount, 0);
+            mechanics.RequireEffects(ItemCatalog.Path, $"items[{i}].effects", items[i].Effects);
+            Authored.Require(items[i].Kind != SupplyKind.Expedition || items[i].Effects.Length == 0, ItemCatalog.Path, $"items[{i}].effects",
+                "an expedition find is kept for the refuge, not used.");
+            Authored.Require(items[i].Kind != SupplyKind.Consumable || items[i].Effects.Length > 0, ItemCatalog.Path, $"items[{i}].effects",
+                "a consumable does nothing without an effect.");
         }
         return new(items, text);
     }
@@ -32,7 +37,9 @@ internal sealed record ItemCatalog(ItemDefinition[] Items)
 {
     internal const string Path = "supplies/items.json";
 }
-internal sealed record ItemDefinition(string Id, string Name, string Description, SupplyKind Kind, int StackLimit, int Amount, string Mark)
+/// <param name="Effects">Effects using the item applies to the investigator, by id in the effect catalog.</param>
+internal sealed record ItemDefinition(string Id, string Name, string Description, SupplyKind Kind, int StackLimit, int Amount, string Mark,
+    string[] Effects)
 {
     internal string Details => Template.Fill(Description, ("amount", Amount));
 }
@@ -61,4 +68,4 @@ internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, stri
 internal sealed record FindDefinition(string Id, string Item, int Count, float[] Point);
 
 [JsonConverter(typeof(JsonStringEnumConverter<SupplyKind>))]
-internal enum SupplyKind { Healing, Ammo, Summon, Expedition }
+internal enum SupplyKind { Healing, Ammo, Summon, Consumable, Expedition }

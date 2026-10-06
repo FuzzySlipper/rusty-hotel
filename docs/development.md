@@ -69,6 +69,8 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.dev.view <x> <z> <yaw> <pitch>` | Stand at a floor point facing a yaw and pitch in degrees, for repeatable captures from one viewpoint; changes no saved state. The point is not checked against furniture |
 | `hotel.dev.give-supply` | Fixture grant subject to inventory capacity rules |
 | `hotel.dev.set-health` | Fixture health change within authored bounds |
+| `hotel.dev.apply-effect` | Fixture: apply a catalog effect to the investigator from a named source, under its stacking rule |
+| `hotel.dev.effects` | Inspection: the investigator's active effects with stacks, seconds left, tick progress and ward |
 | `hotel.dev.use-supply` | Use a zero-based pocket with its current revision and ordinary resource eligibility |
 
 The return-to-entrance command is an unsaved excursion reset, despite its short

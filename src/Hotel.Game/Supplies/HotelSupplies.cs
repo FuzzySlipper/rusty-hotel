@@ -16,8 +16,9 @@ namespace Hotel.Game.Supplies;
 internal sealed class HotelSupplies
 {
     // The tracks this owner spends and restores, by vocabulary id.
-    internal const string HealthTrack = "health", AmmoTrack = "ammunition", SummonTrack = "summon";
+    internal const string HealthTrack = Mechanics.ActorStats.HealthTrack, AmmoTrack = "ammunition", SummonTrack = "summon";
     private readonly ItemDefinition[] items;
+    private readonly Mechanics.MechanicsDefinition mechanics;
     private readonly SupplyMessages text;
     private readonly FindDefinition[] finds;
     private readonly InventoryStackId?[] slots;
@@ -33,6 +34,7 @@ internal sealed class HotelSupplies
     {
         Stats = new(mechanics, playerStats, owner);
         items = definition.Items;
+        this.mechanics = mechanics;
         text = definition.Text;
         this.finds = finds;
         this.owner = owner;
@@ -65,7 +67,20 @@ internal sealed class HotelSupplies
         private set { message = value; noticeSeconds = value.Length == 0 ? 0 : text.NoticeSeconds; }
     }
     internal string Notice => noticeSeconds > 0 ? Message : "";
-    internal void Step(float admittedSeconds) => noticeSeconds = Math.Max(0, noticeSeconds - admittedSeconds);
+    /// <summary>Advances notices and the investigator's effects by admitted seconds; a tick that moves a track is a new revision.</summary>
+    internal void Step(float admittedSeconds)
+    {
+        noticeSeconds = Math.Max(0, noticeSeconds - admittedSeconds);
+        if (Health > 0 && Stats.Effects.Advance(admittedSeconds)) Revision++;
+    }
+
+    /// <summary>Applies an effect to the investigator from a source (an item, a resident's hit); false when refused.</summary>
+    internal bool Afflict(string effect, string source)
+    {
+        if (Health == 0 || Stats.Effects.Apply(mechanics.Effect(effect)!, source) is null) return false;
+        Revision++;
+        return true;
+    }
     // Pocket order is Hotel policy; quantities and definitions are read from the Engine ledger.
     internal ItemStack? Slot(int index)
     {
@@ -94,7 +109,8 @@ internal sealed class HotelSupplies
     {
         if (Health == 0) return text.Overwhelmed;
         if (index < 0 || index >= slots.Length || Slot(index) is not { } stack) return text.EmptyPocket;
-        return Item(stack.Item).Kind switch
+        ItemDefinition item = Item(stack.Item);
+        string full = item.Kind switch
         {
             SupplyKind.Healing when Health >= MaximumHealth => text.HealthFull,
             SupplyKind.Ammo when Ammo >= MaximumAmmo => text.AmmoFull,
@@ -102,6 +118,10 @@ internal sealed class HotelSupplies
             SupplyKind.Expedition => text.KeepForReturn,
             _ => ""
         };
+        // A full track refuses an item only when its effects would do no more than restore a full track.
+        bool effective = item.Kind != SupplyKind.Expedition && item.Effects.Any(id => mechanics.Effect(id)!.Restore is not { } restore ||
+            Stats.Track(restore.Track).Value < Stats.Track(restore.Track).MaximumValue);
+        return effective ? "" : full;
     }
 
     internal bool Use(int index, ulong revision)
@@ -117,6 +137,7 @@ internal sealed class HotelSupplies
             case SupplyKind.Ammo: ammo.Restore(item.Amount); break;
             case SupplyKind.Summon: summon.Restore(item.Amount); break;
         }
+        foreach (string effect in item.Effects) Stats.Effects.Apply(mechanics.Effect(effect)!, $"item.{item.Id}");
         inventory.Consume(owner, slots[index]!, 1);
         if (stack.Count == 1) slots[index] = null;
         Revision++;

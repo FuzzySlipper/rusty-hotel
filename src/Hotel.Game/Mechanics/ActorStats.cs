@@ -7,12 +7,15 @@ namespace Hotel.Game.Mechanics;
 /// One actor's live stats: an Engine <see cref="StatsComponent"/> built from the vocabulary and the actor's block.
 /// Attributes are base stats; each derived stat carries one intrinsic Engine source holding its attributes'
 /// contributions, so <see cref="Explain"/> names where a value came from; tracks share their derived maximum; and a
-/// resistance stat per damage kind decides how much of a hit lands.
+/// resistance stat per damage kind decides how much of a hit lands. The actor's <see cref="Effects"/> add their own
+/// Engine sources beside those, and wards among them take their share of a hit first.
 /// </summary>
 internal sealed class ActorStats
 {
-    // Resource pools and the stats bounding them count in whole points.
+    // Resource pools count in whole points.
     private const double WholePoints = 1;
+    /// <summary>The track hits land on, and the derived stat movement is scaled by, by vocabulary id.</summary>
+    internal const string HealthTrack = "health", PaceStat = "pace";
     private readonly MechanicsDefinition mechanics;
     private readonly ActorStatBlock block;
     private readonly EntityId? owner;
@@ -25,7 +28,7 @@ internal sealed class ActorStats
         foreach (AttributeDefinition a in mechanics.Attributes)
             Stats.AddStat(StatOf(a.Id), new Stat(block.Attributes[a.Id], a.Minimum, a.Maximum));
         foreach (DerivedStatDefinition d in mechanics.Derived)
-            Stats.AddStat(StatOf(d.Id), new Stat(BaseOf(d), d.Minimum, d.Maximum, WholePoints));
+            Stats.AddStat(StatOf(d.Id), new Stat(BaseOf(d), d.Minimum, d.Maximum, d.Quantum));
         foreach (DamageKindDefinition k in mechanics.DamageKinds)
             Stats.AddStat(ResistanceOf(k.Id), new Stat(block.Resistances.GetValueOrDefault(k.Id), k.MinimumResistance, k.MaximumResistance));
         RefreshDerived();
@@ -34,9 +37,14 @@ internal sealed class ActorStats
             Stat maximum = Stats.GetStat(StatOf(t.Maximum));
             Stats.AddTrack(TrackOf(t.Id), new Track(maximum, InitialOf(t, maximum), quantum: WholePoints));
         }
+        Effects = new(mechanics, this, owner);
     }
 
     internal StatsComponent Stats { get; } = new();
+    internal ActorEffects Effects { get; }
+    internal MechanicsDefinition Mechanics => mechanics;
+    /// <summary>The factor this actor's movement is scaled by.</summary>
+    internal float Pace => (float)Stat(PaceStat).Value;
 
     internal Stat Stat(string id) => Stats.GetStat(StatOf(id));
     internal Track Track(string id) => Stats.GetTrack(TrackOf(id));
@@ -49,12 +57,23 @@ internal sealed class ActorStats
         if (packet.Amount <= 0) return 0;
         Track health = Track(track);
         int landed = (int)Math.Round(packet.Amount * (1 - Resistance(packet.Kind)), MidpointRounding.AwayFromZero);
+        landed = Effects.Absorb(packet.Kind, landed);
         int applied = Math.Clamp(landed, 0, health.ValueInt);
         health.Spend(applied);
         return applied;
     }
 
-    /// <summary>Recomputes each derived stat's attribute source from the attributes as they stand.</summary>
+    /// <summary>
+    /// Gives every stat the effect sources aimed at it, attributes first, then recomputes the derived stats from the
+    /// attributes as they now stand.
+    /// </summary>
+    internal void ApplyEffectSources()
+    {
+        foreach (AttributeDefinition a in mechanics.Attributes) Stats.GetStat(StatOf(a.Id)).SetSources(StatOf(a.Id), EffectSources(a.Id));
+        RefreshDerived();
+    }
+
+    /// <summary>Recomputes each derived stat's attribute source from the attributes as they stand, beside its effect sources.</summary>
     internal void RefreshDerived()
     {
         foreach (DerivedStatDefinition d in mechanics.Derived)
@@ -62,15 +81,20 @@ internal sealed class ActorStats
             StatContributionDefinition[] contributions = d.From.Select(f => new StatContributionDefinition(StatOf(d.Id),
                 StackingGroupId.Parse($"{d.Id}.{f.Attribute}"), MechanicsStackingPolicy.Sum,
                 new StatContribution.Add(Stats.GetStat(StatOf(f.Attribute)).Value * f.PerPoint))).ToArray();
-            Stats.GetStat(StatOf(d.Id)).SetSources(StatOf(d.Id), contributions.Length == 0 ? [] :
+            StatSource[] derived = contributions.Length == 0 ? [] :
                 [new StatSource(new IntrinsicSourceIdentity(owner, SourceInstanceId.Parse($"derived.{d.Id}")),
-                    SourceDefinitionId.Parse($"derived.{d.Id}"), 0, contributions)]);
+                    SourceDefinitionId.Parse($"derived.{d.Id}"), 0, contributions)];
+            Stats.GetStat(StatOf(d.Id)).SetSources(StatOf(d.Id), [.. derived, .. EffectSources(d.Id)]);
         }
     }
+
+    private IEnumerable<StatSource> EffectSources(string stat) =>
+        Effects?.Sources.Where(s => s.Contributions.Any(c => c.Stat.Value == stat)) ?? [];
 
     /// <summary>The block's starting values: bases as authored and tracks at their initial points.</summary>
     internal void Reset()
     {
+        Effects.Clear();
         foreach (AttributeDefinition a in mechanics.Attributes) Stats.GetStat(StatOf(a.Id)).BaseValue = block.Attributes[a.Id];
         foreach (DerivedStatDefinition d in mechanics.Derived) Stats.GetStat(StatOf(d.Id)).BaseValue = BaseOf(d);
         RefreshDerived();
@@ -86,13 +110,13 @@ internal sealed class ActorStats
     {
         StatsComponentSnapshot snapshot = StatsComponentCapture.Capture(Stats);
         return new(snapshot.Stats.ToDictionary(s => s.Id, s => s.BaseValue, StringComparer.Ordinal),
-            snapshot.Tracks.ToDictionary(t => t.Id, t => t.Current, StringComparer.Ordinal));
+            snapshot.Tracks.ToDictionary(t => t.Id, t => t.Current, StringComparer.Ordinal), Effects.Capture());
     }
 
     /// <summary>Refuses a saved state that does not name exactly this vocabulary's stats and tracks within their bounds.</summary>
     internal void Validate(ActorStatsState state)
     {
-        if (state.Bases is null || state.Tracks is null || state.Bases.Count != Stats.Stats.Count || state.Tracks.Count != Stats.Tracks.Count)
+        if (state.Bases is null || state.Tracks is null || state.Effects is null || state.Bases.Count != Stats.Stats.Count || state.Tracks.Count != Stats.Tracks.Count)
             throw new InvalidOperationException("Checkpoint stats do not match the stat vocabulary.");
         foreach (var (id, value) in state.Bases)
             if (!StatId.TryParse(id, out StatId? stat) || stat is null || !Stats.TryGetStat(stat, out Stat? live) || !double.IsFinite(value) ||
@@ -102,15 +126,20 @@ internal sealed class ActorStats
             if (!TrackId.TryParse(id, out TrackId? track) || track is null || !Stats.TryGetTrack(track, out Track? live) || !double.IsFinite(value) ||
                 value < live!.Minimum)
                 throw new InvalidOperationException($"Checkpoint track '{id}' is unknown or out of bounds.");
-        // A track's maximum follows the restored bases, so it is checked on a scratch copy, never the live stats.
+        ActorEffects.Validate(mechanics, state.Effects);
+        // A track's maximum follows the restored bases and effects, and effects may conflict in their groups, so these
+        // are checked on a scratch copy, never the live stats.
         new ActorStats(mechanics, block, owner).Restore(state);
     }
 
-    /// <summary>Restores a validated state: bases first, then the derived sources they feed, then track currents.</summary>
+    /// <summary>
+    /// Restores a validated state: bases first, then the derived sources they feed, then the effects and their sources,
+    /// then track currents under the maximums those decide.
+    /// </summary>
     internal void Restore(ActorStatsState state)
     {
         foreach (var (id, value) in state.Bases) Stats.GetStat(StatId.Parse(id)).BaseValue = value;
-        RefreshDerived();
+        Effects.Restore(mechanics, state.Effects);
         foreach (var (id, value) in state.Tracks)
         {
             Track track = Stats.GetTrack(TrackId.Parse(id));
@@ -129,5 +158,5 @@ internal sealed class ActorStats
     private static StatId ResistanceOf(string kind) => StatId.Parse($"resistance.{kind}");
 }
 
-/// <summary>An actor's saved stats: every stat's base and every track's current points, by Engine id.</summary>
-internal sealed record ActorStatsState(Dictionary<string, double> Bases, Dictionary<string, double> Tracks);
+/// <summary>An actor's saved stats: every stat's base and every track's current points, by Engine id, and its effects.</summary>
+internal sealed record ActorStatsState(Dictionary<string, double> Bases, Dictionary<string, double> Tracks, EffectState[] Effects);

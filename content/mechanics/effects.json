@@ -1,0 +1,92 @@
+{
+  "effects": [
+    {
+      "id": "mending",
+      "name": "Mending",
+      "mark": "+",
+      "group": "mending",
+      "stacking": "Refresh",
+      "maximumStacks": 2,
+      "maximumInstances": 1,
+      "duration": 6,
+      "restore": { "track": "health", "amount": 3, "interval": 1 }
+    },
+    {
+      "id": "warded",
+      "name": "Warded",
+      "mark": "◇",
+      "group": "ward",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 40,
+      "ward": { "absorb": 24, "damageKinds": [ "fire", "spirit", "blunt", "pierce" ] }
+    },
+    {
+      "id": "burning",
+      "name": "Burning",
+      "mark": "≈",
+      "group": "burning",
+      "stacking": "Independent",
+      "maximumStacks": 1,
+      "maximumInstances": 2,
+      "duration": 2,
+      "damage": { "damageKind": "fire", "amount": 1, "interval": 0.5 }
+    },
+    {
+      "id": "staggered",
+      "name": "Staggered",
+      "mark": "↯",
+      "group": "staggered",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 1.5,
+      "slow": { "factor": 0.55 }
+    },
+    {
+      "id": "hushed",
+      "name": "Hushed",
+      "mark": "◌",
+      "group": "hold",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 3,
+      "hold": {}
+    },
+    {
+      "id": "match-light",
+      "name": "Match flame",
+      "mark": "✦",
+      "group": "carried-light",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 45,
+      "light": { "color": [ 1.0, 0.72, 0.42 ], "intensity": 3.2, "range": 4.5, "lift": 0.1 }
+    },
+    {
+      "id": "keen",
+      "name": "Keen",
+      "mark": "◉",
+      "group": "keen",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 25,
+      "reveal": { "radius": 10, "sensed": "{count} stirring" }
+    },
+    {
+      "id": "steadied",
+      "name": "Steadied",
+      "mark": "▲",
+      "group": "steadied",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 25,
+      "stat": { "stat": "nerve", "amount": 4 }
+    }
+  ]
+}

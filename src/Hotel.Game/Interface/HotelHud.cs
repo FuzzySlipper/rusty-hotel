@@ -1,3 +1,4 @@
+using Hotel.Game.Content;
 using Hotel.Game.Combat;
 using Hotel.Game.Expedition;
 using Hotel.Game.Input;
@@ -38,7 +39,7 @@ internal sealed class HotelHud : IDisposable
             w.Text("notice", First(spirit.Notice, combat.Notice, supplies.Notice)),
             w.Object("condition",
                 w.Number("health", supplies.Health), w.Number("maximumHealth", supplies.MaximumHealth),
-                w.Flag("hurt", combat.HurtFlash > 0)),
+                w.Flag("hurt", combat.HurtFlash > 0), Effects(w, supplies, combat)),
             w.Object("held",
                 w.Text("weapon", combat.Weapon.Name), w.Text("action", combat.ActionText), w.Flag("hit", combat.HitFlash > 0),
                 w.Number("ammo", supplies.Ammo), w.Number("maximumAmmo", supplies.MaximumAmmo),
@@ -94,6 +95,21 @@ internal sealed class HotelHud : IDisposable
             w.Array("quickKeys", controls.Bindings.QuickPockets.Select(q => w.Text("", q.Label)).ToArray()),
             w.Text("quickNote", controls.QuickPocketsNote),
             w.Text("message", supplies.Message), w.Array("pockets", pockets));
+    }
+
+    // The investigator's effects while they last, in the condition cluster: each one's mark and name with its stacks,
+    // a ward's remaining absorption or what a reveal senses, and the whole seconds left.
+    private static uint Effects(UiValueWriter w, HotelSupplies supplies, HotelCombat combat)
+    {
+        Mechanics.MechanicsMessages text = supplies.Stats.Mechanics.Text;
+        return w.Array("effects", supplies.Stats.Effects.Active.Select(e => w.Object("",
+            w.Text("id", e.Definition.Id), w.Text("mark", e.Definition.Mark), w.Text("name", e.Definition.Name),
+            w.Text("state", string.Join(" ", new[] {
+                e.Stacks > 1 ? Template.Fill(text.EffectStacks, ("stacks", e.Stacks)) : "",
+                e.Definition.Ward is not null ? Template.Fill(text.EffectWard, ("ward", e.WardLeft)) : "",
+                e.Definition.Reveal is { } reveal ? Template.Fill(reveal.Sensed, ("count", combat.Sensed(reveal.Radius))) : "" }
+                .Where(part => part.Length > 0))),
+            w.Text("time", Template.Fill(text.EffectSeconds, ("seconds", Math.Ceiling(e.Remaining)))))).ToArray());
     }
 
     private static string First(params string[] notices) => notices.FirstOrDefault(n => n.Length > 0) ?? "";

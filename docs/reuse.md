@@ -190,6 +190,12 @@ equipment, affix, durability, progression or donor session framework was copied.
 Engine retains world reach/visibility and action admission; Hotel owns capacity,
 item effects and collected-find state. The DOM only projects these facts.
 
+## Incorporated effect lifecycle
+
+| Donor file | Revision | Hotel adaptation | SHA-256 of source |
+| --- | --- | --- | --- |
+| `rusty-dagger/src/WorldRpg.Kit/Effects/ActiveEffectLifecycle.cs` | `8281c6bcbff638d99cc65892430655e5c5af891a` | `Mechanics/ActorEffects.cs`: product state beside each Engine `EffectsComponent` entry, one settle path for every Engine receipt so removed entries leave with their contributions, and finite effects ending through Engine expiry after their last payload. Hotel replaces magic rounds with admitted seconds and tick intervals, adds Engine refresh stacking, per-source restart for independent effects, wards, and saved remaining time; contributions are Engine stat sources from the receipt's activations rather than cleanup delegates. No caster/item reference, element or settings string was copied | `72e6e482f6634a17a6d254139d0ae4d16fced4e6c194acab0406dcf5a60cb7f1` |
+
 ## Incorporated combat API patterns
 
 Hotel consulted Doom's working-tree files directly. These are API and settlement examples, not pacing or enemy-design

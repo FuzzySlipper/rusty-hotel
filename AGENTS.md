@@ -33,9 +33,12 @@ and pause only decisions that need unavailable authority.
   readings and the Engine world-interaction adapter. Extend that owner for world
   actions; do not add a second ray/focus or interaction registry.
   `Mechanics/` owns the stat vocabulary and each actor's Engine stats (`ActorStats`):
-  attributes, derived stats, tracks and damage kinds with resistances. Supplies spends
+  attributes, derived stats, tracks and damage kinds with resistances, and the
+  actor's effects (`ActorEffects`) over the Engine effects component. Supplies spends
   the investigator's tracks and Combat the residents'; do not keep a resource as a
-  plain number beside them.
+  plain number beside them. A timed condition (a heal over time, a hold, a slow, a
+  carried light) is an effect in `mechanics/effects.json`, advanced on admitted
+  time; do not add a separate timer for one.
   `Supplies/HotelSupplies.cs` owns carried stacks, collected finds and resource
   values. UI and developer actions share its capacity, eligibility and revision
   checks; room entry and case navigation must not reset it. Route inventory claims

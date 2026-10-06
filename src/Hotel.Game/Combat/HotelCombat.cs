@@ -73,7 +73,7 @@ internal sealed class HotelCombat
 
     internal bool Attack()
     {
-        if (Defeated || Phase != AttackPhase.Ready) return false;
+        if (Defeated || Phase != AttackPhase.Ready || supplies.Stats.Effects.Held) return false;
         if (Weapon.AmmoCost > 0 && !supplies.SpendAmmo(Weapon.AmmoCost))
         {
             int fallback = Array.FindIndex(definition.Weapons, w => w.AmmoCost == 0);
@@ -131,6 +131,9 @@ internal sealed class HotelCombat
         foreach (HotelEnemy enemy in Enemies) StepEnemy(enemy, delta);
     }
 
+    /// <summary>Living residents within a radius of the investigator, walls or not: what a reveal senses.</summary>
+    internal int Sensed(float radius) => Enemies.Count(e => e.Alive && Vector3.Distance(e.Position, player.Position) <= radius);
+
     internal HotelEnemy? SpiritTarget(float range)
     {
         SpatialEntityCollider[] targets = Enemies.Where(e => e.Alive).Select(e => e.Hitbox).ToArray();
@@ -140,10 +143,11 @@ internal sealed class HotelCombat
             ? Enemies.FirstOrDefault(e => e.Entity.Value == hit.Entity && e.Alive) : null;
     }
 
-    internal void Interrupt(HotelEnemy enemy, float duration)
+    /// <summary>Holds a resident with a hold effect, cancelling whatever it was doing; it stands interrupted while held.</summary>
+    internal void Interrupt(HotelEnemy enemy, Mechanics.EffectDefinition hold, string source)
     {
+        enemy.Stats.Effects.Apply(hold, source);
         enemy.Phase = AttackPhase.Interrupted;
-        enemy.Remaining = duration;
         enemy.BeamTime = 0;
     }
 
@@ -157,6 +161,7 @@ internal sealed class HotelCombat
             ? Enemies.FirstOrDefault(e => e.Entity.Value == hit.Entity && e.Alive) : null;
         if (victim is null) { Announce(hit.Present ? text.StruckSurroundings : text.Miss); return; }
         victim.Stats.TakeDamage(new(Weapon.Damage, Weapon.DamageKind), HotelSupplies.HealthTrack);
+        foreach (string effect in Weapon.OnHit) victim.Stats.Effects.Apply(definition.Mechanics.Effect(effect)!, $"weapon.{Weapon.Id}");
         LandedHits++;
         HitFlash = definition.Tuning.HitFlashSeconds;
         Announce(Template.Fill(victim.Alive ? text.Hit : text.ResidentFalls, ("resident", victim.Kind.Name)));
@@ -167,6 +172,11 @@ internal sealed class HotelCombat
     {
         enemy.BeamTime = Math.Max(0, enemy.BeamTime - delta);
         if (!enemy.Alive || Defeated) return;
+        enemy.Stats.Effects.Advance(delta);
+        if (!enemy.Alive) { enemy.Phase = AttackPhase.Defeated; return; }
+        // A held resident stands interrupted until its hold ends.
+        if (enemy.Stats.Effects.Held) { enemy.Phase = AttackPhase.Interrupted; return; }
+        if (enemy.Phase == AttackPhase.Interrupted) enemy.Phase = AttackPhase.Ready;
         Vector3 toPlayer = player.Eye - enemy.Eye;
         float distance = toPlayer.Length();
         bool visible = distance <= enemy.Kind.SightRange && ClearLine(enemy.Eye, player.Eye);
@@ -187,7 +197,7 @@ internal sealed class HotelCombat
                 // This resident stops to attack before body contact; only hotel geometry constrains its approach.
                 CharacterStepReceipt move = engine.Spatial.ProposeCharacterStep(new(scene.Session,
                     enemy.Position, enemy.Motion, default, ReadOnlyMemory<CharacterObstacle>.Empty, ReadOnlyMemory<CharacterMeshInstance>.Empty,
-                    enemy.Controller, new(new(0, 1), enemy.Yaw, false, false, false, default, default, delta, ++enemy.Sequence)));
+                    enemy.Controller, new(new(0, enemy.Stats.Pace), enemy.Yaw, false, false, false, default, default, delta, ++enemy.Sequence)));
                 scene.Entities.Set(enemy.Entity, EngineComponentTypes.Transform, move.Transform);
                 scene.Entities.Set(enemy.Entity, EngineComponentTypes.CharacterMotion, move.Motion);
             }
@@ -206,14 +216,14 @@ internal sealed class HotelCombat
                 if (hit.Present && hit.Kind == SpatialHitKind.Entity && hit.Entity == scene.PlayerEntity.Value)
                 {
                     int taken = supplies.Damage(new(enemy.Kind.Damage, enemy.Kind.DamageKind));
+                    foreach (string effect in enemy.Kind.OnHit) supplies.Afflict(effect, $"resident.{enemy.Id}");
                     HurtFlash = definition.Tuning.HurtFlashSeconds;
                     Announce(Template.Fill(text.ResidentHits, ("resident", enemy.Kind.Name), ("damage", taken)));
                 }
                 enemy.Phase = AttackPhase.Commit; enemy.Remaining += enemy.Kind.Commit; break;
             case AttackPhase.Commit:
                 enemy.Phase = AttackPhase.Recovery; enemy.Remaining += enemy.Kind.Recovery; break;
-            case AttackPhase.Recovery:
-            case AttackPhase.Interrupted: enemy.Phase = AttackPhase.Ready; break;
+            case AttackPhase.Recovery: enemy.Phase = AttackPhase.Ready; break;
         }
     }
 

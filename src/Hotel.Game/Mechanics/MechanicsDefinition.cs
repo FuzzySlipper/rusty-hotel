@@ -5,11 +5,11 @@ namespace Hotel.Game.Mechanics;
 
 /// <summary>
 /// The hotel's stat vocabulary: the attributes every actor has, the stats derived from them, the resource tracks those
-/// stats bound, and the kinds of damage with the resistance each actor holds against it. One vocabulary for the player
-/// and every resident; an actor's own numbers are its <see cref="ActorStatBlock"/>.
+/// stats bound, the kinds of damage with the resistance each actor holds against it, and the effects any actor can
+/// bear. One vocabulary for the player and every resident; an actor's own numbers are its <see cref="ActorStatBlock"/>.
 /// </summary>
 internal sealed record MechanicsDefinition(AttributeDefinition[] Attributes, DerivedStatDefinition[] Derived, TrackDefinition[] Tracks,
-    DamageKindDefinition[] DamageKinds)
+    DamageKindDefinition[] DamageKinds, EffectDefinition[] Effects, MechanicsMessages Text)
 {
     internal const string StatsPath = "mechanics/stats.json";
     internal const string DamagePath = "mechanics/damage.json";
@@ -18,12 +18,24 @@ internal sealed record MechanicsDefinition(AttributeDefinition[] Attributes, Der
     {
         StatVocabulary stats = Authored.Read(engine, StatsPath, ContentJson.Default.StatVocabulary);
         DamageVocabulary damage = Authored.Read(engine, DamagePath, ContentJson.Default.DamageVocabulary);
-        MechanicsDefinition definition = new(stats.Attributes, stats.Derived, stats.Tracks, damage.Kinds);
+        EffectCatalog effects = Authored.Read(engine, EffectDefinition.Path, ContentJson.Default.EffectCatalog);
+        MechanicsMessages text = Authored.Read(engine, MechanicsMessages.Path, ContentJson.Default.MechanicsMessages);
+        text.Validate();
+        MechanicsDefinition definition = new(stats.Attributes, stats.Derived, stats.Tracks, damage.Kinds, effects.Effects, text);
         definition.Validate();
         return definition;
     }
 
     internal DamageKindDefinition? DamageKind(string id) => DamageKinds.FirstOrDefault(k => k.Id == id);
+    internal EffectDefinition? Effect(string id) => Effects.FirstOrDefault(e => e.Id == id);
+    internal bool HasStat(string id) => Attributes.Any(a => a.Id == id) || Derived.Any(d => d.Id == id);
+
+    /// <summary>Checks a list of effect ids authored elsewhere, naming the file and field of an unknown one.</summary>
+    internal void RequireEffects(string path, string field, string[] ids)
+    {
+        for (int i = 0; i < ids.Length; i++)
+            Authored.Require(Effect(ids[i]) is not null, path, $"{field}[{i}]", $"unknown effect '{ids[i]}'; see content/{EffectDefinition.Path}.");
+    }
 
     private void Validate()
     {
@@ -38,6 +50,7 @@ internal sealed record MechanicsDefinition(AttributeDefinition[] Attributes, Der
             DerivedStatDefinition d = Derived[i];
             Authored.Require(d.Maximum >= d.Minimum, StatsPath, $"derived[{i}].maximum", "must be at least the minimum.");
             Authored.Within(StatsPath, $"derived[{i}].base", d.Base, d.Minimum, d.Maximum);
+            Authored.AtLeast(StatsPath, $"derived[{i}].quantum", d.Quantum, 0);
             for (int f = 0; f < d.From.Length; f++)
             {
                 Authored.Require(Attributes.Any(a => a.Id == d.From[f].Attribute), StatsPath, $"derived[{i}].from[{f}].attribute",
@@ -54,6 +67,14 @@ internal sealed record MechanicsDefinition(AttributeDefinition[] Attributes, Der
             Authored.Within(DamagePath, $"kinds[{i}].minimumResistance", k.MinimumResistance, -10, 0);
             Authored.Within(DamagePath, $"kinds[{i}].maximumResistance", k.MaximumResistance, 0, 1);
         }
+        Authored.Require(Derived.Any(d => d.Id == ActorStats.PaceStat), StatsPath, "derived",
+            $"needs the '{ActorStats.PaceStat}' stat that movement is scaled by.");
+        Unique(EffectDefinition.Path, "effects", Effects.Select(e => e.Id));
+        for (int i = 0; i < Effects.Length; i++) Effects[i].Validate($"effects[{i}]", this, ActorStats.PaceStat);
+        // One group, one stacking rule: the Engine compares a new application with the group's entries by it.
+        foreach (var group in Effects.GroupBy(e => e.Group))
+            Authored.Require(group.Select(e => (e.Stacking, e.MaximumInstances)).Distinct().Count() == 1, EffectDefinition.Path, "effects",
+                $"group '{group.Key}' mixes stacking rules.");
     }
 
     /// <summary>Checks an actor's stat block against the vocabulary, naming the file and field that is wrong.</summary>
@@ -96,10 +117,12 @@ internal sealed record MechanicsDefinition(AttributeDefinition[] Attributes, Der
 internal sealed record AttributeDefinition(string Id, string Name, float Minimum, float Maximum);
 
 /// <summary>
-/// A stat derived from attributes: its base, bounds, and how much each point of an attribute adds. An actor's block
-/// may set its own base; the attribute contributions are Engine stat sources, so the value explains itself.
+/// A stat derived from attributes: its base, bounds, the step its value rounds to (zero for none), and how much each
+/// point of an attribute adds. An actor's block may set its own base; the attribute contributions are Engine stat
+/// sources, so the value explains itself.
 /// </summary>
-internal sealed record DerivedStatDefinition(string Id, string Name, float Base, float Minimum, float Maximum, AttributeScaling[] From);
+internal sealed record DerivedStatDefinition(string Id, string Name, float Base, float Minimum, float Maximum, float Quantum,
+    AttributeScaling[] From);
 internal sealed record AttributeScaling(string Attribute, float PerPoint);
 
 /// <summary>A resource pool (health, stamina, summon charges) bounded by a derived stat.</summary>

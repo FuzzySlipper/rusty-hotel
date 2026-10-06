@@ -14,14 +14,14 @@ internal enum ManifestationPhase { Absent, Arriving, Holding, Departing }
 
 /// <summary>One pact, equipped choice and brief intervention; resources and combat keep their owners.</summary>
 internal sealed class HotelSpirit(SpiritDefinition definition, SpiritMessages text, SpiritBellPlacement placement,
-    HotelSupplies supplies, HotelCombat combat, HotelPlayer player)
+    HotelSupplies supplies, HotelCombat combat, HotelPlayer player, Mechanics.EffectDefinition hold)
 {
     internal SpiritDefinition Definition => definition;
     /// <summary>Where this excursion keeps the spirit's bell before the pact.</summary>
     internal Vector3 Bell { get; } = Authored.Vector(placement.Point);
     internal string BellLabel => Named(text.BellLabel);
     internal string Description => Template.Fill(definition.Description, ("place", placement.Place),
-        ("range", definition.Range), ("cost", definition.Cost), ("interrupt", definition.Interrupt));
+        ("range", definition.Range), ("cost", definition.Cost), ("interrupt", hold.Duration));
     /// <summary>The HUD's held-spirit line.</summary>
     internal string HudLabel => Equipped ? definition.Name : Acquired ? text.HudInCase : text.HudNone;
     internal bool Acquired { get; private set; }
@@ -98,7 +98,7 @@ internal sealed class HotelSpirit(SpiritDefinition definition, SpiritMessages te
         HotelEnemy? target = combat.SpiritTarget(definition.Range);
         if (target is null) return Refuse(Template.Fill(text.NoTarget, ("range", definition.Range)));
         if (!supplies.SpendSummon(definition.Cost)) return false;
-        combat.Interrupt(target, definition.Interrupt);
+        combat.Interrupt(target, hold, $"spirit.{definition.Id}");
         Calls++;
         Elapsed = 0;
         Phase = ManifestationPhase.Arriving;

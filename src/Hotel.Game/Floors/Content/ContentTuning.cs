@@ -66,7 +66,7 @@ internal sealed record ContentTuning(string Spirit, string FallbackLocation, Ite
             }
         }
         Items("objective", t.Objective, [SupplyKind.Expedition]);
-        Items("supplies", t.Supplies, [SupplyKind.Healing, SupplyKind.Ammo, SupplyKind.Summon]);
+        Items("supplies", t.Supplies, [SupplyKind.Healing, SupplyKind.Ammo, SupplyKind.Summon, SupplyKind.Consumable]);
         Authored.AtLeast(Path, "suppliesPerStop", t.SuppliesPerStop, 1);
         t.LooseSupplies.Validate(Path, "looseSupplies");
         t.ExtraResidents.Validate(Path, "extraResidents");

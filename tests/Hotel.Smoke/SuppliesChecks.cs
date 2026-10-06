@@ -20,13 +20,16 @@ internal static class SuppliesChecks
         Check(!supplies.Pickup("survey-incense") && !supplies.Collected("survey-incense"), "full case leaves find available");
         Check(!supplies.Give("bandage", 1) && supplies.Slot(0)?.Count == 3, "full stacks do not overflow");
         ulong before = supplies.Revision;
-        Check(supplies.Use(0, before) && supplies.Health == 100 && supplies.Slot(0)?.Count == 2, "heal and consume one coherently");
+        Check(supplies.Use(0, before) && supplies.Health == 70 + supplies.Item("bandage").Amount && supplies.Slot(0)?.Count == 2 &&
+            supplies.Stats.Effects.Active.Single().Definition.Id == "mending", "heal at once, start mending and consume one coherently");
         Check(!supplies.Use(0, before) && supplies.Slot(0)?.Count == 2, "stale consumption rejected");
+        supplies.SetHealth(supplies.MaximumHealth);
         Check(!supplies.Use(0, supplies.Revision) && supplies.Slot(0)?.Count == 2, "full health refuses item waste");
         Check(supplies.Use(1, supplies.Revision) && supplies.Ammo == 6 && supplies.Slot(1) is null, "ammo transfers to reserve and releases pocket");
         Check(!supplies.Use(1, supplies.Revision), "empty pocket consumption refused");
         Check(supplies.Pickup("survey-incense") && supplies.Collected("survey-incense"), "previously refused find can be collected after making space");
-        Check(supplies.Use(1, supplies.Revision) && supplies.Summon == 1, "incense replenishes shared reserve");
+        Check(supplies.Use(1, supplies.Revision) && supplies.Summon == 1 && supplies.Stats.Effects.Active.Any(e => e.Definition.Id == "warded"),
+            "incense replenishes shared reserve and wards");
         Check(!supplies.SpendAmmo(7) && !supplies.SpendAmmo(-1) && supplies.Ammo == 6, "ammo cannot overspend or accept negative cost");
         Check(supplies.SpendAmmo(6) && !supplies.SpendAmmo(1) && supplies.Ammo == 0, "ammo reaches zero without going negative");
         Check(!supplies.SpendSummon(2) && supplies.SpendSummon(1) && !supplies.SpendSummon(1) && supplies.Summon == 0, "shared reserve never negative");
@@ -58,7 +61,10 @@ internal static class SuppliesChecks
             Claim("{\"action\":\"use\",\"from\":0,\"revision\":\"bad\"}")]);
         Check(supplies.Health == 70 && supplies.Slot(1)?.Count == 1, "malformed UI claims do not fault or mutate inventory");
         supplies.HandleIntents([Claim($"{{\"action\":\"use\",\"from\":1,\"revision\":{supplies.Revision}}}")]);
-        Check(supplies.Health == 100 && supplies.Occupied == 0, "semantic use consumes and heals through the owner");
+        Check(supplies.Health == 70 + supplies.Item("bandage").Amount && supplies.Occupied == 0, "semantic use consumes and heals through the owner");
+        supplies.Give("matches", 1); supplies.SetHealth(supplies.MaximumHealth);
+        Check(supplies.UseReason(0) == "" && supplies.Use(0, supplies.Revision) && supplies.Stats.Effects.Light is not null,
+            "a consumable is used for its effect alone, at full health");
         supplies.Give("bandage", 1); supplies.Damage(new(1000, "blunt"));
         Check(!supplies.Use(0, supplies.Revision) && supplies.Health == 0 && supplies.Slot(0)?.Count == 1,
             "field case and quick pockets cannot revive defeat outside checkpoint recovery");

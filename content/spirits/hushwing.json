@@ -8,6 +8,7 @@
   "arrival": 0.4,
   "hold": 1.8,
   "departure": 0.8,
+  "effect": "hushed",
   "text": {
     "callHint": "{key.summon} · Hush a visible resident",
     "callResult": "{spirit} hushes {resident} · −{cost} summon",

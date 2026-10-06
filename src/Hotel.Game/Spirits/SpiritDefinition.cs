@@ -4,12 +4,14 @@ using Rusty.Engine;
 namespace Hotel.Game.Spirits;
 
 /// <summary>One spirit's pact terms, manifestation timing and its own wording.</summary>
-/// <param name="Description">Field-case description; may use {place}, {range}, {cost} and {interrupt}.</param>
+/// <param name="Description">Field-case description; may use {place}, {range}, {cost} and {interrupt} (the hold's seconds).</param>
+/// <param name="Effect">The hold effect a call puts on its resident, by id in the effect catalog.</param>
 internal sealed record SpiritDefinition(string Id, string Name, string Description, int WelcomeCharges,
-    int Cost, float Range, float Arrival, float Hold, float Departure, SpiritText Text, ManifestationTuning Manifestation)
+    int Cost, float Range, float Arrival, float Hold, float Departure, string Effect, SpiritText Text, ManifestationTuning Manifestation)
 {
     internal static string Path(string id) => $"spirits/{id}.json";
-    internal static SpiritDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys)
+    internal static SpiritDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys,
+        Mechanics.MechanicsDefinition mechanics)
     {
         SpiritDefinition spirit = Authored.Read(engine, Path(id), ContentJson.Default.SpiritDefinition, keys);
         Authored.Require(spirit.Id == id, Path(id), "id", $"the file for '{id}' names '{spirit.Id}'.");
@@ -24,6 +26,8 @@ internal sealed record SpiritDefinition(string Id, string Name, string Descripti
         Authored.Positive(path, "arrival", spirit.Arrival);
         Authored.Positive(path, "hold", spirit.Hold);
         Authored.Positive(path, "departure", spirit.Departure);
+        Authored.Require(mechanics.Effect(spirit.Effect)?.Hold is not null, path, "effect",
+            $"'{spirit.Effect}' is not a hold effect in content/{Mechanics.EffectDefinition.Path}.");
         ManifestationTuning at = spirit.Manifestation;
         Authored.Finite(path, "manifestation.approach", at.Approach);
         Authored.Finite(path, "manifestation.side", at.Side);

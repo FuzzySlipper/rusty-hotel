@@ -83,8 +83,9 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             if (pendingAttack) { pendingAttack = false; w.Combat.Attack(); }
             if (pendingReload) { pendingReload = false; w.Combat.Reload(); }
             if (pendingSummon) { pendingSummon = false; w.Spirit.Call(); }
-            w.Player.Step(w.Combat.Defeated ? input with { Movement = System.Numerics.Vector2.Zero } : input,
-                (float)update.Facts.FixedDeltaSeconds, w.Combat.Obstacles);
+            // The investigator's pace scales their stride; a hold or defeat stops it.
+            float pace = w.Combat.Defeated || w.Supplies.Stats.Effects.Held ? 0 : w.Supplies.Stats.Pace;
+            w.Player.Step(input with { Movement = input.Movement * pace }, (float)update.Facts.FixedDeltaSeconds, w.Combat.Obstacles);
             w.Combat.Step((float)update.Facts.FixedDeltaSeconds);
             w.Spirit.Step((float)update.Facts.FixedDeltaSeconds);
             w.Supplies.Step((float)update.Facts.FixedDeltaSeconds);
@@ -95,6 +96,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             // The stairs were taken during this step's use: change floor once the route has finished with its world.
             if (pendingTravel is { } travel) { pendingTravel = null; Enter(travel.Excursion, travel.Depth, travel.Way); break; }
         }
+        world.Scene.Carry(world.Supplies.Stats.Effects.Light, world.Player.Eye);
         step = checked(update.Facts.SimulationStep + update.Facts.AdmittedStepCount);
         sampleTime = step * update.Facts.FixedDeltaSeconds;
         Publish();

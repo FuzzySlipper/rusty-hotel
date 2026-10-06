@@ -228,6 +228,20 @@ internal sealed class HotelScene : IDisposable
         casting.UnionWith(nearest);
     }
 
+    // The light an effect has the investigator carry, present only while one is carried.
+    private Light? carried;
+    private const ulong CarriedLightId = PreviewIds - 1;
+
+    /// <summary>Places the carried light at the eye, or puts it out when none is carried. It casts no shadow.</summary>
+    internal void Carry(Mechanics.LightEffect? light, Vector3 eye)
+    {
+        if (light is null) { carried?.Dispose(); carried = null; return; }
+        LightDescriptor descriptor = new(LightKind.Point, Authored.Vector(light.Color), light.Intensity, true,
+            eye + new Vector3(0, light.Lift, 0), -Vector3.UnitY, true, light.Range, 2, 0, 0, LightShadowIntent.Disabled);
+        if (carried is null) carried = engine.Graphics.CreateLight(new(CarriedLightId, false, 0, descriptor));
+        else engine.Graphics.UpdateLight(new(carried, new(CarriedLightId, false, 0, descriptor)));
+    }
+
     /// <summary>Advances failing lamps by one admitted step, sending a light only when it visibly changes.</summary>
     internal void Animate(float delta)
     {
@@ -344,6 +358,7 @@ internal sealed class HotelScene : IDisposable
         Session.Dispose();
         preview?.Dispose();
         foreach (Light light in lights) light.Dispose();
+        carried?.Dispose();
         foreach (Appearance appearance in appearances) appearance.Dispose();
         foreach (MeshResource mesh in meshes) mesh.Dispose();
         foreach (Material material in materials) material.Dispose();

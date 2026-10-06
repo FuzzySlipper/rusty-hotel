@@ -53,7 +53,7 @@ displaces something; adding a region is a design decision recorded here first.
 | Top right | Field case and Menu entries, only while the pointer is not captured |
 | Centre | Reticle, hit marker, and the one Engine-selected focus prompt |
 | Notice slot | One brief result notice, chosen by priority and expiring on admitted time; never a stack or log |
-| Lower band | At most three clusters: condition (left), quick access (centre), held status (right: reserves, hands, spirit) |
+| Lower band | At most three clusters: condition (left: health and the investigator's active effects, each a small chip that appears while it lasts), quick access (centre), held status (right: reserves, hands, spirit) |
 | Viewport edge | Transient damage accent only |
 
 Every key the player sees comes from the one binding table, `content/input/bindings.json`.

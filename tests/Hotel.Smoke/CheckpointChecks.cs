@@ -43,6 +43,8 @@ internal static class CheckpointChecks
                 f.Combat.Enemies[0].Health.SetCurrent(0);
                 var lamp = f.Combat.Enemies[1]; lamp.Health.SetCurrent(36); lamp.Yaw = .4f;
                 lamp.Stats.Stat("might").BaseValue = 14; lamp.Stats.RefreshDerived(); lamp.Stats.Track("stamina").SetCurrent(20);
+                lamp.Stats.Effects.Apply(f.Content.Mechanics.Effect("staggered")!, "weapon.prybar");
+                f.Supplies.Afflict("warded", "item.incense"); f.Supplies.Damage(new(4, "fire"));
                 f.Route.Restore(["survey", "return"]);
                 f.At(0, -8, new(-2.33f, .93f, 2.85f));
                 f.Route.Use();
@@ -125,7 +127,10 @@ internal static class CheckpointChecks
             f.Route.OpenDoors.Order().SequenceEqual(new[] { "return", "survey" }) && f.Combat.Weapon.Id == "pistol" &&
             !f.Combat.Enemies[0].Alive && f.Combat.Enemies[1].Health.ValueInt == 36 &&
             f.Combat.Enemies[1].Stats.Stat("might").Value == 14 && f.Combat.Enemies[1].Stats.Track("stamina").ValueInt == 20 &&
-            f.Combat.Enemies[1].Health.MaximumValue == f.Content.Combat.MaximumHealth(f.Combat.Enemies[1].Kind) + 8 && f.Combat.Enemies[1].Phase == AttackPhase.Ready &&
+            f.Combat.Enemies[1].Health.MaximumValue == f.Content.Combat.MaximumHealth(f.Combat.Enemies[1].Kind) + 8 &&
+            f.Combat.Enemies[1].Stats.Effects.Active.Single() is { Definition.Id: "staggered", Remaining: 1.5f } &&
+            f.Combat.Enemies[1].Stats.Pace < 1 && f.Supplies.Stats.Effects.Active.Single() is { Definition.Id: "warded", WardLeft: 20, Remaining: 40 } &&
+            f.Combat.Enemies[1].Phase == AttackPhase.Ready &&
             f.Combat.Phase == AttackPhase.Ready && Vector3.Distance(f.Player.Position, new(0, .875f, 3.5f)) < .01f,
             "checkpoint restores coherent inventory, resources, pact, refuge, weapon, loot, doors and residents");
     }
@@ -136,7 +141,7 @@ internal static class CheckpointChecks
         Dictionary<string, double> b = new(saved.Supplies.Stats.Bases), t = new(saved.Supplies.Stats.Tracks);
         if (bases is { } x) b[x.Id] = x.Value;
         if (tracks is { } y) t[y.Id] = y.Value;
-        return saved with { Supplies = saved.Supplies with { Stats = new(b, t) } };
+        return saved with { Supplies = saved.Supplies with { Stats = new(b, t, saved.Supplies.Stats.Effects) } };
     }
 
     // The saved state with the last resident's stat bases or tracks' currents changed.
@@ -146,7 +151,7 @@ internal static class CheckpointChecks
         Dictionary<string, double> b = new(last.Stats.Bases), t = new(last.Stats.Tracks);
         if (bases is { } x) b[x.Id] = x.Value;
         if (tracks is { } y) t[y.Id] = y.Value;
-        return saved with { Residents = [.. saved.Residents[..^1], last with { Stats = new(b, t) }] };
+        return saved with { Residents = [.. saved.Residents[..^1], last with { Stats = new(b, t, saved.Supplies.Stats.Effects) }] };
     }
 
     private sealed class Fixture : IDisposable

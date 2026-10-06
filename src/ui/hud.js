@@ -13,7 +13,7 @@ export function mountHud(document) {
     <div class="supply-notice" data-supply-notice hidden role="status"></div>
     <div class="travel-hint" data-hint hidden></div>
     <div class="hud-bottom">
-      <div class="condition"><span class="eyebrow">On your own</span><span data-health></span></div>
+      <div class="condition"><span class="eyebrow">On your own</span><span data-health></span><div class="effects" data-effects></div></div>
       <div class="quick-access"><span class="eyebrow">Quick access</span><div class="quick-pockets" data-hud-pockets></div></div>
       <div class="held-status"><div><span class="eyebrow">Reserves</span><span data-resources></span></div><div><span class="eyebrow">Hands</span><span data-weapon>—</span><span class="eyebrow" data-combat-action></span></div><div><span class="eyebrow">Spirit</span><span data-spirit>—</span><span class="spirit-state" data-spirit-state></span></div></div>
     </div>`;
@@ -35,6 +35,7 @@ export function mountHud(document) {
       notice.hidden = !facts.notice;
       find('[data-combat-action]').textContent = held.action;
       find('.hurt-screen').hidden = !condition.hurt;
+      find('[data-effects]').replaceChildren(...condition.effects.map(effect => effectView(document, effect)));
       find('.reticle').classList.toggle('hit', !!held.hit);
       find('[data-hud-pockets]').replaceChildren(...quickPocketViews(document, facts.supplies));
       // The opening reminder only; afterwards controls are hinted where they apply.
@@ -46,4 +47,13 @@ export function mountHud(document) {
       prompt.hidden = !facts.focusPrompt;
     }
   };
+}
+
+// One active effect: its mark, name, state (stacks, ward, reveal) and time left, all as the HUD facts word them.
+function effectView(document, effect) {
+  const chip = document.createElement('span');
+  chip.className = 'effect';
+  chip.dataset.effect = effect.id;
+  chip.textContent = [effect.mark, effect.name, effect.state, '·', effect.time].filter(Boolean).join(' ');
+  return chip;
 }

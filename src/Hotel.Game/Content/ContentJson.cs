@@ -32,6 +32,8 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(SurfaceCatalog))]
 [JsonSerializable(typeof(Hotel.Game.Mechanics.StatVocabulary))]
 [JsonSerializable(typeof(Hotel.Game.Mechanics.DamageVocabulary))]
+[JsonSerializable(typeof(Hotel.Game.Mechanics.EffectCatalog))]
+[JsonSerializable(typeof(Hotel.Game.Mechanics.MechanicsMessages))]
 [JsonSerializable(typeof(Hotel.Game.Mechanics.ActorStatBlock))]
 [JsonSerializable(typeof(SceneLook))]
 [JsonSerializable(typeof(ItemCatalog))]

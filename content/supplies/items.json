@@ -3,11 +3,14 @@
     {
       "id": "bandage",
       "name": "Field dressing",
-      "description": "A sealed dressing. Restores up to {amount} health. Keep it until you need it.",
+      "description": "A sealed dressing. Restores {amount} health at once, and the wound keeps mending for a while after.",
       "kind": "Healing",
       "stackLimit": 3,
-      "amount": 30,
-      "mark": "+"
+      "amount": 20,
+      "mark": "+",
+      "effects": [
+        "mending"
+      ]
     },
     {
       "id": "rounds",
@@ -16,16 +19,45 @@
       "kind": "Ammo",
       "stackLimit": 3,
       "amount": 6,
-      "mark": "6"
+      "mark": "6",
+      "effects": []
     },
     {
       "id": "incense",
       "name": "Binding incense",
-      "description": "A waxed incense packet. Restores {amount} charge to the shared summon reserve.",
+      "description": "A waxed incense packet. Restores {amount} charge to the shared summon reserve, and its smoke wards you for a while.",
       "kind": "Summon",
       "stackLimit": 3,
       "amount": 1,
-      "mark": "◇"
+      "mark": "◇",
+      "effects": [
+        "warded"
+      ]
+    },
+    {
+      "id": "matches",
+      "name": "Hotel matches",
+      "description": "A booklet of the hotel's own matches. Strike one to carry a small flame for a while.",
+      "kind": "Consumable",
+      "stackLimit": 3,
+      "amount": 0,
+      "mark": "✧",
+      "effects": [
+        "match-light"
+      ]
+    },
+    {
+      "id": "salts",
+      "name": "Smelling salts",
+      "description": "A stoppered bottle of salts. One breath steadies your nerve and sharpens your senses: you feel residents stirring nearby, even through walls.",
+      "kind": "Consumable",
+      "stackLimit": 3,
+      "amount": 0,
+      "mark": "◉",
+      "effects": [
+        "keen",
+        "steadied"
+      ]
     },
     {
       "id": "reel",
@@ -34,7 +66,8 @@
       "kind": "Expedition",
       "stackLimit": 1,
       "amount": 0,
-      "mark": "◎"
+      "mark": "◎",
+      "effects": []
     },
     {
       "id": "ledger-page",
@@ -43,7 +76,8 @@
       "kind": "Expedition",
       "stackLimit": 1,
       "amount": 0,
-      "mark": "▤"
+      "mark": "▤",
+      "effects": []
     }
   ]
 }

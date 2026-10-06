@@ -23,6 +23,16 @@
       "item": "incense",
       "count": 1,
       "weight": 1
+    },
+    {
+      "item": "matches",
+      "count": 1,
+      "weight": 1
+    },
+    {
+      "item": "salts",
+      "count": 1,
+      "weight": 1
     }
   ],
   "suppliesPerStop": 1,
@@ -83,6 +93,14 @@
     {
       "item": "incense",
       "fixture": "incense-packet"
+    },
+    {
+      "item": "matches",
+      "fixture": "matchbook"
+    },
+    {
+      "item": "salts",
+      "fixture": "salts-bottle"
     },
     {
       "item": "ledger-page",

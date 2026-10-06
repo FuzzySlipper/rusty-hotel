@@ -32,6 +32,8 @@ its own folder. Geometry is kept apart from tuning.
 | `scene/surfaces.json` | Reusable surfaces: tint, texture, world-metre tile size, roughness, emission; `HotelScene` |
 | `mechanics/stats.json` | The stat vocabulary every actor shares: attributes, stats derived from them, and the resource tracks those bound; `ActorStats` |
 | `mechanics/damage.json` | Damage kinds and the bounds of each actor's resistance to them; `ActorStats` |
+| `mechanics/effects.json` | Every effect an actor can bear: name, mark, stacking group and rule, duration and one kind's settings; `ActorEffects` |
+| `mechanics/messages.json` | How an active effect's time, stacks and ward read on the HUD |
 | `player/stats.json` | The investigator's stat block: attributes, derived bases, resistances and starting track points; `HotelSupplies` |
 | `supplies/items.json` | Item kinds, effects, stack limits, names and descriptions (`{amount}`); `HotelSupplies` |
 | `supplies/messages.json` | Supply notices, refusal reasons and how long a notice stays up; `HotelSupplies` |
@@ -91,7 +93,36 @@ An actor's stat block (`player/stats.json`, a resident kind's `stats`) gives eve
 own `bases`, lists its `resistances` (absent is none), and its tracks' `initial` points (absent is full). A missing
 attribute, an unknown id or a value out of bounds fails validation naming the file and field. Weapons and resident
 kinds name the `damageKind` they deal. Add a stat, track or damage kind to the vocabulary once; every block then
-validates against it.
+validates against it. A derived stat names the `quantum` its value rounds to (0 for none); `pace` is the derived stat
+movement is scaled by, and the vocabulary must have it.
+
+## Effects
+
+An effect (`mechanics/effects.json`) is something an actor bears for a while: an Engine effect entry in its stacking
+`group`, with the product's time left, tick progress and ward. Each sets exactly one kind:
+
+| Kind | Settings | While it lasts |
+| --- | --- | --- |
+| `stat` | `stat`, `amount` | adds `amount` per stack to an attribute or derived stat, as an Engine source (what derives from an attribute follows) |
+| `restore` | `track`, `amount`, `interval` | restores `amount` per stack to the track every `interval` seconds |
+| `damage` | `damageKind`, `amount`, `interval` | deals `amount` per stack of that kind every `interval` seconds, against resistance and wards |
+| `ward` | `absorb`, `damageKinds` | takes up to `absorb` per stack of hits of those kinds before health; spent, it ends |
+| `hold` | none (`{}`) | its bearer neither moves nor attacks; a held resident stands interrupted |
+| `slow` | `factor` | multiplies pace; the strongest slow wins |
+| `reveal` | `radius`, `sensed` | the HUD names how many living residents are within `radius`, through walls (`{count}`) |
+| `light` | `color`, `intensity`, `range`, `lift` | a shadowless light carried at the bearer's eye |
+
+`stacking` decides how another application meets an effect already in its group. `Independent` keeps one instance per
+source (an item, a resident, a weapon, a spirit) up to `maximumInstances`, and the same source again restarts its own;
+`Refresh` keeps one instance, adds a stack up to `maximumStacks` and restarts it; `Replace` swaps in a fresh one. Only
+`Refresh` gathers stacks and only `Independent` holds several instances, so the other limit is 1; every effect in a
+group shares one rule. `duration` and `interval` are admitted seconds: effects advance only with the simulation, so a
+paused game holds them. An over-time effect's last tick lands as it expires.
+
+Items name the `effects` their use applies; weapons and resident kinds name the effects a hit puts on what it strikes
+(`onHit`); the spirit names the hold its call puts on a resident (`effect`). An unknown effect id fails validation
+naming the referring file and field. A full track refuses an item only when its effects would do no more than restore
+that full track.
 
 ## Authoring a floor
 
@@ -244,7 +275,9 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
 restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
-same way, on the floor it was left on and in the refuge, beside its pose. A checkpoint of another version is refused
+same way, on the floor it was left on and in the refuge, beside its pose. Version 5 keeps each actor's effects with
+its stats: the effect, who applied it, its stacks, time left, time since its last tick and ward left, re-admitted in
+their saved order after the bases and before the track points, so the stat sources they hold are rebuilt. A checkpoint of another version is refused
 like any other invalid data.
 
 Recording the refuge checkpoint marks every visited floor due to shift; the next climb to it generates it again under

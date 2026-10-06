@@ -17,6 +17,22 @@ internal sealed class SuppliesDebugCommands(Func<HotelSupplies> current, Action 
     [DebugCommand("hotel.dev.use-supply", Description = "Developer fixture: consume a zero-based pocket through ordinary resource eligibility. Requires current inventory revision.")]
     public DebugCommandResult Use(int slot, ulong revision) => Result(supplies.Use(slot, revision));
 
+    [DebugCommand("hotel.dev.apply-effect", Description = "Developer fixture: apply an effect from the effect catalog to the investigator, as from a named source.")]
+    public DebugCommandResult Effect(string effect, string source)
+    {
+        if (supplies.Stats.Mechanics.Effect(effect) is null)
+            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"Unknown effect '{effect}'.");
+        bool applied = supplies.Afflict(effect, $"developer.{source}");
+        publish();
+        return applied ? DebugCommandResult.Success($"Applied {effect}.")
+            : DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"{effect} was refused (defeated, or its group is full).");
+    }
+
+    [DebugCommand("hotel.dev.effects", Description = "Inspect the investigator's active effects: stacks, seconds left, tick progress and ward.")]
+    public DebugCommandResult Effects() => DebugCommandResult.Success(string.Join("; ", supplies.Stats.Effects.Active.Select(e =>
+        $"{e.Definition.Id} from {e.Source} ×{e.Stacks} {e.Remaining:F2}s tick {e.SinceTick:F2} ward {e.WardLeft}")) is { Length: > 0 } list
+        ? list : "No active effects.");
+
     private DebugCommandResult Result(bool accepted)
     {
         publish();

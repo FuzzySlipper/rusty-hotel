@@ -28,6 +28,7 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
             Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].damage", w.Damage, 0);
             Authored.Require(mechanics.DamageKind(w.DamageKind) is not null, WeaponCatalog.Path, $"weapons[{i}].damageKind",
                 $"unknown damage kind '{w.DamageKind}'.");
+            mechanics.RequireEffects(WeaponCatalog.Path, $"weapons[{i}].onHit", w.OnHit);
             Authored.Positive(WeaponCatalog.Path, $"weapons[{i}].range", w.Range);
             Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].windup", w.Windup, 0);
             Authored.Positive(WeaponCatalog.Path, $"weapons[{i}].commit", w.Commit);
@@ -48,6 +49,7 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
             Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].damage", r.Damage, 0);
             Authored.Require(mechanics.DamageKind(r.DamageKind) is not null, ResidentCatalog.Path, $"residents[{i}].damageKind",
                 $"unknown damage kind '{r.DamageKind}'.");
+            mechanics.RequireEffects(ResidentCatalog.Path, $"residents[{i}].onHit", r.OnHit);
             Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].speed", r.Speed, 0);
             Authored.Positive(ResidentCatalog.Path, $"residents[{i}].sightRange", r.SightRange);
             Authored.Positive(ResidentCatalog.Path, $"residents[{i}].attackRange", r.AttackRange);
@@ -90,7 +92,8 @@ internal sealed record WeaponCatalog(WeaponDefinition[] Weapons)
 /// <param name="WindupLabel">The HUD action while drawing back or steadying.</param>
 /// <param name="CommitLabel">The HUD action at the moment of the strike or shot.</param>
 /// <param name="DamageKind">The kind of damage a hit deals, against the target's resistance to it.</param>
-internal sealed record WeaponDefinition(string Id, string Name, string ShortName, int Damage, string DamageKind, float Range,
+/// <param name="OnHit">Effects a hit puts on the resident struck, by id in the effect catalog.</param>
+internal sealed record WeaponDefinition(string Id, string Name, string ShortName, int Damage, string DamageKind, string[] OnHit, float Range,
     float Windup, float Commit, float Recovery, int AmmoCost, string WindupLabel, string CommitLabel);
 
 /// <summary>Combat notices and HUD action states.</summary>
@@ -118,8 +121,9 @@ internal sealed record ResidentCatalog(ResidentKind[] Residents)
 }
 /// <param name="EyeHeight">Height of the resident's eye above its body centre: sight lines, beams and summon targets start here.</param>
 /// <param name="Stats">The kind's stat block in the mechanics vocabulary: its health, resistances and attributes.</param>
+/// <param name="OnHit">Effects its hit puts on the investigator, by id in the effect catalog.</param>
 internal sealed record ResidentKind(string Id, string Name, ResidentBehavior Behavior,
-    ActorStatBlock Stats, int Damage, string DamageKind, float Speed, float SightRange, float AttackRange, float Windup, float Commit,
+    ActorStatBlock Stats, int Damage, string DamageKind, string[] OnHit, float Speed, float SightRange, float AttackRange, float Windup, float Commit,
     float Recovery, float Leash, float Radius, float Height, float EyeHeight);
 
 /// <summary>Which authored silhouette and tell a resident presents. Shared approach/attack rules use its tuning.</summary>

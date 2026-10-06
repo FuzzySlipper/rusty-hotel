@@ -11,7 +11,7 @@ internal sealed record CheckpointState(int Version, int Returns, string Refuge, 
     Floors.FloorsState? Floors = null)
 {
     /// <summary>Version 3 keeps the investigator's resources as Engine stats: stat bases and track currents.</summary>
-    internal const int CurrentVersion = 4;
+    internal const int CurrentVersion = 5;
 }
 internal sealed record SuppliesState(Mechanics.ActorStatsState Stats, ItemStack?[] Pockets, string[] Collected);
 internal sealed record SpiritState(string Id, bool Acquired, bool Equipped);
