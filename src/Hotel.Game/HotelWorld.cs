@@ -75,12 +75,12 @@ internal sealed class HotelWorld : IDisposable
 
     /// <summary>
     /// Brings the player's carried values into this freshly built world, with what it remembered from an earlier visit
-    /// this session. Collected finds belonging to this floor stay collected; others are the product's to keep.
+    /// this session. Collected finds and searches made belonging to this floor stay collected; others are the product's to keep.
     /// </summary>
     internal void Enter(WorldCarry carry, IReadOnlySet<string> collected, WorldMemory? memory)
     {
         Supplies.Restore(carry.Supplies with { Collected = carry.Supplies.Collected.Concat(collected).Distinct()
-            .Where(id => Supplies.Finds.Any(f => f.Id == id)).Order(StringComparer.Ordinal).ToArray() });
+            .Where(id => Supplies.Finds.Any(f => f.Id == id) || Supplies.Searches.Any(s => s.Id == id)).Order(StringComparer.Ordinal).ToArray() });
         Spirit.Restore(carry.Spirit);
         if (memory?.Residents is { } left) Combat.Validate(left);
         Combat.Restore(memory?.Residents ?? []);

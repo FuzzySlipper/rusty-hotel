@@ -148,6 +148,8 @@ floors place `containers` (`floors/content.json`: a name, a socket fixture with 
 a depth weight; `containersPerFloor`). Remains are searchable once their resident has fallen, containers at once;
 each is searched once, by the run seed, the depth (the west wing counts as the first) and its own id, so a restored
 checkpoint gives the same things. A search gives everything it found or, short of room, nothing and waits.
+A search made is collected like a find: it stays made when the player leaves and returns, and the checkpoint keeps
+it. When a floor shifts, its residents start fresh, so their remains can be searched again.
 
 Weights in `floors/content.json` (supplies, objectives, residents) are depth curves (`base`, `perDepth`, `max`), so
 deeper floors draw different things inside the same pacing budgets.

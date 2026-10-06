@@ -59,8 +59,12 @@ internal sealed class HotelFloors
     internal GeneratedFloor? Current => visited.TryGetValue(Depth, out var floor) ? floor.Floor : null;
     internal string[] LastRefusals { get; private set; } = [];
     internal double LastMilliseconds { get; private set; }
-    /// <summary>Finds collected this run on floors other than the one the player stands on.</summary>
+    /// <summary>Finds collected and searches made this run on floors other than the one the player stands on.</summary>
     internal HashSet<string> Collected { get; } = new(StringComparer.Ordinal);
+
+    // A collected id of an excursion: one of its finds, or one of its searches (a container, a resident's remains).
+    private bool Belongs(ExcursionDefinition excursion, string id) =>
+        excursion.Placements.Finds.Any(f => f.Id == id) || HotelWorld.Searches(content, excursion).Any(s => s.Id == id);
     private readonly List<SecuredFind> secured = [];
     internal IReadOnlyList<SecuredFind> Secured => secured;
 
@@ -71,7 +75,7 @@ internal sealed class HotelFloors
         visited.Clear();
         due.Clear();
         foreach (string id in memory.Keys.Where(id => id != content.Excursion.Id).ToArray()) memory.Remove(id);
-        Collected.RemoveWhere(id => !content.Excursion.Placements.Finds.Any(f => f.Id == id));
+        Collected.RemoveWhere(id => !Belongs(content.Excursion, id));
         secured.Clear();
         Depth = 0;
     }
@@ -109,7 +113,7 @@ internal sealed class HotelFloors
     /// <summary>The run as the checkpoint keeps it. Expedition finds collected on generated floors count as secured.</summary>
     internal FloorsState Capture()
     {
-        string[] collected = Collected.Where(id => !content.Excursion.Placements.Finds.Any(f => f.Id == id)).Order(StringComparer.Ordinal).ToArray();
+        string[] collected = Collected.Where(id => !Belongs(content.Excursion, id)).Order(StringComparer.Ordinal).ToArray();
         SecuredFind[] newlySecured = collected.Where(id => secured.All(s => s.Id != id))
             .Select(id => (id, FindItem(id))).Where(f => f.Item2?.Deposit == true).Select(f => new SecuredFind(f.id, f.Item2!.Id)).ToArray();
         return new(RunSeed, visited.OrderBy(v => v.Key).Select(v => Record(v.Value.Floor, memory.GetValueOrDefault(v.Value.Excursion.Id)) with
@@ -137,7 +141,9 @@ internal sealed class HotelFloors
         LastRefusals = result.Refusals;
         if (result.Floor is not { } next) return;
         HashSet<string> stays = kept.Placements.Select(p => $"{excursion.Id}/{p.Id}/").ToHashSet(StringComparer.Ordinal);
-        Collected.RemoveWhere(id => id.StartsWith(excursion.Id + "/", StringComparison.Ordinal) && !stays.Any(id.StartsWith));
+        // Its residents start fresh, so their remains are unsearched again wherever they stood.
+        Collected.RemoveWhere(id => id.StartsWith(excursion.Id + "/", StringComparison.Ordinal) && (!stays.Any(id.StartsWith) ||
+            excursion.Placements.Residents.Any(r => HotelWorld.Remains(r.Id) == id)));
         // Opened kept doors and a kept latch stay open, and a held key still opens its kept door; residents of the
         // re-rolled floor start fresh.
         memory.Remove(excursion.Id);
@@ -191,8 +197,8 @@ internal sealed class HotelFloors
             if (r.Memory is { } left) ValidateMemory(excursion, left, r.Depth);
             rebuilt.Add((r.Depth, floor, excursion, r.Memory));
         }
-        if (state.Collected.Any(id => !rebuilt.Any(b => b.Item3.Placements.Finds.Any(f => f.Id == id))))
-            throw new InvalidOperationException("Checkpoint collects a find on no visited floor.");
+        if (state.Collected.Any(id => !rebuilt.Any(b => Belongs(b.Item3, id))))
+            throw new InvalidOperationException("Checkpoint collects a find or search on no visited floor.");
         return rebuilt;
     }
 
