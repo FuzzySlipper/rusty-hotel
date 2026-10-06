@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/spirits-01/source-wickling.png",
+ "image_sha256": "3944110ed91feb10f3840d0a752c95ec068ad249c079e9942b287cc886de68a3",
+ "prompt_id": "12470d11-5a84-4622-91b7-8b2220c64991",
+ "wall_seconds": 60.2,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.89,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 897768,
+   "sha256": "c80f63572234bcdc22e078255155c5c90618859c1a2090c2aa01e13e4fc86481"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5436156,
+   "sha256": "01a81c63bc06de746fa238870fbfb62c66d3e1f1d10d01fe70ab5ef2f4a01e9b"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3095303,
+   "sha256": "d967d96b2715321118b74585e45e41c16b7c0019a3d9ac31706b69dd1506de4d"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 13095100,
+   "sha256": "17ae4e45889d7282e6d520bf0edd8605019b2c47cc005c27273c5ea8ad964265"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

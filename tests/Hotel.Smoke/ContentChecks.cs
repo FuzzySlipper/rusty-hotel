@@ -181,6 +181,8 @@ internal static class ContentChecks
             ("supplies/equipment.json", root => root["slots"]![0]!["accepts"]![0] = "hats", "content/supplies/equipment.json slots[0].accepts[0]"),
             ("supplies/capacity.json", root => root["metrics"]![0]!["limit"] = 0, "content/supplies/capacity.json metrics[0].limit"),
             ("spirits/hushwing.json", root => root["action"] = "prybar-swing", "content/spirits/hushwing.json action"),
+            ("spirits/hushwing.json", root => root["look"]!["wings"]!.AsArray().RemoveAt(1), "content/spirits/hushwing.json look.wings"),
+            ("spirits/hushwing.json", root => root["look"]!["hinges"]![0] = JsonNode.Parse("[0, 0]"), "content/spirits/hushwing.json look.hinges[0]"),
             ("supplies/items.json", root => root["items"]![4]!["use"]!["action"] = "prybar-swing", "content/supplies/items.json items[4].use.action"),
             ("mechanics/effects.json", root => root["effects"]![8]!["guard"]!["retain"] = 0, "content/mechanics/effects.json effects[8].guard[0]"),
             ("supplies/items.json", root => root["items"]![12]!["wear"]!["contributions"]![0]!["stage"] = "Defeating", "content/supplies/items.json items[12].wear.contributions[0]"),

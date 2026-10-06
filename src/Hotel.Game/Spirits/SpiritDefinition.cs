@@ -30,9 +30,13 @@ internal sealed record SpiritDefinition(string Id, string Name, string Descripti
             call.Cost.Item is null && call.Effects.Length + call.SelfEffects.Length > 0, path, "action",
             $"'{spirit.Action}' must cost only summon charge and bring an effect.");
         SpiritLook look = spirit.Look;
-        foreach (var (field, surface) in new[] { ("look.body", look.Body), ("look.wing", look.Wing), ("look.inset", look.Inset),
-            ("look.head", look.Head), ("look.eye", look.Eye) })
-            Authored.Require(surfaces.Contains(surface), path, field, $"unknown surface '{surface}'.");
+        Authored.Require(look.Body.EndsWith(".glb", StringComparison.Ordinal), path, "look.body", "must be a GLB content path.");
+        Authored.Require(look.Wings.Length == 2 && look.Hinges.Length == 2, path, "look.wings", "names a left and a right wing, each with its hinge.");
+        for (int w = 0; w < look.Wings.Length; w++)
+        {
+            Authored.Require(look.Wings[w].EndsWith(".glb", StringComparison.Ordinal), path, $"look.wings[{w}]", "must be a GLB content path.");
+            Authored.Point(path, $"look.hinges[{w}]", look.Hinges[w]);
+        }
         Authored.Positive(path, "look.scale", look.Scale);
         ManifestationTuning at = spirit.Manifestation;
         Authored.Finite(path, "manifestation.approach", at.Approach);
@@ -63,7 +67,12 @@ internal sealed record SpiritRoster(string[] Spirits)
 }
 
 /// <summary>The surfaces a spirit's moth is drawn in, and its size: one articulated creature, many spirits.</summary>
-internal sealed record SpiritLook(string Body, string Wing, string Inset, string Head, string Eye, float Scale);
+/// <summary>
+/// How a spirit is drawn: its body model, and its left and right wing models, each with its origin at its hinge and
+/// placed at that hinge in the body's frame (metres before <see cref="Scale"/>; the face looks along -z). The wings
+/// flap about their hinges' vertical axes.
+/// </summary>
+internal sealed record SpiritLook(string Body, string[] Wings, float[][] Hinges, float Scale);
 
 /// <summary>Wording particular to this spirit: what calling it does and the names of its visit's phases.</summary>
 internal sealed record SpiritText(string CallHint, string CallResult, string Arriving, string Holding, string Departing);

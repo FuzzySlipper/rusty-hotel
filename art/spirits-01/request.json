@@ -1,0 +1,12 @@
+{
+  "goal": "The four pact spirits as moth models for Hotel Endless, split into body and wings for flapping; TRELLIS.2 image-to-3D on den-patch.",
+  "style": "Single isolated small creature figure for image-to-3D reconstruction. A spirit moth from a 1970s hotel, grounded slightly stylized realism with tactile materials (velvet, felt, brass, paper, wax), muted amber, burgundy, ivory and olive palette. Its head is a small domed brass hotel service bell with two round glowing amber eyes on its front, and two feathered antennae. Shown upright and perfectly symmetric, straight-on front view at eye level, the body vertical and both pairs of wings spread fully open flat to each side like a pinned specimen, wings clearly separate from the narrow body. The entire figure is fully in frame and centred with generous margin, nothing cropped. Plain flat light-grey seamless background, soft even studio lighting, no cast shadow, no ground, no stand, no pin, no other objects. Solid opaque materials, no glow halo, no particles, no transparency. NO text, NO letters, NO people. Square image around 1024x1024.",
+  "pieces": {
+    "hushwing": "Subject: Hushwing, a quiet night moth. Deep burgundy velvet wings with soft ivory inner patches and a dark eye spot on each forewing, a burgundy felt body, a brass bell head.",
+    "lintmoth": "Subject: Lintmoth, a pale moth spun from laundry lint. Fluffy off-white and pale grey felted lint wings with faint ivory veins, a soft lint body, a small tarnished brass bell head.",
+    "doorman": "Subject: The Doorman, a broad heavy moth dressed like a hotel commissionaire: a burgundy coat-like body with gold braid frogging and brass buttons, broad rectangular brass-and-burgundy wings divided into panels like revolving-door leaves, a brass bell head.",
+    "wickling": "Subject: Wickling, a slender moth whose body is a short ivory wax candle with a black wick on top between the antennae, warm amber parchment wings veined like lampshade paper, a small brass bell head."
+  },
+  "imageProducer": "codex-image-gen (GPT image via codex exec)",
+  "meshProducer": "asset-pipeline run_native.py, TRELLIS.2 bf16"
+}

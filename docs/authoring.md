@@ -53,7 +53,7 @@ its own folder. Geometry is kept apart from tuning.
 | `loot/qualities.json` | Quality tiers for generated single items: name around `{item}`, stat scale, affix count, depth weight; `LootCatalog` |
 | `loot/affixes.json` | Affixes: name around `{item}`, the classifications they join, worn stats, hit contributions, on-hit effects, depth weight; `LootCatalog` |
 | `spirits/roster.json` | Every spirit a pact can be made with; `HotelSpirit` |
-| `spirits/<id>.json` | One spirit: welcome charges, its call `action` (costing only summon charge), its moth's `look` (surfaces and scale), visit timing and placement offsets, its description (`{range}`, `{cost}`, `{seconds}` from its action) and its own wording; `HotelSpirit`, `SpiritView` |
+| `spirits/<id>.json` | One spirit: welcome charges, its call `action` (costing only summon charge), its moth's `look` (`body` and the left and right `wings` as GLB models, each wing's `hinge` in the body's frame, and `scale`), visit timing and placement offsets, its description (`{range}`, `{cost}`, `{seconds}` from its action) and its own wording; `HotelSpirit`, `SpiritView` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}`; `HotelSpirit` |
 | `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
 | `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim styles (bands, moulding profiles and architraves), door frames and space styles (surface sets); `KitBuilder` |

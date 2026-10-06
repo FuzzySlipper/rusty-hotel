@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/spirits-01/source-doorman.png",
+ "image_sha256": "90c990e981f4618f3b885ffa349301c5b216017feee86986a7485d0aaa363d75",
+ "prompt_id": "eac93075-756c-458b-9221-dbdd790cc998",
+ "wall_seconds": 75.1,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 12.91,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 858454,
+   "sha256": "4520994dc515b45c506333eec1295b64ecb6b3ff99f32c6cfd480d52fc8159bb"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4497058,
+   "sha256": "e456f78f5dffcb33e08ac26c2c5e131c31ade86dccfae0b2251ffb1427e7c4ed"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3487563,
+   "sha256": "78b5114e445a8365a8172ff666f8a74364c4768afcf2367a9fbcce9cbde4e91b"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12578648,
+   "sha256": "8d364fdfe0f7bc9cae77e39e9267a851b0ee9e65d5d57fca748c16a9fc4f2546"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

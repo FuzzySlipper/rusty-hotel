@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/spirits-01/source-lintmoth.png",
+ "image_sha256": "ae8727f23470ba3d1a26d264785b672761d63da13ef489105ae1ad6c8bf9de48",
+ "prompt_id": "f9fc0dd3-8608-4527-9657-9a1f568ed2b2",
+ "wall_seconds": 65.1,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.95,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 984849,
+   "sha256": "7393e0d67886ee1a45e9ea3fa0fb45dc39aa06c2a875816a26bb4440ff91cd34"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5241671,
+   "sha256": "cc4d6b21002bcdfc36a6cc00de184f1b4d47250ca0856a3069086dcdb1823bf9"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 4235973,
+   "sha256": "8242ae7609ce928c90b85362bf3defb8f495c1c1b2912301f4a1484dcb160b8e"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 13639108,
+   "sha256": "759af351373267ed574c3952439fda32c3fc33989894f0bcfdedcc235f5d1641"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

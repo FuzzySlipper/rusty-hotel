@@ -27,7 +27,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Combat/HotelEnemy.cs`, `PlayerActor.cs` | The two kinds of action actor: a placed resident (body, `ActorStats`, `ActionUser`) and the investigator (player body, supplies' stats, worn contributions) |
 | `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident meshes, the held-item models (`HeldDefinition.cs`, `content/combat/held.json`) on the Engine viewmodel layer, flares in flight and attack poses contributed to the existing scene snapshot |
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | The roster's pacts: freeing spirits at bells, the pact slot, semantic equip claims, call eligibility through Combat's pact slot, and the transient visit |
-| `src/Hotel.Game/Spirits/SpiritView.cs` | Authored bell-headed moth mesh parts and admitted-time entrance, wing poses and departure |
+| `src/Hotel.Game/Spirits/SpiritView.cs` | Each spirit's body and hinged wing models (`content/models/spirits/`) and admitted-time entrance, wing poses and departure |
 | `src/Hotel.Game/Input/` | The authored binding table (`ControlBindings`) and its uses (`HotelControls`): Engine FPS walk/use keys, game-control presses, playtest actions, Controls screen rows, quick-pocket keys and the opening hint |
 | `src/Hotel.Game/Player/HotelPlayer.cs` | FPS input interpretation, authored body tuning, accepted player transform/motion and first-person camera |
 | `src/Hotel.Game/Content/` | Reading authored files through Engine content services (`Authored`), the strict JSON contract (`ContentJson`), and composition-only loading and validation of references between files (`HotelContent`, `ExcursionDefinition`) |
@@ -267,7 +267,7 @@ or lured resident is moved by the effect and does nothing else meanwhile. The vi
 follows the landing; no health damage or persistent follower is added.
 
 `SpiritView` builds one articulated moth for each spirit of the roster from its
-authored look (bell head, eyes, antennae and scalloped wings) and contributes it
+authored look (a body model and two wing models, each turning about its hinge) and contributes it
 to `HotelScene`'s combined snapshot: idle at its bell until freed, then only during
 its visit. Authored poses progress only on admitted steps. Arrival grows and flies
 toward where the call landed, holding spreads the wings, and departure folds and

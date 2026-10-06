@@ -8,11 +8,23 @@
   "departure": 0.8,
   "action": "lintmoth-settle",
   "look": {
-    "body": "paper",
-    "wing": "resident-ivory",
-    "inset": "paper",
-    "head": "resident-ivory",
-    "eye": "tell-amber",
+    "body": "models/spirits/lintmoth-body.glb",
+    "wings": [
+      "models/spirits/lintmoth-left.glb",
+      "models/spirits/lintmoth-right.glb"
+    ],
+    "hinges": [
+      [
+        -0.0975,
+        0.0,
+        -0.013
+      ],
+      [
+        0.0975,
+        0.0,
+        -0.0113
+      ]
+    ],
     "scale": 0.5
   },
   "text": {

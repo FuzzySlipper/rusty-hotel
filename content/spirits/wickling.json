@@ -8,11 +8,23 @@
   "departure": 0.8,
   "action": "wickling-lure",
   "look": {
-    "body": "tell-amber",
-    "wing": "lamp",
-    "inset": "tell-amber",
-    "head": "paper",
-    "eye": "tell-amber",
+    "body": "models/spirits/wickling-body.glb",
+    "wings": [
+      "models/spirits/wickling-left.glb",
+      "models/spirits/wickling-right.glb"
+    ],
+    "hinges": [
+      [
+        -0.1725,
+        0.0761,
+        -0.0
+      ],
+      [
+        0.1725,
+        0.0761,
+        -0.0003
+      ]
+    ],
     "scale": 0.55
   },
   "text": {

@@ -1,0 +1,86 @@
+{
+  "triangleBudget": 12000,
+  "textureSize": 1024,
+  "imageFormat": "JPEG",
+  "metallicScale": 0.3,
+  "glow": 0.35,
+  "pieces": {
+    "hushwing": {
+      "native": "native/hushwing.glb",
+      "width": 1.6,
+      "hinge": 0.15,
+      "keep": [
+        [
+          0.55,
+          0.8
+        ],
+        [
+          0.25,
+          0.6
+        ]
+      ],
+      "hingeHeight": 0.51
+    },
+    "lintmoth": {
+      "native": "native/lintmoth.glb",
+      "width": 1.5,
+      "hinge": 0.13,
+      "keep": [
+        [
+          0.18,
+          0.6
+        ],
+        [
+          0.3,
+          0.75
+        ],
+        [
+          0.42,
+          0.88
+        ],
+        [
+          0.5,
+          0.9
+        ]
+      ],
+      "hingeHeight": 0.5
+    },
+    "wickling": {
+      "native": "native/wickling.glb",
+      "width": 1.5,
+      "hinge": 0.23,
+      "keep": [
+        [
+          0.18,
+          0.6
+        ],
+        [
+          0.3,
+          0.78
+        ],
+        [
+          0.4,
+          0.88
+        ],
+        [
+          0.5,
+          0.9
+        ]
+      ],
+      "hingeHeight": 0.55
+    },
+    "doorman": {
+      "native": "native/doorman.glb",
+      "width": 1.6,
+      "hinge": 0.34,
+      "keep": [
+        [
+          0.42,
+          0.9
+        ]
+      ],
+      "hingeHeight": 0.6,
+      "wingsBehind": 0.15
+    }
+  }
+}

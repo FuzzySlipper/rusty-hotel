@@ -8,11 +8,23 @@
   "departure": 0.8,
   "action": "hushwing-call",
   "look": {
-    "body": "porter-coat",
-    "wing": "porter-coat",
-    "inset": "resident-ivory",
-    "head": "brass",
-    "eye": "tell-amber",
+    "body": "models/spirits/hushwing-body.glb",
+    "wings": [
+      "models/spirits/hushwing-left.glb",
+      "models/spirits/hushwing-right.glb"
+    ],
+    "hinges": [
+      [
+        -0.12,
+        0.0117,
+        -0.0036
+      ],
+      [
+        0.12,
+        0.0117,
+        -0.0042
+      ]
+    ],
     "scale": 0.65
   },
   "text": {

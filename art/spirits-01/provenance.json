@@ -1,0 +1,156 @@
+{
+ "runFamily": "hotel-spirits-01",
+ "sourcePrompt": "request.json (style + per-spirit subject, sent verbatim as one spec)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec), one accepted call per spirit; the Doorman needed retries after model-capacity refusals",
+ "meshProducer": "asset-pipeline legacy/experiments/comfy-native-image-to-3d/run_native.py (asset-pipeline cc5f70e)",
+ "meshHost": "den-patch (owner desktop, RTX 5090), native ComfyUI 0.37, TRELLIS.2 bf16; local and unpaid",
+ "runs": {
+  "hushwing": {
+   "wallSeconds": 55.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  },
+  "lintmoth": {
+   "wallSeconds": 65.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  },
+  "doorman": {
+   "wallSeconds": 75.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  },
+  "wickling": {
+   "wallSeconds": 60.2,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  }
+ },
+ "runRecords": "runs/<spirit>/prompt.json (exact ComfyUI graph) and run.json",
+ "conversion": "Local Blender 5.2.2 LTS; prepare.py with pieces.json: turn, scale, split into body and two hinged wings, 1024 JPEG textures, metallic scaled, faint emission from base colour; no .blend master",
+ "decision": "Retain all four as the pact spirits' looks; first mesh for each, no retries. The Doorman came out as a winged commissionaire figure rather than an insect, kept as in character.",
+ "limitations": [
+  "Antennae reconstructed as smooth blades, not feathered.",
+  "Wing split is by region: a few small fragments at wing roots stay with the body or the wing.",
+  "Backs mirror the front's colouring; unseen detail is invented.",
+  "Static meshes: wings flap rigidly about one hinge each; no rig."
+ ],
+ "files": [
+  {
+   "path": "art/spirits-01/native/doorman.glb",
+   "sha256": "8d364fdfe0f7bc9cae77e39e9267a851b0ee9e65d5d57fca748c16a9fc4f2546"
+  },
+  {
+   "path": "art/spirits-01/native/hushwing.glb",
+   "sha256": "164621c353b12a67f775d1788d87db0bceee3a2fa8d074f33c4165ec1dc947aa"
+  },
+  {
+   "path": "art/spirits-01/native/lintmoth.glb",
+   "sha256": "759af351373267ed574c3952439fda32c3fc33989894f0bcfdedcc235f5d1641"
+  },
+  {
+   "path": "art/spirits-01/native/wickling.glb",
+   "sha256": "17ae4e45889d7282e6d520bf0edd8605019b2c47cc005c27273c5ea8ad964265"
+  },
+  {
+   "path": "art/spirits-01/pieces.json",
+   "sha256": "b0dfdd4baeb527705d4c38635fe0985246d98fa5a17fa8f41f03d55e1c3dfad0"
+  },
+  {
+   "path": "art/spirits-01/prepare.py",
+   "sha256": "ef638cb635fefb72d6e924b090c36bacd7e36cbf0b5ddf70a9a47bd35c877672"
+  },
+  {
+   "path": "art/spirits-01/request.json",
+   "sha256": "7a63c2d0eaf01520658c1ba18e9ec46959fd782fcab76adce9688340ef687f78"
+  },
+  {
+   "path": "art/spirits-01/source-doorman.png",
+   "sha256": "90c990e981f4618f3b885ffa349301c5b216017feee86986a7485d0aaa363d75"
+  },
+  {
+   "path": "art/spirits-01/source-hushwing.png",
+   "sha256": "9c085eb01516210d0319efefeb02e9e7945fedb6c4c360cc2c16b358a6c50549"
+  },
+  {
+   "path": "art/spirits-01/source-lintmoth.png",
+   "sha256": "ae8727f23470ba3d1a26d264785b672761d63da13ef489105ae1ad6c8bf9de48"
+  },
+  {
+   "path": "art/spirits-01/source-wickling.png",
+   "sha256": "3944110ed91feb10f3840d0a752c95ec068ad249c079e9942b287cc886de68a3"
+  },
+  {
+   "path": "content/models/spirits/doorman-body.glb",
+   "sha256": "683ca7e1c57e442e5c8bd867aa09a9395950915fca651d8b952efe1a8600a0e8"
+  },
+  {
+   "path": "content/models/spirits/doorman-left.glb",
+   "sha256": "ce7201e940c8f148d19fc4074a2e92be8c3174c41909c40c0603052020b4f45f"
+  },
+  {
+   "path": "content/models/spirits/doorman-right.glb",
+   "sha256": "d27139e981dce9545079d0a81fe142cca1589ef7e4dcf66fba7c58dde9909e36"
+  },
+  {
+   "path": "content/models/spirits/hushwing-body.glb",
+   "sha256": "10ce50cd737c38733fd6484d41fd3f6969bce2134c18edb55e5de465140714d5"
+  },
+  {
+   "path": "content/models/spirits/hushwing-left.glb",
+   "sha256": "7acef739866b97fbbe106c63b75088e1161a58dd957158738a9ead30cbb4260f"
+  },
+  {
+   "path": "content/models/spirits/hushwing-right.glb",
+   "sha256": "d17bc7138324475fdaae6be6702b0866692375dd1eaa1f8a2a648a86eb74444c"
+  },
+  {
+   "path": "content/models/spirits/lintmoth-body.glb",
+   "sha256": "b4b857f62952a6947842f1d3049d0e118a3ababecc5f8fb392280f4a046b28e5"
+  },
+  {
+   "path": "content/models/spirits/lintmoth-left.glb",
+   "sha256": "47a2d133e2f7e8a650ac1b8998c537f2635ea50564f3d5eb1fc7443a6caccdfe"
+  },
+  {
+   "path": "content/models/spirits/lintmoth-right.glb",
+   "sha256": "ddae7548c596ee0784f8cb764e79a53b5bd03f1d08850db1d226e5abae127a52"
+  },
+  {
+   "path": "content/models/spirits/wickling-body.glb",
+   "sha256": "9b658bbdc0381861bff04692f1355f7be9333314cf82195fd5b5e08700087485"
+  },
+  {
+   "path": "content/models/spirits/wickling-left.glb",
+   "sha256": "47c48dabfc7155119157f8330cbfa5055260ee5d4752e5fc2f647be6e573ff46"
+  },
+  {
+   "path": "content/models/spirits/wickling-right.glb",
+   "sha256": "4c84d5ad541627120739293a39f3ad58b12b3b9020bf4902e9b152c3a5fe52d5"
+  }
+ ]
+}

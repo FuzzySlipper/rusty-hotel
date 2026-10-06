@@ -118,6 +118,22 @@ blender -b --python art/held-01/prepare.py
 Where each model sits in the hand is presentation tuning in `content/combat/held.json`, not part of the mesh.
 `provenance.json` records hashes, run times and use limits.
 
+## Spirits
+
+`spirits-01/request.json` fixes the shared style (an upright, symmetric bell-headed moth with its wings spread flat)
+and one subject per spirit; each `source-<spirit>.png` is one GPT image call, and each mesh one local TRELLIS.2 bf16
+run on den-patch's RTX 5090 (12,000 faces), with `runs/<spirit>/` and `native/<spirit>.glb` retained as for the held
+items. `spirits-01/prepare.py` turns each moth to face the runtime -z, scales it to its `width`, and splits it by
+region into a body and two wings (`pieces.json`: the hinge line, boxes such as the head and antennae that stay with
+the body, and for wings set behind the body the back slab that goes with them). Each wing's origin is its hinge; the
+script prints the hinges for the spirit's `look`. Textures are 1024 JPEG, metal is softened as for the held items,
+and a faint emission from the base colour (`glow`) lets the spirits read in dim rooms. It writes
+`content/models/spirits/<spirit>-{body,left,right}.glb`; the native download and the script are the master.
+
+```text
+blender -b --python art/spirits-01/prepare.py
+```
+
 ## Ambient audio and primitive props
 
 `tools/author-ambience.py` authors the two deterministic mono PCM WAV loops in

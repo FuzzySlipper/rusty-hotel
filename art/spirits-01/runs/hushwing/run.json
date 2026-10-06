@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/spirits-01/source-hushwing.png",
+ "image_sha256": "9c085eb01516210d0319efefeb02e9e7945fedb6c4c360cc2c16b358a6c50549",
+ "prompt_id": "12147a0f-97dd-4c8e-82c1-fc3a05cf1458",
+ "wall_seconds": 55.1,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.96,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 813279,
+   "sha256": "6d791d1368440a4af6401544d7be830e6f9431dabc4a8ef3fb7a341f537edb75"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4926284,
+   "sha256": "066dd8b0d502b557f0ae981966faead45336a302b499fc435ecb786ed951e18a"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3117790,
+   "sha256": "0c10cc48a0a9772bbddfd0c19b4591545d51c031a1cdad8daa1015ab2d2bc0aa"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12011800,
+   "sha256": "164621c353b12a67f775d1788d87db0bceee3a2fa8d074f33c4165ec1dc947aa"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

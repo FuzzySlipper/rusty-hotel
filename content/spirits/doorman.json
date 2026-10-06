@@ -8,11 +8,23 @@
   "departure": 0.7,
   "action": "doorman-sweep",
   "look": {
-    "body": "porter-coat",
-    "wing": "brass",
-    "inset": "porter-coat",
-    "head": "brass",
-    "eye": "tell-amber",
+    "body": "models/spirits/doorman-body.glb",
+    "wings": [
+      "models/spirits/doorman-left.glb",
+      "models/spirits/doorman-right.glb"
+    ],
+    "hinges": [
+      [
+        -0.272,
+        0.1563,
+        0.133
+      ],
+      [
+        0.272,
+        0.1563,
+        0.1338
+      ]
+    ],
     "scale": 0.85
   },
   "text": {
