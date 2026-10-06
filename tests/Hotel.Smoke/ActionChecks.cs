@@ -122,6 +122,12 @@ internal static class ActionChecks
         Check(resolution.Hit(swipe, porter, me) == 2 && supplies.Health == 1 && !supplies.Stats.Effects.Active.Any(e => e.Definition.Id == "steeled"),
             "steeled keeps the investigator at one health against a killing blow, and is spent");
         Check(resolution.Hit(swipe, porter, me) == 1 && supplies.Health == 0, "spent, it saves no one twice");
+        // Within one action of two killing packets, the guard saves against the first and is gone for the second.
+        supplies.Reset(); supplies.Afflict("steeled", "item.salts"); supplies.SetHealth(3);
+        ActionDefinition twice = new("test-twice", "Twice", new(DeliveryKind.Melee, 1.7f, .6f), new([]), new(0, .1f, 0, 0),
+            [new("blunt", 50, []), new("blunt", 50, [])], [], [], "", "");
+        Check(resolution.Hit(twice, porter, me) == 3 && supplies.Health == 0 && !supplies.Stats.Effects.Active.Any(),
+            "one guard keeps one health against the first killing packet only; the second defeats");
 
         // The belt and the pact go through the same admission and timing: a quick-key use waits out its action, then
         // the supplies owner uses the item.

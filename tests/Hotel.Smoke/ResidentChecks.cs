@@ -121,6 +121,21 @@ internal static class ResidentChecks
             Check(m.User.Current?.Id == "maid-slap", $"up close the maid slaps: {m.User.Current?.Id}");
         }
 
+        // A resident's shot passes its own faction by: the maid's cup flies through a still porter of the staff and
+        // lands on the investigator behind it.
+        {
+            ResidentKind ally = porter with { Perception = new(.1f, 1, 0, 0), Movement = new(0, 0, Post: new()) };
+            var (scene, player, supplies, combat) = World(("maid", maid with { Movement = new(0, 0, Post: new()) }, new(0, .9f, -11)),
+                ("ally", ally, new(0, .9f, -9)));
+            using var _ = scene; using var __ = player;
+            HotelEnemy m = combat.Enemies.Single(e => e.Id == "maid"), a = combat.Enemies.Single(e => e.Id == "ally");
+            m.Yaw = MathF.PI;
+            Stand(scene, player, -7); Steps(combat, .1f);
+            Check(m.User.Current?.Id == "maid-cup", "the maid throws past its ally");
+            Steps(combat, 2);
+            Check(a.Health.Value == a.Health.MaximumValue && supplies.Health < 70, $"the cup spares the allied porter and hits the investigator: ally {a.Health.Value}, me {supplies.Health}");
+        }
+
         // Factions: a lost guest and a maid of the staff, hostile to each other, fight while the investigator is away.
         {
             ResidentKind guest = maid with { Faction = "guests", Movement = new(1.1f, 6, Stalk: new()) };

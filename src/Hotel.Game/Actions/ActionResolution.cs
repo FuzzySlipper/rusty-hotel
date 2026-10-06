@@ -24,9 +24,13 @@ internal interface IActionActor
 internal sealed record ActionImpact(ActionDefinition Action, IActionActor User, IActionActor? Target, Vector3 End, int Damage, bool Defeated,
     bool Surface = false, bool TurnedAside = false);
 
-/// <summary>A projectile in flight: who shot it, its action, where it is, its heading and how far it may still go.</summary>
-internal sealed class Projectile(ActionDefinition action, IActionActor user, Vector3 position, Vector3 heading)
+/// <summary>
+/// A projectile in flight: who shot it, its action, where it is, its heading, how far it may still go, and the bodies it
+/// may hit (those the action could hit when it was loosed: a resident's shot passes its own faction by).
+/// </summary>
+internal sealed class Projectile(ActionDefinition action, IActionActor user, Vector3 position, Vector3 heading, IReadOnlySet<ulong> eligible)
 {
+    internal IReadOnlySet<ulong> Eligible { get; } = eligible;
     internal ActionDefinition Action { get; } = action;
     internal IActionActor User { get; } = user;
     internal Vector3 Position { get; set; } = position;
@@ -73,7 +77,7 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
                 return [First(action, user, hit, user.Eye + aim * d.Range, living)];
             }
             case DeliveryKind.Projectile:
-                projectiles.Add(new(action, user, user.Eye, aim));
+                projectiles.Add(new(action, user, user.Eye, aim, living.Select(t => t.Entity).ToHashSet()));
                 return [];
             default:
                 return Area(action, user, user.Eye + aim * d.Range, living);
@@ -88,7 +92,7 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
         {
             float travel = Math.Min(shot.Action.Delivery.Speed * seconds, shot.Action.Delivery.Range - shot.Travelled);
             Vector3 next = shot.Position + shot.Heading * travel;
-            IActionActor[] living = bodies.Where(t => t.Alive && t.Entity != shot.User.Entity).ToArray();
+            IActionActor[] living = bodies.Where(t => t.Alive && t.Entity != shot.User.Entity && shot.Eligible.Contains(t.Entity)).ToArray();
             SpatialHit hit = engine.Spatial.CastSegment(new(session, shot.Position, next, Everything,
                 living.Select(t => t.Hitbox).ToArray(), new[] { shot.User.Entity }, ReadOnlyMemory<SpatialEntityCollider>.Empty));
             shot.Position = next;
@@ -115,10 +119,10 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
     /// <param name="origin">Where the hit came from (the user, or an area's centre), for effects that push or lure.</param>
     internal int? Hit(ActionDefinition action, IActionActor user, IActionActor target, Vector3? origin = null)
     {
-        ActiveContribution[] outgoing = user.Contributions.ToArray(), incoming = target.Contributions.ToArray();
+        // Read live at each stage of each packet: a defeating guard spent by one packet is gone for the next.
         IEnumerable<ActiveContribution> At(ContributionStage stage, string kind) =>
-            outgoing.Where(c => c.Contribution.Applies(stage, ContributionSide.Outgoing, kind))
-                .Concat(incoming.Where(c => c.Contribution.Applies(stage, ContributionSide.Incoming, kind)));
+            user.Contributions.Where(c => c.Contribution.Applies(stage, ContributionSide.Outgoing, kind))
+                .Concat(target.Contributions.Where(c => c.Contribution.Applies(stage, ContributionSide.Incoming, kind))).ToArray();
         if (action.Damage.Any(p => At(ContributionStage.Hit, p.Kind).Any(c => c.Contribution.Prevent))) return null;
         int taken = 0;
         foreach (DamageDefinition packet in action.Damage)
