@@ -25,7 +25,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Player/HotelPlayer.cs` | FPS input interpretation, authored body tuning, accepted player transform/motion and first-person camera |
 | `src/Hotel.Game/Content/` | Reading authored files through Engine content services (`Authored`), the strict JSON contract (`ContentJson`), and composition-only loading and validation of references between files (`HotelContent`, `ExcursionDefinition`) |
 | `src/Hotel.Game/*/…Definition.cs`, `…Tuning.cs` | Each domain's typed authored records and the file it loads them from |
-| `src/Hotel.Game/Scene/HotelScene.cs` | Static appearances, paired door appearance/collision poses, GLB props, retained lights, collision placement and resource lifetimes, and the developer preview of one extra built floor beside the hotel |
+| `src/Hotel.Game/Scene/HotelScene.cs` | Static appearances, paired door appearance/collision poses, GLB props, retained lights with the shadow budget and failing-lamp flicker, collision placement and resource lifetimes, and the developer preview of one extra built floor beside the hotel |
+| `src/Hotel.Game/Scene/SceneLook.cs` | The camera look from `content/scene/look.json`: tone mapping and exposure, distance haze, and the shadow budget's tuning |
 | `src/Hotel.Game/Scene/Kit/` | The architectural kit: authored floor plan, kit tuning and fixture catalog records, and `KitBuilder`, which turns a plan into walls (half per side, per space surface), trim, frames, floors, ceilings, seams, fixtures, lights, sockets, rooms and door openings |
 | `src/Hotel.Game/Floors/` | Floor generation's shared ground: the floor seed (generator version, run, depth, shift), `FloorDraws`, the only randomness a generator may use (Engine keyed draws scoped `hotel.floor.<stage>.<purpose>`), and the canonical plan text hashed into a floor's identity |
 | `src/Hotel.Game/Floors/Mission/` | A generated floor's mission graph: places (arrival, objective, keys, gates, bell, landmark, supplies, hazards, shortcut) and the edges between them (open, locked, one-way, latch); fail-atomic rules grown from authored weights; item-aware there-and-back validation |
@@ -40,7 +41,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Interface/UiValueWriter.cs` | Writes the Engine `UiValue` node/edge/UTF-8 tree and compares two values; the pinned SDK has no builder |
 | `src/Hotel.Game/Interface/HotelDebugCommands.cs`, `HotelDeveloper.cs` | The generated Hotel command catalog and what it does: observation, look, explicit developer overrides (goto, module viewer, floor entry, return to entrance) and floor inspection with the floor's places, spaces and links |
 | `src/Hotel.Game/Interface/SuppliesDebugCommands.cs` | Explicit developer supply, health and consumption fixtures over the supplies owner |
-| `src/Hotel.Game/Hotel.Game.csproj` | Product identity, entry, content/UI roots and host defaults |
+| `src/Hotel.Game/Hotel.Game.csproj` | Product identity, entry, content/UI roots and host defaults, including scene lighting: shadows on and no Engine default world lights |
 | `content/` | Authored data by domain: player, route, interface, scene surfaces, supplies, combat, spirits, and one folder per excursion. See [authoring](authoring.md). |
 | `src/ui/main.js` | Composition, the single foreground-screen navigation, focus containment, lifecycle flow and Engine input-mode handoff |
 | `src/ui/hud.js` | Exploration HUD regions and their drawing from projected facts |

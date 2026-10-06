@@ -54,4 +54,5 @@ internal sealed record FixtureDefinition(string Id, FixtureMount Mount, FixtureP
 
 /// <param name="Find">The part shows a collectable find and disappears when it is taken.</param>
 internal sealed record FixturePart(string Name, string Material, float[] Min, float[] Max, bool Solid = false, bool Find = false);
-internal sealed record FixtureLight(float[] Offset, float[] Color, float Intensity, float Range);
+/// <param name="Shadow">The light casts shadows. Each shadowed point light renders the scene six more times a frame.</param>
+internal sealed record FixtureLight(float[] Offset, float[] Color, float Intensity, float Range, bool Shadow);

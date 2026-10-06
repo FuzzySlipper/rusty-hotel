@@ -19,7 +19,7 @@ namespace Hotel.Game.Content;
 /// Only composition reads this; each owner receives the pieces it uses.
 /// </summary>
 internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, RouteDefinition Route, InterfaceTuning Interface,
-    SurfaceDefinition[] Surfaces, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
+    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
@@ -37,7 +37,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, route, InterfaceTuning.Load(engine),
-            SurfaceCatalog.Load(engine).Surfaces, kit, fixtures, modules, SuppliesDefinition.Load(engine), combat,
+            SurfaceCatalog.Load(engine).Surfaces, SceneLook.Load(engine), kit, fixtures, modules, SuppliesDefinition.Load(engine), combat,
             SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();

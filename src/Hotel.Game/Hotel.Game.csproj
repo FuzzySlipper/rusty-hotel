@@ -20,6 +20,9 @@
     <RustyEngineProductFixedStepHz>60</RustyEngineProductFixedStepHz>
     <RustyEngineProductFixedStepMaxCatchUpSteps>4</RustyEngineProductFixedStepMaxCatchUpSteps>
     <RustyEngineProductInputCursorMode>pointer-lock</RustyEngineProductInputCursorMode>
+    <!-- Hotel authors every world light, and its lamps cast the shadows the rooms are read by. -->
+    <RustyEngineProductSceneShadows>enabled</RustyEngineProductSceneShadows>
+    <RustyEngineProductDefaultWorldLights>disabled</RustyEngineProductDefaultWorldLights>
     <RustyEngineWatchPaths>$(MSBuildProjectDirectory);$(RustyEngineProductUiRoot);$(RustyEngineProductContentRoot)</RustyEngineWatchPaths>
   </PropertyGroup>
 

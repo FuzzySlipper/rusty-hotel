@@ -34,6 +34,7 @@ internal sealed class HotelWorld : IDisposable
         try
         {
             Scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
+            content.Look.Apply(engine.CameraView);
             Player = Own(new HotelPlayer(engine, Scene, content.Player, excursion.Placements.Arrival, content.Controls));
             Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity);
             Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents,

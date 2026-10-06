@@ -1,0 +1,22 @@
+{
+  "toneMapping": {
+    "operator": "Neutral",
+    "exposure": 1.15
+  },
+  "fog": {
+    "mode": "Linear",
+    "color": [
+      0.012,
+      0.016,
+      0.018
+    ],
+    "start": 5,
+    "end": 26,
+    "density": 0
+  },
+  "shadows": {
+    "budget": 3,
+    "otherRoomPenalty": 6,
+    "hysteresis": 0.75
+  }
+}

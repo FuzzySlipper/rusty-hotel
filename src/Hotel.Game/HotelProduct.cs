@@ -88,6 +88,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             w.Combat.Step((float)update.Facts.FixedDeltaSeconds);
             w.Spirit.Step((float)update.Facts.FixedDeltaSeconds);
             w.Supplies.Step((float)update.Facts.FixedDeltaSeconds);
+            w.Scene.Animate((float)update.Facts.FixedDeltaSeconds);
             controls.Step((float)update.Facts.FixedDeltaSeconds);
             w.Route.Update();
             if (pendingUse) { pendingUse = false; if (!w.Combat.Defeated) w.Route.Use(); }
@@ -203,6 +204,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         world.SpiritView.Publish();
         world.CombatView.Publish();
         world.Player.Publish(sampleTime);
+        world.Scene.CastShadowsNear(world.Player.Eye, world.Excursion.Route.Rooms, content.Look.Shadows);
         PublishInterface();
     }
 

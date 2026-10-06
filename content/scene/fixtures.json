@@ -60,7 +60,8 @@
             0.38
           ],
           "intensity": 3.36,
-          "range": 5
+          "range": 5,
+          "shadow": true
         }
       ]
     },
@@ -331,7 +332,8 @@
             0.54
           ],
           "intensity": 1.92,
-          "range": 5.5
+          "range": 5.5,
+          "shadow": true
         }
       ]
     },
@@ -381,7 +383,8 @@
             0.8
           ],
           "intensity": 2.6,
-          "range": 5.3
+          "range": 5.3,
+          "shadow": true
         }
       ]
     },
@@ -417,7 +420,8 @@
             0.58
           ],
           "intensity": 3.4,
-          "range": 5.5
+          "range": 5.5,
+          "shadow": true
         }
       ]
     },

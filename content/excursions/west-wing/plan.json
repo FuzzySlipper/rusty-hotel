@@ -329,13 +329,15 @@
       "at": [
         0,
         2
-      ]
+      ],
+      "intensity": 2.88
     },
     {
       "kind": "sconce",
       "space": "refuge",
       "edge": "West",
-      "along": 2.2
+      "along": 2.2,
+      "intensity": 5.04
     },
     {
       "kind": "expedition-notice",
@@ -452,7 +454,11 @@
       "kind": "sconce",
       "space": "east",
       "edge": "East",
-      "along": -9.0
+      "along": -9.0,
+      "flicker": {
+        "depth": 0.7,
+        "seconds": 1.6
+      }
     },
     {
       "kind": "luggage-table",
@@ -614,11 +620,11 @@
   ],
   "lighting": {
     "ambientColor": [
-      0.65,
-      0.72,
-      0.69
+      0.45,
+      0.6,
+      0.68
     ],
-    "ambientIntensity": 0.13
+    "ambientIntensity": 0.12
   },
   "models": [
     {

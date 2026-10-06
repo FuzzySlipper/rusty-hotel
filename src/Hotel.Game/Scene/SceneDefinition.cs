@@ -58,5 +58,12 @@ internal sealed record ExcursionGeometry(RoomBox[] Boxes, ModelDefinition[] Mode
 }
 internal sealed record RoomBox(string Name, float[] Min, float[] Max, string Material, bool Solid = true, string? Find = null);
 internal sealed record LightingDefinition(float[] AmbientColor, float AmbientIntensity, PointLightDefinition[] Points);
-internal sealed record PointLightDefinition(float[] Position, float[] Color, float Intensity, float Range);
+internal sealed record PointLightDefinition(float[] Position, float[] Color, float Intensity, float Range, bool Shadow,
+    LightFlicker? Flicker = null);
+
+/// <summary>
+/// A failing lamp: now and then it sags by up to <see cref="Depth"/> of its intensity (0 to 1), its moments drawn
+/// about every <see cref="Seconds"/>. Sparse and slow, never a strobe.
+/// </summary>
+internal sealed record LightFlicker(float Depth, float Seconds);
 internal sealed record ModelDefinition(string Path, float[] Position, float Scale, float YawDegrees);

@@ -23,12 +23,14 @@ namespace Hotel.Game.Content;
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     RespectRequiredConstructorParameters = true, RespectNullableAnnotations = true,
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-    Converters = [typeof(JsonStringEnumConverter<KeyboardControl>), typeof(JsonStringEnumConverter<PointerButton>)])]
+    Converters = [typeof(JsonStringEnumConverter<KeyboardControl>), typeof(JsonStringEnumConverter<PointerButton>),
+        typeof(JsonStringEnumConverter<ToneMappingOperator>), typeof(JsonStringEnumConverter<FogMode>)])]
 [JsonSerializable(typeof(ControlBindings))]
 [JsonSerializable(typeof(PlayerTuning))]
 [JsonSerializable(typeof(InteractionTuning))]
 [JsonSerializable(typeof(InterfaceTuning))]
 [JsonSerializable(typeof(SurfaceCatalog))]
+[JsonSerializable(typeof(SceneLook))]
 [JsonSerializable(typeof(SupplyResources))]
 [JsonSerializable(typeof(ItemCatalog))]
 [JsonSerializable(typeof(SupplyMessages))]

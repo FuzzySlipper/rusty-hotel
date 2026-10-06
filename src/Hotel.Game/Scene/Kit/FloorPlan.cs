@@ -42,6 +42,6 @@ internal enum WallEdge { North, South, West, East }
 /// </summary>
 internal sealed record FixturePlacement(string Kind, string? Id = null, string? Space = null, WallEdge? Edge = null,
     float Along = 0, float[]? At = null, string? On = null, int Turn = 0, bool Mirror = false, string? Find = null,
-    float? Intensity = null, float? Range = null);
+    float? Intensity = null, float? Range = null, LightFlicker? Flicker = null);
 
 internal sealed record AmbientLighting(float[] AmbientColor, float AmbientIntensity);

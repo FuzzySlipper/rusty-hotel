@@ -108,7 +108,9 @@ Every part of a fixture, after its turn and mirror, stays inside its space betwe
 socket fixture stays inside the space of the fixture it sits on. Giving a placement an `id` makes its sockets
 addressable. A fixture whose parts show a find names the `find`, and
 those parts disappear when it is taken. Fixture lights are the floor's point lights; a placement may override
-`intensity` and `range`.
+`intensity` and `range`, and may make its lamp a failing one with `flicker` (`depth` 0–1 of its intensity it sags by,
+about every `seconds`). Flicker is sparse and slow, and holds still while the game is paused; give at most one
+lamp a floor a flicker, never one the player reads a threat by.
 
 **Sockets.** The route's readings, the refuge notebook, finds and spirit bells name fixture sockets
 (`refuge-desk.notebook`), and residents name posts (`west.porter`), not coordinates, so moving a desk or a room moves
@@ -119,6 +121,15 @@ The kit derives the leaf's pose, size and use prompt from the opening.
 A new kind of furnishing goes into `scene/fixtures.json` once, then is placed wherever it is wanted. A new
 surface set or trim goes into `scene/kit.json`. One-off geometry has no place in a plan; make it a fixture.
 Inspect a built floor with the developer command `hotel.dev.goto <space>`.
+
+**Lighting.** Hotel lights itself: the Engine's default world light rig is off and shadows are on
+(`Hotel.Game.csproj`), so a floor is lit by its ambient (`lighting` in the plan) and its fixture lamps alone. A
+fixture light's `shadow` says whether it may cast. Each shadowed point light renders the scene six more times a
+frame, so `content/scene/look.json` `shadows` grants shadows to at most `budget` lamps at once: those in the eye's own
+room first (a lamp in another room counts `otherRoomPenalty` metres farther), then by distance, with lamps already
+casting held by `hysteresis` metres so the choice does not swap back and forth. The same file sets the camera's tone
+mapping and exposure and the linear haze that swallows distance. Check new lighting from eye height for the
+readability of doors, finds, resident tells and the spirit, and record its frame time.
 
 Material IDs connect fixtures, styles and doors to surfaces. `tileWidth`/`tileHeight` set
 world-metre repeats; room geometry projects UVs from world position so adjacent

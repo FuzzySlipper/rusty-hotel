@@ -16,6 +16,15 @@ internal sealed class HotelScene : IDisposable
     private readonly List<RenderResource> textures = [];
     private readonly List<RenderResource> models = [];
     private readonly List<Light> lights = [];
+    // The floor's point lights with their logical ids, and which of them cast shadows now.
+    private readonly List<(Light Light, ulong Id, PointLightDefinition Definition)> points = [];
+    private readonly HashSet<ulong> casting = [];
+
+    /// <summary>The floor's point lights casting shadows now, as their positions.</summary>
+    internal Vector3[] CastingLights => points.Where(p => casting.Contains(p.Id)).Select(p => Authored.Vector(p.Definition.Position)).ToArray();
+    // Each light's intensity as last sent, and the scene's admitted time for flickering lamps.
+    private readonly Dictionary<ulong, float> sent = [];
+    private double elapsed;
     private readonly List<StaticMeshAsset> assets = [];
     private readonly List<StaticMeshInstance> instances = [];
     private readonly Dictionary<string, DoorView> doors = new(StringComparer.Ordinal);
@@ -53,7 +62,7 @@ internal sealed class HotelScene : IDisposable
                     }
                 }
                 Material material = engine.Graphics.CreateMaterial(new MaterialRequest(
-                    new Color(rgb.X, rgb.Y, rgb.Z, 1), texture, surface.Roughness, new Color(1, 1, 1, 1), rgb, surface.Emission, false));
+                    new Color(rgb.X, rgb.Y, rgb.Z, 1), texture, surface.Roughness, new Color(1, 1, 1, 1), surface.Emission > 0 ? rgb : Vector3.Zero, surface.Emission, false));
                 materials.Add(material);
                 surfaces.Add(surface.Id, material);
                 this.surfaceDefinitions.Add(surface.Id, surface);
@@ -100,7 +109,7 @@ internal sealed class HotelScene : IDisposable
             lights.Add(engine.Graphics.CreateLight(new(1, false, 0, new(LightKind.Ambient,
                 Authored.Vector(lighting.AmbientColor), lighting.AmbientIntensity, true,
                 Vector3.Zero, -Vector3.UnitY, false, 0, 0, 0, 0, LightShadowIntent.Disabled))));
-            lights.AddRange(PointLights(lighting.Points, 2));
+            lights.AddRange(PointLights(lighting.Points, 2, points));
             ReplaceCollision();
             facts = placed.ToArray();
         }
@@ -136,15 +145,81 @@ internal sealed class HotelScene : IDisposable
         }
     }
 
-    private List<Light> PointLights(PointLightDefinition[] points, ulong firstId)
+    private List<Light> PointLights(PointLightDefinition[] definitions, ulong firstId,
+        List<(Light Light, ulong Id, PointLightDefinition Definition)>? kept = null)
     {
         List<Light> created = [];
         ulong id = firstId;
-        foreach (PointLightDefinition light in points)
-            created.Add(engine.Graphics.CreateLight(new(id++, false, 0,
-                new(LightKind.Point, Authored.Vector(light.Color), light.Intensity, true,
-                Authored.Vector(light.Position), -Vector3.UnitY, true, light.Range, 2, 0, 0, LightShadowIntent.Requested))));
+        foreach (PointLightDefinition light in definitions)
+        {
+            // Shadows start off; CastShadowsNear grants them to the nearest shadowed lights.
+            Light made = engine.Graphics.CreateLight(new(id, false, 0, PointLight(light, light.Intensity, kept is null && light.Shadow)));
+            if (kept is not null) sent[id] = light.Intensity;
+            created.Add(made);
+            kept?.Add((made, id, light));
+            id++;
+        }
         return created;
+    }
+
+    private static LightDescriptor PointLight(PointLightDefinition light, float intensity, bool shadow) =>
+        new(LightKind.Point, Authored.Vector(light.Color), intensity, true, Authored.Vector(light.Position), -Vector3.UnitY,
+            true, light.Range, 2, 0, 0, shadow ? LightShadowIntent.Requested : LightShadowIntent.Disabled);
+
+    /// <summary>
+    /// Grants shadows to the shadowed lights best placed for <paramref name="eye"/>, within the focus's budget: lamps in
+    /// the eye's own room first, then by distance, keeping the lamps already casting unless another is clearly better.
+    /// </summary>
+    internal void CastShadowsNear(Vector3 eye, RoomDefinition[] rooms, ShadowFocus focus)
+    {
+        RoomDefinition? Room(Vector3 p) => rooms.FirstOrDefault(r => p.X >= r.Min[0] && p.X <= r.Max[0] && p.Z >= r.Min[2] && p.Z <= r.Max[2]);
+        RoomDefinition? here = Room(eye);
+        float Score((Light Light, ulong Id, PointLightDefinition Definition) p)
+        {
+            Vector3 at = Authored.Vector(p.Definition.Position);
+            float score = Vector3.Distance(at, eye);
+            if (Room(at) != here) score += focus.OtherRoomPenalty;
+            if (casting.Contains(p.Id)) score -= focus.Hysteresis;
+            return score;
+        }
+        HashSet<ulong> nearest = points.Where(p => p.Definition.Shadow).OrderBy(Score).ThenBy(p => p.Id)
+            .Take(focus.Budget).Select(p => p.Id).ToHashSet();
+        if (nearest.SetEquals(casting)) return;
+        foreach (var (light, id, definition) in points)
+            if (nearest.Contains(id) != casting.Contains(id))
+                engine.Graphics.UpdateLight(new(light, new(id, false, 0, PointLight(definition, sent[id], nearest.Contains(id)))));
+        casting.Clear();
+        casting.UnionWith(nearest);
+    }
+
+    /// <summary>Advances failing lamps by one admitted step, sending a light only when it visibly changes.</summary>
+    internal void Animate(float delta)
+    {
+        elapsed += delta;
+        foreach (var (light, id, definition) in points)
+        {
+            if (definition.Flicker is not { } flicker) continue;
+            float intensity = definition.Intensity * (1 - flicker.Depth * Sag(elapsed / flicker.Seconds, id));
+            if (MathF.Abs(intensity - sent[id]) < definition.Intensity * .01f) continue;
+            sent[id] = intensity;
+            engine.Graphics.UpdateLight(new(light, new(id, false, 0, PointLight(definition, intensity, casting.Contains(id)))));
+        }
+    }
+
+    // A sparse sag in [0, 1]: smooth value noise over moments, near zero most of the time.
+    private static float Sag(double moment, ulong seed)
+    {
+        static float Hash(long cell, ulong seed)
+        {
+            ulong h = (ulong)cell * 0x9E3779B97F4A7C15UL ^ seed * 0xC2B2AE3D27D4EB4FUL;
+            h ^= h >> 31; h *= 0xBF58476D1CE4E5B9UL; h ^= h >> 29;
+            return (h >> 40) / (float)(1UL << 24);
+        }
+        long cell = (long)Math.Floor(moment);
+        float t = (float)(moment - cell), s = t * t * (3 - 2 * t);
+        float value = Hash(cell, seed) * (1 - s) + Hash(cell + 1, seed) * s;
+        float x = Math.Clamp((value - .72f) / .2f, 0, 1);
+        return x * x * (3 - 2 * x);
     }
 
     /// <summary>

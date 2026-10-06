@@ -279,6 +279,12 @@ internal static class KitBuilder
                     ? $"'{placed.Kind}' shows a find; name the find it shows."
                     : $"'{placed.Kind}' has no part that shows a find.");
                 string label = placed.Id ?? placed.Kind;
+                if (placed.Flicker is { } flicker)
+                {
+                    Authored.Require((fixture.Lights ?? []).Length > 0, path, $"{at}.flicker", $"'{placed.Kind}' has no light to flicker.");
+                    Authored.Within(path, $"{at}.flicker.depth", flicker.Depth, 0, 1);
+                    Authored.Positive(path, $"{at}.flicker.seconds", flicker.Seconds);
+                }
                 foreach (FixturePart part in fixture.Parts)
                 {
                     (Vector3 min, Vector3 max) = KitTransform.Box(part.Min, part.Max, origin, turn, placed.Mirror);
@@ -292,7 +298,7 @@ internal static class KitBuilder
                 {
                     Vector3 position = KitTransform.Point(light.Offset, origin, turn, placed.Mirror);
                     lights.Add(new([position.X, position.Y, position.Z], light.Color,
-                        placed.Intensity ?? light.Intensity, placed.Range ?? light.Range));
+                        placed.Intensity ?? light.Intensity, placed.Range ?? light.Range, light.Shadow, placed.Flicker));
                 }
                 if (placed.Id is not null)
                     foreach (var (socket, point) in fixture.Sockets ?? [])
