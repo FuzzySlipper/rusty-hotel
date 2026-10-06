@@ -508,6 +508,15 @@
       ]
     },
     {
+      "kind": "bell-pedestal",
+      "id": "portrait-bell-pedestal",
+      "space": "west",
+      "at": [
+        -5.6,
+        -4.4
+      ]
+    },
+    {
       "kind": "open-door-leaf",
       "space": "east",
       "at": [

@@ -24,7 +24,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Residents/` | Resident kinds composed from parts (`ResidentDefinition`: look, faction, perception, movement, action choices), `ResidentSenses` (one Engine visibility query a step for every resident, near sense and awareness memory) and `ResidentConduct` (the movement parts and action choice, as Engine character steps) |
 | `src/Hotel.Game/Combat/HotelEnemy.cs`, `PlayerActor.cs` | The two kinds of action actor: a placed resident (body, `ActorStats`, `ActionUser`) and the investigator (player body, supplies' stats, worn contributions) |
 | `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident and held-item meshes, flares in flight and attack poses contributed to the existing scene snapshot |
-| `src/Hotel.Game/Spirits/HotelSpirit.cs` | Pact acquisition/equipping, semantic equip claims, summon eligibility and transient manifestation phase |
+| `src/Hotel.Game/Spirits/HotelSpirit.cs` | The roster's pacts: freeing spirits at bells, the pact slot, semantic equip claims, call eligibility through Combat's pact slot, and the transient visit |
 | `src/Hotel.Game/Spirits/SpiritView.cs` | Authored bell-headed moth mesh parts and admitted-time entrance, wing poses and departure |
 | `src/Hotel.Game/Input/` | The authored binding table (`ControlBindings`) and its uses (`HotelControls`): Engine FPS walk/use keys, game-control presses, playtest actions, Controls screen rows, quick-pocket keys and the opening hint |
 | `src/Hotel.Game/Player/HotelPlayer.cs` | FPS input interpretation, authored body tuning, accepted player transform/motion and first-person camera |
@@ -235,36 +235,43 @@ brief hit/hurt notices; it does not render weapons or aim attacks. Actions live 
 resident kinds in `content/combat/`; resident placements in each excursion's `placements.json`. Zero health suppresses
 movement, use and further attacks; R invokes the expedition owner to restore the whole saved refuge checkpoint.
 
-## Spirit pact and manifestation
+## Spirit pacts and manifestation
 
-`HotelSpirit` owns the single authored pact and equipped choice. `HotelRoute`
-adds its bell to the existing Engine focus/visibility/use flow. Successful E use
-acquires the pact once and restores its authored welcome charges through
-`HotelSupplies`; it removes the waiting creature from the pedestal. Acquisition
-does not automatically equip it.
+`HotelSpirit` owns the roster's pacts: which spirits are freed, the one in the pact
+slot, and the brief visit a call brings. `HotelRoute` adds each of the excursion's
+bells to the existing Engine focus/visibility/use flow. Successful E use frees that
+bell's spirit once and restores its authored welcome charges through
+`HotelSupplies`; it removes the waiting creature from the pedestal. Freeing does
+not equip it.
 
-The field case's Spirits view claims `hotel.spirit.equip`, carrying the selected
-choice and pact revision. `HotelProduct.Update` and `HandlePausedIntents` route
-those direct payloads to the same domain rule. Engine owns delivery, lifecycle,
-ordering and stale bindings; Hotel checks acquisition, current pact revision,
-active manifestation and defeat. Browser state never predicts an equipped pact.
-Paused delivery publishes UI facts without advancing movement, combat or spirit
-phase. Pending physical Q edges clear on input clear/pause/resume.
+The field case's Spirits view claims `hotel.spirit.equip` (`v2`), carrying the
+chosen spirit (or none, to let the equipped one rest) and the pact revision.
+`HotelProduct.Update` and `HandlePausedIntents` route those direct payloads to the
+same domain rule. Engine owns delivery, lifecycle, ordering and stale bindings;
+Hotel checks the pact was made, the current revision, an active visit and defeat.
+Browser state never predicts an equipped pact. Paused delivery publishes UI facts
+without advancing movement, combat or spirit phase. Pending physical Q edges clear
+on input clear/pause/resume.
 
-Q checks equipped state, health, current manifestation, charges and an Engine
-ray to a living resident under the reticle. Walls and range block it. One accepted
-call spends the shared charge once and asks `HotelCombat` to interrupt that
-resident's pending attack and beam. It remains Interrupted through the authored
-arrival/hold/departure interval, then returns Ready with a new tell; it never
-replays the cancelled hit. No health damage or persistent follower is added.
+Q checks the pact's own eligibility (equipped, health, a current visit, charges,
+and for a call that reaches a resident an Engine ray to one under the reticle),
+then hands the equipped spirit's action to Combat's pact slot, which spends the
+charge once, times it and lands it through the one resolution: a hold, a ward and
+reveal on the investigator, a push or a lure of the residents in its area. A pushed
+or lured resident is moved by the effect and does nothing else meanwhile. The visit
+follows the landing; no health damage or persistent follower is added.
 
-`SpiritView` supplies a bell head, eyes, antennae and scalloped articulated wings
-to `HotelScene`'s combined snapshot. Authored poses progress only on admitted
-steps. Arrival grows and flies toward the resident, hushing spreads the wings,
-and departure folds/shrinks upward. This presentation has no collision authority
-or separate animation clock. Pausing freezes it; defeat withdraws it. Checkpoint recovery restores acquired/equipped values and clears transient
-manifestation poses and timing. Spirit identity, rule values, position and
-player-facing description live in `content/spirits/<id>.json`; the bell position is an excursion placement.
+`SpiritView` builds one articulated moth for each spirit of the roster from its
+authored look (bell head, eyes, antennae and scalloped wings) and contributes it
+to `HotelScene`'s combined snapshot: idle at its bell until freed, then only during
+its visit. Authored poses progress only on admitted steps. Arrival grows and flies
+toward where the call landed, holding spreads the wings, and departure folds and
+shrinks upward. This presentation has no collision authority or separate
+animation clock. Pausing freezes it; defeat withdraws it. Checkpoint recovery
+restores the pacts made and the pact slot and clears transient visits. Spirit
+identity, call action, look, timing and description live in
+`content/spirits/<id>.json`, listed by `content/spirits/roster.json`; bells are
+excursion placements, and generated floors draw their bell's spirit by weight.
 
 ## Refuge checkpoint
 

@@ -23,7 +23,7 @@ internal static class Owners
     internal static HotelCombat Combat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies, HotelContent content) =>
         new(engine, scene, player, supplies, content.Combat, content.Excursion.Placements.Residents);
     internal static HotelSpirit Spirit(HotelContent content, HotelSupplies supplies, HotelCombat combat, HotelPlayer player) =>
-        new(content.Spirit, content.SpiritText, content.SpiritBell, supplies, combat, player, content.Combat.Actions.Action(content.Spirit.Action)!, content.Mechanics);
+        new(content.Spirits, content.SpiritText, content.Excursion.Placements.SpiritBells, supplies, combat, player, content.Combat.Actions, content.Mechanics);
     internal static HotelRoute Route(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
         HotelSpirit spirit, HotelContent content, Func<bool>? recordCheckpoint = null) =>
         new(engine, scene, player, supplies, spirit, content.Route, content.Excursion.Route,

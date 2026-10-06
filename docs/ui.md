@@ -163,9 +163,9 @@ The menu offers Resume hotel, Field case and Controls. Supplies has a bounded
 pocket grid, quick pockets, the case's pocket count and capacity load, and
 selected-pocket details; a wearable item's action is Wear instead of Use. Worn
 (`worn-view.js`) lists every equipment slot with what it holds; a selected slot
-shows the worn item and its Take off action, which returns it to a pocket. Spirits has an honest
-empty state until Hushwing is acquired, then a pact card and its relevant equip
-action. Real supply stacks populate the grid; selected details show their
+shows the worn item and its Take off action, which returns it to a pocket. Spirits (`pact-view.js`) has an honest
+empty state until a spirit is freed, then one card per pact made; the selected
+pact's details give Equip, or Let rest for the one in the pact slot, which Q calls. Real supply stacks populate the grid; selected details show their
 description, quantity and any use refusal reason. `field-case.js` owns presentation
 selection and tab navigation only. Use and Move stack are the selected supply's contextual actions. Move stack then
 a destination supports keyboard activation; pointer dragging sends the same

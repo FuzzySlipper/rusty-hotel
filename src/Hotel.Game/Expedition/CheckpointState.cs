@@ -11,10 +11,11 @@ internal sealed record CheckpointState(int Version, int Returns, string Refuge,
     Floors.FloorsState? Floors = null)
 {
     /// <summary>Each version's additions are listed in docs/authoring.md; version 7 holds weapons as worn items, not a weapon id.</summary>
-    internal const int CurrentVersion = 7;
+    internal const int CurrentVersion = 8;
 }
 internal sealed record SuppliesState(Mechanics.ActorStatsState Stats, ItemStack?[] Pockets, WornState[] Worn, string[] Collected);
-internal sealed record SpiritState(string Id, bool Acquired, bool Equipped);
+/// <summary>The pacts made, by spirit id, and the one in the pact slot (null for none).</summary>
+internal sealed record SpiritState(string[] Acquired, string? Equipped);
 internal sealed record ResidentState(string Id, ActorStatsState Stats, float X, float Y, float Z, float Yaw);
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

@@ -49,6 +49,7 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(Hotel.Game.Residents.FactionCatalog))]
 [JsonSerializable(typeof(Hotel.Game.Residents.LookCatalog))]
 [JsonSerializable(typeof(SpiritDefinition))]
+[JsonSerializable(typeof(SpiritRoster))]
 [JsonSerializable(typeof(SpiritMessages))]
 [JsonSerializable(typeof(RouteMessages))]
 [JsonSerializable(typeof(ExpeditionMessages))]

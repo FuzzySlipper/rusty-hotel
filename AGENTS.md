@@ -55,7 +55,7 @@ and pause only decisions that need unavailable authority.
   `Combat/CombatView.cs` supplies poses to the existing scene snapshot. Keep
   resource mutations in Supplies, physical input in Engine FPS, and hits/body
   collision in Engine spatial services. Do not add a combat loop or local ray solver.
-  `Spirits/HotelSpirit.cs` owns the one pact, equipped choice and manifestation;
+  `Spirits/HotelSpirit.cs` owns the roster's pacts, the pact slot and the visit;
   `Spirits/SpiritView.cs` contributes the articulated creature to the same scene.
   Equip claims use the Engine paused-intent callback and the same domain rule as
   running claims; summons use admitted physical Q input. Keep charges in Supplies

@@ -1,0 +1,32 @@
+{
+  "id": "lintmoth",
+  "name": "Lintmoth",
+  "description": "A pale moth spun from laundry lint, smelling of starch. It settles on your collar when called.\n\n{key.summon} calls it to you. Costs {cost} summon charge. It wards you against harm and sharpens your senses for {seconds} seconds.",
+  "welcomeCharges": 1,
+  "arrival": 0.4,
+  "hold": 1.4,
+  "departure": 0.8,
+  "action": "lintmoth-settle",
+  "look": {
+    "body": "paper",
+    "wing": "resident-ivory",
+    "inset": "paper",
+    "head": "resident-ivory",
+    "eye": "tell-amber",
+    "scale": 0.5
+  },
+  "text": {
+    "callHint": "{key.summon} · Call the Lintmoth to you",
+    "callResult": "{spirit} settles on you · warded and keen · −{cost} summon",
+    "arriving": "Settling",
+    "holding": "Warding",
+    "departing": "Lifting off"
+  },
+  "manifestation": {
+    "approach": 0.25,
+    "side": 0.65,
+    "lift": 0.15,
+    "entranceFraction": 0.2,
+    "entranceDrop": 0.25
+  }
+}

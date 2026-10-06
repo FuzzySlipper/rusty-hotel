@@ -138,3 +138,10 @@
 .hotel-ui .worn-detail { display:flex; flex-direction:column; gap:10px; padding:18px; background:#1e221c; border:1px solid #776c5155; }
 .hotel-ui .worn-detail p { color:var(--muted); }
 @media (max-width: 720px) { .hotel-ui .worn-view { grid-template-columns:1fr; } }
+.hotel-ui [data-collection="spirits"] .case-collection { grid-template-columns:1fr; }
+.hotel-ui .pact-view { display:grid; grid-template-columns:1fr 1.2fr; gap:20px; }
+.hotel-ui .pact-list { display:grid; gap:8px; align-content:start; }
+.hotel-ui .pact-list .spirit-card[aria-pressed=true] { border-color:var(--accent); }
+.hotel-ui .pact-detail { display:flex; flex-direction:column; gap:10px; padding:18px; background:#1e221c; border:1px solid #776c5155; }
+.hotel-ui .pact-detail p { color:var(--muted); white-space:pre-line; }
+@media (max-width: 720px) { .hotel-ui .pact-view { grid-template-columns:1fr; } }

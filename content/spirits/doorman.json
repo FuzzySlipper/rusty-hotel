@@ -1,0 +1,32 @@
+{
+  "id": "doorman",
+  "name": "The Doorman",
+  "description": "A broad moth in a commissionaire's braid, wings like revolving doors. It clears the way.\n\n{key.summon} calls it to your side. Costs {cost} summon charge. It throws back every resident within {range} paces and staggers them.",
+  "welcomeCharges": 1,
+  "arrival": 0.3,
+  "hold": 0.9,
+  "departure": 0.7,
+  "action": "doorman-sweep",
+  "look": {
+    "body": "porter-coat",
+    "wing": "brass",
+    "inset": "porter-coat",
+    "head": "brass",
+    "eye": "tell-amber",
+    "scale": 0.85
+  },
+  "text": {
+    "callHint": "{key.summon} · Have the Doorman clear the way",
+    "callResult": "{spirit} clears the way · −{cost} summon",
+    "arriving": "Arriving",
+    "holding": "Sweeping",
+    "departing": "Departing"
+  },
+  "manifestation": {
+    "approach": 0.25,
+    "side": 0.65,
+    "lift": 0.15,
+    "entranceFraction": 0.2,
+    "entranceDrop": 0.25
+  }
+}

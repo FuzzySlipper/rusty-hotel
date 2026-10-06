@@ -10,6 +10,9 @@ namespace Hotel.Game.Floors.Content;
 /// <summary>An item a find may hold, how many, and how often it is chosen.</summary>
 internal sealed record ItemWeight(string Item, int Count, int Weight);
 
+/// <summary>A spirit a floor's bell may hold, and how often.</summary>
+internal sealed record SpiritWeight(string Spirit, int Weight);
+
 /// <summary>A resident kind, the module tags it may stand in, and how often it is chosen.</summary>
 internal sealed record ResidentWeight(string Kind, Floors.Modules.ModuleTag[] Tags, int Weight);
 
@@ -29,7 +32,8 @@ internal sealed record PacingTuning(string RecoveryItem, int RecoveryBeforeHazar
 /// <param name="FallbackLocation">The location label where the player stands in no named space.</param>
 /// <param name="Displays">The socket fixture that shows each item where it lies.</param>
 /// <param name="Doors">How locked doors, the shortcut's latch and their keys look and read.</param>
-internal sealed record ContentTuning(string Spirit, string FallbackLocation, ItemWeight[] Objective, ItemWeight[] Supplies, int SuppliesPerStop,
+/// <param name="Spirits">The spirits a floor's bell may hold, weighted.</param>
+internal sealed record ContentTuning(SpiritWeight[] Spirits, string FallbackLocation, ItemWeight[] Objective, ItemWeight[] Supplies, int SuppliesPerStop,
     DepthCurve LooseSupplies, ResidentWeight[] Residents, DepthCurve ExtraResidents, PacingTuning Pacing, ItemDisplay[] Displays, DoorTuning Doors)
 {
     internal string Display(string item) => Displays.First(d => d.Item == item).Fixture;

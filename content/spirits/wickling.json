@@ -1,0 +1,32 @@
+{
+  "id": "wickling",
+  "name": "Wickling",
+  "description": "A moth with a candle wick for a body, guttering and bright. Residents cannot look away from it.\n\n{key.summon} sends it where you aim, within {range} paces. Costs {cost} summon charge. Residents nearby are drawn to its light for {seconds} seconds, heedless of you.",
+  "welcomeCharges": 1,
+  "arrival": 0.5,
+  "hold": 3.0,
+  "departure": 0.8,
+  "action": "wickling-lure",
+  "look": {
+    "body": "tell-amber",
+    "wing": "lamp",
+    "inset": "tell-amber",
+    "head": "paper",
+    "eye": "tell-amber",
+    "scale": 0.55
+  },
+  "text": {
+    "callHint": "{key.summon} · Send the Wickling where you aim",
+    "callResult": "{spirit} gutters where you aimed · −{cost} summon",
+    "arriving": "Flying out",
+    "holding": "Guttering",
+    "departing": "Burning out"
+  },
+  "manifestation": {
+    "approach": 0.25,
+    "side": 0.65,
+    "lift": 0.15,
+    "entranceFraction": 0.2,
+    "entranceDrop": 0.25
+  }
+}

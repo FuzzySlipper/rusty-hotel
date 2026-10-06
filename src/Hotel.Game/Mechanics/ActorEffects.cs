@@ -21,6 +21,8 @@ internal sealed class LiveEffect(EffectDefinition definition, EffectInstanceId i
     internal float SinceTick { get; set; }
     /// <summary>Damage a ward can still absorb.</summary>
     internal int WardLeft { get; set; }
+    /// <summary>Where it came from (the user, or an area's centre): what a push drives from and a lure draws to.</summary>
+    internal System.Numerics.Vector3 Origin { get; set; }
     /// <summary>The Engine stat sources its stacks activated; they leave the stats when it ends.</summary>
     internal StatSource[] Sources { get; set; } = [];
 }
@@ -62,6 +64,8 @@ internal sealed class ActorEffects
     internal bool Held => live.Values.Any(e => e.Definition.Hold is not null);
     /// <summary>The farthest-reaching carried light, if any.</summary>
     internal LightEffect? Light => live.Values.Select(e => e.Definition.Light).Where(l => l is not null).MaxBy(l => l!.Range);
+    /// <summary>A push or a lure in force, if any: the most recent one moves its bearer.</summary>
+    internal LiveEffect? Moving => Active.LastOrDefault(e => e.Definition.Push is not null || e.Definition.Lure is not null);
     /// <summary>The widest reveal, if any.</summary>
     internal RevealEffect? Reveal => live.Values.Select(e => e.Definition.Reveal).Where(r => r is not null).MaxBy(r => r!.Radius);
     /// <summary>The hit contributions guards in force bring; a defeating one ends its effect when used.</summary>
@@ -75,7 +79,14 @@ internal sealed class ActorEffects
     /// Applies an effect from a source under its stacking rule. Returns the live effect, or null when an independent
     /// effect's group already holds as many instances as it allows.
     /// </summary>
-    internal LiveEffect? Apply(EffectDefinition definition, string source)
+    internal LiveEffect? Apply(EffectDefinition definition, string source, System.Numerics.Vector3 origin = default)
+    {
+        LiveEffect? applied = ApplyByRule(definition, source);
+        if (applied is not null) applied.Origin = origin;
+        return applied;
+    }
+
+    private LiveEffect? ApplyByRule(EffectDefinition definition, string source)
     {
         LiveEffect? present = live.Values.FirstOrDefault(e => e.Definition.Group == definition.Group &&
             (definition.Stacking != EffectStacking.Independent || e.Source == source));
@@ -162,7 +173,7 @@ internal sealed class ActorEffects
     }
 
     internal EffectState[] Capture() => Active.Select(e =>
-        new EffectState(e.Definition.Id, e.Source, e.Stacks, e.Remaining, e.SinceTick, e.WardLeft)).ToArray();
+        new EffectState(e.Definition.Id, e.Source, e.Stacks, e.Remaining, e.SinceTick, e.WardLeft, [e.Origin.X, e.Origin.Y, e.Origin.Z])).ToArray();
 
     /// <summary>Refuses saved effects whose values cannot be live ones; stacking conflicts surface on the scratch restore.</summary>
     internal static void Validate(MechanicsDefinition mechanics, EffectState[] effects)
@@ -174,7 +185,8 @@ internal sealed class ActorEffects
                 state.Stacks < 1 || state.Stacks > definition.MaximumStacks ||
                 !float.IsFinite(state.Remaining) || state.Remaining <= 0 || state.Remaining > definition.Duration ||
                 !float.IsFinite(state.SinceTick) || state.SinceTick < 0 || state.SinceTick > Math.Max(0, definition.Interval) ||
-                state.WardLeft < (definition.Ward is null ? 0 : 1) || state.WardLeft > Absorbs(definition, state.Stacks))
+                state.WardLeft < (definition.Ward is null ? 0 : 1) || state.WardLeft > Absorbs(definition, state.Stacks) ||
+                state.Origin is not { Length: 3 } || !state.Origin.All(float.IsFinite))
                 throw new InvalidOperationException($"Checkpoint effect '{state?.Effect}' is unknown or out of bounds.");
         }
     }
@@ -187,7 +199,7 @@ internal sealed class ActorEffects
         {
             EffectDefinition definition = mechanics.Effect(state.Effect)!;
             Admit(component.Apply(engineDefinitions[definition.Id], NewInstance(), Provenance(state.Source), checked((ushort)state.Stacks)),
-                definition, state.Source, state.Stacks, state.Remaining, state.SinceTick, state.WardLeft);
+                definition, state.Source, state.Stacks, state.Remaining, state.SinceTick, state.WardLeft).Origin = new(state.Origin[0], state.Origin[1], state.Origin[2]);
         }
     }
 
@@ -239,5 +251,5 @@ internal sealed class ActorEffects
     private EffectInstanceId NewInstance() => EffectInstanceId.Parse($"effect-{++next:D8}");
 }
 
-/// <summary>One saved effect: what it is, who applied it, its stacks, time left, time since its last tick and ward left.</summary>
-internal sealed record EffectState(string Effect, string Source, int Stacks, float Remaining, float SinceTick, int WardLeft);
+/// <summary>One saved effect: what it is, who applied it, its stacks, time left, time since its last tick, ward left and origin.</summary>
+internal sealed record EffectState(string Effect, string Source, int Stacks, float Remaining, float SinceTick, int WardLeft, float[] Origin);

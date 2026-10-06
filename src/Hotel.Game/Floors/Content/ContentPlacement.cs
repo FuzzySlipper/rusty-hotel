@@ -75,7 +75,8 @@ internal static class ContentPlacement
                     }
                     break;
                 case MissionNodeKind.Bell when Take(placement, ContentSocketKind.Bell, "bell") is { } at:
-                    bell = new(tuning.Spirit, at.Name, plan.Spaces.First(s => s.Id.StartsWith(placement + "/", StringComparison.Ordinal)).Label);
+                    bell = new(tuning.Spirits[draws.Weighted(FloorStage.Content, "bell.spirit", at.Id, tuning.Spirits.Select(s => s.Weight).ToArray())].Spirit,
+                        at.Name, plan.Spaces.First(s => s.Id.StartsWith(placement + "/", StringComparison.Ordinal)).Label);
                     break;
                 case MissionNodeKind.Hazard when Take(placement, ContentSocketKind.ResidentPost, "hazard") is { } at:
                     if (Resident(at, "hazard.kind") is { } guard) residents.Add(guard);

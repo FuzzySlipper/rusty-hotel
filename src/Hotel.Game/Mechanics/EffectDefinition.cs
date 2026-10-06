@@ -4,7 +4,7 @@ using Hotel.Game.Content;
 namespace Hotel.Game.Mechanics;
 
 /// <summary>What an effect does while it lasts; each kind has its own typed settings on the definition.</summary>
-internal enum EffectKind { Stat, Restore, Damage, Ward, Hold, Slow, Reveal, Light, Guard }
+internal enum EffectKind { Stat, Restore, Damage, Ward, Hold, Slow, Reveal, Light, Guard, Push, Lure }
 
 /// <summary>How a second application of an effect meets one already in its group (the Engine stacking policy).</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<EffectStacking>))]
@@ -25,13 +25,15 @@ internal enum EffectStacking
 internal sealed record EffectDefinition(string Id, string Name, string Mark, string Group, EffectStacking Stacking,
     int MaximumStacks, int MaximumInstances, float Duration,
     StatEffect? Stat = null, RestoreEffect? Restore = null, DamageEffect? Damage = null, WardEffect? Ward = null,
-    HoldEffect? Hold = null, SlowEffect? Slow = null, RevealEffect? Reveal = null, LightEffect? Light = null, DamageContribution? Guard = null)
+    HoldEffect? Hold = null, SlowEffect? Slow = null, RevealEffect? Reveal = null, LightEffect? Light = null, DamageContribution? Guard = null,
+    PushEffect? Push = null, LureEffect? Lure = null)
 {
     internal const string Path = "mechanics/effects.json";
 
     internal EffectKind Kind => Stat is not null ? EffectKind.Stat : Restore is not null ? EffectKind.Restore
         : Damage is not null ? EffectKind.Damage : Ward is not null ? EffectKind.Ward : Hold is not null ? EffectKind.Hold
-        : Slow is not null ? EffectKind.Slow : Reveal is not null ? EffectKind.Reveal : Light is not null ? EffectKind.Light : EffectKind.Guard;
+        : Slow is not null ? EffectKind.Slow : Reveal is not null ? EffectKind.Reveal : Light is not null ? EffectKind.Light : Guard is not null ? EffectKind.Guard
+        : Push is not null ? EffectKind.Push : EffectKind.Lure;
 
     /// <summary>The stats this effect contributes to while active, one Engine source per stack.</summary>
     internal bool ContributesStats => Stat is not null || Slow is not null;
@@ -50,8 +52,10 @@ internal sealed record EffectDefinition(string Id, string Name, string Mark, str
         Authored.Require(Stacking == EffectStacking.Independent || MaximumInstances == 1, Path, $"{field}.maximumInstances",
             "only an independent effect holds several instances; set it to 1.");
         Authored.Positive(Path, $"{field}.duration", Duration);
-        int kinds = new object?[] { Stat, Restore, Damage, Ward, Hold, Slow, Reveal, Light, Guard }.Count(k => k is not null);
-        Authored.Require(kinds == 1, Path, field, "must set exactly one of stat, restore, damage, ward, hold, slow, reveal, light or guard.");
+        int kinds = new object?[] { Stat, Restore, Damage, Ward, Hold, Slow, Reveal, Light, Guard, Push, Lure }.Count(k => k is not null);
+        Authored.Require(kinds == 1, Path, field, "must set exactly one of stat, restore, damage, ward, hold, slow, reveal, light, guard, push or lure.");
+        if (Push is { } push) Authored.Positive(Path, $"{field}.push.speed", push.Speed);
+        if (Lure is { } lure) Authored.Positive(Path, $"{field}.lure.speed", lure.Speed);
         if (Guard is { } guard) DamageContribution.Validate([guard], Path, $"{field}.guard", mechanics, fromEffect: true);
         if (Stat is { } stat)
         {
@@ -116,6 +120,10 @@ internal sealed record HoldEffect;
 internal sealed record SlowEffect(float Factor);
 /// <summary>Senses living residents within <see cref="Radius"/>, through walls; <see cref="Sensed"/> names how many.</summary>
 internal sealed record RevealEffect(float Radius, string Sensed);
+/// <summary>Drives a resident bearer away from where the effect came from at <see cref="Speed"/>, while it lasts.</summary>
+internal sealed record PushEffect(float Speed);
+/// <summary>Draws a resident bearer toward where the effect came from at <see cref="Speed"/>, heedless of anyone, while it lasts.</summary>
+internal sealed record LureEffect(float Speed);
 /// <summary>A light carried at the bearer's eye, raised by <see cref="Lift"/>.</summary>
 internal sealed record LightEffect(float[] Color, float Intensity, float Range, float Lift);
 

@@ -72,6 +72,11 @@
       "spirit": "hushwing",
       "socket": "bell-pedestal.bell",
       "place": "the linen room"
+    },
+    {
+      "spirit": "lintmoth",
+      "socket": "portrait-bell-pedestal.bell",
+      "place": "the portrait room"
     }
   ],
   "fromAbove": {

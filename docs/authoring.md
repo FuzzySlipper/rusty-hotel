@@ -46,8 +46,9 @@ its own folder. Geometry is kept apart from tuning.
 | `combat/looks.json` | Resident silhouettes as boxes in their own frame, with arm, body and tell roles and the tell poses; `CombatView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
-| `spirits/<id>.json` | One spirit's pact terms, cost/range, manifestation timing and placement offsets, its description and its own wording (call hint and result, phase names); `HotelSpirit` |
-| `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}` and `{place}`; `HotelSpirit` |
+| `spirits/roster.json` | Every spirit a pact can be made with; `HotelSpirit` |
+| `spirits/<id>.json` | One spirit: welcome charges, its call `action` (costing only summon charge), its moth's `look` (surfaces and scale), visit timing and placement offsets, its description (`{range}`, `{cost}`, `{seconds}` from its action) and its own wording; `HotelSpirit`, `SpiritView` |
+| `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}`; `HotelSpirit` |
 | `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
 | `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim styles (bands, moulding profiles and architraves), door frames and space styles (surface sets); `KitBuilder` |
 | `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, packets, frames, pictures. Each is boxes in its own frame, plus lights and named sockets; `KitBuilder` |
@@ -181,6 +182,8 @@ An effect (`mechanics/effects.json`) is something an actor bears for a while: an
 | `reveal` | `radius`, `sensed` | the HUD names how many living residents are within `radius`, through walls (`{count}`) |
 | `light` | `color`, `intensity`, `range`, `lift` | a shadowless light carried at the bearer's eye |
 | `guard` | a contribution (`stage`, `side`, `kinds`, and its fields) | brings that hit contribution while it lasts; a `Defeating` guard ends when it saves its bearer |
+| `push` | `speed` | drives a resident bearer away from where the effect came from (its user, or an area's centre) |
+| `lure` | `speed` | draws a resident bearer toward where the effect came from, heedless of anyone |
 
 `stacking` decides how another application meets an effect already in its group. `Independent` keeps one instance per
 source (an item, a resident, a weapon, a spirit) up to `maximumInstances`, and the same source again restarts its own;
@@ -345,7 +348,7 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
 restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
-same way, on the floor it was left on and in the refuge, beside its pose. Version 7 drops the selected weapon: weapons are held items, saved with the worn items. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
+same way, on the floor it was left on and in the refuge, beside its pose. Version 8 saves the pacts as the spirits freed and the one in the pact slot. Version 7 drops the selected weapon: weapons are held items, saved with the worn items. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
 equipped before the stats so track maximums include what is worn. Version 5 keeps each actor's effects with
 its stats: the effect, who applied it, its stacks, time left, time since its last tick and ward left, re-admitted in
 their saved order after the bases and before the track points, so the stat sources they hold are rebuilt. A checkpoint of another version is refused

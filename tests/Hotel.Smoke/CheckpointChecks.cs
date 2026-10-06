@@ -30,14 +30,14 @@ internal static class CheckpointChecks
                 using Fixture f = new(engine);
                 f.Expedition.Start();
                 Check(f.Expedition.Returns == 0 && f.Supplies.Health == 70, "missing save establishes valid initial checkpoint");
-                f.Supplies.Pickup("refuge-rounds"); f.Spirit.Acquire(); f.Supplies.Damage(new(1000, "blunt"));
+                f.Supplies.Pickup("refuge-rounds"); f.Spirit.Acquire(0); f.Supplies.Damage(new(1000, "blunt"));
                 f.Route.Restore(["survey"]);
                 f.Expedition.Recover();
                 Check(f.Supplies.Health == 70 && f.Supplies.Occupied == 0 && f.Supplies.Ammo == 0 && f.Supplies.Summon == 0 &&
-                    !f.Supplies.Collected("refuge-rounds") && !f.Spirit.Acquired && f.Route.OpenDoors.Length == 0, "pre-return defeat restores every initial domain");
+                    !f.Supplies.Collected("refuge-rounds") && !f.Spirit.AnyAcquired && f.Route.OpenDoors.Length == 0, "pre-return defeat restores every initial domain");
                 f.Supplies.Pickup("refuge-rounds"); f.Supplies.Use(0, f.Supplies.Revision);
                 f.Supplies.Pickup("refuge-dressing"); f.Supplies.Move(0, 7, f.Supplies.Revision);
-                f.Supplies.Pickup("survey-reel"); f.Spirit.Acquire(); f.Spirit.Equip(true, f.Spirit.Revision);
+                f.Supplies.Pickup("survey-reel"); f.Spirit.Acquire(0); f.Spirit.Acquire(1); f.Spirit.Equip("hushwing", f.Spirit.Revision);
                 f.Supplies.SpendAmmo(2); f.Supplies.SpendSummon(1); f.Supplies.Damage(new(13, "blunt"));
                 f.Combat.SwapHands();
                 f.Combat.Enemies[0].Health.SetCurrent(0);
@@ -63,7 +63,7 @@ internal static class CheckpointChecks
                 ActorStatsState lampSaved = saved.Residents.Single(r => r.Id == lamp.Id).Stats;
                 Check(lampSaved.Bases["might"] == 14 && lampSaved.Tracks["stamina"] == 20 && lampSaved.Tracks["health"] == 36,
                     "a resident's checkpoint carries its stat bases and every track's current points");
-                Check(tracks["health"] == 57 && tracks["ammunition"] == 4 && tracks["summon"] == 1 && saved.Supplies.Stats.Bases["might"] == 10 &&
+                Check(tracks["health"] == 57 && tracks["ammunition"] == 4 && tracks["summon"] == 2 && saved.Supplies.Stats.Bases["might"] == 10 &&
                     saved.Supplies.Pockets[7]?.Item == "bandage", "durable checkpoint keeps stat bases, track currents and pockets");
                 string Stored() => System.Text.Json.JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState);
                 string good = Stored();
@@ -76,7 +76,7 @@ internal static class CheckpointChecks
                     "live state that fails validation is refused with a receipt and leaves the stored checkpoint intact");
                 f.Scene.Entities.Set(displaced.EntityId, EngineComponentTypes.Transform, new(post, Quaternion.Identity, Vector3.One));
                 f.Supplies.Use(7, f.Supplies.Revision); f.Supplies.SpendAmmo(4); f.Supplies.SpendSummon(1);
-                f.Supplies.Pickup("portrait-dressing"); f.Spirit.Equip(false, f.Spirit.Revision);
+                f.Supplies.Pickup("portrait-dressing"); f.Spirit.Equip(null, f.Spirit.Revision);
                 f.Combat.Enemies[1].Health.SetCurrent(0); f.Supplies.Damage(new(1000, "blunt")); f.Route.Reset();
                 f.Expedition.Recover(); Verify(f);
                 Check(!f.Supplies.Pickup("survey-reel") && f.Supplies.Pickup("portrait-dressing"), "saved loot cannot duplicate; unsaved loot is restored");
@@ -96,7 +96,8 @@ internal static class CheckpointChecks
                     saved with { Version = 99 }, saved with { OpenDoors = ["unknown"] },
                     Stats(saved, tracks: ("health", 0)), Stats(saved, tracks: ("health", 999)), Stats(saved, tracks: ("courage", 3)),
                     Stats(saved, bases: ("might", 500)), Stats(saved, bases: ("luck", 5)),
-                    saved with { Spirit = saved.Spirit with { Acquired = false, Equipped = true } },
+                    saved with { Spirit = saved.Spirit with { Acquired = ["hushwing"], Equipped = "lintmoth" } },
+                    saved with { Spirit = saved.Spirit with { Acquired = ["hushwing", "ghostmoth"] } },
                     saved with { Residents = [] }, Resident(saved, tracks: ("stamina", 500)), Resident(saved, bases: ("might", 0)), saved with { SecuredFinds = [] } })
                 {
                     store.Save(HotelExpedition.Key, invalid);
@@ -124,8 +125,8 @@ internal static class CheckpointChecks
     private static void Verify(Fixture f)
     {
         Check(f.Expedition.Returns == 1 && f.Expedition.SecuredFinds.SequenceEqual(["survey-reel"]) &&
-            f.Supplies.Health == 57 && f.Supplies.Ammo == 4 && f.Supplies.Summon == 1 && f.Supplies.Slot(7)?.Count == 1 && f.Supplies.Occupied == 1 &&
-            f.Supplies.Collected("survey-reel") && !f.Supplies.Collected("portrait-dressing") && f.Spirit.Acquired && f.Spirit.Equipped && !f.Spirit.Active &&
+            f.Supplies.Health == 57 && f.Supplies.Ammo == 4 && f.Supplies.Summon == 2 && f.Supplies.Slot(7)?.Count == 1 && f.Supplies.Occupied == 1 &&
+            f.Supplies.Collected("survey-reel") && !f.Supplies.Collected("portrait-dressing") && f.Spirit.Acquired("hushwing") && f.Spirit.Acquired("lintmoth") && f.Spirit.Equipped?.Id == "hushwing" && !f.Spirit.Active &&
             f.Route.OpenDoors.Order().SequenceEqual(new[] { "return", "survey" }) && f.Combat.Holding?.Item.Id == "survey-pistol" &&
             !f.Combat.Enemies[0].Alive && f.Combat.Enemies[1].Health.ValueInt == 36 &&
             f.Combat.Enemies[1].Stats.Stat("might").Value == 14 && f.Combat.Enemies[1].Stats.Track("stamina").ValueInt == 20 &&

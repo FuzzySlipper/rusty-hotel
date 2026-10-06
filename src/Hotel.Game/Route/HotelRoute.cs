@@ -80,9 +80,13 @@ internal sealed class HotelRoute : IWorldInteractionScene
             Add(new(find.Entity, () => !supplies.Collected(find.Definition.Id),
                 () => Template.Fill(text.Take, ("item", supplies.Item(find.Definition.Item).Name)), () => point, () => true, () => Take(find)));
         }
-        Vector3 bell = spirit.Bell;
-        Add(new(scene.Entities.Create().Value, () => !spirit.Acquired, () => spirit.BellLabel,
-            () => bell, () => true, FreeSpirit));
+        for (int i = 0; i < spirit.Bells.Length; i++)
+        {
+            int bell = i;
+            Vector3 point = Authored.Vector(spirit.Bells[bell].Point);
+            Add(new(scene.Entities.Create().Value, () => !spirit.Acquired(spirit.Bells[bell].Spirit), () => spirit.BellLabel(bell),
+                () => point, () => true, () => FreeSpirit(bell)));
+        }
         if (refuge is not null)
         {
             Vector3 notebook = Authored.Vector(refuge.Point);
@@ -195,9 +199,9 @@ internal sealed class HotelRoute : IWorldInteractionScene
     private InteractionActionResult Climb(StairDefinition stair) =>
         travel(stair.Direction) ? new(true, "Took the stairs.") : new(false, "The stairs lead nowhere yet.");
 
-    private InteractionActionResult FreeSpirit()
+    private InteractionActionResult FreeSpirit(int bell)
     {
-        bool acquired = spirit.Acquire();
+        bool acquired = spirit.Acquire(bell);
         if (acquired) { revision++; Update(); }
         changed();
         return new(acquired, spirit.Message);

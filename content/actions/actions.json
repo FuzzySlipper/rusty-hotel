@@ -382,6 +382,87 @@
       "selfEffects": [],
       "windupLabel": "Calling",
       "commitLabel": "Called"
+    },
+    {
+      "id": "lintmoth-settle",
+      "name": "Call the Lintmoth",
+      "delivery": {
+        "kind": "Self"
+      },
+      "cost": {
+        "tracks": {
+          "summon": 1
+        }
+      },
+      "timing": {
+        "windup": 0,
+        "commit": 0.1,
+        "recovery": 0,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [],
+      "selfEffects": [
+        "warded",
+        "keen"
+      ],
+      "windupLabel": "Calling",
+      "commitLabel": "Called"
+    },
+    {
+      "id": "doorman-sweep",
+      "name": "Call the Doorman",
+      "delivery": {
+        "kind": "Area",
+        "range": 0,
+        "radius": 3.5
+      },
+      "cost": {
+        "tracks": {
+          "summon": 1
+        }
+      },
+      "timing": {
+        "windup": 0,
+        "commit": 0.1,
+        "recovery": 0,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [
+        "pushed",
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Calling",
+      "commitLabel": "Called"
+    },
+    {
+      "id": "wickling-lure",
+      "name": "Send the Wickling",
+      "delivery": {
+        "kind": "Area",
+        "range": 6,
+        "radius": 4
+      },
+      "cost": {
+        "tracks": {
+          "summon": 1
+        }
+      },
+      "timing": {
+        "windup": 0,
+        "commit": 0.1,
+        "recovery": 0,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [
+        "lured"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Calling",
+      "commitLabel": "Called"
     }
   ]
 }

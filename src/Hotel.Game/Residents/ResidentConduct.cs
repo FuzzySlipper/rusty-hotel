@@ -1,6 +1,7 @@
 using System.Numerics;
 using Hotel.Game.Actions;
 using Hotel.Game.Combat;
+using Hotel.Game.Mechanics;
 using Hotel.Game.Scene;
 using Rusty.Engine;
 using Rusty.Engine.Entities;
@@ -17,6 +18,22 @@ internal sealed class ResidentConduct(IEngineContext engine, HotelScene scene, A
 {
     // Within this of a patrol point or its post, a resident has arrived; held this long by a wall, it gives the point up.
     private const float Arrived = .3f, Blocked = 1;
+
+    /// <summary>
+    /// Moves a resident a push or lure has hold of: away from the push's origin, or toward the lure's, at the effect's
+    /// speed. It does nothing else meanwhile, and a lure makes it forget what it was after.
+    /// </summary>
+    internal void Moved(HotelEnemy resident, LiveEffect moving, float seconds)
+    {
+        Vector3 from = moving.Origin - resident.Position;
+        if (moving.Definition.Push is { } push)
+        {
+            if (Flat(from).Length() > .01f) Walk(resident, Yaw(-from), seconds, push.Speed);
+            return;
+        }
+        resident.Awareness.Forget();
+        if (moving.Definition.Lure is { } lure && Flat(from).Length() > Arrived) Walk(resident, Yaw(from), seconds, lure.Speed);
+    }
 
     /// <summary>Takes one resident's step; returns the action it started, if any.</summary>
     internal ActionDefinition? Step(HotelEnemy resident, float seconds)
@@ -78,14 +95,18 @@ internal sealed class ResidentConduct(IEngineContext engine, HotelScene scene, A
         }
     }
 
-    // One Engine character step facing a yaw, at the resident's pace; only hotel geometry constrains it.
-    private void Walk(HotelEnemy resident, float yaw, float seconds)
+    // One Engine character step facing a yaw, at the resident's pace (or a push or lure's own speed); only hotel geometry
+    // constrains it. A resident that never walks can still be pushed or lured.
+    private void Walk(HotelEnemy resident, float yaw, float seconds, float? speed = null)
     {
-        if (resident.Kind.Movement.Speed <= 0) return;
+        if (speed is null && resident.Kind.Movement.Speed <= 0) return;
         resident.Yaw = yaw;
+        CharacterControllerConfig controller = speed is { } driven
+            ? resident.Controller with { Ground = resident.Controller.Ground with { ForwardSpeed = driven, BackwardSpeed = driven, StrafeSpeed = driven } }
+            : resident.Controller;
         CharacterStepReceipt move = engine.Spatial.ProposeCharacterStep(new(scene.Session,
             resident.Position, resident.Motion, default, ReadOnlyMemory<CharacterObstacle>.Empty, ReadOnlyMemory<CharacterMeshInstance>.Empty,
-            resident.Controller, new(new(0, resident.Stats.Pace), yaw, false, false, false, default, default, seconds, ++resident.Sequence)));
+            controller, new(new(0, speed is null ? resident.Stats.Pace : 1), yaw, false, false, false, default, default, seconds, ++resident.Sequence)));
         scene.Entities.Set(resident.EntityId, EngineComponentTypes.Transform, move.Transform);
         scene.Entities.Set(resident.EntityId, EngineComponentTypes.CharacterMotion, move.Motion);
     }

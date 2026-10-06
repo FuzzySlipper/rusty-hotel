@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <RustyEngineProductInputIntent Include="hotel.supplies" Value="payload:hotel.supplies.v1" />
-    <RustyEngineProductInputIntent Include="hotel.spirit.equip" Value="payload:hotel.spirit.equip.v1" />
+    <RustyEngineProductInputIntent Include="hotel.spirit.equip" Value="payload:hotel.spirit.equip.v2" />
     <PackageReference Include="Rusty.Engine" Version="[$(RustyEnginePackageVersion)]" />
   </ItemGroup>
 </Project>

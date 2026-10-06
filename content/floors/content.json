@@ -1,5 +1,22 @@
 {
-  "spirit": "hushwing",
+  "spirits": [
+    {
+      "spirit": "hushwing",
+      "weight": 2
+    },
+    {
+      "spirit": "lintmoth",
+      "weight": 2
+    },
+    {
+      "spirit": "doorman",
+      "weight": 1
+    },
+    {
+      "spirit": "wickling",
+      "weight": 1
+    }
+  ],
   "fallbackLocation": "Upper floor",
   "objective": [
     {

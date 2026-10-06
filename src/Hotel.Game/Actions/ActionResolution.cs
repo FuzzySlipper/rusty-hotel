@@ -112,7 +112,8 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
     /// the target standing. The action's effects follow a hit that was not turned aside. Returns the health taken, or
     /// null when the hit was turned aside.
     /// </summary>
-    internal int? Hit(ActionDefinition action, IActionActor user, IActionActor target)
+    /// <param name="origin">Where the hit came from (the user, or an area's centre), for effects that push or lure.</param>
+    internal int? Hit(ActionDefinition action, IActionActor user, IActionActor target, Vector3? origin = null)
     {
         ActiveContribution[] outgoing = user.Contributions.ToArray(), incoming = target.Contributions.ToArray();
         IEnumerable<ActiveContribution> At(ContributionStage stage, string kind) =>
@@ -136,7 +137,7 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
             });
         }
         if (target.Alive)
-            foreach (string effect in action.Effects) target.Stats.Effects.Apply(mechanics.Effect(effect)!, $"action.{action.Id}");
+            foreach (string effect in action.Effects) target.Stats.Effects.Apply(mechanics.Effect(effect)!, $"action.{action.Id}", origin ?? user.Position);
         return taken;
     }
 
@@ -164,7 +165,7 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
                 new[] { target.Hitbox }, new[] { user.Entity })).Present;
             if (!within || Vector3.Distance(target.Position, centre) > action.Delivery.Radius + MathF.Max(target.Hitbox.Max.X - target.Hitbox.Min.X, 0) / 2
                 || !Clear(centre, target.Eye)) continue;
-            int? taken = Hit(action, user, target);
+            int? taken = Hit(action, user, target, centre);
             impacts.Add(new(action, user, target, target.Eye, taken ?? 0, !target.Alive, TurnedAside: taken is null));
         }
         return impacts.Count == 0 ? [new(action, user, null, centre, 0, false)] : impacts.ToArray();

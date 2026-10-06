@@ -138,9 +138,9 @@ host.Call(engine =>
     Advance(0, Key(KeyboardControl.KeyQ));
     Check(SpiritMessage() == "", "zero-step summon waits for admission");
     Advance(1);
-    Check(SpiritMessage() == Template.Fill(content.SpiritText.NoPactCall, ("place", content.SpiritBell.Place)), "admitted ordinary Q reaches the spirit owner");
+    Check(SpiritMessage() == content.SpiritText.NoPactCall, "admitted ordinary Q reaches the spirit owner");
     product.Pause();
-    product.HandlePausedIntents([SpiritChecks.Claim("{\"equipped\":true,\"revision\":0}")]);
+    product.HandlePausedIntents([SpiritChecks.Claim("{\"spirit\":\"hushwing\",\"revision\":0}")]);
     Check(SpiritMessage() == content.SpiritText.PactChanged, "paused semantic callback applies the same stale-choice rule and publishes");
     product.HandlePausedIntents([SuppliesChecks.Claim("{\"action\":\"use\",\"from\":0,\"revision\":0}")]);
     using (JsonDocument paused = JsonDocument.Parse(commands.Module!.Observe().Message))
@@ -188,6 +188,7 @@ host.Call(KeyChecks.Run);
 host.Call(SuppliesChecks.Run);
 host.Call(CombatChecks.Run);
 host.Call(SpiritChecks.Run);
+host.Call(PactChecks.Run);
 CheckpointChecks.Run();
 ContentChecks.Run();
 FloorChecks.Run();

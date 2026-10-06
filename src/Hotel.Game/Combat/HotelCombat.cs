@@ -34,7 +34,7 @@ internal sealed class HotelCombat
     private float noticeRemaining;
     // A belt use under way (its pocket and the case revision it was chosen at), and a pact call's landing.
     private (ActionDefinition Action, int Pocket, ulong Revision)? belt;
-    private Action<HotelEnemy?>? pactLanded;
+    private Action<HotelEnemy?, Vector3>? pactLanded;
 
     internal HotelCombat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
         CombatDefinition definition, ResidentPlacement[] residents)
@@ -134,9 +134,10 @@ internal sealed class HotelCombat
 
     /// <summary>
     /// Calls the equipped pact with its action: admitted, costed and timed through the pact slot, landed through the
-    /// one resolution (which puts its effects on the resident it reaches); <paramref name="landed"/> receives that resident.
+    /// one resolution (which puts its effects on what it reaches); <paramref name="landed"/> receives the resident reached, if
+    /// any, and where it landed.
     /// </summary>
-    internal bool CallPact(ActionDefinition action, Action<HotelEnemy?> landed)
+    internal bool CallPact(ActionDefinition action, Action<HotelEnemy?, Vector3> landed)
     {
         if (Defeated || PactUser.Readiness(action) != ActionRefusal.None || CostRefusal(action) is not null) return false;
         foreach (var (track, amount) in action.Cost.Tracks) supplies.Stats.Track(track).TrySpend(amount);
@@ -165,10 +166,12 @@ internal sealed class HotelCombat
         if (User.Step(delta) is { } landed) Land(landed, User.Aim);
         if (PactUser.Step(delta) is { } call)
         {
-            HotelEnemy? reached = resolution.Land(call, investigator, PactUser.Aim, Enemies).Select(i => i.Target).OfType<HotelEnemy>().FirstOrDefault();
-            Action<HotelEnemy?>? answer = pactLanded;
+            ActionImpact[] impacts = resolution.Land(call, investigator, PactUser.Aim, Enemies);
+            HotelEnemy? reached = impacts.Select(i => i.Target).OfType<HotelEnemy>().FirstOrDefault();
+            Action<HotelEnemy?, Vector3>? answer = pactLanded;
             pactLanded = null;
-            answer?.Invoke(reached);
+            // Where it landed: the resident reached, the area's centre, or the investigator for a call on themselves.
+            answer?.Invoke(reached, call.Delivery.Kind == DeliveryKind.Area ? player.Eye + PactUser.Aim * call.Delivery.Range : impacts.FirstOrDefault()?.End ?? player.Eye);
         }
         perception.Update(Enemies, Bodies, Faction, delta);
         foreach (HotelEnemy enemy in Enemies) StepEnemy(enemy, delta);
@@ -267,6 +270,8 @@ internal sealed class HotelCombat
         enemy.Stats.Effects.Advance(delta);
         enemy.Stats.Regenerate(delta);
         if (!enemy.Alive || enemy.Stats.Effects.Held) { enemy.User.Interrupt(); return; }
+        // A push or a lure has the resident: it is moved, and does nothing else meanwhile.
+        if (enemy.Stats.Effects.Moving is { } moving) { enemy.User.Interrupt(); conduct.Moved(enemy, moving, delta); return; }
         if (enemy.User.Step(delta) is { } landed)
             foreach (ActionImpact impact in resolution.Land(landed, enemy, enemy.User.Aim, Hostiles(enemy))) Settle(impact);
         conduct.Step(enemy, delta);

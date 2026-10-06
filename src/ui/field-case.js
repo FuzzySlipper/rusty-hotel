@@ -1,4 +1,5 @@
 import { mountWornView } from './worn-view.js';
+import { mountPactView } from './pact-view.js';
 
 /** Projection-owned pockets and selection; C# owns inventory, equipment and resource rules. */
 export function mountFieldCase(host, intents) {
@@ -13,17 +14,17 @@ export function mountFieldCase(host, intents) {
       <div class="case-contents">
         <div class="collection-heading"><h3 data-collection-heading>Carried supplies</h3><span class="eyebrow" data-load></span></div>
         <div class="pocket-grid" role="group" aria-label="Supply pockets"></div>
-        <div class="spirit-empty" hidden><span class="pact-mark" aria-hidden="true">◇</span><h3>No pact made</h3><p>No spirits accompany you.</p></div>
-        <button type="button" class="spirit-card" data-spirit-card hidden aria-pressed="true"><span class="moth-emblem" aria-hidden="true">⋈</span><span data-spirit-name></span><small data-spirit-equipped></small></button>
         <section class="case-quick"><h3>Quick access</h3><div class="quick-pockets" aria-label="Quick access pockets"></div><p class="muted" data-quick-note></p></section>
       </div>
       <aside class="item-detail" aria-live="polite"><span class="eyebrow" data-detail-number>Pocket 01</span>
-        <div class="empty-emblem" aria-hidden="true">—</div><h3 data-detail-title>Empty pocket</h3><p data-detail-body>No supplies carried.</p><div class="supply-actions"><button type="button" data-use-supply>Use supply</button><button type="button" data-move-supply>Move stack</button></div><p class="supply-result" data-supply-result role="status"></p><button type="button" data-equip-spirit hidden>Equip spirit</button><p class="spirit-result" data-spirit-result role="status" hidden></p>
+        <div class="empty-emblem" aria-hidden="true">—</div><h3 data-detail-title>Empty pocket</h3><p data-detail-body>No supplies carried.</p><div class="supply-actions"><button type="button" data-use-supply>Use supply</button><button type="button" data-move-supply>Move stack</button></div><p class="supply-result" data-supply-result role="status"></p>
       </aside>
     </div>`;
   const tabs = [...host.querySelectorAll('[data-tab]')];
   const worn = mountWornView(document, (action, from) => claim(action, from));
   host.querySelector('.case-contents').append(worn.element);
+  const pacts = mountPactView(document, intents);
+  host.querySelector('.case-contents').append(pacts.element);
   const grid = host.querySelector('.pocket-grid');
   const quick = host.querySelector('.quick-pockets');
   let active = 'supplies';
@@ -67,15 +68,6 @@ export function mountFieldCase(host, intents) {
     }
     selectPocket(index);
   };
-  const equip = host.querySelector('[data-equip-spirit]');
-  const result = host.querySelector('[data-spirit-result]');
-  equip.addEventListener('click', () => {
-    if (!intents || !spiritFacts.acquired || spiritFacts.equipReason) return;
-    try {
-      intents.claim('hotel.spirit.equip', { kind: 'product-payload', contract: 'hotel.spirit.equip.v1',
-        data: { equipped: !spiritFacts.equipped, revision: spiritFacts.revision } });
-    } catch { result.textContent = 'The choice could not be sent. Close and reopen the field case.'; }
-  });
   const selectPocket = index => {
     selected = index;
     for (const button of grid.children) button.setAttribute('aria-pressed', String(Number(button.dataset.pocket) === index));
@@ -103,36 +95,17 @@ export function mountFieldCase(host, intents) {
     host.querySelector('[role="tabpanel"]').setAttribute('aria-labelledby', `${tab}-tab`);
     grid.hidden = tab !== 'supplies';
     worn.element.hidden = tab !== 'worn';
-    host.querySelector('.item-detail').hidden = tab === 'worn';
+    host.querySelector('.item-detail').hidden = tab !== 'supplies';
     host.querySelector('.supply-actions').hidden = tab !== 'supplies';
     supplyResult.hidden = tab !== 'supplies';
     host.querySelector('.case-quick').hidden = tab !== 'supplies';
-    host.querySelector('.spirit-empty').hidden = tab !== 'spirits' || !!spiritFacts.acquired;
-    host.querySelector('[data-spirit-card]').hidden = tab !== 'spirits' || !spiritFacts.acquired;
-    equip.hidden = tab !== 'spirits' || !spiritFacts.acquired;
-    result.hidden = tab !== 'spirits';
+    pacts.element.hidden = tab !== 'spirits';
     host.querySelector('[data-collection-heading]').textContent = { supplies: 'Carried supplies', worn: 'Worn', spirits: 'Companions' }[tab];
     host.querySelector('[data-load]').hidden = tab === 'spirits';
-    host.querySelector('[data-detail-title]').textContent = tab === 'supplies' ? 'Empty pocket' : 'No spirit selected';
-    host.querySelector('[data-detail-body]').textContent = tab === 'supplies' ? 'No supplies carried.' : 'Your field case holds no pacts.';
     if (tab === 'supplies') selectPocket(selected);
     else if (tab === 'worn') worn.draw(supplyFacts);
-    else {
-      host.querySelector('[data-detail-number]').textContent = 'Pacts';
-      host.querySelector('.empty-emblem').textContent = spiritFacts.acquired ? '⋈' : '◇';
-      if (spiritFacts.acquired) {
-        host.querySelector('[data-detail-title]').textContent = spiritFacts.name;
-        host.querySelector('[data-detail-body]').textContent = spiritFacts.description;
-      }
-      host.querySelector('[data-spirit-name]').textContent = spiritFacts.name || '';
-      host.querySelector('[data-spirit-equipped]').textContent = spiritFacts.equipped ? 'Equipped' : 'Pact made';
-      equip.textContent = spiritFacts.equipped ? `Let ${spiritFacts.name} rest` : `Equip ${spiritFacts.name}`;
-      equip.disabled = !intents || !!spiritFacts.equipReason;
-      result.textContent = spiritFacts.equipReason || spiritFacts.message || '';
-
-    }
+    else pacts.draw(spiritFacts);
   };
-  host.querySelector('[data-spirit-card]').addEventListener('click', () => showTab('spirits'));
   for (const button of tabs) {
     button.addEventListener('click', () => showTab(button.dataset.tab));
     button.addEventListener('keydown', event => {
@@ -151,7 +124,7 @@ export function mountFieldCase(host, intents) {
       spiritFacts = facts.spirit;
       items = supplyFacts.pockets;
       host.querySelector('[data-count="supplies"]').textContent = supplyFacts.occupied;
-      host.querySelector('[data-count="spirits"]').textContent = spiritFacts.acquired ? 1 : 0;
+      host.querySelector('[data-count="spirits"]').textContent = pacts.count(spiritFacts);
       host.querySelector('[data-count="worn"]').textContent = supplyFacts.worn.filter(slot => slot.id).length;
       host.querySelector('[data-load]').textContent = [`${supplyFacts.occupied} / ${supplyFacts.capacity} pockets`, ...supplyFacts.load].join(' · ');
       if (pockets !== supplyFacts.capacity) {

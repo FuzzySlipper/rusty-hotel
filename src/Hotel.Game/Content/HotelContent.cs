@@ -22,7 +22,7 @@ namespace Hotel.Game.Content;
 /// </summary>
 internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, MechanicsDefinition Mechanics, ActorStatBlock PlayerStats,
     RouteDefinition Route, InterfaceTuning Interface,
-    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
+    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition[] Spirits,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
@@ -38,21 +38,18 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         SurfaceDefinition[] surfaces = SurfaceCatalog.Load(engine).Surfaces;
         CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray());
         ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures, combat.Residents);
-        // The product implements one pact; its bell placement names which spirit file to read.
-        Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
-            "exactly one spirit bell is supported.");
         PlayerTuning player = PlayerTuning.Load(engine);
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
             surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, combat,
-            SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys, mechanics, actions), SpiritMessages.Load(engine, keys),
+            SpiritRoster.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray()), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
         return content;
     }
 
-    internal SpiritBellPlacement SpiritBell => Excursion.Placements.SpiritBells[0];
+    internal SpiritDefinition Spirit(string id) => Spirits.First(s => s.Id == id);
 
     // References between files. Each file's own shape is checked by its JSON contract.
     private void Validate()
@@ -109,7 +106,11 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
             Template.Plain(route, ($"readings[{i}].label", Excursion.Route.Readings[i].Label),
                 ($"readings[{i}].title", Excursion.Route.Readings[i].Title), ($"readings[{i}].text", Excursion.Route.Readings[i].Text));
         for (int i = 0; i < placed.SpiritBells.Length; i++)
+        {
             Template.Plain(placements, ($"spiritBells[{i}].place", placed.SpiritBells[i].Place));
+            Authored.Require(Spirits.Any(s => s.Id == placed.SpiritBells[i].Spirit), placements, $"spiritBells[{i}].spirit",
+                $"'{placed.SpiritBells[i].Spirit}' is not in content/{SpiritRoster.Path}.");
+        }
         for (int i = 0; i < placed.Finds.Length; i++)
         {
             ItemDefinition? item = Supplies.Items.FirstOrDefault(item => item.Id == placed.Finds[i].Item);

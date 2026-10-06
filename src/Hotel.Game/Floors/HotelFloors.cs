@@ -34,8 +34,10 @@ internal sealed class HotelFloors
         Tunings = FloorTunings.Load(engine, content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents);
         foreach (string surface in new[] { Tunings.Content.Doors.Material, Tunings.Content.Doors.HandleMaterial })
             Authored.Require(content.Surfaces.Any(s => s.Id == surface), Floors.Content.ContentTuning.Path, "doors", $"unknown surface '{surface}'.");
-        Authored.Require(Tunings.Content.Spirit == content.Spirit.Id, Floors.Content.ContentTuning.Path, "spirit",
-            $"generated floors ring the bell of the one pact, '{content.Spirit.Id}'.");
+        Authored.Require(Tunings.Content.Spirits.Any(s => s.Weight > 0), Floors.Content.ContentTuning.Path, "spirits", "needs a spirit with a positive weight.");
+        for (int i = 0; i < Tunings.Content.Spirits.Length; i++)
+            Authored.Require(content.Spirits.Any(s => s.Id == Tunings.Content.Spirits[i].Spirit), Floors.Content.ContentTuning.Path, $"spirits[{i}].spirit",
+                $"'{Tunings.Content.Spirits[i].Spirit}' is not in the spirit roster.");
         Sources = new(content.Modules, content.Kit, content.Fixtures, content.Supplies.Items, content.Combat.Residents, content.Player.Controller(engine.Spatial));
     }
 

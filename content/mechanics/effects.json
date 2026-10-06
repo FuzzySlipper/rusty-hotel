@@ -136,6 +136,32 @@
         "kinds": [],
         "retain": 1
       }
+    },
+    {
+      "id": "pushed",
+      "name": "Thrown back",
+      "mark": "⇥",
+      "group": "moved",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 0.5,
+      "push": {
+        "speed": 5
+      }
+    },
+    {
+      "id": "lured",
+      "name": "Lured",
+      "mark": "✶",
+      "group": "moved",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 4,
+      "lure": {
+        "speed": 1.2
+      }
     }
   ]
 }
