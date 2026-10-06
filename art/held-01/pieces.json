@@ -1,0 +1,47 @@
+{
+  "triangleBudget": 16000,
+  "textureSize": 1024,
+  "metallicScale": 0.35,
+  "pieces": {
+    "prybar": {
+      "native": "native/prybar.glb",
+      "forward": "+y",
+      "length": 0.6,
+      "grip": [
+        0.42,
+        0.5,
+        0.2
+      ]
+    },
+    "survey-pistol": {
+      "native": "native/survey-pistol.glb",
+      "forward": "-x",
+      "length": 0.19,
+      "grip": [
+        0.2,
+        0.5,
+        0.3
+      ]
+    },
+    "service-bell": {
+      "native": "native/service-bell.glb",
+      "forward": "+y",
+      "length": 0.1,
+      "grip": [
+        0.5,
+        0.5,
+        0.0
+      ]
+    },
+    "flare-pistol": {
+      "native": "native/flare-pistol.glb",
+      "forward": "-x",
+      "length": 0.22,
+      "grip": [
+        0.17,
+        0.5,
+        0.3
+      ]
+    }
+  }
+}

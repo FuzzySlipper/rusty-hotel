@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-01/source-flare-pistol.png",
+ "image_sha256": "0bd23039d005b5770239535796149a888545f1ee32bb94d34970dfdf8fc6da73",
+ "prompt_id": "e53a216e-c386-41fd-805f-7278a25c17e0",
+ "wall_seconds": 65.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.88,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 669031,
+   "sha256": "92446495bafd9d6baa52a14b369d9261cef9bc329d352584e774e630d058bb2f"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4776138,
+   "sha256": "721781e41343f89da303753afa14e0954f4641a31ee7b4bb4123ef9bb2649e96"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3014555,
+   "sha256": "adb97dd3602140ae1eedec37f798b81a14499bbc8c2a8227fc659ef136234f8c"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 13386672,
+   "sha256": "cc948dc86429f49b7e615af1c1d935b5f836bbdaf3c013bb9bd3473b9c670393"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

@@ -1,0 +1,12 @@
+{
+  "goal": "First-person held items for Hotel Endless, replacing block-built looks; static meshes for local TRELLIS.2 image-to-3D on the RTX 5090.",
+  "style": "Single isolated hand-held object for image-to-3D reconstruction. Grounded, slightly stylized realism with physically plausible worn materials, consistent with a 1970s hotel in muted amber, olive and burgundy light: aged brass, chipped enamel paint, dull steel, worn bakelite and wood. Three-quarter view from slightly above (about 20 degrees elevation, 30 degrees yaw) so the top and two sides are visible. The entire object is fully in frame and centred with generous margin on all sides, nothing cropped. Plain flat light-grey seamless background, soft even studio lighting, no cast shadow, no ground plane, no hands, no other objects. Solid opaque materials, no glow, no smoke, no transparency. NO text, NO letters, NO logos, NO people. Square image around 1024x1024.",
+  "pieces": {
+    "prybar": "Subject: A heavy steel pry bar about 60 cm long, the kind a hotel maintenance man keeps: a straight hexagonal shaft with a gentle crank near one end, a flattened chisel tip at the straight end and a curved split claw at the hooked end, a band of black friction tape wrapped around the middle as a grip. Dull blued steel with scuffed bare-metal edges.",
+    "survey-pistol": "Subject: A compact 1970s service revolver used by a hotel's house detective: a short 2-inch barrel, a six-shot cylinder, an exposed hammer and trigger with a round trigger guard, a rounded walnut grip with chequering. Worn dark blued steel with handling wear on the edges.",
+    "service-bell": "Subject: A classic hotel front-desk service bell to be carried in one hand: a polished domed brass bell on a round black-enamelled cast-iron base, a small plunger button on top of the dome. Slightly tarnished brass, chipped enamel at the base rim.",
+    "flare-pistol": "Subject: A 1970s orange signal flare pistol: a short wide single-shot barrel that breaks open at a hinge, a large exposed hammer, a chunky moulded grip with a lanyard ring at its base. Faded safety-orange plastic body with dark grey steel hinge, hammer and trigger, scuffed and dusty."
+  },
+  "imageProducer": "codex-image-gen (gpt image via codex exec)",
+  "meshProducer": "asset-pipeline legacy/experiments/comfy-native-image-to-3d/run_native.py, TRELLIS.2 bf16"
+}

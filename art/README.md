@@ -98,6 +98,26 @@ Raw provider receipts with temporary signed URLs remain ignored; the portable
 receipt contains no credentials or signed URLs. Queue execution diagnostics and
 player-view evidence belong in Den, not the source-asset ledger.
 
+## Held items
+
+`held-01/request.json` fixes the goal, the shared style and one subject per held item (pry bar, survey pistol, service
+bell, flare pistol). Each `source-<piece>.png` is one GPT image call (the codex-image-gen relay), its whole spec the
+style followed by the subject. Each mesh is one local TRELLIS.2 bf16 image-to-3D run on the owner's RTX 5090 through
+asset-pipeline's native ComfyUI runner (15,000 faces, remesh grid 256, 2K bakes); `runs/<piece>/` keeps the exact
+graph and run record, and `native/<piece>.glb` the download. There is no paid call.
+`held-01/prepare.py` turns each download so its business end points along the hand's forward, scales it to its real
+length, puts its origin at the grip (`pieces.json`), downsizes textures to 1024 and scales the metallic channel
+down (`metallicScale`): the Hotel lights props without a reflected environment, so fully metallic bakes read black.
+It writes `content/models/held/<piece>.glb` and fails above `triangleBudget`. The native download and the script are
+the master; no `.blend` is kept.
+
+```text
+blender -b --python art/held-01/prepare.py
+```
+
+Where each model sits in the hand is presentation tuning in `content/combat/held.json`, not part of the mesh.
+`provenance.json` records hashes, run times and use limits.
+
 ## Ambient audio and primitive props
 
 `tools/author-ambience.py` authors the two deterministic mono PCM WAV loops in

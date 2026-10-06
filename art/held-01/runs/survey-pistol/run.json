@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-01/source-survey-pistol.png",
+ "image_sha256": "07daf5cf90ab7c5dfedd07928642fc1d9298fd64a672d90e336139e8724450c4",
+ "prompt_id": "0208e66c-1a41-42c0-a460-7997542b0571",
+ "wall_seconds": 85.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.97,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 593568,
+   "sha256": "bde9a2a508b3a3028478f0231767f192bcfe0f88a469c49949d7bd0f40b31c36"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4413345,
+   "sha256": "5221f39028d464355017c6db095949ab069c599712191b6e594523cc122e08ba"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3049359,
+   "sha256": "ec8d6344a239251f06446cfc0d857bbd827373994e67e27fe8c3ec20022e25c9"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 11826460,
+   "sha256": "0213ea803237f87eed8474a74e919d6b8a644c36fc37406f14f9b3b85d0ea1f5"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

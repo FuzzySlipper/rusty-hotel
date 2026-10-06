@@ -1,0 +1,124 @@
+{
+ "runFamily": "hotel-held-01",
+ "sourcePrompt": "request.json (style + per-piece subject, sent verbatim as one spec)",
+ "imageProducer": "codex-image-gen skill: codex exec relay to GPT image generation, one call per piece, first attempt accepted",
+ "meshProducer": "asset-pipeline legacy/experiments/comfy-native-image-to-3d/run_native.py (asset-pipeline cc5f70e)",
+ "meshHost": "owner desktop RTX 5090, native ComfyUI 0.37, TRELLIS.2 bf16; local and unpaid",
+ "runs": {
+  "prybar": {
+   "wallSeconds": 25.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  },
+  "survey-pistol": {
+   "wallSeconds": 85.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  },
+  "service-bell": {
+   "wallSeconds": 175.7,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  },
+  "flare-pistol": {
+   "wallSeconds": 65.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256,
+    "decimate": "midpoint",
+    "seed_offset": 0
+   }
+  }
+ },
+ "runRecords": "runs/<piece>/prompt.json (exact ComfyUI graph) and run.json",
+ "conversion": "Local Blender 5.2.2 LTS; prepare.py with pieces.json: turn, real scale, grip pivot, textures to 1024, metallic channel scaled by metallicScale; no .blend master (native GLB + prepare.py rebuild the runtime GLBs)",
+ "decision": "Retain all four as first-person held items drawn on the Engine viewmodel layer; first attempt for every piece, no retries.",
+ "limitations": [
+  "Survey pistol: hammer and trigger baked brass-toned where the source shows steel.",
+  "Backs and undersides are reconstructed from one view; unseen detail is plausible invention.",
+  "Metallic scaled down for the Hotel's environment-free lighting; the maps are not physically calibrated.",
+  "Static meshes: no moving parts (hammer, hinge, bell plunger), no hands or rig."
+ ],
+ "files": [
+  {
+   "path": "art/held-01/native/flare-pistol.glb",
+   "sha256": "cc948dc86429f49b7e615af1c1d935b5f836bbdaf3c013bb9bd3473b9c670393"
+  },
+  {
+   "path": "art/held-01/native/prybar.glb",
+   "sha256": "e18b899eef4925fee8a3e55bda471e7dc227fbea991f5ed9bb236cf4a9473b1b"
+  },
+  {
+   "path": "art/held-01/native/service-bell.glb",
+   "sha256": "f9aa55f29179056c3c74f53422b7b3499ee6bbc4f6a4654abf68c2ae6fc5fdf7"
+  },
+  {
+   "path": "art/held-01/native/survey-pistol.glb",
+   "sha256": "0213ea803237f87eed8474a74e919d6b8a644c36fc37406f14f9b3b85d0ea1f5"
+  },
+  {
+   "path": "art/held-01/pieces.json",
+   "sha256": "c27b68d2d62b012b13adb6e9e54c66706e2aef164f8119de0adc481e9bc38278"
+  },
+  {
+   "path": "art/held-01/prepare.py",
+   "sha256": "45c1f861099b6ddd8965650dcbcbe31d804eabbda47aaab09a04c6c77ba505ed"
+  },
+  {
+   "path": "art/held-01/request.json",
+   "sha256": "a4de2810650eb1a1dba1f7a6f2cdc9bddba8bbf588efff2935eb93cb8bf8c321"
+  },
+  {
+   "path": "art/held-01/source-flare-pistol.png",
+   "sha256": "0bd23039d005b5770239535796149a888545f1ee32bb94d34970dfdf8fc6da73"
+  },
+  {
+   "path": "art/held-01/source-prybar.png",
+   "sha256": "66f457383cd8d693fa8f8bdf631a53e78d759dd13da72dcb6cc29cf05013ff2f"
+  },
+  {
+   "path": "art/held-01/source-service-bell.png",
+   "sha256": "fbf321d0de1ef244e2db2eac7c1620dec6157671788324d156f3c2f36589ba9e"
+  },
+  {
+   "path": "art/held-01/source-survey-pistol.png",
+   "sha256": "07daf5cf90ab7c5dfedd07928642fc1d9298fd64a672d90e336139e8724450c4"
+  },
+  {
+   "path": "content/models/held/flare-pistol.glb",
+   "sha256": "dbceb3c2894332af7e1e25c0f1a3bdeace51ea30fccf5f31ebb8a8488bbed977"
+  },
+  {
+   "path": "content/models/held/prybar.glb",
+   "sha256": "a17612579aeccb8ce09ea3dfa4fc0374d38fc84d7de2296eb66025802692a208"
+  },
+  {
+   "path": "content/models/held/service-bell.glb",
+   "sha256": "568eca5bd7755287ed7127a7427016d6b08211c1b3c6f4731591d7547100b636"
+  },
+  {
+   "path": "content/models/held/survey-pistol.glb",
+   "sha256": "d00163c32aa4cdf9d0958a383ef9e14c0d7689903c6f97a175ce04e92fc17e12"
+  }
+ ]
+}

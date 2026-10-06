@@ -20,8 +20,10 @@ internal sealed class CombatView : IDisposable
     private readonly Dictionary<string, MeshResource> boxes = [];
     private readonly Dictionary<string, Part[]> residents = [];
     private readonly Dictionary<string, ResidentLook> looks = [];
-    // The look of each held item, and the flash at a firearm's commit.
-    private readonly Dictionary<HeldLook, Part[]> held = [];
+    // The model each held look shows, and the flash at a firearm's commit.
+    private readonly List<RenderResource> models = [];
+    private readonly Dictionary<HeldLook, (ulong Entity, Appearance Appearance, HeldModel Model)> held = [];
+    private readonly HeldCatalog heldLooks;
     private readonly Part muzzle;
     // Enough flare boxes for the shots one hand can have in flight at once.
     private const int ShownProjectiles = 6;
@@ -40,20 +42,18 @@ internal sealed class CombatView : IDisposable
                 residents[enemy.Id] = look.Parts.Select(part => Box(part.Material, Authored.Vector(part.Offset), Authored.Vector(part.Size), part.Role)).ToArray();
                 beams.Add(enemy.Id, Box("tell-amber", default, Vector3.One));
             }
-            held[HeldLook.Bar] = [Box("equipment", new(0, 0, -.15f), new(.055f, .055f, .65f)),
-                   Box("brass", new(0, .065f, -.48f), new(.065f, .16f, .06f)),
-                   Box("canvas", new(0, -.015f, .03f), new(.12f, .14f, .17f))];
-            held[HeldLook.Pistol] = [Box("equipment", new(0, .05f, -.12f), new(.13f, .13f, .32f)),
-                   Box("equipment", new(0, .03f, -.34f), new(.07f, .08f, .17f)),
-                   Box("trim", new(0, -.09f, 0), new(.11f, .26f, .13f)),
-                   Box("canvas", new(0, -.07f, .06f), new(.14f, .17f, .15f)),
-                   Box("brass", new(0, .13f, -.13f), new(.02f, .03f, .03f))];
-            held[HeldLook.Bell] = [Box("brass", new(0, .02f, -.14f), new(.16f, .10f, .16f)),
-                   Box("brass", new(0, .09f, -.14f), new(.03f, .05f, .03f)),
-                   Box("trim", new(0, -.05f, -.14f), new(.2f, .03f, .2f))];
-            held[HeldLook.Flare] = [Box("tell-amber", new(0, .05f, -.14f), new(.12f, .12f, .26f)),
-                   Box("equipment", new(0, -.08f, -.02f), new(.10f, .22f, .12f))];
-            muzzle = Box("tell-amber", new(0, .04f, -.48f), new(.15f, .15f, .19f));
+            heldLooks = definition.Held;
+            foreach (HeldModel look in heldLooks.Looks)
+            {
+                using ContentReference content = engine.Content.OpenReference(new(look.Model));
+                // The pinned SDK admits GLB through Animation even for a static, unrigged prop.
+                RenderResource model = engine.Animation.OpenAnimatedMeshFromContent(new(content));
+                models.Add(model);
+                Appearance appearance = engine.Animation.CreateAnimatedMeshAppearance(new(model));
+                appearances.Add(appearance);
+                held[look.Look] = (scene.Entities.Create().Value, appearance, look);
+            }
+            muzzle = Box("tell-amber", default, Authored.Vector(heldLooks.FlashSize));
             flares = Enumerable.Range(0, ShownProjectiles).Select(_ => Box("tell-amber", default, new(.16f))).ToArray();
         }
         catch { Dispose(); throw; }
@@ -104,16 +104,23 @@ internal sealed class CombatView : IDisposable
             Place(beam, (enemy.Eye + enemy.BeamEnd) / 2, beamRotation, showBeam, Vector3.Zero, new(.045f, .045f, Math.Max(.001f, length)));
         }
         Quaternion camera = Facing(player.Forward);
-        Vector3 hand = new(.28f, -.31f, -.53f);
-        if (combat.Phase == AttackPhase.Windup) hand += new Vector3(.07f, .12f, .09f) * combat.PhaseProgress;
-        if (combat.Phase == AttackPhase.Commit) hand += new Vector3(-.12f, .06f, -.25f);
-        if (combat.Phase is AttackPhase.Recovery) hand.Y -= .12f;
+        HandPose pose = heldLooks.Hand;
+        Vector3 hand = Authored.Vector(pose.Rest);
+        if (combat.Phase == AttackPhase.Windup) hand += Authored.Vector(pose.Windup) * combat.PhaseProgress;
+        if (combat.Phase == AttackPhase.Commit) hand += Authored.Vector(pose.Commit);
+        if (combat.Phase is AttackPhase.Recovery) hand.Y -= pose.RecoveryDrop;
         Vector3 handWorld = player.Eye + Vector3.Transform(hand, camera);
         HeldLook? look = combat.Holding?.Item.Wear!.Look;
-        foreach (var (kind, parts) in held)
-            foreach (Part part in parts) Place(part, handWorld, camera, !combat.Defeated && look == kind);
+        foreach (var (kind, (entity, appearance, model)) in held)
+        {
+            Vector3 turn = Authored.Vector(model.Rotation) * (MathF.PI / 180);
+            // The viewmodel layer is drawn in camera space (right, up, back) under its own light rig.
+            facts.Add(new(entity, false, 0, new(hand + Authored.Vector(model.Offset), Quaternion.CreateFromYawPitchRoll(turn.Y, turn.X, turn.Z), new(model.Scale)),
+                appearance, !combat.Defeated && look == kind, RenderLayer.Viewmodel));
+        }
         bool firing = combat.Phase == AttackPhase.Commit && combat.User.Current?.Delivery.Kind is Actions.DeliveryKind.Hitscan or Actions.DeliveryKind.Projectile;
-        Place(muzzle, handWorld, camera, !combat.Defeated && firing);
+        float[]? flash = look is { } shown ? heldLooks.Model(shown).Muzzle : null;
+        Place(muzzle, handWorld, camera, !combat.Defeated && firing && flash is not null, flash is null ? Vector3.Zero : Authored.Vector(flash));
         for (int i = 0; i < flares.Length; i++)
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         scene.PublishCombat(facts.ToArray());
@@ -131,6 +138,7 @@ internal sealed class CombatView : IDisposable
         scene.PublishCombat([]);
         foreach (Appearance appearance in appearances) appearance.Dispose();
         foreach (MeshResource mesh in meshes) mesh.Dispose();
+        foreach (RenderResource model in models) model.Dispose();
     }
     private sealed record Part(ulong Entity, Appearance Appearance, Vector3 Offset, Vector3 Size, LookRole Role);
 }

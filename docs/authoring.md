@@ -43,6 +43,7 @@ its own folder. Geometry is kept apart from tuning.
 | `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
 | `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height, the loot table its remains give and the experience felling it gives; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
+| `combat/held.json` | First-person held items: the hand's rest and phase offsets, the muzzle flash size, and per held look (`HeldLook`) its model, offset, rotation, scale and muzzle point, in camera space; `CombatView`, drawn on the Engine viewmodel layer |
 | `combat/looks.json` | Resident silhouettes as boxes in their own frame, with arm, body and tell roles and the tell poses; `CombatView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
