@@ -24,7 +24,7 @@ its own folder. Geometry is kept apart from tuning.
 
 | File | Meaning and owner |
 | --- | --- |
-| `input/bindings.json` | Every control: Engine keys/pointer buttons for game actions, browser codes for screen shortcuts, labels, Controls-screen names, one binding per weapon (in weapon order) and per quick pocket, and the opening hint; `HotelControls` |
+| `input/bindings.json` | Every control: Engine keys/pointer buttons for game actions, browser codes for screen shortcuts, labels, Controls-screen names, one binding per quick pocket, and the opening hint; `HotelControls` |
 | `player/tuning.json` | Body/camera dimensions, movement and look tuning; `HotelPlayer` |
 | `route/interaction.json` | Reach and focus distances/angles for every world interaction; `HotelRoute` |
 | `route/messages.json` | Focus prompt wording and the labels of the take/notebook interactions; `HotelRoute` |
@@ -39,8 +39,9 @@ its own folder. Geometry is kept apart from tuning.
 | `supplies/equipment.json` | Item classifications and the investigator's equipment slots with the classifications each accepts; `FieldCase` |
 | `supplies/capacity.json` | The field case's capacity metrics (weight, space) and their limits; `FieldCase` |
 | `supplies/messages.json` | Supply notices, refusal reasons and how long a notice stays up; `HotelSupplies` |
-| `combat/tuning.json` | Reload time and how long combat notices, hit and hurt flashes last; `HotelCombat` |
-| `combat/weapons.json` | Weapon commitments, damage and its kind, range, ammunition cost, short name and HUD phase labels; `HotelCombat` |
+| `combat/tuning.json` | How long combat notices, hit and hurt flashes last; `HotelCombat` |
+| `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
+| `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
 | `combat/residents.json` | Resident kinds: behavior/silhouette, stat block, damage and its kind, sight, timing, leash, body and eye height; `HotelCombat`, `CombatView` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
 | `spirits/<id>.json` | One spirit's pact terms, cost/range, manifestation timing and placement offsets, its description and its own wording (call hint and result, phase names); `HotelSpirit` |
@@ -69,7 +70,7 @@ own file in the matching folder rather than appending it to a neighbour.
 Gameplay text lives with the domain that shows it, in its `messages.json` or in the
 definition it describes. Write values as `{placeholders}` rather than repeating a
 name or number: `{spirit}`, `{item}`, `{range}` and so on are filled from the
-definitions at runtime. Name a control as `{key.reload}`, `{key.use}`, `{key.fieldCase}` and
+definitions at runtime. Name a control as `{key.secondary}`, `{key.use}`, `{key.fieldCase}` and
 so on; it becomes that control's label from `input/bindings.json` when the file loads.
 Each text field accepts a fixed set of placeholders. An
 unknown one fails loading with the file, the field and the allowed set. Text that
@@ -77,8 +78,9 @@ belongs to one place (a door's locked prompt, where a spirit's bell hides) is
 authored with that placement. A screen's fixed chrome stays in its UI module, and
 developer-console output stays in code.
 
-These fields tune the implemented vocabulary. Additional weapon types, resident
-behaviors or multiple spirits need a deliberate change to their domain owner;
+These fields tune the implemented vocabulary. A new weapon is a held item with
+actions, authored in content alone; a new delivery kind, resident behavior or
+multiple spirits need a deliberate change to their domain owner;
 adding arbitrary JSON entries alone does not implement them.
 
 ## Stats and damage
@@ -93,8 +95,8 @@ the health left.
 
 An actor's stat block (`player/stats.json`, a resident kind's `stats`) gives every attribute, may set a derived stat's
 own `bases`, lists its `resistances` (absent is none), and its tracks' `initial` points (absent is full). A missing
-attribute, an unknown id or a value out of bounds fails validation naming the file and field. Weapons and resident
-kinds name the `damageKind` they deal. Add a stat, track or damage kind to the vocabulary once; every block then
+attribute, an unknown id or a value out of bounds fails validation naming the file and field. Actions name the
+`kind` of each damage packet they deal. Add a stat, track or damage kind to the vocabulary once; every block then
 validates against it. A derived stat names the `quantum` its value rounds to (0 for none); `pace` is the derived stat
 movement is scaled by, and the vocabulary must have it.
 
@@ -112,10 +114,34 @@ role:
 | `wear` | `slots`, `exclusive`, `stats` | A single item worn in that many equipment slots that accept one of its classifications; `stats` add to stats or resistances (`resistance.<kind>`) as an Engine source while worn; no two worn items share an `exclusive` group |
 | `deposit` | `true` | An expedition find, carried back and deposited at the refuge |
 
-Slots (`supplies/equipment.json`) are the hands, the worn slots and the rings; a slot `accepts` classifications.
+Slots (`supplies/equipment.json`) are the hands, the worn slots and the rings; a slot `accepts` classifications,
+and exactly one slot is each `hand` (`Main`, `Off`). An item worn in a hand is held: its `wear.actions` give its
+primary and secondary actions (at most two) and `wear.look` how it is drawn (`Bar`, `Pistol`, `Bell`, `Flare`); a
+worn item has neither. `wear.contributions` add to the damage of hits its wearer deals (`Outgoing`) or takes
+(`Incoming`), for the listed damage kinds or all of them: `add` then `multiply`, before resistance. `player/kit.json`
+names what is worn and held at the start, by item and slots.
 Wearing into a full slot trades places with what it held. The first `quickPockets` pockets are the belt the quick keys
 use: consumables are stacks, and Engine equipment holds single items only, so the belt is pocket layout rather than an
 equipment slot. A description names a restored amount by its track (`{health}`).
+
+## Actions
+
+An action (`actions/actions.json`) is used by a hand or by a resident (a kind names its `attack`). `delivery.kind`
+decides how it reaches what it affects, each through an Engine spatial query, and which delivery fields it needs:
+
+| Kind | Fields | Lands on |
+| --- | --- | --- |
+| `Melee` | `range`, `width` | the first body a capsule of that width meets, swept along the aim |
+| `Hitscan` | `range` | the first body or surface along the aim |
+| `Projectile` | `range`, `width`, `speed` | the first body or surface it meets in flight, cast step by step on admitted time |
+| `Area` | `range` (0 is the user), `radius` | every body within the radius of the point along the aim, with a clear line from it |
+| `Self` | none | the user: no damage, only `selfEffects` |
+
+`cost.tracks` are spent once when the action is accepted, and an action whose cost cannot be met is refused whole;
+`cost.item` names a classification, one carried item of which is used by its own use when the action lands.
+`timing` gives `windup`, `commit`, `recovery` and `cooldown` in admitted seconds. Each `damage` packet has a `kind`,
+an `amount` and `scaling` (a stat and how much each point adds). `windupLabel` and `commitLabel` are the HUD's
+phase words. A resident starts its attack when the investigator is within its reach (an area's range plus radius).
 
 ## Effects
 
@@ -140,8 +166,8 @@ source (an item, a resident, a weapon, a spirit) up to `maximumInstances`, and t
 group shares one rule. `duration` and `interval` are admitted seconds: effects advance only with the simulation, so a
 paused game holds them. An over-time effect's last tick lands as it expires.
 
-Items name the `effects` their use applies; weapons and resident kinds name the effects a hit puts on what it strikes
-(`onHit`); the spirit names the hold its call puts on a resident (`effect`). An unknown effect id fails validation
+Items name the `effects` their use applies; actions name the `effects` a hit puts on what it strikes and the
+`selfEffects` on their user; the spirit names the hold its call puts on a resident (`effect`). An unknown effect id fails validation
 naming the referring file and field. A full track refuses an item only when its effects would do no more than restore
 that full track.
 
@@ -296,7 +322,7 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
 restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
-same way, on the floor it was left on and in the refuge, beside its pose. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
+same way, on the floor it was left on and in the refuge, beside its pose. Version 7 drops the selected weapon: weapons are held items, saved with the worn items. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
 equipped before the stats so track maximums include what is worn. Version 5 keeps each actor's effects with
 its stats: the effect, who applied it, its stacks, time left, time since its last tick and ward left, re-admitted in
 their saved order after the bases and before the track points, so the stat sources they hold are rebuilt. A checkpoint of another version is refused

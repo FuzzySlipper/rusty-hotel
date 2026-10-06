@@ -22,10 +22,10 @@ internal static class EquipmentChecks
 
         // Capacity: four coats are within the weight limit, a fifth is refused whole with the limit it would pass.
         int coat = definition.Item("night-coat")!.Costs["weight"];
-        int fit = weight.Limit / coat;
-        Check(supplies.Give("night-coat", fit) && supplies.Used(weight) == fit * coat, "single items fill one pocket each and count their weight");
+        int kit = supplies.Used(weight), fit = (weight.Limit - kit) / coat;
+        Check(supplies.Give("night-coat", fit) && supplies.Used(weight) == kit + fit * coat, "single items fill one pocket each and count their weight");
         int occupied = supplies.Occupied;
-        Check(!supplies.Give("night-coat", 1) && supplies.Occupied == occupied && supplies.Used(weight) == fit * coat &&
+        Check(!supplies.Give("night-coat", 1) && supplies.Occupied == occupied && supplies.Used(weight) == kit + fit * coat &&
             supplies.Message.Contains(weight.Name), $"the Engine refuses a find over the weight limit and names it: {supplies.Message}");
 
         // Wearing: the coat leaves its pocket for the body slot, and its resistance lands as a worn-item source.

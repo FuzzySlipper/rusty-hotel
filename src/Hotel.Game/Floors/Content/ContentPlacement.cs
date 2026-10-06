@@ -145,7 +145,7 @@ internal static class ContentPlacement
 
     /// <summary>Whether a resident at a post can neither see nor strike within the margin of the arrival.</summary>
     internal static bool ArrivalClear(Vector3 post, Vector3 arrival, ResidentKind kind, float margin) =>
-        Vector2.Distance(new(post.X, post.Z), new(arrival.X, arrival.Z)) > Math.Max(kind.SightRange, kind.AttackRange) + kind.Leash + margin;
+        Vector2.Distance(new(post.X, post.Z), new(arrival.X, arrival.Z)) > Math.Max(kind.SightRange, kind.AttackReach) + kind.Leash + margin;
 
     /// <summary>
     /// The first space a resident could follow the player into that lies outside its region: walking from its post's

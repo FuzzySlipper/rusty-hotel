@@ -21,8 +21,7 @@ internal static class Owners
         new(content.Supplies, content.Excursion.Placements.Finds, capacity ?? content.Interface.SupplyPockets, owner,
             content.Mechanics, content.PlayerStats);
     internal static HotelCombat Combat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies, HotelContent content) =>
-        new(engine, scene, player, supplies, content.Combat, content.Excursion.Placements.Residents,
-            content.Controls.Weapons.Select(w => w.Label).ToArray());
+        new(engine, scene, player, supplies, content.Combat, content.Excursion.Placements.Residents);
     internal static HotelSpirit Spirit(HotelContent content, HotelSupplies supplies, HotelCombat combat, HotelPlayer player) =>
         new(content.Spirit, content.SpiritText, content.SpiritBell, supplies, combat, player, content.Mechanics.Effect(content.Spirit.Effect)!);
     internal static HotelRoute Route(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,

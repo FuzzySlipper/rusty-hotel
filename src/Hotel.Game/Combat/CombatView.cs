@@ -1,6 +1,7 @@
 using System.Numerics;
 using Hotel.Game.Player;
 using Hotel.Game.Scene;
+using Hotel.Game.Supplies;
 using Rusty.Engine;
 
 namespace Hotel.Game.Combat;
@@ -16,8 +17,12 @@ internal sealed class CombatView : IDisposable
     private readonly List<Appearance> appearances = [];
     private readonly Dictionary<string, MeshResource> boxes = [];
     private readonly Dictionary<string, Part[]> residents = [];
-    private readonly Part[] bar, gun;
+    // The look of each held item, and the flash at a firearm's commit.
+    private readonly Dictionary<HeldLook, Part[]> held = [];
     private readonly Part muzzle;
+    // Enough flare boxes for the shots one hand can have in flight at once.
+    private const int ShownProjectiles = 6;
+    private readonly Part[] flares;
     private readonly Dictionary<string, Part> beams = [];
 
     internal CombatView(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelCombat combat)
@@ -52,15 +57,21 @@ internal sealed class CombatView : IDisposable
                        Box("brass", new(.30f, -.22f, 0), new(.08f, .5f, .08f))];
                 beams.Add(enemy.Id, Box("tell-amber", default, Vector3.One));
             }
-            bar = [Box("equipment", new(0, 0, -.15f), new(.055f, .055f, .65f)),
+            held[HeldLook.Bar] = [Box("equipment", new(0, 0, -.15f), new(.055f, .055f, .65f)),
                    Box("brass", new(0, .065f, -.48f), new(.065f, .16f, .06f)),
                    Box("canvas", new(0, -.015f, .03f), new(.12f, .14f, .17f))];
-            gun = [Box("equipment", new(0, .05f, -.12f), new(.13f, .13f, .32f)),
+            held[HeldLook.Pistol] = [Box("equipment", new(0, .05f, -.12f), new(.13f, .13f, .32f)),
                    Box("equipment", new(0, .03f, -.34f), new(.07f, .08f, .17f)),
                    Box("trim", new(0, -.09f, 0), new(.11f, .26f, .13f)),
                    Box("canvas", new(0, -.07f, .06f), new(.14f, .17f, .15f)),
                    Box("brass", new(0, .13f, -.13f), new(.02f, .03f, .03f))];
+            held[HeldLook.Bell] = [Box("brass", new(0, .02f, -.14f), new(.16f, .10f, .16f)),
+                   Box("brass", new(0, .09f, -.14f), new(.03f, .05f, .03f)),
+                   Box("trim", new(0, -.05f, -.14f), new(.2f, .03f, .2f))];
+            held[HeldLook.Flare] = [Box("tell-amber", new(0, .05f, -.14f), new(.12f, .12f, .26f)),
+                   Box("equipment", new(0, -.08f, -.02f), new(.10f, .22f, .12f))];
             muzzle = Box("tell-amber", new(0, .04f, -.48f), new(.15f, .15f, .19f));
+            flares = Enumerable.Range(0, ShownProjectiles).Select(_ => Box("tell-amber", default, new(.16f))).ToArray();
         }
         catch { Dispose(); throw; }
     }
@@ -95,7 +106,7 @@ internal sealed class CombatView : IDisposable
                 Place(part, enemy.Position, facing, enemy.Alive && (part.Role != "tell" || winding || committed), offset);
             }
             Part beam = beams[enemy.Id];
-            bool showBeam = enemy.Alive && enemy.Kind.Behavior == ResidentBehavior.Lamp && enemy.BeamTime > 0;
+            bool showBeam = enemy.Alive && enemy.BeamTime > 0;
             Vector3 delta = enemy.BeamEnd - enemy.Eye;
             float length = delta.Length();
             Quaternion beamRotation = length > .001f ? Facing(delta / length) : Quaternion.Identity;
@@ -105,11 +116,15 @@ internal sealed class CombatView : IDisposable
         Vector3 hand = new(.28f, -.31f, -.53f);
         if (combat.Phase == AttackPhase.Windup) hand += new Vector3(.07f, .12f, .09f) * combat.PhaseProgress;
         if (combat.Phase == AttackPhase.Commit) hand += new Vector3(-.12f, .06f, -.25f);
-        if (combat.Phase is AttackPhase.Recovery or AttackPhase.Reloading) hand.Y -= .12f;
+        if (combat.Phase is AttackPhase.Recovery) hand.Y -= .12f;
         Vector3 handWorld = player.Eye + Vector3.Transform(hand, camera);
-        foreach (Part part in bar) Place(part, handWorld, camera, !combat.Defeated && combat.Weapon.AmmoCost == 0);
-        foreach (Part part in gun) Place(part, handWorld, camera, !combat.Defeated && combat.Weapon.AmmoCost > 0);
-        Place(muzzle, handWorld, camera, !combat.Defeated && combat.Weapon.AmmoCost > 0 && combat.Phase == AttackPhase.Commit);
+        HeldLook? look = combat.Holding?.Item.Wear!.Look;
+        foreach (var (kind, parts) in held)
+            foreach (Part part in parts) Place(part, handWorld, camera, !combat.Defeated && look == kind);
+        bool firing = combat.Phase == AttackPhase.Commit && combat.User.Current?.Delivery.Kind is Actions.DeliveryKind.Hitscan or Actions.DeliveryKind.Projectile;
+        Place(muzzle, handWorld, camera, !combat.Defeated && firing);
+        for (int i = 0; i < flares.Length; i++)
+            Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         scene.PublishCombat(facts.ToArray());
     }
 

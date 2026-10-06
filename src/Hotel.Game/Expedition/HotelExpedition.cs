@@ -139,7 +139,7 @@ internal sealed class HotelExpedition : IDisposable
         string[] secured = [.. carried.Collected.Where(supplies.IsExpeditionFind), .. Floors.HotelFloors.ExpeditionFinds(run)];
         // Expedition finds move into the refuge ledger, retaining their collected identity.
         SuppliesState deposited = carried with { Pockets = carried.Pockets.Select(s => s is { } item && supplies.Item(item.Item).Deposit ? null : s).ToArray() };
-        return new(CheckpointState.CurrentVersion, returns, refuge.Id, combat.Weapon.Id, deposited, route.OpenDoors,
+        return new(CheckpointState.CurrentVersion, returns, refuge.Id, deposited, route.OpenDoors,
             spirit.Capture(), combat.Capture(), secured, run);
     }
 
@@ -151,7 +151,7 @@ internal sealed class HotelExpedition : IDisposable
         if (state.Floors is { } run) floors.Validate(run);
         supplies.Validate(state.Supplies);
         route.Validate(state.OpenDoors);
-        combat.Validate(state.Weapon, state.Residents);
+        combat.Validate(state.Residents);
         spirit.Validate(state.Spirit);
         string[] expected = state.Supplies.Collected.Where(supplies.IsExpeditionFind)
             .Concat(state.Floors is { } stored ? Floors.HotelFloors.ExpeditionFinds(stored) : []).Order().ToArray();
@@ -167,7 +167,7 @@ internal sealed class HotelExpedition : IDisposable
         if (state.Floors is { } run) floors.Restore(run);
         else floors.BeginNew();
         supplies.Restore(state.Supplies);
-        combat.Restore(state.Weapon, state.Residents);
+        combat.Restore(state.Residents);
         spirit.Restore(state.Spirit);
         player.Reset();
         route.Restore(state.OpenDoors);

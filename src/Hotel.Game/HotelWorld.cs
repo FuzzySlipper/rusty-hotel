@@ -12,8 +12,8 @@ using Rusty.Engine.Interaction;
 
 namespace Hotel.Game;
 
-/// <summary>What the player carries from one floor to the next: supplies and resources, the pact, and the weapon in hand.</summary>
-internal sealed record WorldCarry(SuppliesState Supplies, SpiritState Spirit, string Weapon);
+/// <summary>What the player carries from one floor to the next: supplies, resources and what they wear and hold, and the pact.</summary>
+internal sealed record WorldCarry(SuppliesState Supplies, SpiritState Spirit);
 
 /// <summary>What a floor keeps while the player is elsewhere in the session: its opened doors and its residents.</summary>
 /// <param name="Residents">The residents as left, or null for a floor whose residents start fresh.</param>
@@ -38,8 +38,7 @@ internal sealed class HotelWorld : IDisposable
             Player = Own(new HotelPlayer(engine, Scene, content.Player, excursion.Placements.Arrival, content.Controls));
             Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity,
                 content.Mechanics, content.PlayerStats);
-            Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents,
-                content.Controls.Weapons.Select(w => w.Label).ToArray());
+            Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents);
             Spirit = new HotelSpirit(content.Spirit, content.SpiritText, excursion.Placements.SpiritBells[0], Supplies, Combat, Player,
                 content.Mechanics.Effect(content.Spirit.Effect)!);
             Route = new HotelRoute(engine, Scene, Player, Supplies, Spirit, content.Route, excursion.Route,
@@ -67,7 +66,7 @@ internal sealed class HotelWorld : IDisposable
     internal HotelExpedition Expedition { get; } = null!;
     internal bool HasRefuge => Excursion.Placements.Refuge is not null;
 
-    internal WorldCarry Carry() => new(Supplies.Capture(), Spirit.Capture(), Combat.Weapon.Id);
+    internal WorldCarry Carry() => new(Supplies.Capture(), Spirit.Capture());
     internal WorldMemory Remember() => new(Route.OpenDoors, Combat.Capture(), Route.Keys);
 
     /// <summary>
@@ -79,8 +78,8 @@ internal sealed class HotelWorld : IDisposable
         Supplies.Restore(carry.Supplies with { Collected = carry.Supplies.Collected.Concat(collected).Distinct()
             .Where(id => Supplies.Finds.Any(f => f.Id == id)).Order(StringComparer.Ordinal).ToArray() });
         Spirit.Restore(carry.Spirit);
-        if (memory?.Residents is { } left) Combat.Validate(carry.Weapon, left);
-        Combat.Restore(carry.Weapon, memory?.Residents ?? []);
+        if (memory?.Residents is { } left) Combat.Validate(left);
+        Combat.Restore(memory?.Residents ?? []);
         Route.Restore(memory?.OpenDoors ?? [], memory?.Keys);
     }
 

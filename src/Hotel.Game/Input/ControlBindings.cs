@@ -8,8 +8,11 @@ namespace Hotel.Game.Input;
 /// key code the DOM companion handles. Every label shown to the player, and every <c>{key.action}</c> in
 /// authored text, comes from here.
 /// </summary>
-internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Look, ControlBinding Attack, ControlBinding[] Weapons,
-    ControlBinding Reload, ControlBinding[] QuickPockets, ControlBinding Summon, ControlBinding Use,
+/// <param name="Primary">Acts with what the main hand holds: its first action.</param>
+/// <param name="Secondary">Acts with the held item's second action (or what the other hand holds), and restores the checkpoint when downed.</param>
+/// <param name="SwapHands">Trades what the two hands hold: the one slot-cycle control, in place of a key per weapon.</param>
+internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Look, ControlBinding Primary, ControlBinding SwapHands,
+    ControlBinding Secondary, ControlBinding[] QuickPockets, ControlBinding Summon, ControlBinding Use,
     ScreenBinding FieldCase, ScreenBinding Menu, ScreenBinding Console, ControlText Text, OpeningHint OpeningHint)
 {
     internal const string Path = "input/bindings.json";
@@ -21,12 +24,12 @@ internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Look, Co
         Template.Check(Path, "text.hint", bindings.Text.Hint, "key", "action");
         Authored.Within(Path, "openingHint.seconds", bindings.OpeningHint.Seconds, 0, float.MaxValue);
         Template.Plain(Path, ("walk.name", bindings.Walk.Name), ("walk.shortName", bindings.Walk.ShortName), ("walk.label", bindings.Walk.Label));
-        foreach (var (field, control) in new[] { ("look", bindings.Look), ("attack", bindings.Attack), ("reload", bindings.Reload),
+        foreach (var (field, control) in new[] { ("look", bindings.Look), ("primary", bindings.Primary), ("secondary", bindings.Secondary),
+            ("swapHands", bindings.SwapHands),
             ("summon", bindings.Summon), ("use", bindings.Use) })
             Template.Plain(Path, ($"{field}.name", control.Name), ($"{field}.shortName", control.ShortName), ($"{field}.label", control.Label));
         foreach (var (field, screen) in new[] { ("fieldCase", bindings.FieldCase), ("menu", bindings.Menu), ("console", bindings.Console) })
             Template.Plain(Path, ($"{field}.name", screen.Name), ($"{field}.shortName", screen.ShortName), ($"{field}.label", screen.Label));
-        for (int i = 0; i < bindings.Weapons.Length; i++) Template.Plain(Path, ($"weapons[{i}].label", bindings.Weapons[i].Label));
         for (int i = 0; i < bindings.QuickPockets.Length; i++) Template.Plain(Path, ($"quickPockets[{i}].label", bindings.QuickPockets[i].Label));
         Template.Check(Path, "text.quickPocketsName", bindings.Text.QuickPocketsName, "first", "last");
         Template.Check(Path, "text.quickPocketsNote", bindings.Text.QuickPocketsNote, "first", "last", "firstKey", "lastKey");
@@ -38,14 +41,15 @@ internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Look, Co
     /// <summary>Action name to its key label, for <c>{key.action}</c> in authored text.</summary>
     internal IReadOnlyDictionary<string, string> Labels => new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["walk"] = Walk.Label, ["look"] = Look.Label, ["attack"] = Attack.Label, ["reload"] = Reload.Label,
+        ["walk"] = Walk.Label, ["look"] = Look.Label, ["primary"] = Primary.Label, ["secondary"] = Secondary.Label, ["swapHands"] = SwapHands.Label,
         ["summon"] = Summon.Label, ["use"] = Use.Label, ["fieldCase"] = FieldCase.Label, ["menu"] = Menu.Label,
         ["console"] = Console.Label
     };
 
     internal string ShortName(string action) => action switch
     {
-        "walk" => Walk.ShortName, "look" => Look.ShortName, "attack" => Attack.ShortName, "reload" => Reload.ShortName,
+        "walk" => Walk.ShortName, "look" => Look.ShortName, "primary" => Primary.ShortName, "secondary" => Secondary.ShortName,
+        "swapHands" => SwapHands.ShortName,
         "summon" => Summon.ShortName, "use" => Use.ShortName, "fieldCase" => FieldCase.ShortName, "menu" => Menu.ShortName,
         _ => Console.ShortName
     };
@@ -54,7 +58,7 @@ internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Look, Co
 internal sealed record WalkBinding(string Name, string ShortName, string Label,
     KeyboardControl Forward, KeyboardControl Backward, KeyboardControl Left, KeyboardControl Right);
 
-/// <param name="Name">The row on the Controls screen; empty for a slot (weapon, quick pocket) named by its group.</param>
+/// <param name="Name">The row on the Controls screen; empty for a slot (a quick pocket) named by its group.</param>
 /// <param name="ShortName">The word an on-screen hint uses.</param>
 internal sealed record ControlBinding(string Label, string Name = "", string ShortName = "",
     KeyboardControl[]? Keys = null, PointerButton[]? Pointer = null);

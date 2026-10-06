@@ -1,4 +1,3 @@
-using Hotel.Game.Combat;
 using Hotel.Game.Content;
 using Rusty.Engine;
 using Rusty.Engine.Debugging;
@@ -7,7 +6,7 @@ using Rusty.Engine.Input;
 namespace Hotel.Game.Input;
 
 /// <summary>Reads the authored bindings for input, playtest actions, the Controls screen and the opening hint.</summary>
-internal sealed class HotelControls(ControlBindings bindings, WeaponDefinition[] weapons)
+internal sealed class HotelControls(ControlBindings bindings)
 {
     // How long an Engine playtest action holds its control: a tap, or a short walk.
     private const double TapMilliseconds = 60, WalkMilliseconds = 200;
@@ -36,9 +35,8 @@ internal sealed class HotelControls(ControlBindings bindings, WeaponDefinition[]
     internal (string Name, string Label)[] Rows =>
     [
         (bindings.Walk.Name, bindings.Walk.Label), (bindings.Look.Name, bindings.Look.Label),
-        (bindings.Attack.Name, bindings.Attack.Label),
-        (string.Join(" / ", weapons.Select(w => w.Name)), string.Join(" / ", bindings.Weapons.Select(w => w.Label))),
-        (bindings.Reload.Name, bindings.Reload.Label),
+        (bindings.Primary.Name, bindings.Primary.Label), (bindings.Secondary.Name, bindings.Secondary.Label),
+        (bindings.SwapHands.Name, bindings.SwapHands.Label),
         (Template.Fill(bindings.Text.QuickPocketsName, ("first", Pocket(0)), ("last", Pocket(bindings.QuickPockets.Length - 1))),
             string.Join(" / ", bindings.QuickPockets.Select(q => q.Label))),
         (bindings.Summon.Name, bindings.Summon.Label), (bindings.Use.Name, bindings.Use.Label),
@@ -49,19 +47,18 @@ internal sealed class HotelControls(ControlBindings bindings, WeaponDefinition[]
         ("first", Pocket(0)), ("last", Pocket(bindings.QuickPockets.Length - 1)),
         ("firstKey", bindings.QuickPockets[0].Label), ("lastKey", bindings.QuickPockets[^1].Label));
 
-    /// <summary>Engine playtest actions: the walk directions, each game control and each weapon by id.</summary>
-    internal string[] ActionIds => ["forward", "back", "left", "right", "use", "attack", .. weapons.Select(w => w.Id), "reload", "summon"];
+    /// <summary>Engine playtest actions: the walk directions and each game control.</summary>
+    internal string[] ActionIds => ["forward", "back", "left", "right", "use", "primary", "secondary", "swapHands", "summon"];
 
     internal PlaytestAction Action(string id)
     {
-        int weapon = Array.FindIndex(weapons, w => w.Id == id);
         (KeyboardControl Key, double Ms)? control = id switch
         {
             "forward" => (bindings.Walk.Forward, WalkMilliseconds), "back" => (bindings.Walk.Backward, WalkMilliseconds),
             "left" => (bindings.Walk.Left, WalkMilliseconds), "right" => (bindings.Walk.Right, WalkMilliseconds),
-            "use" => First(bindings.Use), "attack" => First(bindings.Attack), "reload" => First(bindings.Reload),
-            "summon" => First(bindings.Summon),
-            _ => weapon >= 0 ? First(bindings.Weapons[weapon]) : null
+            "use" => First(bindings.Use), "primary" => First(bindings.Primary), "secondary" => First(bindings.Secondary),
+            "swapHands" => First(bindings.SwapHands), "summon" => First(bindings.Summon),
+            _ => null
         };
         return control is { } found ? new(id, found.Key.ToString(), found.Ms, true) : new(id, "", 0, false, false, "Unknown hotel action");
     }

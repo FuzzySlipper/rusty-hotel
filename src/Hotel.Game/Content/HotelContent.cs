@@ -31,7 +31,10 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         KitDefinition kit = KitDefinition.Load(engine);
         FixtureCatalog fixtures = FixtureCatalog.Load(engine);
         MechanicsDefinition mechanics = MechanicsDefinition.Load(engine);
-        CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics);
+        SuppliesDefinition supplies = SuppliesDefinition.Load(engine, mechanics);
+        Actions.ActionCatalog actions = Actions.ActionCatalog.Load(engine, mechanics, supplies.Classifications.Select(c => c.Id).ToArray());
+        supplies.ValidateActions(actions, mechanics);
+        CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics, actions);
         ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures, combat.Residents);
         // The product implements one pact; its bell placement names which spirit file to read.
         Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
@@ -40,7 +43,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
-            SurfaceCatalog.Load(engine).Surfaces, SceneLook.Load(engine), kit, fixtures, modules, SuppliesDefinition.Load(engine, mechanics), combat,
+            SurfaceCatalog.Load(engine).Surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, combat,
             SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys, mechanics), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
@@ -53,12 +56,9 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
     private void Validate()
     {
         Unique(Surfaces.Select(s => s.Id), SurfaceCatalog.Path, "surfaces");
-        Authored.Require(Controls.Weapons.Length == Combat.Weapons.Length, ControlBindings.Path, "weapons",
-            $"one binding per weapon in {WeaponCatalog.Path} ({Combat.Weapons.Length}), in the same order.");
         Authored.Require(Controls.QuickPockets.Length == Interface.QuickPockets && Interface.QuickPockets > 0, ControlBindings.Path, "quickPockets",
             $"one binding per quick pocket in {InterfaceTuning.Path} ({Interface.QuickPockets}).");
         Unique(Supplies.Items.Select(i => i.Id), ItemCatalog.Path, "items");
-        Unique(Combat.Weapons.Select(w => w.Id), WeaponCatalog.Path, "weapons");
         Unique(Combat.Residents.Select(r => r.Id), ResidentCatalog.Path, "residents");
 
         string plan = Excursion.PlanPath, route = Excursion.RoutePath, placements = Excursion.PlacementsPath;

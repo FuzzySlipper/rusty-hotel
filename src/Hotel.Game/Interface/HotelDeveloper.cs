@@ -129,7 +129,7 @@ internal sealed class HotelDeveloper(HotelProduct product)
             product.Step, product.Floors.Depth, [player.Position.X, player.Position.Y, player.Position.Z],
             [player.Eye.X, player.Eye.Y, player.Eye.Z], player.LookState.YawRadians,
             player.LookState.PitchRadians, player.Motion.Grounded, w.Route.Location, w.Route.Prompt, w.Route.OpenDoors, w.Route.ReadingSequence,
-            w.Supplies.Health, w.Supplies.Ammo, w.Supplies.Summon, w.Supplies.Occupied, w.Supplies.Revision, w.Supplies.Message, w.Combat.Weapon.Id,
+            w.Supplies.Health, w.Supplies.Ammo, w.Supplies.Summon, w.Supplies.Occupied, w.Supplies.Revision, w.Supplies.Message, w.Combat.Holding?.Item.Id ?? "",
             w.Combat.Phase.ToString(), w.Combat.AcceptedAttacks, w.Combat.LandedHits, w.Spirit.Acquired, w.Spirit.Equipped, w.Spirit.Revision,
             w.Spirit.Phase.ToString(), w.Spirit.Elapsed, w.Spirit.Calls, w.Spirit.Message, w.Expedition.Returns, w.Expedition.SecuredFinds,
             w.Expedition.Status, w.Combat.Enemies.Select(e => new EnemyObservation(e.Id, [e.Position.X, e.Position.Y, e.Position.Z],

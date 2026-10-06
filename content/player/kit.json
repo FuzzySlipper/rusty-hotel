@@ -1,0 +1,16 @@
+{
+  "worn": [
+    {
+      "item": "prybar",
+      "slots": [
+        "main-hand"
+      ]
+    },
+    {
+      "item": "survey-pistol",
+      "slots": [
+        "off-hand"
+      ]
+    }
+  ]
+}

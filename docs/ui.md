@@ -15,7 +15,7 @@ combat slab. Final sizes and colors should be tuned against the rendered scene.
 
 | Surface | Deliberate contents | Entry and return |
 | --- | --- | --- |
-| Exploration HUD | Small reticle/focus prompt; health at lower left; held weapon/ammo at lower right; equipped spirit and summon resource nearby; brief pickup/result notice | Default during play. No persistent list of action buttons, transcript, developer values, or menu column. |
+| Exploration HUD | Small reticle/focus prompt; health and stamina at lower left; what the hands hold and ammo at lower right; equipped spirit and summon resource nearby; brief pickup/result notice | Default during play. No persistent list of action buttons, transcript, developer values, or menu column. |
 | Field case | Focused Supplies, Worn and Spirits views; readable collection/slots, one selected entry's details, and only its relevant use/wear/equip action | Inventory control opens one bounded overlay; clear Back/Close returns to exploration. Show honest empty states as domains arrive. |
 | Reading/inspection | One note, tape transcript or found object's content, with contextual navigation only where needed | Ordinary world use opens it; closing returns to the same situation. Do not turn it into a general command palette. |
 | Refuge | The current return/checkpoint interaction and its result | Use the refuge fixture to open a small contextual surface. Inventory remains in the field case; no duplicate state editor. |
@@ -227,11 +227,14 @@ and presents the refusal through the brief result notice.
 
 ### Combat controls and feedback
 
-Left click or Ctrl commits one attack per press. 1 selects the pry bar; 2 selects
-its scarce-ammunition alternative, the survey pistol. R loads a carried cartridge
-packet while playing. Windup, strike and recovery are shown by the actual
-first-person weapon pose and the held-weapon HUD state. Switching and another
-attack cannot cancel the committed action. A hit marks the reticle and names the
+Left click or Ctrl uses the primary action of what the main hand holds, one per
+press; R or right click its second action (the pry bar's shove, the pistol's
+reload), or the off hand's when the held item has one action. X swaps the two
+hands' items; there is no key per weapon, and changing what is held otherwise is a
+Wear action in the field case. Windup, strike and recovery are shown by the actual
+first-person pose of the held item and the Hands HUD state, which names the item in
+hand and the one at your side. Swapping and another action cannot cancel the
+committed action; an unmet cost or a cooldown is a brief notice. A hit marks the reticle and names the
 resident in a short result notice; damage briefly accents the viewport border
 and updates the supplies owner's health.
 
@@ -266,7 +269,7 @@ A flight of stairs is an ordinary world interaction with the same focus prompt: 
 down the stairs. The service stairs at the south end of the west wing's long service passage lead up; every generated
 floor's stair landing has a flight up and a flight down. Using one changes floor at once, with no screen of its own:
 the player arrives on the next floor's landing, or at the foot of the stairs below, carrying their supplies, pact and
-weapon. The location label names the new floor's space. A floor that cannot be generated leaves the player where they
+what they wear and hold. The location label names the new floor's space. A floor that cannot be generated leaves the player where they
 stand.
 
 ### Refuge return and recovery

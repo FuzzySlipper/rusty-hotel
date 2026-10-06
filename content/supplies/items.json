@@ -1,6 +1,108 @@
 {
   "items": [
     {
+      "id": "prybar",
+      "name": "Pry bar",
+      "description": "A length of hotel-issue steel, flattened at one end. Swing it, or brace and shove a resident back.",
+      "mark": "⟋",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 3,
+        "space": 2
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "prybar-swing",
+          "prybar-shove"
+        ],
+        "look": "Bar"
+      }
+    },
+    {
+      "id": "survey-pistol",
+      "name": "Survey pistol",
+      "description": "The survey team's sidearm, a heavy revolver. Fires from the ammunition reserve; its second action loads carried cartridges.",
+      "mark": "⌐",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "pistol-shot",
+          "pistol-reload"
+        ],
+        "look": "Pistol"
+      }
+    },
+    {
+      "id": "service-bell",
+      "name": "Service bell",
+      "description": "A brass desk bell. Rung hard, its note staggers every resident close by and stings what is not quite alive.",
+      "mark": "◬",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "bell-ring"
+        ],
+        "look": "Bell"
+      }
+    },
+    {
+      "id": "flare-pistol",
+      "name": "Flare pistol",
+      "description": "A stubby signal pistol. Its flare flies slow and bright, burns what it strikes, and draws two rounds from the reserve.",
+      "mark": "✺",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "flare-shot"
+        ],
+        "look": "Flare"
+      }
+    },
+    {
       "id": "bandage",
       "name": "Field dressing",
       "description": "A sealed dressing. Restores {health} health at once, and the wound keeps mending for a while after.",
@@ -168,7 +270,9 @@
             "stat": "resistance.fire",
             "amount": 0.1
           }
-        ]
+        ],
+        "contributions": [],
+        "actions": []
       }
     },
     {
@@ -193,7 +297,18 @@
             "stat": "might",
             "amount": 2
           }
-        ]
+        ],
+        "contributions": [
+          {
+            "side": "Outgoing",
+            "kinds": [
+              "blunt"
+            ],
+            "add": 2,
+            "multiply": 1
+          }
+        ],
+        "actions": []
       }
     },
     {
@@ -218,7 +333,9 @@
             "stat": "nerve",
             "amount": 2
           }
-        ]
+        ],
+        "contributions": [],
+        "actions": []
       }
     },
     {
@@ -243,7 +360,9 @@
             "stat": "agility",
             "amount": 3
           }
-        ]
+        ],
+        "contributions": [],
+        "actions": []
       }
     },
     {
@@ -268,7 +387,9 @@
             "stat": "attunement",
             "amount": 4
           }
-        ]
+        ],
+        "contributions": [],
+        "actions": []
       }
     }
   ]

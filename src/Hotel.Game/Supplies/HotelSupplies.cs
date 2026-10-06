@@ -17,7 +17,8 @@ namespace Hotel.Game.Supplies;
 internal sealed class HotelSupplies
 {
     // The tracks this owner spends and restores, by vocabulary id.
-    internal const string HealthTrack = Mechanics.ActorStats.HealthTrack, AmmoTrack = "ammunition", SummonTrack = "summon";
+    internal const string HealthTrack = Mechanics.ActorStats.HealthTrack, AmmoTrack = "ammunition", SummonTrack = "summon",
+        StaminaTrack = "stamina";
     private readonly SuppliesDefinition definition;
     private readonly Mechanics.MechanicsDefinition mechanics;
     private readonly SupplyMessages text;
@@ -48,6 +49,8 @@ internal sealed class HotelSupplies
     internal ulong Revision { get; private set; }
     internal int Health => health.ValueInt;
     internal int MaximumHealth => (int)health.MaximumValue;
+    internal int Stamina => Stats.Track(StaminaTrack).ValueInt;
+    internal int MaximumStamina => (int)Stats.Track(StaminaTrack).MaximumValue;
     internal int Ammo => ammo.ValueInt;
     internal int MaximumAmmo => (int)ammo.MaximumValue;
     internal int Summon => summon.ValueInt;
@@ -70,7 +73,9 @@ internal sealed class HotelSupplies
     internal void Step(float admittedSeconds)
     {
         noticeSeconds = Math.Max(0, noticeSeconds - admittedSeconds);
-        if (Health > 0 && Stats.Effects.Advance(admittedSeconds)) Revision++;
+        if (Health == 0) return;
+        if (Stats.Effects.Advance(admittedSeconds)) Revision++;
+        Stats.Regenerate(admittedSeconds);
     }
 
     /// <summary>Applies an effect to the investigator from a source (an item, a resident's hit); false when refused.</summary>
@@ -82,6 +87,9 @@ internal sealed class HotelSupplies
     }
 
     internal ItemStack? Slot(int index) => fieldCase.Slot(index);
+
+    /// <summary>Marks the investigator changed by another owner (an action's cost, a hit landed by combat): a new revision.</summary>
+    internal void Changed() => Revision++;
     internal ItemDefinition Item(string id) => definition.Item(id)!;
     internal bool Collected(string id) => collected.Contains(id);
     internal FindDefinition[] Finds => finds;
@@ -171,6 +179,22 @@ internal sealed class HotelSupplies
         return true;
     }
 
+    /// <summary>The item held in a hand, if any.</summary>
+    internal WornItem? Held(Hand hand) => fieldCase.Held(hand);
+
+    /// <summary>Trades what the hands hold; false when there is nothing to trade or it would not fit.</summary>
+    internal bool SwapHands()
+    {
+        if (Health == 0 || !fieldCase.SwapHands()) return false;
+        Stats.SetEquipmentSources(fieldCase.Sources);
+        Revision++;
+        return true;
+    }
+
+    /// <summary>The first pocket holding an item of a classification, or -1.</summary>
+    internal int PocketOf(string classification) => Enumerable.Range(0, Capacity).FirstOrDefault(
+        i => Slot(i) is { } stack && Item(stack.Item).Classifications.Contains(classification), -1);
+
     internal bool Move(int from, int to, ulong revision)
     {
         if (revision != Revision) return Refuse(text.CaseChanged);
@@ -228,9 +252,6 @@ internal sealed class HotelSupplies
         return applied;
     }
 
-    /// <summary>The first pocket holding an item whose use restores ammunition, or -1.</summary>
-    internal int AmmoPocket => Enumerable.Range(0, Capacity).FirstOrDefault(
-        i => Slot(i) is { } stack && Item(stack.Item).Restores(AmmoTrack) > 0, -1);
     internal void RestoreSummon(int amount)
     {
         if (amount <= 0) return;
@@ -297,9 +318,9 @@ internal sealed class HotelSupplies
 
     internal void Reset()
     {
-        fieldCase.Reset();
+        fieldCase.Restore(new ItemStack?[Capacity], definition.Kit);
         collected.Clear();
-        Stats.SetEquipmentSources([]);
+        Stats.SetEquipmentSources(fieldCase.Sources);
         Stats.Reset();
         Revision++;
         Message = "";

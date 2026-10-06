@@ -21,19 +21,13 @@
         },
         "initial": {}
       },
-      "damage": 12,
-      "damageKind": "blunt",
-      "onHit": [ "staggered" ],
       "speed": 0.85,
       "sightRange": 3.6,
-      "attackRange": 1.7,
-      "windup": 0.9,
-      "commit": 0.2,
-      "recovery": 1.45,
       "leash": 4.5,
       "radius": 0.34,
       "height": 1.8,
-      "eyeHeight": 0.576
+      "eyeHeight": 0.576,
+      "attack": "porter-swipe"
     },
     {
       "id": "lamp",
@@ -55,19 +49,13 @@
         },
         "initial": {}
       },
-      "damage": 16,
-      "damageKind": "fire",
-      "onHit": [ "burning" ],
       "speed": 0,
       "sightRange": 7,
-      "attackRange": 8,
-      "windup": 1.35,
-      "commit": 0.2,
-      "recovery": 1.65,
       "leash": 0,
       "radius": 0.38,
       "height": 1.8,
-      "eyeHeight": 0.576
+      "eyeHeight": 0.576,
+      "attack": "lamp-beam"
     }
   ]
 }

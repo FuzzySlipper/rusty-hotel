@@ -11,9 +11,13 @@ namespace Hotel.Game.Supplies;
 /// The supplies domain's authored files: item kinds, the classifications and equipment slots they are worn in, what the
 /// field case can carry, and player-facing text. Resource bounds are stats.
 /// </summary>
+/// <param name="Kit">What the investigator wears and holds at the start of a run, and again after a reset.</param>
 internal sealed record SuppliesDefinition(ItemDefinition[] Items, ClassificationDefinition[] Classifications, SlotDefinition[] Slots,
-    CapacityMetric[] Capacity, SupplyMessages Text)
+    CapacityMetric[] Capacity, SupplyMessages Text, WornState[] Kit)
 {
+    /// <summary>The slot that is this hand.</summary>
+    internal SlotDefinition HandSlot(Hand hand) => Slots.Single(s => s.Hand == hand);
+
     internal static SuppliesDefinition Load(IEngineContext engine, MechanicsDefinition mechanics)
     {
         EquipmentCatalog equipment = Authored.Read(engine, EquipmentCatalog.Path, ContentJson.Default.EquipmentCatalog);
@@ -21,15 +25,41 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, Classification
         ItemDefinition[] items = Authored.Read(engine, ItemCatalog.Path, ContentJson.Default.ItemCatalog).Items;
         SupplyMessages text = Authored.Read(engine, SupplyMessages.Path, ContentJson.Default.SupplyMessages);
         text.Validate();
-        SuppliesDefinition definition = new(items, equipment.Classifications, equipment.Slots, capacity, text);
+        WornState[] kit = Authored.Read(engine, StartingKit.Path, ContentJson.Default.StartingKit).Worn;
+        SuppliesDefinition definition = new(items, equipment.Classifications, equipment.Slots, capacity, text, kit);
         definition.Validate(mechanics);
+        for (int i = 0; i < kit.Length; i++)
+        {
+            Authored.Require(definition.Item(kit[i].Item)?.Wear is not null, StartingKit.Path, $"worn[{i}].item", $"'{kit[i].Item}' is not a worn item.");
+            for (int s = 0; s < kit[i].Slots.Length; s++)
+                Authored.Require(definition.Slots.Any(x => x.Id == kit[i].Slots[s]), StartingKit.Path, $"worn[{i}].slots[{s}]", $"unknown slot '{kit[i].Slots[s]}'.");
+        }
+        try { new FieldCase(definition, 1, new Rusty.Engine.Entities.EntityId(0)).Restore([null], kit); }
+        catch (MechanicsException refused) { Authored.Require(false, StartingKit.Path, "worn", $"cannot be worn together: {refused.Message}"); }
         return definition;
     }
 
     internal ItemDefinition? Item(string id) => Items.FirstOrDefault(i => i.Id == id);
 
+    /// <summary>Checks references to actions, once the action catalog is loaded.</summary>
+    internal void ValidateActions(Actions.ActionCatalog actions, MechanicsDefinition mechanics)
+    {
+        for (int i = 0; i < Items.Length; i++)
+            if (Items[i].Wear is { } wear)
+            {
+                actions.Require(ItemCatalog.Path, $"items[{i}].wear.actions", wear.Actions);
+                Authored.Require(wear.Actions.Length <= 2, ItemCatalog.Path, $"items[{i}].wear.actions", "a held item grants at most a primary and a secondary action.");
+                bool held = Slots.Any(s => s.Hand is not null && s.Accepts.Intersect(Items[i].Classifications).Any());
+                Authored.Require(held == (wear.Actions.Length > 0) && held == (wear.Look is not null), ItemCatalog.Path, $"items[{i}].wear",
+                    "an item held in a hand has actions and a look; a worn item has neither.");
+                Hotel.Game.Actions.ActionValidation.Validate(wear.Contributions, ItemCatalog.Path, $"items[{i}].wear.contributions", mechanics);
+            }
+    }
+
     private void Validate(MechanicsDefinition mechanics)
     {
+        foreach (Hand hand in Enum.GetValues<Hand>())
+            Authored.Require(Slots.Count(s => s.Hand == hand) == 1, EquipmentCatalog.Path, "slots", $"needs exactly one {hand} hand slot.");
         Unique(EquipmentCatalog.Path, "classifications", Classifications.Select(c => c.Id));
         Unique(EquipmentCatalog.Path, "slots", Slots.Select(s => s.Id));
         Unique(CapacityCatalog.Path, "metrics", Capacity.Select(m => m.Id));
@@ -137,15 +167,26 @@ internal sealed record ItemUse(Dictionary<string, int> Restores, string[] Effect
 
 /// <summary>
 /// How an item is worn: how many slots it fills, the exclusivity group no two worn items may share (null for none),
-/// and what it adds to stats while worn.
+/// what it adds to stats while worn, the damage contributions it brings to its wearer's hits, and, for a held item,
+/// the actions it grants to the hand that holds it (first the primary, then the secondary) and how it looks in hand.
 /// </summary>
-internal sealed record ItemWear(int Slots, string? Exclusive, StatEffect[] Stats);
+internal sealed record ItemWear(int Slots, string? Exclusive, StatEffect[] Stats, Actions.DamageContribution[] Contributions,
+    string[] Actions, HeldLook? Look = null);
+
+/// <summary>How a held item is drawn in the investigator's hand.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<HeldLook>))]
+internal enum HeldLook { Bar, Pistol, Bell, Flare }
+
+/// <summary>Which hand a slot is, for the slots whose items grant actions.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<Hand>))]
+internal enum Hand { Main, Off }
 
 /// <summary>A kind of item a slot may hold ("gloves", "ring").</summary>
 internal sealed record ClassificationDefinition(string Id, string Name);
 
 /// <summary>One equipment slot on the investigator and the classifications it accepts.</summary>
-internal sealed record SlotDefinition(string Id, string Name, string[] Accepts)
+/// <param name="Hand">The hand this slot is; null for a worn slot.</param>
+internal sealed record SlotDefinition(string Id, string Name, string[] Accepts, Hand? Hand = null)
 {
     internal EquipmentSlotDefinition Engine() => new(EquipmentSlotId.Parse(Id), Accepts.Select(ItemClassificationId.Parse));
 }
@@ -157,6 +198,12 @@ internal sealed record EquipmentCatalog(ClassificationDefinition[] Classificatio
 
 /// <summary>One dimension of what the field case can carry (weight, space) and its limit in item cost units.</summary>
 internal sealed record CapacityMetric(string Id, string Name, int Limit);
+
+/// <summary>The investigator's starting worn and held items.</summary>
+internal sealed record StartingKit(WornState[] Worn)
+{
+    internal const string Path = "player/kit.json";
+}
 
 internal sealed record CapacityCatalog(CapacityMetric[] Metrics)
 {

@@ -15,7 +15,7 @@ export function mountHud(document) {
     <div class="hud-bottom">
       <div class="condition"><span class="eyebrow">On your own</span><span data-health></span><div class="effects" data-effects></div></div>
       <div class="quick-access"><span class="eyebrow">Quick access</span><div class="quick-pockets" data-hud-pockets></div></div>
-      <div class="held-status"><div><span class="eyebrow">Reserves</span><span data-resources></span></div><div><span class="eyebrow">Hands</span><span data-weapon>—</span><span class="eyebrow" data-combat-action></span></div><div><span class="eyebrow">Spirit</span><span data-spirit>—</span><span class="spirit-state" data-spirit-state></span></div></div>
+      <div class="held-status"><div><span class="eyebrow">Reserves</span><span data-resources></span></div><div><span class="eyebrow">Hands</span><span data-weapon>—</span><span class="spirit-state" data-off-hand></span><span class="eyebrow" data-combat-action></span></div><div><span class="eyebrow">Spirit</span><span data-spirit>—</span><span class="spirit-state" data-spirit-state></span></div></div>
     </div>`;
   const find = selector => element.querySelector(selector);
   return {
@@ -26,9 +26,10 @@ export function mountHud(document) {
       const { condition, held } = facts;
       find('[data-location]').textContent = facts.location;
       find('[data-weapon]').textContent = held.weapon;
+      find('[data-off-hand]').textContent = held.offHand;
       find('[data-spirit]').textContent = held.spirit;
       find('[data-spirit-state]').textContent = held.spiritStatus;
-      find('[data-health]').textContent = `Health ${condition.health} / ${condition.maximumHealth}`;
+      find('[data-health]').textContent = `Health ${condition.health} / ${condition.maximumHealth} · Stamina ${condition.stamina} / ${condition.maximumStamina}`;
       find('[data-resources]').textContent = `Ammo ${held.ammo} / ${held.maximumAmmo} · Summon ${held.summon} / ${held.maximumSummon}`;
       const notice = find('[data-supply-notice]');
       notice.textContent = facts.notice;

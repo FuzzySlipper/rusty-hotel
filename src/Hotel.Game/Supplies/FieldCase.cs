@@ -194,6 +194,32 @@ internal sealed class FieldCase
         return CaseRefusal.None;
     }
 
+    /// <summary>The item held in a hand, if any.</summary>
+    internal WornItem? Held(Hand hand) => WornIn(definition.HandSlot(hand));
+
+    /// <summary>
+    /// Trades what the two hands hold in one Engine edit. False when both are empty or one hand's item would not fit the
+    /// other hand's slot; nothing changes then.
+    /// </summary>
+    internal bool SwapHands()
+    {
+        SlotDefinition main = definition.HandSlot(Hand.Main), off = definition.HandSlot(Hand.Off);
+        WornItem? inMain = WornIn(main), inOff = WornIn(off);
+        bool Fits(WornItem? item, SlotDefinition slot) => item is null || item.Slots.Length == 1 && slot.Accepts.Intersect(item.Item.Classifications).Any();
+        if (inMain is null && inOff is null || !Fits(inMain, off) || !Fits(inOff, main)) return false;
+        EquipmentMutationReceipt? last = null;
+        using (InventoryEdit edit = store.Prepare())
+        {
+            if (inMain is not null) edit.Unequip(owner, inMain.Entity);
+            if (inOff is not null) edit.Unequip(owner, inOff.Entity);
+            if (inMain is not null) last = edit.Equip(owner, inMain.Entity, [engineSlots[off.Id]]);
+            if (inOff is not null) last = edit.Equip(owner, inOff.Entity, [engineSlots[main.Id]]);
+            edit.Publish();
+        }
+        Settle(last!);
+        return true;
+    }
+
     internal (ItemStack?[] Pockets, WornState[] Worn) Capture() =>
         (Enumerable.Range(0, Capacity).Select(Slot).ToArray(), Worn.Select(w => new WornState(w.Item.Id, w.Slots.Select(s => s.Id).ToArray())).ToArray());
 

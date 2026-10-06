@@ -1,0 +1,256 @@
+{
+  "actions": [
+    {
+      "id": "prybar-swing",
+      "name": "Swing",
+      "delivery": {
+        "kind": "Melee",
+        "range": 2.05,
+        "width": 0.5
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.32,
+        "commit": 0.13,
+        "recovery": 0.65,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 14,
+          "scaling": [
+            {
+              "stat": "might",
+              "perPoint": 1
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Drawing back",
+      "commitLabel": "Swing"
+    },
+    {
+      "id": "prybar-shove",
+      "name": "Shove",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.6,
+        "width": 0.6
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 12
+        }
+      },
+      "timing": {
+        "windup": 0.2,
+        "commit": 0.1,
+        "recovery": 0.5,
+        "cooldown": 1.5
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 4,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Bracing",
+      "commitLabel": "Shove"
+    },
+    {
+      "id": "pistol-shot",
+      "name": "Shoot",
+      "delivery": {
+        "kind": "Hitscan",
+        "range": 16
+      },
+      "cost": {
+        "tracks": {
+          "ammunition": 1
+        }
+      },
+      "timing": {
+        "windup": 0.24,
+        "commit": 0.1,
+        "recovery": 0.85,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "pierce",
+          "amount": 36,
+          "scaling": []
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Steadying shot",
+      "commitLabel": "Fired"
+    },
+    {
+      "id": "pistol-reload",
+      "name": "Load cartridges",
+      "delivery": {
+        "kind": "Self"
+      },
+      "cost": {
+        "tracks": {},
+        "item": "ammunition"
+      },
+      "timing": {
+        "windup": 1.1,
+        "commit": 0.05,
+        "recovery": 0,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Loading",
+      "commitLabel": "Loaded"
+    },
+    {
+      "id": "bell-ring",
+      "name": "Ring",
+      "delivery": {
+        "kind": "Area",
+        "range": 0,
+        "radius": 3.5
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 20
+        }
+      },
+      "timing": {
+        "windup": 0.4,
+        "commit": 0.2,
+        "recovery": 0.6,
+        "cooldown": 6
+      },
+      "damage": [
+        {
+          "kind": "spirit",
+          "amount": 6,
+          "scaling": [
+            {
+              "stat": "attunement",
+              "perPoint": 0.5
+            }
+          ]
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Lifting the bell",
+      "commitLabel": "Ring"
+    },
+    {
+      "id": "flare-shot",
+      "name": "Fire flare",
+      "delivery": {
+        "kind": "Projectile",
+        "range": 14,
+        "width": 0.12,
+        "speed": 12
+      },
+      "cost": {
+        "tracks": {
+          "ammunition": 2
+        }
+      },
+      "timing": {
+        "windup": 0.3,
+        "commit": 0.1,
+        "recovery": 0.9,
+        "cooldown": 2
+      },
+      "damage": [
+        {
+          "kind": "fire",
+          "amount": 18,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "burning"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Cocking",
+      "commitLabel": "Flare"
+    },
+    {
+      "id": "porter-swipe",
+      "name": "Swipe",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.7,
+        "width": 0.6
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.9,
+        "commit": 0.2,
+        "recovery": 1.45,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 12,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Raising its arm",
+      "commitLabel": "Swipe"
+    },
+    {
+      "id": "lamp-beam",
+      "name": "Lamp beam",
+      "delivery": {
+        "kind": "Hitscan",
+        "range": 8
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 1.35,
+        "commit": 0.2,
+        "recovery": 1.65,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "fire",
+          "amount": 16,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "burning"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Brightening",
+      "commitLabel": "Beam"
+    }
+  ]
+}

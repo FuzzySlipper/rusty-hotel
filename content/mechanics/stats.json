@@ -13,9 +13,9 @@
     { "id": "pace", "name": "Pace", "base": 1, "minimum": 0.1, "maximum": 2, "quantum": 0, "from": [] }
   ],
   "tracks": [
-    { "id": "health", "name": "Health", "maximum": "maximum-health" },
-    { "id": "stamina", "name": "Stamina", "maximum": "maximum-stamina" },
-    { "id": "summon", "name": "Summon", "maximum": "maximum-summon" },
-    { "id": "ammunition", "name": "Ammunition", "maximum": "maximum-ammunition" }
+    { "id": "health", "name": "Health", "maximum": "maximum-health", "regeneration": 0 },
+    { "id": "stamina", "name": "Stamina", "maximum": "maximum-stamina", "regeneration": 8 },
+    { "id": "summon", "name": "Summon", "maximum": "maximum-summon", "regeneration": 0 },
+    { "id": "ammunition", "name": "Ammunition", "maximum": "maximum-ammunition", "regeneration": 0 }
   ]
 }

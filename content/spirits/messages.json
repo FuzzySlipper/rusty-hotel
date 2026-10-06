@@ -16,11 +16,11 @@
   "rests": "{spirit} rests in the field case",
   "chooseAgain": "Choose the spirit again.",
   "unreadable": "The spirit choice could not be read.",
-  "callOverwhelmed": "Overwhelmed · spirits cannot answer · {key.reload} to return to the refuge",
+  "callOverwhelmed": "Overwhelmed · spirits cannot answer · {key.secondary} to return to the refuge",
   "notEquipped": "Equip {spirit} in {key.fieldCase} → Spirits first",
   "noPactCall": "No pact made · explore {place}",
   "alreadyHere": "{spirit} is already here",
   "noCharge": "No summon charge · {spirit} cannot answer",
   "noTarget": "Aim at a visible resident within {range} paces · no charge spent",
-  "withdraws": "{spirit} withdraws · {key.reload} to return to the refuge checkpoint"
+  "withdraws": "{spirit} withdraws · {key.secondary} to return to the refuge checkpoint"
 }

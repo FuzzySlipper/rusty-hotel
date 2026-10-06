@@ -19,8 +19,10 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Mechanics/` | The stat vocabulary (`MechanicsDefinition`: attributes, derived stats, tracks, damage kinds, effects) and `ActorStats`, one actor's Engine `StatsComponent`: attribute-sourced derived stats, tracks, resistance-reduced damage, capture and restore. Each actor's `ActorEffects` keeps its Engine `EffectsComponent` and the product's time, ticks and wards in step, adds its stacks' stat sources, and advances only on the admitted seconds Supplies (the investigator) and Combat (residents) pass it |
 | `src/Hotel.Game/Supplies/HotelSupplies.cs` | Collected-find identities, use, wear and move rules over the field case, the investigator's stats (health, ammunition and summon tracks, worn sources) and inventory revision |
 | `src/Hotel.Game/Supplies/FieldCase.cs` | The field case over one Engine `InventoryStore`: pocket layout of stacks and single items, equipment slots and worn items, Engine capacity limits (weight, space), the worn items' stat sources, capture and restore |
-| `src/Hotel.Game/Combat/HotelCombat.cs` | Selected weapon, admitted windup/commit/recovery/reload timing, typed damage, residents (each with its own `ActorStats`), resident behavior and Engine spatial hit/approach calls |
-| `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident/weapon meshes and attack poses contributed to the existing scene snapshot |
+| `src/Hotel.Game/Actions/` | The action catalog (`ActionDefinition`: delivery, cost, timing, scaled damage packets, effects), `ActionUser` (one actor's phase, committed aim and cooldowns on admitted seconds) and `ActionResolution` (Engine spatial queries per delivery, contributions, damage application, projectiles in flight) |
+| `src/Hotel.Game/Combat/HotelCombat.cs` | Encounter policy over the action pipeline: the investigator's primary/secondary actions through what the hands hold, swapping hands, residents attacking with their kind's action, approach, impacts' feedback, resident capture and restore |
+| `src/Hotel.Game/Combat/HotelEnemy.cs`, `PlayerActor.cs` | The two kinds of action actor: a placed resident (body, `ActorStats`, `ActionUser`) and the investigator (player body, supplies' stats, worn contributions) |
+| `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident and held-item meshes, flares in flight and attack poses contributed to the existing scene snapshot |
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | Pact acquisition/equipping, semantic equip claims, summon eligibility and transient manifestation phase |
 | `src/Hotel.Game/Spirits/SpiritView.cs` | Authored bell-headed moth mesh parts and admitted-time entrance, wing poses and departure |
 | `src/Hotel.Game/Input/` | The authored binding table (`ControlBindings`) and its uses (`HotelControls`): Engine FPS walk/use keys, game-control presses, playtest actions, Controls screen rows, quick-pocket keys and the opening hint |
@@ -88,7 +90,7 @@ zero-step input batches to the next admitted step; Engine FPS owns physical inpu
 
 Engine clear events clear FPS held/pending input. Pause and resume callbacks
 also clear it; restart resets the player to the authored spawn and cuts the
-camera to the new pose. Pending use, attack, selection and reload edges clear at
+camera to the new pose. Pending use, primary, secondary and swap-hands edges clear at
 these same boundaries. No jump action is implemented. Restart restores the established refuge checkpoint
 and clears readings. Physical Q calls the equipped spirit. Shutdown releases the checkpoint store and spirit/combat appearances,
 then ambient voices before their clips, the UI stream,
@@ -185,31 +187,42 @@ developer commands to implement player menu actions.
 ## Combat
 
 `HotelProduct` admits combat on the same fixed steps as movement. Engine FPS
-physical state supplies attack, selection and reload edges; pending edges bridge
-zero-step batches and clear on input clear/pause/resume. Holding attack does not
-repeat. An accepted attack locks its direction and spends any ammunition once.
-Windup resolves one Engine ray against current resident hitboxes and hotel
-collision, followed by commitment and recovery. Misses and blocked shots retain
-their cost. Weapon switching and reloading are refused during a committed action.
-R loads one carried cartridge packet through the supplies owner's current
-revision and use rules; damage or another inventory change can invalidate that
-pending selection. This is a running-world firearm action, separate from paused
-field-case controls.
+physical state supplies primary, secondary and swap-hands edges; pending edges
+bridge zero-step batches and clear on input clear/pause/resume. Holding a control
+does not repeat. Input never names a weapon: primary uses the first action of the
+item in the main hand (or the off hand when the main hand is empty), secondary its
+second action or else the off hand's first, and swap-hands trades the two hands'
+items through one Engine equipment edit. Weapons are held items (`supplies/items.json`)
+granting actions (`actions/actions.json`).
+
+Every action, the investigator's and the residents', runs through one pipeline.
+`ActionUser` refuses while busy or cooling down; the caller checks and spends the
+action's track costs once at acceptance and locks the aim. The windup ends on an
+admitted step and the action lands once through `ActionResolution`, which uses
+Engine spatial queries in the scene session: a swept capsule (melee), a ray
+(hitscan), segment casts each step (projectile), an AABB overlap plus a clear line
+per body (area), or nothing (self). A landed hit scales each damage packet by the
+user's stats, adds the user's outgoing and the target's incoming worn contributions,
+then applies the target's resistance and wards, then the action's effects. An item
+cost (a reload's cartridges) is used through the supplies owner when the action
+lands. Commitment and recovery follow; misses and blocked shots keep their cost.
+Actions in progress and cooldowns are not saved.
 
 Residents hold real identities in the existing scene EntityStore. Positions and
-motion come from Engine character receipts; health uses Engine Track. The porter
-approaches only with clear sight inside its authored territory, stops at striking
-range, raises its hammer, commits to a direction and recovers. It uses static hotel
+motion come from Engine character receipts; health uses Engine Track. A resident
+attacks with its kind's action, starting it when the investigator is within its
+reach. The porter approaches only with clear sight inside its authored territory,
+stops at striking range, raises its hammer, commits to a direction and recovers. It uses static hotel
 collision while approaching; player movement includes live resident body obstacles.
 It does not search for routes or pursue around corners. The stationary Lamplighter
 charges and fires along its locked direction; a sidestep or real world geometry
 can stop its shot. No local navigation or collision mechanism is present.
 
 `CombatView` owns only meshes/appearances and authored poses: raised arm, glowing
-eye, strike, beam, recovery droop and first-person weapon. `HotelScene` publishes
-one combined static/combat snapshot. The DOM receives weapon, action state and
-brief hit/hurt notices; it does not render weapons or aim attacks. Authored weapon
-and resident numbers live in `content/combat/`; resident placements in each excursion's `placements.json`. Zero health suppresses
+eye, strike, beam, recovery droop, flares in flight and the held item by its authored look. `HotelScene` publishes
+one combined static/combat snapshot. The DOM receives what the hands hold, action state and
+brief hit/hurt notices; it does not render weapons or aim attacks. Actions live in `content/actions/`,
+resident kinds in `content/combat/`; resident placements in each excursion's `placements.json`. Zero health suppresses
 movement, use and further attacks; R invokes the expedition owner to restore the whole saved refuge checkpoint.
 
 ## Spirit pact and manifestation
@@ -257,7 +270,7 @@ One `ProductStateStore<CheckpointState>` with source-generated
 `JsonProductStateCodec` saves the entire value under `hotel.checkpoints` /
 `refuge/current`. Engine owns storage and durable write/error semantics. A return
 captures pocket order/quantities, collected find IDs, resource amounts, pact and
-equipped choice, selected weapon, opened doors, resident health/position/yaw,
+equipped choice, worn and held items, opened doors, resident stats/position/yaw,
 refuge identity and secured expedition-find IDs. Deposited expedition stacks
 are omitted from the proposed carried pockets. Only after a successful Engine
 write does the live supplies owner settle that deposit and the checkpoint owner
@@ -274,7 +287,7 @@ affect compatibility; see [authoring.md](authoring.md).
 
 Recovery restores that entire checkpoint, including loot availability and
 resident positions/health, then places the player at the authored refuge spawn.
-The saved refuge identity and selected weapon are meaningful player state;
+The saved refuge identity and what the hands hold are meaningful player state;
 velocity, held/pending input, combat commitments, beams, notices and temporary
 spirit poses are deliberately cleared at this refuge boundary. Living residents
 resume Ready, dead residents remain defeated. Health and resource values are

@@ -13,9 +13,9 @@
     "shortName": "Look",
     "label": "Mouse"
   },
-  "attack": {
-    "name": "Attack",
-    "shortName": "Attack",
+  "primary": {
+    "name": "Primary action of the held item",
+    "shortName": "Act",
     "label": "Left click / Ctrl",
     "keys": [
       "ControlLeft"
@@ -24,26 +24,23 @@
       "Primary"
     ]
   },
-  "weapons": [
-    {
-      "label": "1",
-      "keys": [
-        "Digit1"
-      ]
-    },
-    {
-      "label": "2",
-      "keys": [
-        "Digit2"
-      ]
-    }
-  ],
-  "reload": {
-    "name": "Load cartridges / restore checkpoint when downed",
-    "shortName": "Reload",
-    "label": "R",
+  "swapHands": {
+    "name": "Swap what your hands hold",
+    "shortName": "Swap hands",
+    "label": "X",
+    "keys": [
+      "KeyX"
+    ]
+  },
+  "secondary": {
+    "name": "Second action of the held item / restore checkpoint when downed",
+    "shortName": "Second action",
+    "label": "R / Right click",
     "keys": [
       "KeyR"
+    ],
+    "pointer": [
+      "Secondary"
     ]
   },
   "quickPockets": [

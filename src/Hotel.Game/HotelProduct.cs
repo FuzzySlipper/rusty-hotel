@@ -27,8 +27,8 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly HotelDeveloper developer;
     private HotelWorld world;
     private (ExcursionDefinition Excursion, int Depth, StairDirection Way)? pendingTravel;
-    private bool pendingUse, pendingAttack, pendingReload, pendingSummon;
-    private int pendingWeapon = -1, pendingQuick = -1;
+    private bool pendingUse, pendingPrimary, pendingSecondary, pendingSwap, pendingSummon;
+    private int pendingQuick = -1;
     private bool disposed;
     private ulong step;
     private double sampleTime;
@@ -39,7 +39,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         try
         {
             content = HotelContent.Load(engine, StartingExcursion);
-            controls = new HotelControls(content.Controls, content.Combat.Weapons);
+            controls = new HotelControls(content.Controls);
             hud = new HotelHud(engine, content.Interface);
             floors = new HotelFloors(engine, content);
             interaction = new WorldInteraction(current);
@@ -68,20 +68,19 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         ControlBindings bound = controls.Bindings;
         pendingUse |= input.UsePressed;
         pendingSummon |= HotelControls.Pressed(physical, bound.Summon);
-        pendingAttack |= HotelControls.Pressed(physical, bound.Attack);
-        pendingReload |= HotelControls.Pressed(physical, bound.Reload);
-        for (int i = 0; i < bound.Weapons.Length; i++)
-            if (HotelControls.Pressed(physical, bound.Weapons[i])) pendingWeapon = i;
+        pendingPrimary |= HotelControls.Pressed(physical, bound.Primary);
+        pendingSecondary |= HotelControls.Pressed(physical, bound.Secondary);
+        pendingSwap |= HotelControls.Pressed(physical, bound.SwapHands);
         for (int i = 0; i < bound.QuickPockets.Length; i++)
             if (HotelControls.Pressed(physical, bound.QuickPockets[i])) pendingQuick = i;
         for (uint i = 0; i < update.Facts.AdmittedStepCount; i++)
         {
             HotelWorld w = world;
-            if (w.Combat.Defeated && pendingReload) { Restart(); break; }
+            if (w.Combat.Defeated && pendingSecondary) { Restart(); break; }
             if (pendingQuick >= 0) { w.Supplies.Use(pendingQuick, w.Supplies.Revision); pendingQuick = -1; }
-            if (pendingWeapon >= 0) { w.Combat.SelectWeapon(pendingWeapon); pendingWeapon = -1; }
-            if (pendingAttack) { pendingAttack = false; w.Combat.Attack(); }
-            if (pendingReload) { pendingReload = false; w.Combat.Reload(); }
+            if (pendingSwap) { pendingSwap = false; w.Combat.SwapHands(); }
+            if (pendingPrimary) { pendingPrimary = false; w.Combat.Act(secondary: false); }
+            if (pendingSecondary) { pendingSecondary = false; w.Combat.Act(secondary: true); }
             if (pendingSummon) { pendingSummon = false; w.Spirit.Call(); }
             // The investigator's pace scales their stride; a hold or defeat stops it.
             float pace = w.Combat.Defeated || w.Supplies.Stats.Effects.Held ? 0 : w.Supplies.Stats.Pace;
@@ -103,7 +102,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         return ProductUpdateResult.None;
     }
 
-    internal void ClearActions() { pendingUse = pendingAttack = pendingReload = pendingSummon = false; pendingWeapon = pendingQuick = -1; }
+    internal void ClearActions() { pendingUse = pendingPrimary = pendingSecondary = pendingSwap = pendingSummon = false; pendingQuick = -1; }
 
     public void HandlePausedIntents(ReadOnlySpan<ProductInputEvent> intents)
     {

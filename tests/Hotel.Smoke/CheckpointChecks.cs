@@ -39,7 +39,7 @@ internal static class CheckpointChecks
                 f.Supplies.Pickup("refuge-dressing"); f.Supplies.Move(0, 7, f.Supplies.Revision);
                 f.Supplies.Pickup("survey-reel"); f.Spirit.Acquire(); f.Spirit.Equip(true, f.Spirit.Revision);
                 f.Supplies.SpendAmmo(2); f.Supplies.SpendSummon(1); f.Supplies.Damage(new(13, "blunt"));
-                f.Combat.SelectWeapon(1);
+                f.Combat.SwapHands();
                 f.Combat.Enemies[0].Health.SetCurrent(0);
                 var lamp = f.Combat.Enemies[1]; lamp.Health.SetCurrent(36); lamp.Yaw = .4f;
                 lamp.Stats.Stat("might").BaseValue = 14; lamp.Stats.RefreshDerived(); lamp.Stats.Track("stamina").SetCurrent(20);
@@ -69,12 +69,12 @@ internal static class CheckpointChecks
                 string good = Stored();
                 HotelEnemy displaced = f.Combat.Enemies[1];
                 Vector3 post = displaced.Position;
-                f.Scene.Entities.Set(displaced.Entity, EngineComponentTypes.Transform, new(post + new Vector3(5, 0, 0), Quaternion.Identity, Vector3.One));
+                f.Scene.Entities.Set(displaced.EntityId, EngineComponentTypes.Transform, new(post + new Vector3(5, 0, 0), Quaternion.Identity, Vector3.One));
                 f.At(-1.1f, 2.85f, new(-2.33f, .93f, 2.85f));
                 f.Route.Use();
                 Check(f.Expedition.Returns == 1 && f.Expedition.ReceiptTitle == f.Content.ExpeditionText.NotSavedTitle && Stored() == good,
                     "live state that fails validation is refused with a receipt and leaves the stored checkpoint intact");
-                f.Scene.Entities.Set(displaced.Entity, EngineComponentTypes.Transform, new(post, Quaternion.Identity, Vector3.One));
+                f.Scene.Entities.Set(displaced.EntityId, EngineComponentTypes.Transform, new(post, Quaternion.Identity, Vector3.One));
                 f.Supplies.Use(7, f.Supplies.Revision); f.Supplies.SpendAmmo(4); f.Supplies.SpendSummon(1);
                 f.Supplies.Pickup("portrait-dressing"); f.Spirit.Equip(false, f.Spirit.Revision);
                 f.Combat.Enemies[1].Health.SetCurrent(0); f.Supplies.Damage(new(1000, "blunt")); f.Route.Reset();
@@ -126,13 +126,13 @@ internal static class CheckpointChecks
         Check(f.Expedition.Returns == 1 && f.Expedition.SecuredFinds.SequenceEqual(["survey-reel"]) &&
             f.Supplies.Health == 57 && f.Supplies.Ammo == 4 && f.Supplies.Summon == 1 && f.Supplies.Slot(7)?.Count == 1 && f.Supplies.Occupied == 1 &&
             f.Supplies.Collected("survey-reel") && !f.Supplies.Collected("portrait-dressing") && f.Spirit.Acquired && f.Spirit.Equipped && !f.Spirit.Active &&
-            f.Route.OpenDoors.Order().SequenceEqual(new[] { "return", "survey" }) && f.Combat.Weapon.Id == "pistol" &&
+            f.Route.OpenDoors.Order().SequenceEqual(new[] { "return", "survey" }) && f.Combat.Holding?.Item.Id == "survey-pistol" &&
             !f.Combat.Enemies[0].Alive && f.Combat.Enemies[1].Health.ValueInt == 36 &&
             f.Combat.Enemies[1].Stats.Stat("might").Value == 14 && f.Combat.Enemies[1].Stats.Track("stamina").ValueInt == 20 &&
             f.Combat.Enemies[1].Health.MaximumValue == f.Content.Combat.MaximumHealth(f.Combat.Enemies[1].Kind) + 8 &&
             f.Combat.Enemies[1].Stats.Effects.Active.Single() is { Definition.Id: "staggered", Remaining: 1.5f } &&
             f.Combat.Enemies[1].Stats.Pace < 1 && f.Supplies.Stats.Effects.Active.Single() is { Definition.Id: "warded", WardLeft: 20, Remaining: 40 } &&
-            f.Supplies.Worn.Single() is { Item.Id: "porter-gloves" } && f.Supplies.Stats.Stat("might").Value == 12 &&
+            f.Supplies.Worn.Any(w => w.Item.Id == "porter-gloves") && f.Supplies.Stats.Stat("might").Value == 12 &&
             f.Combat.Enemies[1].Phase == AttackPhase.Ready &&
             f.Combat.Phase == AttackPhase.Ready && Vector3.Distance(f.Player.Position, new(0, .875f, 3.5f)) < .01f,
             "checkpoint restores coherent inventory, resources, pact, refuge, weapon, loot, doors and residents");

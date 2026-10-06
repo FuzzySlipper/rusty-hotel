@@ -29,27 +29,29 @@ internal static class CombatChecks
                 Math.Atan2(delta.Y, Math.Sqrt(delta.X * delta.X + delta.Z * delta.Z)) * 180 / Math.PI);
         }
         At(-4.1f, -5.3f, porter.Eye);
-        Check(combat.Attack() && !combat.Attack() && !combat.SelectWeapon(1), "committed attack rejects repeat fire and weapon switching");
+        Check(combat.Holding?.Item.Id == "prybar" && combat.Act(false) && !combat.Act(false) && !combat.SwapHands(),
+            "a committed swing rejects repeat use and swapping hands");
         Steps(18);
         Check(porter.Health.ValueInt == 66 && combat.Phase == AttackPhase.Windup, "windup cannot deal early damage");
         Steps(3);
         Check(porter.Health.ValueInt == 42 && combat.LandedHits == 1, "Engine hit settles damage once at commitment");
         Steps(70);
         Check(porter.Health.ValueInt == 42, "commit and recovery do not replay hit");
-        Check(supplies.Give("rounds", 1) && supplies.Use(supplies.AmmoPocket, supplies.Revision), "ammo fixture uses existing supply rules");
-        Check(combat.SelectWeapon(1), "ready weapon can switch");
+        Check(supplies.Give("rounds", 1) && supplies.Use(supplies.PocketOf("ammunition"), supplies.Revision), "ammo fixture uses existing supply rules");
+        Check(combat.SwapHands() && combat.Holding?.Item.Id == "survey-pistol", "ready hands swap: the pistol comes to hand");
         At(0, -3.5f, porter.Eye); // Solid west wall is between player and porter.
-        Check(combat.Attack() && supplies.Ammo == 5 && !combat.Attack(), "accepted ranged attack spends exactly one cartridge");
+        Check(combat.Act(false) && supplies.Ammo == 5 && !combat.Act(false), "accepted ranged attack spends exactly one cartridge");
         Steps(80);
         Check(porter.Health.ValueInt == 42 && combat.LandedHits == 1 && supplies.Ammo == 5, "wall blocks ranged damage without refunding a committed shot");
         supplies.SpendAmmo(5);
         int accepted = combat.AcceptedAttacks;
-        Check(!combat.Attack() && supplies.Ammo == 0 && combat.AcceptedAttacks == accepted, "empty ranged action spends nothing and stays ready");
-        Check(combat.SelectWeapon(0), "zero-ammo melee fallback available");
+        Check(!combat.Act(false) && supplies.Ammo == 0 && combat.AcceptedAttacks == accepted && combat.Notice.Contains("Ammunition"),
+            "empty ranged action spends nothing, stays ready and names the track");
+        Check(combat.SwapHands() && combat.Holding?.Item.Id == "prybar", "zero-ammo melee fallback is a swap of hands");
         At(-4.1f, -5.3f, porter.Eye);
-        Check(combat.Attack(), "melee costs no cartridge"); Steps(80);
+        Check(combat.Act(false), "melee costs no cartridge"); Steps(80);
         At(-4.1f, -5.3f, porter.Eye);
-        Check(combat.Attack(), "fallback repeat after recovery"); Steps(80);
+        Check(combat.Act(false), "fallback repeat after recovery"); Steps(80);
         Check(!porter.Alive && porter.Health.ValueInt == 0 && supplies.Ammo == 0, "melee can defeat pressure enemy at zero ammo");
 
         combat.Reset(); supplies.Reset();
@@ -74,10 +76,12 @@ internal static class CombatChecks
         Check(supplies.Health == 54, "enemy commit cannot double-hit");
         Check(supplies.Damage(new(1000, "blunt")) == 54 && supplies.Health == 0 && supplies.Damage(new(2, "blunt")) == 0 && supplies.Damage(new(-5, "blunt")) == 0,
             "damage saturates at zero and refuses invalid/defeated targets");
-        Check(!combat.Attack() && !combat.Reload(), "defeat suppresses new combat actions");
+        Check(!combat.Act(false) && !combat.Act(true), "defeat suppresses new combat actions");
         combat.Reset(); supplies.Reset(); player.Reset();
-        Check(supplies.Pickup("refuge-rounds") && combat.SelectWeapon(1) && combat.Reload(), "normal pickup supplies ordinary reload");
-        Check(!combat.Reload() && !combat.Attack(), "reload commitment rejects duplicate reload and fire");
+        Check(combat.HandAction(true)?.Id == "prybar-shove", "the pry bar's second action is its own shove");
+        Check(supplies.Pickup("refuge-rounds") && combat.SwapHands() && combat.HandAction(true)?.Id == "pistol-reload" && combat.Act(true),
+            "normal pickup supplies the pistol's second action, its reload");
+        Check(!combat.Act(true) && !combat.Act(false), "reload commitment rejects duplicate reload and fire");
         Steps(68);
         Check(supplies.Ammo == 6 && supplies.Occupied == 0, "reload consumes the packet once and publishes reserve");
         combat.Reset(); supplies.Reset();
@@ -93,7 +97,7 @@ internal static class CombatChecks
             player.Tuning.Radius + porter.Kind.Radius - .03f, "Engine body collision prevents walking through a live resident");
         combat.Reset(); supplies.Reset();
         At(1.55f, -14.7f, lamp.Eye);
-        for (int i = 0; i < 3; i++) { Check(combat.Attack(), "melee lamp attack accepted"); Steps(80); }
+        for (int i = 0; i < 3; i++) { Check(combat.Act(false), "melee lamp attack accepted"); Steps(80); }
         Check(!lamp.Alive && supplies.Ammo == 0, "stationary ranged resident is also defeatable with the zero-ammo fallback");
         Console.WriteLine("Combat checks passed: commitment, recovery, wall occlusion, once-only ammo/damage, zero-ammo fallback, lamp tell/dodge/cover, defeat and reload.");
     }

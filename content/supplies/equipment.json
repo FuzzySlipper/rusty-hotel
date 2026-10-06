@@ -43,14 +43,16 @@
       "name": "Main hand",
       "accepts": [
         "held"
-      ]
+      ],
+      "hand": "Main"
     },
     {
       "id": "off-hand",
       "name": "Off hand",
       "accepts": [
         "held"
-      ]
+      ],
+      "hand": "Off"
     },
     {
       "id": "head",

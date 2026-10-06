@@ -45,7 +45,10 @@ and pause only decisions that need unavailable authority.
   checks; room entry and case navigation must not reset it. Route inventory claims
   through HandleIntents during both running and paused admission. Quick access
   mirrors the first three saved pockets; never add a second inventory in the DOM.
-  `Combat/HotelCombat.cs` owns weapon commitment, damage and resident behavior;
+  `Actions/` owns the action catalog and the one action pipeline every hand and
+  resident uses (timing, Engine-query deliveries, damage and contributions); weapons
+  are held items granting actions, and input never names a weapon.
+  `Combat/HotelCombat.cs` owns encounter policy over it and resident behavior;
   `Combat/CombatView.cs` supplies poses to the existing scene snapshot. Keep
   resource mutations in Supplies, physical input in Engine FPS, and hits/body
   collision in Engine spatial services. Do not add a combat loop or local ray solver.

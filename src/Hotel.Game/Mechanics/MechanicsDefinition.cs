@@ -59,8 +59,11 @@ internal sealed record MechanicsDefinition(AttributeDefinition[] Attributes, Der
             }
         }
         for (int i = 0; i < Tracks.Length; i++)
+        {
             Authored.Require(Derived.Any(d => d.Id == Tracks[i].Maximum), StatsPath, $"tracks[{i}].maximum",
                 $"names '{Tracks[i].Maximum}', which is not a derived stat.");
+            Authored.AtLeast(StatsPath, $"tracks[{i}].regeneration", Tracks[i].Regeneration, 0);
+        }
         for (int i = 0; i < DamageKinds.Length; i++)
         {
             DamageKindDefinition k = DamageKinds[i];
@@ -125,8 +128,8 @@ internal sealed record DerivedStatDefinition(string Id, string Name, float Base,
     AttributeScaling[] From);
 internal sealed record AttributeScaling(string Attribute, float PerPoint);
 
-/// <summary>A resource pool (health, stamina, summon charges) bounded by a derived stat.</summary>
-internal sealed record TrackDefinition(string Id, string Name, string Maximum);
+/// <summary>A resource pool (health, stamina, summon charges) bounded by a derived stat, recovering <see cref="Regeneration"/> points a second.</summary>
+internal sealed record TrackDefinition(string Id, string Name, string Maximum, float Regeneration);
 
 /// <summary>A kind of damage; each actor holds a resistance to it as a fraction removed (negative is a weakness).</summary>
 internal sealed record DamageKindDefinition(string Id, string Name, float MinimumResistance, float MaximumResistance);

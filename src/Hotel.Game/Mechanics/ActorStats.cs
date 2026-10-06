@@ -51,6 +51,24 @@ internal sealed class ActorStats
     internal double Resistance(string kind) => Stats.GetStat(ResistanceOf(kind)).Value;
     internal StatEvaluation Explain(string id) => Stat(id).Explain();
 
+    // Regeneration owed but not yet a whole point, per track; a fraction of a point, not saved.
+    private readonly Dictionary<string, float> owed = new(StringComparer.Ordinal);
+
+    /// <summary>Recovers each regenerating track by admitted seconds, a whole point at a time.</summary>
+    internal void Regenerate(float seconds)
+    {
+        foreach (TrackDefinition t in mechanics.Tracks)
+        {
+            if (t.Regeneration <= 0) continue;
+            Track track = Track(t.Id);
+            if (track.Value >= track.MaximumValue) { owed.Remove(t.Id); continue; }
+            float due = owed.GetValueOrDefault(t.Id) + t.Regeneration * seconds;
+            int whole = (int)due;
+            if (whole > 0) track.Restore(whole);
+            owed[t.Id] = due - whole;
+        }
+    }
+
     /// <summary>Lands a hit on the health track after this actor's resistance to its kind; returns what was taken.</summary>
     internal int TakeDamage(DamagePacket packet, string track)
     {

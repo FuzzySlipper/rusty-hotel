@@ -42,13 +42,13 @@ internal static class ContentChecks
         }
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
 
-        Edit("combat/weapons.json", s => s.Replace("\"ammoCost\": 1", "\"ammoCost\": 1, \"ammoCots\": 2"), out var typo);
+        Edit("combat/residents.json", s => s.Replace("\"sightRange\": 3.6", "\"sightRange\": 3.6, \"sightRnage\": 2"), out var typo);
         string message = Failure(typo);
-        Check(message.Contains("content/combat/weapons.json") && message.Contains("ammoCots"), "unknown field names its file: " + message);
+        Check(message.Contains("content/combat/residents.json") && message.Contains("sightRnage"), "unknown field names its file: " + message);
 
-        Edit("combat/weapons.json", s => s.Replace("\"damage\": 24,", ""), out var missing);
+        Edit("combat/residents.json", s => s.Replace("\"speed\": 0.85,", ""), out var missing);
         message = Failure(missing);
-        Check(message.Contains("content/combat/weapons.json") && message.Contains("damage"), "missing field names its file: " + message);
+        Check(message.Contains("content/combat/residents.json") && message.Contains("speed"), "missing field names its file: " + message);
 
         Edit("scene/kit.json", s => s.Replace("\"floor\": \"carpet\"", "\"floor\": \"carpte\""), out var reference);
         message = Failure(reference);
@@ -58,18 +58,14 @@ internal static class ContentChecks
         message = Failure(placeholder);
         Check(message.Contains("content/combat/messages.json hit") && message.Contains("{resdent}") && message.Contains("{resident}"),
             "unknown template placeholder names file, field and the allowed placeholders: " + message);
-        Edit("combat/messages.json", s => s.Replace("{key.reload} to return", "{key.reloda} to return"), out var control);
+        Edit("combat/messages.json", s => s.Replace("{key.secondary} to return", "{key.secondry} to return"), out var control);
         message = Failure(control);
-        Check(message.Contains("content/combat/messages.json") && message.Contains("{key.reloda}"), "unknown control reference names its file: " + message);
+        Check(message.Contains("content/combat/messages.json") && message.Contains("{key.secondry}"), "unknown control reference names its file: " + message);
 
-        var unbound = Authored();
-        unbound["input/bindings.json"] = Json(unbound["input/bindings.json"], root => root["weapons"]!.AsArray().RemoveAt(1));
-        message = Failure(unbound);
-        Check(message.Contains("content/input/bindings.json weapons"), "a weapon without a binding is an authoring error: " + message);
 
         // Moved tuning is range-checked, and every text field (not only templated ones) rejects unknown placeholders.
         foreach (var (file, change, expected) in new (string, Action<JsonNode>, string)[] {
-            ("combat/tuning.json", root => root["reloadSeconds"] = -1, "content/combat/tuning.json reloadSeconds"),
+            ("combat/tuning.json", root => root["noticeSeconds"] = -1, "content/combat/tuning.json noticeSeconds"),
             ("spirits/hushwing.json", root => root["manifestation"]!["entranceFraction"] = 2, "content/spirits/hushwing.json manifestation.entranceFraction"),
             ("supplies/messages.json", root => root["noticeSeconds"] = 0, "content/supplies/messages.json noticeSeconds"),
             ("combat/residents.json", root => root["residents"]![0]!["eyeHeight"] = 5, "content/combat/residents.json residents[0].eyeHeight"),
@@ -157,20 +153,26 @@ internal static class ContentChecks
             ("mechanics/effects.json", root => root["effects"]![0]!["restore"]!["interval"] = 60, "content/mechanics/effects.json effects[0].restore.interval"),
             ("mechanics/effects.json", root => root["effects"]![7]!["stat"]!["stat"] = "pace", "content/mechanics/effects.json effects[7].stat.stat"),
             ("mechanics/messages.json", root => root["effectSeconds"] = "{minutes}", "content/mechanics/messages.json effectSeconds"),
-            ("supplies/items.json", root => root["items"]![0]!["use"]!["effects"]![0] = "cursed", "content/supplies/items.json items[0].use.effects[0]"),
-            ("supplies/items.json", root => root["items"]![0]!["deposit"] = true, "content/supplies/items.json items[0]: must be used"),
-            ("supplies/items.json", root => root["items"]![0]!["costs"]!.AsObject().Remove("weight"), "content/supplies/items.json items[0].costs.weight"),
-            ("supplies/items.json", root => root["items"]![7]!["wear"]!["stats"]![0]!["stat"] = "luck", "content/supplies/items.json items[7].wear.stats[0].stat"),
-            ("supplies/items.json", root => root["items"]![7]!["form"] = "Fungible", "content/supplies/items.json items[7].form"),
+            ("supplies/items.json", root => root["items"]![4]!["use"]!["effects"]![0] = "cursed", "content/supplies/items.json items[4].use.effects[0]"),
+            ("supplies/items.json", root => root["items"]![4]!["deposit"] = true, "content/supplies/items.json items[4]: must be used"),
+            ("supplies/items.json", root => root["items"]![4]!["costs"]!.AsObject().Remove("weight"), "content/supplies/items.json items[4].costs.weight"),
+            ("supplies/items.json", root => root["items"]![11]!["wear"]!["stats"]![0]!["stat"] = "luck", "content/supplies/items.json items[11].wear.stats[0].stat"),
+            ("supplies/items.json", root => root["items"]![11]!["form"] = "Fungible", "content/supplies/items.json items[11].form"),
+            ("supplies/items.json", root => root["items"]![0]!["wear"]!["actions"]![0] = "juggle", "content/supplies/items.json items[0].wear.actions[0]"),
+            ("supplies/items.json", root => root["items"]![11]!["wear"]!["actions"] = JsonNode.Parse("[\"prybar-swing\"]"), "content/supplies/items.json items[11].wear"),
+            ("supplies/items.json", root => root["items"]![12]!["wear"]!["contributions"]![0]!["kinds"]![0] = "acid", "content/supplies/items.json items[12].wear.contributions[0].kinds[0]"),
+            ("player/kit.json", root => root["worn"]![0]!["slots"]![0] = "head", "content/player/kit.json worn"),
+            ("actions/actions.json", root => root["actions"]![0]!["delivery"]!["width"] = 0, "content/actions/actions.json actions[0].delivery.width"),
+            ("actions/actions.json", root => root["actions"]![2]!["cost"]!["tracks"]!["courage"] = 1, "content/actions/actions.json actions[2].cost.tracks.courage"),
+            ("actions/actions.json", root => root["actions"]![3]!["damage"] = JsonNode.Parse("[{\"kind\":\"fire\",\"amount\":1,\"scaling\":[]}]"), "content/actions/actions.json actions[3]: a self action"),
+            ("actions/actions.json", root => root["actions"]![0]!["damage"]![0]!["kind"] = "acid", "content/actions/actions.json actions[0].damage[0].kind"),
+            ("actions/actions.json", root => root["actions"]![3]!["cost"]!["item"] = "potions", "content/actions/actions.json actions[3].cost.item"),
+            ("combat/residents.json", root => root["residents"]![0]!["attack"] = "juggle", "content/combat/residents.json residents[0].attack[0]"),
             ("supplies/equipment.json", root => root["slots"]![0]!["accepts"]![0] = "hats", "content/supplies/equipment.json slots[0].accepts[0]"),
             ("supplies/capacity.json", root => root["metrics"]![0]!["limit"] = 0, "content/supplies/capacity.json metrics[0].limit"),
-            ("combat/residents.json", root => root["residents"]![0]!["onHit"] = JsonNode.Parse("[\"cursed\"]"), "content/combat/residents.json residents[0].onHit[0]"),
             ("spirits/hushwing.json", root => root["effect"] = "mending", "content/spirits/hushwing.json effect"),
-            ("supplies/items.json", root => root["items"]![0]!["stackLimit"] = 0, "content/supplies/items.json items[0].stackLimit"),
-            ("combat/weapons.json", root => root["weapons"]![0]!["range"] = 0, "content/combat/weapons.json weapons[0].range"),
+            ("supplies/items.json", root => root["items"]![4]!["stackLimit"] = 0, "content/supplies/items.json items[4].stackLimit"),
             ("combat/residents.json", root => root["residents"]![0]!["stats"]!["resistances"]!["poison"] = 0.1, "content/combat/residents.json residents[0].stats.resistances.poison"),
-            ("combat/residents.json", root => root["residents"]![0]!["damageKind"] = "acid", "content/combat/residents.json residents[0].damageKind"),
-            ("combat/weapons.json", root => root["weapons"]![0]!["damageKind"] = "acid", "content/combat/weapons.json weapons[0].damageKind"),
             ("spirits/hushwing.json", root => root["range"] = -1, "content/spirits/hushwing.json range"),
             ("scene/surfaces.json", root => root["surfaces"]![0]!["roughness"] = 2, "content/scene/surfaces.json surfaces[0].roughness"),
             ("route/interaction.json", root => root["releaseAngle"] = 0.01, "content/route/interaction.json releaseAngle"),
