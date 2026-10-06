@@ -36,6 +36,7 @@ internal sealed record CombatDefinition(CombatTuning Tuning, ResidentKind[] Resi
         for (int i = 0; i < residents.Length; i++)
         {
             residents[i].Validate(i, mechanics, actions, factions, looks);
+            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].experience", residents[i].Experience, 0);
             Authored.Require(loot.Table(residents[i].Loot) is not null, ResidentCatalog.Path, $"residents[{i}].loot",
                 $"unknown loot table '{residents[i].Loot}'; see content/{Loot.LootCatalog.TablesPath}.");
             residents[i] = residents[i] with { AttackReach = residents[i].Actions.Max(a => HotelCombat.Reach(actions.Action(a.Action)!)) };

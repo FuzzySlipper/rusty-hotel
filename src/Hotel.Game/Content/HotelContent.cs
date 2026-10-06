@@ -22,7 +22,7 @@ namespace Hotel.Game.Content;
 /// </summary>
 internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, MechanicsDefinition Mechanics, ActorStatBlock PlayerStats,
     RouteDefinition Route, InterfaceTuning Interface,
-    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, Hotel.Game.Loot.LootCatalog Loot, CombatDefinition Combat, SpiritDefinition[] Spirits,
+    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, Hotel.Game.Loot.LootCatalog Loot, Hotel.Game.Progression.GrowthDefinition Growth, CombatDefinition Combat, SpiritDefinition[] Spirits,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
@@ -36,6 +36,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         Actions.ActionCatalog actions = Actions.ActionCatalog.Load(engine, mechanics, supplies.Classifications.Select(c => c.Id).ToArray());
         supplies.ValidateActions(actions, mechanics);
         Hotel.Game.Loot.LootCatalog loot = Hotel.Game.Loot.LootCatalog.Load(engine, supplies, mechanics);
+        Hotel.Game.Progression.GrowthDefinition growth = Hotel.Game.Progression.GrowthDefinition.Load(engine, mechanics, actions, supplies);
         SurfaceDefinition[] surfaces = SurfaceCatalog.Load(engine).Surfaces;
         CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray(), loot);
         ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures, combat.Residents);
@@ -43,7 +44,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
-            surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, loot, combat,
+            surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, loot, growth, combat,
             SpiritRoster.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray()), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();

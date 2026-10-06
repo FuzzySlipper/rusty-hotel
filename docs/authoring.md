@@ -42,10 +42,12 @@ its own folder. Geometry is kept apart from tuning.
 | `combat/tuning.json` | How long combat notices, hit and hurt flashes last; `HotelCombat` |
 | `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
-| `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
+| `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height, the loot table its remains give and the experience felling it gives; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
 | `combat/looks.json` | Resident silhouettes as boxes in their own frame, with arm, body and tell roles and the tell poses; `CombatView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
+| `progression/growth.json` | Levels (experience thresholds and what each level past the first adds) and skills grown by use (what practises them, the uses each rank needs, what each rank adds); `GrowthDefinition`, `InvestigatorGrowth` |
+| `progression/messages.json` | What using a relic or tome says, and how growth since the last return reads on the refuge receipt |
 | `loot/tables.json` | Loot tables: how many draws, and each entry's item (or nothing), count range and depth weight; residents' remains and containers name one; `LootCatalog` |
 | `loot/qualities.json` | Quality tiers for generated single items: name around `{item}`, stat scale, affix count, depth weight; `LootCatalog` |
 | `loot/affixes.json` | Affixes: name around `{item}`, the classifications they join, worn stats, hit contributions, on-hit effects, depth weight; `LootCatalog` |
@@ -116,7 +118,7 @@ role:
 
 | Role | Settings | Meaning |
 | --- | --- | --- |
-| `use` | `restores` (track to points), `effects`, `action` | Used from a pocket or a quick key; consumed one at a time. From a quick key during play it is `action` (a self action), timed through the hands before the item is used |
+| `use` | `restores` (track to points), `effects`, `action`, and for a relic or tome `growth` (`stats`, `practice`, `experience`; see Growth) | Used from a pocket or a quick key; consumed one at a time. From a quick key during play it is `action` (a self action), timed through the hands before the item is used |
 | `wear` | `slots`, `exclusive`, `stats` | A single item worn in that many equipment slots that accept one of its classifications; `stats` add to stats or resistances (`resistance.<kind>`) as an Engine source while worn; no two worn items share an `exclusive` group |
 | `deposit` | `true` | An expedition find, carried back and deposited at the refuge |
 
@@ -153,6 +155,27 @@ it. When a floor shifts, its residents start fresh, so their remains can be sear
 
 Weights in `floors/content.json` (supplies, objectives, residents) are depth curves (`base`, `perDepth`, `max`), so
 deeper floors draw different things inside the same pacing budgets.
+
+## Growth
+
+The investigator grows through a run; nothing is chosen or allocated. Each level, skill rank and relic is an intrinsic
+Engine source on the investigator's stats (`growth.level`, `growth.skill.<id>`, `growth.relic.<item>`), so a stat's
+explanation names it.
+
+- **Experience and levels** (`progression/growth.json` `levels`): felling a resident gives its kind's `experience`;
+  `experience` lists the threshold of each level from the first (0), and `perLevel` is what every level past the
+  first adds.
+- **Skills grown by use** (`skills`): a landed hit that takes health with one of a skill's `practice.damageKinds`, or one
+  of its `practice.actions` landing (a pact's call), is one use. `ranks` are the uses each rank needs, increasing; the
+  last is mastery, past which practice is not counted. Each rank adds `perRank` stats and the skill's hit
+  `contributions` once more.
+- **Relics and tomes** are items whose `use.growth` teaches: `stats` are permanent (a relic, kept as its own source
+  for the run), `practice` gives uses of skills (a tome) and `experience` adds to it. Using one consumes it; a tome
+  whose skills are mastered is refused and kept.
+
+Growth is saved with the supplies and restored before the stats, so track maximums include it. A defeat returns to the
+checkpoint's growth like everything else. The refuge receipt names the level and ranks reached since the last return
+(`progression/messages.json`).
 
 ## Residents
 
@@ -371,7 +394,7 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
 restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
-same way, on the floor it was left on and in the refuge, beside its pose. Version 9 saves a generated item's roll (quality and affixes) with its pocket or worn slot, and searches made among
+same way, on the floor it was left on and in the refuge, beside its pose. Version 10 saves the investigator's growth with the supplies: experience, uses by skill and the relics taken in. Version 9 saves a generated item's roll (quality and affixes) with its pocket or worn slot, and searches made among
 the collected ids. Version 8 saves the pacts as the spirits freed and the one in the pact slot. Version 7 drops the selected weapon: weapons are held items, saved with the worn items. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
 equipped before the stats so track maximums include what is worn. Version 5 keeps each actor's effects with
 its stats: the effect, who applied it, its stacks, time left, time since its last tick and ward left, re-admitted in

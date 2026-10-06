@@ -198,6 +198,12 @@ item effects and collected-find state. The DOM only projects these facts.
 | `rusty-dagger/src/WorldRpg.Kit/Combat/CombatResolution.cs` | `f680eeb8675d3b1f634ee850096d680abc7b5c30` | `Actions/ActionResolution.cs`: participants' live stats and attached contributions in one ordered path, source before target, before health is applied once. Hotel's contributions are typed authored records (`Mechanics/DamageContribution.cs`) on worn items and guard effects, at four stages (hit, damage, applying, defeating), outgoing before incoming, around one `ActorStats.Apply`; deliveries are Engine spatial queries. No hit roll or action registry | `c287b35f6f20aa5b8b831a720751ef5092e214b53df190910f6cdda30c60befa` |
 | `rusty-dagger/src/WorldRpg.Kit/Ai/PursuitCoordinator.cs`, `WanderCoordinator.cs` | `f680eeb8675d3b1f634ee850096d680abc7b5c30` | `Residents/ResidentSenses.cs`, `ResidentConduct.cs`: the Engine visibility observer built from the actor's facing, a pursuit decision from visibility and attack reach with retreat when it applies, and waypoint walking with a pause. Hotel adds awareness memory, near sense, factions, ambush, and composes these as authored parts; steps are Engine character steps, with no navigation coordinator, failure states or fact output | `2086e02f0928f5a72f933791058b1c5db96cf3312d55110460c1ae60b878d4a1`, `3ed6570ef0ddd4584cd288bf2dd9fff7c8c957798fbcfd542f7b3bc127819f2d` |
 
+## Incorporated progression pattern
+
+| Donor file | Revision | Hotel adaptation | SHA-256 of source |
+| --- | --- | --- | --- |
+| `rusty-dagger/src/WorldRpg.Kit/Progression/ProgressionState.cs` | `a47d6ec4e99593e72a6ae4471ab5cdcdaa82c67b` | `InvestigatorGrowth`: experience and per-skill use counters that only move forward, capped at a limit and restored whole after validation. Hotel adds no XP curve in code: levels and ranks are authored thresholds, and what they give is Engine stat sources rather than stored values | `3c0f3612c59b95cf26213283f90ce49c715eb97f2359bcec5c5455c9c2937121` |
+
 ## Incorporated loot pattern
 
 | Donor file | Revision | Hotel adaptation | SHA-256 of source |

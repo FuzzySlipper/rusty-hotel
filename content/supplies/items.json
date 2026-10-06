@@ -413,6 +413,120 @@
         ],
         "actions": []
       }
+    },
+    {
+      "id": "service-medal",
+      "name": "Long-service medal",
+      "description": "A brass medal for forty years below stairs, its ribbon worn to threads. Pinned on, it lends you the stubbornness of whoever earned it, for good.",
+      "mark": "✶",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "relic"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [
+            {
+              "stat": "might",
+              "amount": 1
+            },
+            {
+              "stat": "maximum-health",
+              "amount": 5
+            }
+          ],
+          "practice": {}
+        }
+      }
+    },
+    {
+      "id": "moth-locket",
+      "name": "Moth-wing locket",
+      "description": "A locket holding one pressed grey wing. Opened, it keeps the spirits a little closer to you for the rest of the night.",
+      "mark": "❦",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "relic"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [
+            {
+              "stat": "attunement",
+              "amount": 3
+            }
+          ],
+          "practice": {}
+        }
+      }
+    },
+    {
+      "id": "porters-handbook",
+      "name": "Porter's handbook",
+      "description": "A staff handbook, its chapter on difficult guests underlined twice. Reading it teaches you to put your weight behind a blow.",
+      "mark": "▤",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "tome"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [],
+          "practice": {
+            "striking": 8
+          }
+        }
+      }
+    },
+    {
+      "id": "range-manual",
+      "name": "Pistol range manual",
+      "description": "A thin manual from the house detective's office. Reading it steadies your aim.",
+      "mark": "▥",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "tome"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [],
+          "practice": {
+            "marksmanship": 6
+          }
+        }
+      }
     }
   ]
 }

@@ -5,7 +5,7 @@
   "saveFailed": "The checkpoint could not be saved. Your carried finds and previous checkpoint are unchanged.\n\n{error}",
   "nothingSecured": "No expedition finds secured yet.",
   "secured": "Secured: {finds}.",
-  "saved": "{secured}\n\nCheckpoint {returns} saved. Health {health}; ammunition {ammo}; summon charges {summon}.\n\nYour supplies, pact, opened doors, collected finds and residents are recorded together. Defeat or reopening the hotel returns you to this refuge checkpoint. Changes made after this return are not saved.",
+  "saved": "{secured}{grown}\n\nCheckpoint {returns} saved. Health {health}; ammunition {ammo}; summon charges {summon}.\n\nYour supplies, pact, opened doors, collected finds and residents are recorded together. Defeat or reopening the hotel returns you to this refuge checkpoint. Changes made after this return are not saved.",
   "savedTitle": "Return recorded",
   "notSavedTitle": "Checkpoint not saved",
   "savedStatus": "Refuge checkpoint {returns} saved · {count} expedition find secured",

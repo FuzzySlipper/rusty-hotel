@@ -90,6 +90,7 @@ internal sealed class HotelExpedition : IDisposable
     {
         if (combat.Defeated || combat.Phase != AttackPhase.Ready || spirit.Active)
             return Receipt(false, text.Busy);
+        Progression.GrowthState? before = checkpoint?.Supplies.Growth;
         CheckpointState next = Capture(checked(Returns + 1));
         // The run's floors shift while the player is away: each is due to shift when the player next climbs to it.
         next = next with { Floors = next.Floors! with { Floors = [.. next.Floors.Floors.Select(f => f with { ShiftDue = true })] } };
@@ -106,8 +107,25 @@ internal sealed class HotelExpedition : IDisposable
         string secured = next.SecuredFinds.Length == 0 ? text.NothingSecured : Template.Fill(text.Secured,
             ("finds", string.Join(", ", next.SecuredFinds.Select(id => (supplies.Finds.FirstOrDefault(f => f.Id == id) is { } here
                 ? supplies.Item(here.Item) : floors.FindItem(id)!).Name))));
-        return Receipt(true, Template.Fill(text.Saved, ("secured", secured), ("returns", Returns),
+        return Receipt(true, Template.Fill(text.Saved, ("secured", secured), ("grown", Grown(before, next.Supplies.Growth)), ("returns", Returns),
             ("health", supplies.Health), ("ammo", supplies.Ammo), ("summon", supplies.Summon)));
+    }
+
+    // Growth by use is told here, at the refuge: the level and skill ranks reached since the last checkpoint.
+    private string Grown(Progression.GrowthState? before, Progression.GrowthState now)
+    {
+        Progression.GrowthDefinition growth = supplies.Growth.Definition;
+        Progression.GrowthMessages say = growth.Text;
+        List<string> changes = [];
+        int level = growth.LevelAt(now.Experience);
+        if (level > growth.LevelAt(before?.Experience ?? 0)) changes.Add(Template.Fill(say.GrownLevel, ("level", level)));
+        foreach (Progression.SkillDefinition skill in growth.Skills)
+        {
+            int rank = skill.RankAt(now.Uses.GetValueOrDefault(skill.Id));
+            if (rank > skill.RankAt(before?.Uses.GetValueOrDefault(skill.Id) ?? 0))
+                changes.Add(Template.Fill(say.GrownSkill, ("skill", skill.Name), ("rank", rank)));
+        }
+        return changes.Count == 0 ? "" : Template.Fill(say.Grown, ("changes", string.Join(say.GrownJoin, changes)));
     }
 
     internal void Recover()

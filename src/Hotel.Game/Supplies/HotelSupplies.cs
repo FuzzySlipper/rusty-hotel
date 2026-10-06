@@ -30,11 +30,13 @@ internal sealed class HotelSupplies
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
 
     internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner,
-        Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats, Loot.LootCatalog loot, SearchDefinition[] searches)
+        Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats, Loot.LootCatalog loot, SearchDefinition[] searches,
+        Progression.GrowthDefinition growth)
     {
         this.loot = loot;
         this.searches = searches;
         Stats = new(mechanics, playerStats, owner);
+        Growth = new(growth, Stats, owner, id => definition.Item(id)?.Use?.Growth);
         this.definition = definition;
         this.mechanics = mechanics;
         text = definition.Text;
@@ -48,6 +50,8 @@ internal sealed class HotelSupplies
 
     /// <summary>The investigator's stats; the resource tracks above are its tracks.</summary>
     internal Mechanics.ActorStats Stats { get; }
+    /// <summary>The investigator's growth: its levels, skill ranks and relics are sources on <see cref="Stats"/>.</summary>
+    internal Progression.InvestigatorGrowth Growth { get; }
     internal SuppliesDefinition Definition => definition;
 
     internal ulong Revision { get; private set; }
@@ -151,6 +155,9 @@ internal sealed class HotelSupplies
         ItemDefinition item = Item(stack.Item);
         if (item.Deposit) return text.KeepForReturn;
         if (item.Use is not { } use) return Template.Fill(text.WornNotUsed, ("item", item.Name));
+        // A relic or tome is used for what it teaches; one with nothing left to teach is kept.
+        if (use.Growth is { } growth && use.Restores.Count + use.Effects.Length == 0)
+            return Growth.Teaches(growth) ? "" : Template.Fill(Growth.Definition.Text.NothingToLearn, ("item", item.Name));
         // A full track refuses an item only when everything it does would restore a full track.
         bool Full(string track) => Stats.Track(track).Value >= Stats.Track(track).MaximumValue;
         bool effective = use.Restores.Keys.Any(t => !Full(t)) ||
@@ -167,9 +174,10 @@ internal sealed class HotelSupplies
         ItemDefinition item = Item(Slot(index)!.Value.Item);
         foreach (var (track, amount) in item.Use!.Restores) Stats.Track(track).Restore(amount);
         foreach (string effect in item.Use.Effects) Stats.Effects.Apply(mechanics.Effect(effect)!, $"item.{item.Id}");
+        if (item.Use.Growth is { } growth) Growth.Learn(item.Id, growth);
         fieldCase.ConsumeOne(index);
         Revision++;
-        Message = Template.Fill(text.Used, ("item", item.Name));
+        Message = Template.Fill(item.Use.Growth is null ? text.Used : Growth.Definition.Text.Learned, ("item", item.Name));
         return true;
     }
 
@@ -327,17 +335,18 @@ internal sealed class HotelSupplies
     internal SuppliesState Capture()
     {
         var (pockets, worn) = fieldCase.Capture();
-        return new(Stats.Capture(), pockets, worn, collected.Order().ToArray());
+        return new(Stats.Capture(), pockets, worn, collected.Order().ToArray(), Growth.Capture());
     }
 
     internal void Validate(SuppliesState state)
     {
         if (state.Stats is null) throw new InvalidOperationException("Checkpoint supplies have no stats.");
         fieldCase.Validate(state.Pockets, state.Worn);
+        Growth.Validate(state.Growth);
         // Track maximums follow what the saved case wears.
         FieldCase scratch = new(definition, loot, Capacity, new EntityId(0));
         scratch.Restore(state.Pockets, state.Worn);
-        Stats.Validate(state.Stats, scratch.Sources);
+        Stats.Validate(state.Stats, scratch.Sources, Growth.Sources(state.Growth));
         if (!(state.Stats.Tracks.GetValueOrDefault(HealthTrack) > 0) || state.Collected is null ||
             state.Collected.Distinct().Count() != state.Collected.Length ||
             state.Collected.Any(id => !finds.Any(f => f.Id == id) && !searches.Any(s => s.Id == id)))
@@ -350,6 +359,7 @@ internal sealed class HotelSupplies
         Reset();
         fieldCase.Restore(state.Pockets, state.Worn);
         Stats.SetEquipmentSources(fieldCase.Sources);
+        Growth.Restore(state.Growth);
         collected.UnionWith(state.Collected);
         Stats.Restore(state.Stats);
     }
@@ -359,6 +369,7 @@ internal sealed class HotelSupplies
         fieldCase.Restore(new ItemStack?[Capacity], definition.Kit);
         collected.Clear();
         Stats.SetEquipmentSources(fieldCase.Sources);
+        Growth.Reset();
         Stats.Reset();
         Revision++;
         Message = "";

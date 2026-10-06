@@ -41,9 +41,10 @@ internal static class CheckpointChecks
                 f.Supplies.SpendAmmo(2); f.Supplies.SpendSummon(1); f.Supplies.Damage(new(13, "blunt"));
                 f.Combat.SwapHands();
                 f.Combat.Enemies[0].Health.SetCurrent(0);
-                // A search made travels with the checkpoint beside the finds collected.
+                // A search made and growth since the last return travel with the checkpoint; the receipt tells the growth.
                 string remains = Hotel.Game.HotelWorld.Remains(f.Combat.Enemies[0].Id);
                 Check(f.Supplies.Search(remains, []), "the fallen porter's remains are searched");
+                f.Supplies.Growth.Award(f.Content.Growth.Levels.Experience[1]);
                 var lamp = f.Combat.Enemies[1]; lamp.Health.SetCurrent(36); lamp.Yaw = .4f;
                 lamp.Stats.Stat("might").BaseValue = 14; lamp.Stats.RefreshDerived(); lamp.Stats.Track("stamina").SetCurrent(20);
                 lamp.Stats.Effects.Apply(f.Content.Mechanics.Effect("staggered")!, "weapon.prybar");
@@ -59,10 +60,13 @@ internal static class CheckpointChecks
                 f.Route.Use();
                 Check(f.Expedition.Returns == 1 && f.Expedition.SecuredFinds.SequenceEqual(["survey-reel"]) &&
                     !Enumerable.Range(0, f.Supplies.Capacity).Any(i => f.Supplies.Slot(i)?.Item == "reel"), "ordinary notebook deposits reel and records checkpoint");
+                Check(f.Expedition.ReceiptText.Contains(Template.Fill(f.Content.Growth.Text.GrownLevel, ("level", 2))),
+                    $"the refuge receipt tells the level reached since the last return: {f.Expedition.ReceiptText}");
                 using var store = new ProductStateStore<CheckpointState>(engine, HotelExpedition.Scope,
                     new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
                 saved = store.Load(HotelExpedition.Key).State!;
-                Check(saved.Supplies.Collected.Contains(remains), "the checkpoint keeps the search made");
+                Check(saved.Supplies.Collected.Contains(remains) && saved.Supplies.Growth.Experience == f.Content.Growth.Levels.Experience[1],
+                    "the checkpoint keeps the search made and the investigator's growth");
                 var tracks = saved.Supplies.Stats.Tracks;
                 ActorStatsState lampSaved = saved.Residents.Single(r => r.Id == lamp.Id).Stats;
                 Check(lampSaved.Bases["might"] == 14 && lampSaved.Tracks["stamina"] == 20 && lampSaved.Tracks["health"] == 36,

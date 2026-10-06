@@ -42,7 +42,8 @@
       "radius": 0.34,
       "height": 1.8,
       "eyeHeight": 0.576,
-      "loot": "porter-remains"
+      "loot": "porter-remains",
+      "experience": 12
     },
     {
       "id": "lamp",
@@ -85,7 +86,8 @@
       "radius": 0.38,
       "height": 1.8,
       "eyeHeight": 0.576,
-      "loot": "lamp-remains"
+      "loot": "lamp-remains",
+      "experience": 18
     },
     {
       "id": "night-maid",
@@ -157,7 +159,8 @@
       "radius": 0.3,
       "height": 1.7,
       "eyeHeight": 0.55,
-      "loot": "maid-remains"
+      "loot": "maid-remains",
+      "experience": 24
     }
   ]
 }

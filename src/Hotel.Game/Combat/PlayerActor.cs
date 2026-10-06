@@ -17,7 +17,7 @@ internal sealed class PlayerActor(HotelScene scene, HotelPlayer player, HotelSup
     public Vector3 Position => player.Position;
     public bool Alive => supplies.Health > 0;
     public IEnumerable<ActiveContribution> Contributions => supplies.Worn.SelectMany(w => supplies.Loot.Contributions(w.Item, w.Roll))
-        .Select(c => new ActiveContribution(c)).Concat(supplies.Stats.Effects.HitContributions);
+        .Select(c => new ActiveContribution(c)).Concat(supplies.Growth.Contributions).Concat(supplies.Stats.Effects.HitContributions);
     // A generated held item's affixes may put effects on what its hits strike.
     public IEnumerable<string> HitEffects => supplies.Loot.OnHit((supplies.Held(Hand.Main) ?? supplies.Held(Hand.Off))?.Roll);
     internal ActionUser User { get; } = new();

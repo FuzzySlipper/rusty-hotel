@@ -35,6 +35,14 @@
     {
       "id": "ring",
       "name": "Ring"
+    },
+    {
+      "id": "relic",
+      "name": "Relic"
+    },
+    {
+      "id": "tome",
+      "name": "Tome"
     }
   ],
   "slots": [

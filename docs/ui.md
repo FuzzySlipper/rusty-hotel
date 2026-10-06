@@ -277,11 +277,19 @@ the player arrives on the next floor's landing, or at the foot of the stairs bel
 what they wear and hold. The location label names the new floor's space. A floor that cannot be generated leaves the player where they
 stand.
 
+### Growth
+
+Growth has no screen of its own: no level-up prompt, allocation or skill list. Skills deepen as they are used and
+levels come from residents felled, both told on the refuge receipt. Relics and tomes are found like any supply and
+used from the field case or a quick key; the notice says something has settled, and the stats it changed show where
+stats already do. A tome with nothing left to teach is refused through the result notice and kept.
+
 ### Refuge return and recovery
 
 The notebook on the refuge's west desk is the ordinary checkpoint interaction.
 E records the return and opens a short refuge ledger receipt. It names secured
-expedition finds and saved resources; its only navigation is Return to hotel /
+expedition finds, the growth since the last return (the level reached and skills deepened, if any) and saved
+resources; its only navigation is Return to hotel /
 Escape. A failed write displays Checkpoint not saved with the actual error and
 retains the carried find. The pause menu reports checkpoint status without adding
 save/load/reset controls. R while overwhelmed restores the full last checkpoint

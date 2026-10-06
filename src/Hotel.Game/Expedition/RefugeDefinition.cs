@@ -17,7 +17,7 @@ internal sealed record ExpeditionMessages(string Continued, string InitialReady,
         ExpeditionMessages text = Authored.Read(engine, Path, ContentJson.Default.ExpeditionMessages);
         Template.Check(Path, "saveFailed", text.SaveFailed, "error");
         Template.Check(Path, "secured", text.Secured, "finds");
-        Template.Check(Path, "saved", text.Saved, "secured", "returns", "health", "ammo", "summon");
+        Template.Check(Path, "saved", text.Saved, "secured", "grown", "returns", "health", "ammo", "summon");
         Template.Check(Path, "savedStatus", text.SavedStatus, "returns", "count");
         Template.Check(Path, "returned", text.Returned, "returns");
         Template.Check(Path, "recovered", text.Recovered, "status");

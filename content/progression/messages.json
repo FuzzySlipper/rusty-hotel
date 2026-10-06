@@ -1,0 +1,8 @@
+{
+  "learned": "You take in the {item}. Something in you settles differently.",
+  "nothingToLearn": "The {item} has nothing more to teach you.",
+  "grown": "\n\nSince your last return you have grown: {changes}.",
+  "grownLevel": "you have reached level {level}",
+  "grownSkill": "{skill} has deepened to rank {rank}",
+  "grownJoin": "; "
+}

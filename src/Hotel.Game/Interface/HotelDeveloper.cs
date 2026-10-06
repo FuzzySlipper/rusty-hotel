@@ -133,7 +133,10 @@ internal sealed class HotelDeveloper(HotelProduct product)
             w.Combat.Phase.ToString(), w.Combat.AcceptedAttacks, w.Combat.LandedHits, w.Spirit.AnyAcquired, w.Spirit.Equipped is not null, w.Spirit.Revision,
             w.Spirit.Phase.ToString(), w.Spirit.Elapsed, w.Spirit.Calls, w.Spirit.Message, w.Expedition.Returns, w.Expedition.SecuredFinds,
             w.Expedition.Status, w.Combat.Enemies.Select(e => new EnemyObservation(e.Id, e.Kind.Id, [e.Position.X, e.Position.Y, e.Position.Z],
-                e.Health.ValueInt, e.Phase.ToString(), e.Awareness.Target is not null)).ToArray()), DeveloperJson.Default.HotelObservation));
+                e.Health.ValueInt, e.Phase.ToString(), e.Awareness.Target is not null)).ToArray(),
+            new GrowthObservation(w.Supplies.Growth.Level, w.Supplies.Growth.Experience, w.Supplies.Growth.Capture().Uses,
+                w.Supplies.Growth.Definition.Skills.ToDictionary(s => s.Id, s => w.Supplies.Growth.Rank(s.Id)), [.. w.Supplies.Growth.Relics])),
+            DeveloperJson.Default.HotelObservation));
     }
 }
 
@@ -141,7 +144,8 @@ internal sealed record HotelObservation(ulong Step, int Depth, float[] Position,
     string[] OpenDoors, ulong ReadingSequence, int Health, int Ammo, int Summon, int OccupiedPockets, ulong InventoryRevision, string SupplyMessage,
     string Weapon, string AttackPhase, int AcceptedAttacks, int LandedHits, bool SpiritAcquired, bool SpiritEquipped, ulong SpiritRevision,
     string SpiritPhase, float SpiritElapsed, int SpiritCalls, string SpiritMessage, int CheckpointReturns, string[] SecuredFinds,
-    string CheckpointStatus, EnemyObservation[] Enemies);
+    string CheckpointStatus, EnemyObservation[] Enemies, GrowthObservation Growth);
+internal sealed record GrowthObservation(int Level, int Experience, Dictionary<string, int> Uses, Dictionary<string, int> Ranks, string[] Relics);
 internal sealed record EnemyObservation(string Id, string Kind, float[] Position, int Health, string Phase, bool Aware);
 internal sealed record PlaceInspection(string Place, string Placement, string Module, float[] Centre, float[]? Door);
 internal sealed record SpaceInspection(string Id, string Label, float[] Min, float[] Max);

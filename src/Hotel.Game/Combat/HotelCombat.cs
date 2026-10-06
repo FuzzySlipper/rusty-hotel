@@ -173,6 +173,7 @@ internal sealed class HotelCombat
             HotelEnemy? reached = impacts.Select(i => i.Target).OfType<HotelEnemy>().FirstOrDefault();
             Action<HotelEnemy?, Vector3>? answer = pactLanded;
             pactLanded = null;
+            supplies.Growth.Practise(call, impacts.Any(i => i.Damage > 0));
             // Where it landed: the resident reached, the area's centre, or the investigator for a call on themselves.
             answer?.Invoke(reached, call.Delivery.Kind == DeliveryKind.Area ? player.Eye + PactUser.Aim * call.Delivery.Range : impacts.FirstOrDefault()?.End ?? player.Eye);
         }
@@ -247,6 +248,9 @@ internal sealed class HotelCombat
             else if (impact.Target is HotelEnemy victim)
             {
                 LandedHits++;
+                // Skills grow by use: a landed hit practises its action and, if it took health, the kinds it dealt.
+                supplies.Growth.Practise(impact.Action, impact.Damage > 0);
+                if (!victim.Alive) supplies.Growth.Award(victim.Kind.Experience);
                 HitFlash = definition.Tuning.HitFlashSeconds;
                 Announce(Template.Fill(victim.Alive ? text.Hit : text.ResidentFalls, ("resident", victim.Kind.Name)));
                 if (!victim.Alive) { victim.User.Interrupt(); victim.BeamTime = 0; }

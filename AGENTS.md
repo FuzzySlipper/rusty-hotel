@@ -59,6 +59,10 @@ and pause only decisions that need unavailable authority.
   generated item's resolved roll travels with its stack, and searches (remains and
   containers) give through Supplies once, keyed by the run seed. Do not re-roll a
   placed or carried item.
+  `Progression/` owns levels, skills grown by use and what relics and tomes teach;
+  Supplies holds the investigator's `InvestigatorGrowth`, whose growth is Engine
+  sources on its stats. Do not add a level-up or allocation screen or store grown
+  values as bases; growth is told on the refuge receipt.
   `Spirits/HotelSpirit.cs` owns the roster's pacts, the pact slot and the visit;
   `Spirits/SpiritView.cs` contributes the articulated creature to the same scene.
   Equip claims use the Engine paused-intent callback and the same domain rule as

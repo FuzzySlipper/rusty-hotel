@@ -106,7 +106,8 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, Classification
             Authored.Require(roles == 1, ItemCatalog.Path, at, "must be used (use), worn (wear) or kept for the refuge (deposit), exactly one.");
             if (item.Use is { } use)
             {
-                Authored.Require(use.Restores.Count + use.Effects.Length > 0, ItemCatalog.Path, $"{at}.use", "restores nothing and applies no effect.");
+                Authored.Require(use.Restores.Count + use.Effects.Length > 0 || use.Growth is not null, ItemCatalog.Path, $"{at}.use",
+                    "restores nothing, applies no effect and teaches nothing.");
                 foreach (var (track, amount) in use.Restores)
                 {
                     Authored.Require(mechanics.Tracks.Any(t => t.Id == track), ItemCatalog.Path, $"{at}.use.restores.{track}", "is not a track.");
@@ -170,10 +171,11 @@ internal sealed record ItemDefinition(string Id, string Name, string Description
 }
 
 /// <summary>
-/// What using an item does: points restored to tracks at once, and effects applied to the investigator. Used from the
-/// belt during play it is <see cref="Action"/>, a self action whose timing the hands go through before the item is used.
+/// What using an item does: points restored to tracks at once, effects applied to the investigator, and, for a relic or
+/// tome, what it teaches (<see cref="Progression.ItemGrowth"/>). Used from the belt during play it is <see cref="Action"/>,
+/// a self action whose timing the hands go through before the item is used.
 /// </summary>
-internal sealed record ItemUse(Dictionary<string, int> Restores, string[] Effects, string Action);
+internal sealed record ItemUse(Dictionary<string, int> Restores, string[] Effects, string Action, Progression.ItemGrowth? Growth = null);
 
 /// <summary>
 /// How an item is worn: how many slots it fills, the exclusivity group no two worn items may share (null for none),

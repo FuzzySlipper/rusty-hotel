@@ -98,7 +98,7 @@ internal sealed class ActorStats
     /// </summary>
     internal void ApplyEffectSources()
     {
-        // Equipment and effect sources are evaluated together; both are rebuilt by their owners, never saved.
+        // Equipment, growth and effect sources are evaluated together; each is rebuilt by its owner, never saved.
         foreach (AttributeDefinition a in mechanics.Attributes) Stats.GetStat(StatOf(a.Id)).SetSources(StatOf(a.Id), EffectSources(a.Id));
         foreach (DamageKindDefinition k in mechanics.DamageKinds)
             Stats.GetStat(ResistanceOf(k.Id)).SetSources(ResistanceOf(k.Id), EffectSources(ResistanceStat(k.Id)));
@@ -121,9 +121,16 @@ internal sealed class ActorStats
     }
 
     private IEnumerable<StatSource> EffectSources(string stat) =>
-        (Effects?.Sources ?? []).Concat(equipment).Where(s => s.Contributions.Any(c => c.Stat.Value == stat));
+        (Effects?.Sources ?? []).Concat(equipment).Concat(growth).Where(s => s.Contributions.Any(c => c.Stat.Value == stat));
 
-    private StatSource[] equipment = [];
+    private StatSource[] equipment = [], growth = [];
+
+    /// <summary>Replaces the permanent sources the investigator has grown (see <see cref="Progression.InvestigatorGrowth"/>) and re-evaluates.</summary>
+    internal void SetGrowthSources(StatSource[] sources)
+    {
+        growth = sources;
+        ApplyEffectSources();
+    }
 
     /// <summary>Replaces the sources worn equipment holds (see <see cref="Supplies.FieldCase.Sources"/>) and re-evaluates.</summary>
     internal void SetEquipmentSources(StatSource[] sources)
@@ -156,7 +163,8 @@ internal sealed class ActorStats
 
     /// <summary>Refuses a saved state that does not name exactly this vocabulary's stats and tracks within their bounds.</summary>
     /// <param name="worn">The equipment sources the state would be restored beside, for track maximums.</param>
-    internal void Validate(ActorStatsState state, StatSource[]? worn = null)
+    /// <param name="grown">The growth sources it would be restored beside, likewise.</param>
+    internal void Validate(ActorStatsState state, StatSource[]? worn = null, StatSource[]? grown = null)
     {
         if (state.Bases is null || state.Tracks is null || state.Effects is null || state.Bases.Count != Stats.Stats.Count || state.Tracks.Count != Stats.Tracks.Count)
             throw new InvalidOperationException("Checkpoint stats do not match the stat vocabulary.");
@@ -173,6 +181,7 @@ internal sealed class ActorStats
         // are checked on a scratch copy, never the live stats.
         ActorStats scratch = new(mechanics, block, owner);
         scratch.SetEquipmentSources(worn ?? equipment);
+        scratch.SetGrowthSources(grown ?? growth);
         scratch.Restore(state);
     }
 

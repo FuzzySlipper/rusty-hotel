@@ -1,0 +1,43 @@
+{
+  "levels": {
+    "experience": [0, 30, 80, 150, 240, 350, 480, 640],
+    "perLevel": [
+      { "stat": "maximum-health", "amount": 4 },
+      { "stat": "maximum-stamina", "amount": 2 }
+    ]
+  },
+  "skills": [
+    {
+      "id": "striking",
+      "name": "Striking",
+      "practice": { "damageKinds": ["blunt"], "actions": [] },
+      "ranks": [8, 20, 40, 70, 110],
+      "perRank": [{ "stat": "might", "amount": 1 }],
+      "contributions": [{ "stage": "Damage", "side": "Outgoing", "kinds": ["blunt"], "multiply": 1.04 }]
+    },
+    {
+      "id": "marksmanship",
+      "name": "Marksmanship",
+      "practice": { "damageKinds": ["pierce"], "actions": [] },
+      "ranks": [6, 16, 32, 56, 90],
+      "perRank": [{ "stat": "agility", "amount": 1 }],
+      "contributions": [{ "stage": "Damage", "side": "Outgoing", "kinds": ["pierce"], "multiply": 1.04 }]
+    },
+    {
+      "id": "kindling",
+      "name": "Kindling",
+      "practice": { "damageKinds": ["fire"], "actions": [] },
+      "ranks": [4, 12, 24, 42, 66],
+      "perRank": [{ "stat": "nerve", "amount": 1 }],
+      "contributions": [{ "stage": "Damage", "side": "Outgoing", "kinds": ["fire"], "multiply": 1.05 }]
+    },
+    {
+      "id": "communion",
+      "name": "Communion",
+      "practice": { "damageKinds": ["spirit"], "actions": ["hushwing-call", "lintmoth-settle", "doorman-sweep", "wickling-lure"] },
+      "ranks": [4, 10, 20, 34, 52],
+      "perRank": [{ "stat": "attunement", "amount": 2 }],
+      "contributions": [{ "stage": "Damage", "side": "Outgoing", "kinds": ["spirit"], "multiply": 1.05 }]
+    }
+  ]
+}
