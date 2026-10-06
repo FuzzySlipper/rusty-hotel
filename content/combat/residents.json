@@ -4,8 +4,25 @@
       "id": "porter",
       "name": "The Porter",
       "behavior": "Porter",
-      "health": 66,
+      "stats": {
+        "attributes": {
+          "might": 10,
+          "agility": 10,
+          "nerve": 10,
+          "attunement": 10
+        },
+        "bases": {
+          "maximum-health": 26
+        },
+        "resistances": {
+          "blunt": 0,
+          "pierce": 0,
+          "spirit": 0.2
+        },
+        "initial": {}
+      },
       "damage": 12,
+      "damageKind": "blunt",
       "speed": 0.85,
       "sightRange": 3.6,
       "attackRange": 1.7,
@@ -21,8 +38,24 @@
       "id": "lamp",
       "name": "The Lamplighter",
       "behavior": "Lamp",
-      "health": 60,
+      "stats": {
+        "attributes": {
+          "might": 10,
+          "agility": 10,
+          "nerve": 10,
+          "attunement": 10
+        },
+        "bases": {
+          "maximum-health": 20
+        },
+        "resistances": {
+          "fire": 0.5,
+          "spirit": 0
+        },
+        "initial": {}
+      },
       "damage": 16,
+      "damageKind": "fire",
       "speed": 0,
       "sightRange": 7,
       "attackRange": 8,

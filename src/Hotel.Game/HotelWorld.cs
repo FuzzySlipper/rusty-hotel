@@ -36,7 +36,8 @@ internal sealed class HotelWorld : IDisposable
             Scene = Own(new HotelScene(engine, content.Surfaces, excursion.Geometry, excursion.Route.Doors));
             content.Look.Apply(engine.CameraView);
             Player = Own(new HotelPlayer(engine, Scene, content.Player, excursion.Placements.Arrival, content.Controls));
-            Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity);
+            Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity,
+                content.Mechanics, content.PlayerStats);
             Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents,
                 content.Controls.Weapons.Select(w => w.Label).ToArray());
             Spirit = new HotelSpirit(content.Spirit, content.SpiritText, excursion.Placements.SpiritBells[0], Supplies, Combat, Player);

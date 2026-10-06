@@ -18,7 +18,8 @@ internal static class Owners
     internal static HotelPlayer Player(IEngineContext engine, HotelScene scene, HotelContent content) =>
         new(engine, scene, content.Player, content.Excursion.Placements.Arrival, content.Controls);
     internal static HotelSupplies Supplies(HotelContent content, EntityId owner, int? capacity = null) =>
-        new(content.Supplies, content.Excursion.Placements.Finds, capacity ?? content.Interface.SupplyPockets, owner);
+        new(content.Supplies, content.Excursion.Placements.Finds, capacity ?? content.Interface.SupplyPockets, owner,
+            content.Mechanics, content.PlayerStats);
     internal static HotelCombat Combat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies, HotelContent content) =>
         new(engine, scene, player, supplies, content.Combat, content.Excursion.Placements.Residents,
             content.Controls.Weapons.Select(w => w.Label).ToArray());

@@ -4,6 +4,7 @@ using Hotel.Game.Expedition;
 using Hotel.Game.Floors.Modules;
 using Hotel.Game.Input;
 using Hotel.Game.Interface;
+using Hotel.Game.Mechanics;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Scene;
@@ -18,7 +19,8 @@ namespace Hotel.Game.Content;
 /// Every authored definition the product composes, loaded file by file through each domain's own record.
 /// Only composition reads this; each owner receives the pieces it uses.
 /// </summary>
-internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, RouteDefinition Route, InterfaceTuning Interface,
+internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, MechanicsDefinition Mechanics, ActorStatBlock PlayerStats,
+    RouteDefinition Route, InterfaceTuning Interface,
     SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, CombatDefinition Combat, SpiritDefinition Spirit,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
@@ -28,7 +30,8 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         IReadOnlyDictionary<string, string> keys = controls.Labels;
         KitDefinition kit = KitDefinition.Load(engine);
         FixtureCatalog fixtures = FixtureCatalog.Load(engine);
-        CombatDefinition combat = CombatDefinition.Load(engine, keys);
+        MechanicsDefinition mechanics = MechanicsDefinition.Load(engine);
+        CombatDefinition combat = CombatDefinition.Load(engine, keys, mechanics);
         ExcursionDefinition excursion = ExcursionDefinition.Load(engine, excursionId, keys, kit, fixtures, combat.Residents);
         // The product implements one pact; its bell placement names which spirit file to read.
         Authored.Require(excursion.Placements.SpiritBells.Length == 1, excursion.PlacementsPath, "spiritBells",
@@ -36,7 +39,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         PlayerTuning player = PlayerTuning.Load(engine);
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
-        HotelContent content = new(controls, player, route, InterfaceTuning.Load(engine),
+        HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
             SurfaceCatalog.Load(engine).Surfaces, SceneLook.Load(engine), kit, fixtures, modules, SuppliesDefinition.Load(engine), combat,
             SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);

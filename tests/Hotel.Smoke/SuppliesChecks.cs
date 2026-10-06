@@ -59,7 +59,7 @@ internal static class SuppliesChecks
         Check(supplies.Health == 70 && supplies.Slot(1)?.Count == 1, "malformed UI claims do not fault or mutate inventory");
         supplies.HandleIntents([Claim($"{{\"action\":\"use\",\"from\":1,\"revision\":{supplies.Revision}}}")]);
         Check(supplies.Health == 100 && supplies.Occupied == 0, "semantic use consumes and heals through the owner");
-        supplies.Give("bandage", 1); supplies.Damage(1000);
+        supplies.Give("bandage", 1); supplies.Damage(new(1000, "blunt"));
         Check(!supplies.Use(0, supplies.Revision) && supplies.Health == 0 && supplies.Slot(0)?.Count == 1,
             "field case and quick pockets cannot revive defeat outside checkpoint recovery");
         Console.WriteLine("Supplies checks passed: capacity, stack admission, duplicate/stale actions, coherent consumption, refusal, movement, resources and reset.");

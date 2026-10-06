@@ -196,7 +196,7 @@ internal sealed class HotelFloors
         {
             ResidentPlacement? placed = roster.FirstOrDefault(p => p.Id == state?.Id);
             ResidentKind? kind = placed is null ? null : content.Combat.Residents.FirstOrDefault(k => k.Id == placed.Kind);
-            if (state is null || placed is null || kind is null || state.Health < 0 || state.Health > kind.Health ||
+            if (state is null || placed is null || kind is null || state.Health < 0 || state.Health > content.Combat.MaximumHealth(kind) ||
                 !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
                 System.Numerics.Vector3.Distance(new(state.X, state.Y, state.Z), Authored.Vector(placed.Position)) > kind.Leash + 1)
                 throw new InvalidOperationException($"Checkpoint floor {depth}'s resident values are invalid.");

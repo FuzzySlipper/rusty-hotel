@@ -37,7 +37,7 @@ internal sealed class HotelCombat
         this.weaponKeys = weaponKeys;
         text = definition.Text;
         Enemies = residents.Select(placed => new HotelEnemy(engine, scene, placed,
-            definition.Residents.Single(kind => kind.Id == placed.Kind), player.Tuning.Gravity)).ToArray();
+            definition.Residents.Single(kind => kind.Id == placed.Kind), player.Tuning.Gravity, definition.Mechanics)).ToArray();
     }
 
     internal HotelEnemy[] Enemies { get; }
@@ -155,7 +155,7 @@ internal sealed class HotelCombat
         HotelEnemy? victim = hit.Present && hit.Kind == SpatialHitKind.Entity
             ? Enemies.FirstOrDefault(e => e.Entity.Value == hit.Entity && e.Alive) : null;
         if (victim is null) { Announce(hit.Present ? text.StruckSurroundings : text.Miss); return; }
-        victim.Health.SetCurrent(Math.Max(0, victim.Health.ValueInt - Weapon.Damage));
+        victim.Stats.TakeDamage(new(Weapon.Damage, Weapon.DamageKind), HotelSupplies.HealthTrack);
         LandedHits++;
         HitFlash = definition.Tuning.HitFlashSeconds;
         Announce(Template.Fill(victim.Alive ? text.Hit : text.ResidentFalls, ("resident", victim.Kind.Name)));
@@ -204,9 +204,9 @@ internal sealed class HotelCombat
                 enemy.BeamTime = enemy.Kind.Commit;
                 if (hit.Present && hit.Kind == SpatialHitKind.Entity && hit.Entity == scene.PlayerEntity.Value)
                 {
-                    supplies.Damage(enemy.Kind.Damage);
+                    int taken = supplies.Damage(new(enemy.Kind.Damage, enemy.Kind.DamageKind));
                     HurtFlash = definition.Tuning.HurtFlashSeconds;
-                    Announce(Template.Fill(text.ResidentHits, ("resident", enemy.Kind.Name), ("damage", enemy.Kind.Damage)));
+                    Announce(Template.Fill(text.ResidentHits, ("resident", enemy.Kind.Name), ("damage", taken)));
                 }
                 enemy.Phase = AttackPhase.Commit; enemy.Remaining += enemy.Kind.Commit; break;
             case AttackPhase.Commit:
@@ -237,7 +237,7 @@ internal sealed class HotelCombat
         foreach (ResidentState? state in residents)
         {
             HotelEnemy? enemy = Enemies.FirstOrDefault(e => e.Id == state?.Id);
-            if (state is null || enemy is null || state.Health < 0 || state.Health > enemy.Kind.Health ||
+            if (state is null || enemy is null || state.Health < 0 || state.Health > enemy.Health.MaximumValue ||
                 !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
                 Vector3.Distance(new(state.X, state.Y, state.Z), enemy.Spawn) > enemy.Kind.Leash + 1)
                 throw new InvalidOperationException("Checkpoint resident values are invalid.");
@@ -251,7 +251,7 @@ internal sealed class HotelCombat
         foreach (ResidentState state in residents)
         {
             HotelEnemy enemy = Enemies.Single(e => e.Id == state.Id);
-            enemy.Health.SetCurrent(state.Health);
+            enemy.Health.SetCurrent(state.Health, false);
             enemy.Yaw = state.Yaw;
             enemy.Phase = enemy.Alive ? AttackPhase.Ready : AttackPhase.Defeated;
             scene.Entities.Set(enemy.Entity, EngineComponentTypes.Transform,
@@ -271,11 +271,12 @@ internal sealed class HotelCombat
 internal sealed class HotelEnemy
 {
     private readonly HotelScene scene;
-    internal HotelEnemy(IEngineContext engine, HotelScene scene, ResidentPlacement placement, ResidentKind kind, float gravity)
+    internal HotelEnemy(IEngineContext engine, HotelScene scene, ResidentPlacement placement, ResidentKind kind, float gravity,
+        Mechanics.MechanicsDefinition mechanics)
     {
         this.scene = scene; Kind = kind; Id = placement.Id; Spawn = Authored.Vector(placement.Position);
         Entity = scene.Entities.Create();
-        Health = new(kind.Health);
+        Stats = new(mechanics, kind.Stats, Entity);
         CharacterControllerConfig baseline = engine.Spatial.DefaultCharacterControllerConfig();
         Controller = baseline with
         {
@@ -290,7 +291,9 @@ internal sealed class HotelEnemy
     internal string Id { get; }
     internal ResidentKind Kind { get; }
     internal EntityId Entity { get; }
-    internal Track Health { get; }
+    /// <summary>This resident's Engine stats, built from its kind's block.</summary>
+    internal Mechanics.ActorStats Stats { get; }
+    internal Track Health => Stats.Track(HotelSupplies.HealthTrack);
     internal CharacterControllerConfig Controller { get; }
     internal Vector3 Spawn { get; }
     internal Vector3 Position => scene.Entities.Get(Entity, EngineComponentTypes.Transform).Translation;
@@ -306,7 +309,7 @@ internal sealed class HotelEnemy
     internal CharacterObstacle Obstacle => new(Entity.Value, new(Position, Quaternion.Identity, Vector3.One), -Half, Half, true, default, default);
     internal void Reset()
     {
-        Health.SetCurrent(Kind.Health); Phase = AttackPhase.Ready; Remaining = BeamTime = Yaw = 0;
+        Stats.Reset(); Phase = AttackPhase.Ready; Remaining = BeamTime = Yaw = 0;
         scene.Entities.Set(Entity, EngineComponentTypes.Transform, new(Spawn, Quaternion.Identity, Vector3.One));
         scene.Entities.Set(Entity, EngineComponentTypes.CharacterMotion, new(Vector3.Zero, Vector3.Zero,
             false, CharacterStance.Standing, 0, 0, 0, false, 0, Vector3.Zero, Vector3.Zero, Quaternion.Identity,

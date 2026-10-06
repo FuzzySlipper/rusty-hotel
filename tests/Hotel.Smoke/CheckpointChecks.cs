@@ -29,7 +29,7 @@ internal static class CheckpointChecks
                 using Fixture f = new(engine);
                 f.Expedition.Start();
                 Check(f.Expedition.Returns == 0 && f.Supplies.Health == 70, "missing save establishes valid initial checkpoint");
-                f.Supplies.Pickup("refuge-rounds"); f.Spirit.Acquire(); f.Supplies.Damage(1000);
+                f.Supplies.Pickup("refuge-rounds"); f.Spirit.Acquire(); f.Supplies.Damage(new(1000, "blunt"));
                 f.Route.Restore(["survey"]);
                 f.Expedition.Recover();
                 Check(f.Supplies.Health == 70 && f.Supplies.Occupied == 0 && f.Supplies.Ammo == 0 && f.Supplies.Summon == 0 &&
@@ -37,7 +37,7 @@ internal static class CheckpointChecks
                 f.Supplies.Pickup("refuge-rounds"); f.Supplies.Use(0, f.Supplies.Revision);
                 f.Supplies.Pickup("refuge-dressing"); f.Supplies.Move(0, 7, f.Supplies.Revision);
                 f.Supplies.Pickup("survey-reel"); f.Spirit.Acquire(); f.Spirit.Equip(true, f.Spirit.Revision);
-                f.Supplies.SpendAmmo(2); f.Supplies.SpendSummon(1); f.Supplies.Damage(13);
+                f.Supplies.SpendAmmo(2); f.Supplies.SpendSummon(1); f.Supplies.Damage(new(13, "blunt"));
                 f.Combat.SelectWeapon(1);
                 f.Combat.Enemies[0].Health.SetCurrent(0);
                 var lamp = f.Combat.Enemies[1]; lamp.Health.SetCurrent(36); lamp.Yaw = .4f;
@@ -53,7 +53,9 @@ internal static class CheckpointChecks
                 using var store = new ProductStateStore<CheckpointState>(engine, HotelExpedition.Scope,
                     new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
                 saved = store.Load(HotelExpedition.Key).State!;
-                Check(saved.Supplies.Health == 57 && saved.Supplies.Ammo == 4 && saved.Supplies.Summon == 1 && saved.Supplies.Pockets[7]?.Item == "bandage", "durable checkpoint keeps resource and pocket values");
+                var tracks = saved.Supplies.Stats.Tracks;
+                Check(tracks["health"] == 57 && tracks["ammunition"] == 4 && tracks["summon"] == 1 && saved.Supplies.Stats.Bases["might"] == 10 &&
+                    saved.Supplies.Pockets[7]?.Item == "bandage", "durable checkpoint keeps stat bases, track currents and pockets");
                 string Stored() => System.Text.Json.JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState);
                 string good = Stored();
                 HotelEnemy displaced = f.Combat.Enemies[1];
@@ -66,7 +68,7 @@ internal static class CheckpointChecks
                 f.Scene.Entities.Set(displaced.Entity, EngineComponentTypes.Transform, new(post, Quaternion.Identity, Vector3.One));
                 f.Supplies.Use(7, f.Supplies.Revision); f.Supplies.SpendAmmo(4); f.Supplies.SpendSummon(1);
                 f.Supplies.Pickup("portrait-dressing"); f.Spirit.Equip(false, f.Spirit.Revision);
-                f.Combat.Enemies[1].Health.SetCurrent(0); f.Supplies.Damage(1000); f.Route.Reset();
+                f.Combat.Enemies[1].Health.SetCurrent(0); f.Supplies.Damage(new(1000, "blunt")); f.Route.Reset();
                 f.Expedition.Recover(); Verify(f);
                 Check(!f.Supplies.Pickup("survey-reel") && f.Supplies.Pickup("portrait-dressing"), "saved loot cannot duplicate; unsaved loot is restored");
                 f.Expedition.Recover(); Verify(f);
@@ -83,7 +85,8 @@ internal static class CheckpointChecks
                 Check(before == after, "whole checkpoint round trips across Engine host shutdown/relaunch");
                 foreach (CheckpointState invalid in new[] {
                     saved with { Version = 99 }, saved with { OpenDoors = ["unknown"] },
-                    saved with { Supplies = saved.Supplies with { Health = 0 } },
+                    Stats(saved, tracks: ("health", 0)), Stats(saved, tracks: ("health", 101)), Stats(saved, tracks: ("courage", 3)),
+                    Stats(saved, bases: ("might", 500)), Stats(saved, bases: ("luck", 5)),
                     saved with { Spirit = saved.Spirit with { Acquired = false, Equipped = true } },
                     saved with { Residents = [] }, saved with { SecuredFinds = [] } })
                 {
@@ -120,6 +123,15 @@ internal static class CheckpointChecks
             "checkpoint restores coherent inventory, resources, pact, refuge, weapon, loot, doors and residents");
     }
     private static void Check(bool condition, string reason) { if (!condition) throw new InvalidOperationException(reason); }
+    // The saved state with some stats' bases or tracks' currents changed (or added, for an unknown id).
+    private static CheckpointState Stats(CheckpointState saved, (string Id, double Value)? bases = null, (string Id, double Value)? tracks = null)
+    {
+        Dictionary<string, double> b = new(saved.Supplies.Stats.Bases), t = new(saved.Supplies.Stats.Tracks);
+        if (bases is { } x) b[x.Id] = x.Value;
+        if (tracks is { } y) t[y.Id] = y.Value;
+        return saved with { Supplies = saved.Supplies with { Stats = new(b, t) } };
+    }
+
     private sealed class Fixture : IDisposable
     {
         internal readonly HotelScene Scene;
@@ -149,5 +161,6 @@ internal static class CheckpointChecks
             Route.Update();
         }
         public void Dispose() { Expedition.Dispose(); Player.Dispose(); Scene.Dispose(); }
-    }
+
+}
 }

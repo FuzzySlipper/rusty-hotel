@@ -30,12 +30,14 @@ its own folder. Geometry is kept apart from tuning.
 | `route/messages.json` | Focus prompt wording and the labels of the take/notebook interactions; `HotelRoute` |
 | `interface/tuning.json` | Field-case pocket count and how many appear as HUD quick pockets; `HotelHud`, `HotelSupplies` |
 | `scene/surfaces.json` | Reusable surfaces: tint, texture, world-metre tile size, roughness, emission; `HotelScene` |
-| `supplies/resources.json` | Health, ammunition and summon bounds; `HotelSupplies` |
+| `mechanics/stats.json` | The stat vocabulary every actor shares: attributes, stats derived from them, and the resource tracks those bound; `ActorStats` |
+| `mechanics/damage.json` | Damage kinds and the bounds of each actor's resistance to them; `ActorStats` |
+| `player/stats.json` | The investigator's stat block: attributes, derived bases, resistances and starting track points; `HotelSupplies` |
 | `supplies/items.json` | Item kinds, effects, stack limits, names and descriptions (`{amount}`); `HotelSupplies` |
 | `supplies/messages.json` | Supply notices, refusal reasons and how long a notice stays up; `HotelSupplies` |
 | `combat/tuning.json` | Reload time and how long combat notices, hit and hurt flashes last; `HotelCombat` |
-| `combat/weapons.json` | Weapon commitments, damage, range, ammunition cost, short name and HUD phase labels; `HotelCombat` |
-| `combat/residents.json` | Resident kinds: behavior/silhouette, health, damage, sight, timing, leash, body and eye height; `HotelCombat`, `CombatView` |
+| `combat/weapons.json` | Weapon commitments, damage and its kind, range, ammunition cost, short name and HUD phase labels; `HotelCombat` |
+| `combat/residents.json` | Resident kinds: behavior/silhouette, stat block, damage and its kind, sight, timing, leash, body and eye height; `HotelCombat`, `CombatView` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
 | `spirits/<id>.json` | One spirit's pact terms, cost/range, manifestation timing and placement offsets, its description and its own wording (call hint and result, phase names); `HotelSpirit` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}` and `{place}`; `HotelSpirit` |
@@ -74,6 +76,22 @@ developer-console output stays in code.
 These fields tune the implemented vocabulary. Additional weapon types, resident
 behaviors or multiple spirits need a deliberate change to their domain owner;
 adding arbitrary JSON entries alone does not implement them.
+
+## Stats and damage
+
+Every actor's numbers are Engine stats in one vocabulary (`mechanics/stats.json`). Attributes are base stats with
+bounds. A derived stat has a base and bounds, and each point of an attribute named in its `from` adds `perPoint`; that
+addition is an Engine stat source, so a value can be explained (`Explain`) down to the attribute it came from. A track
+is a resource pool (health, stamina, summon charges, ammunition) bounded by a derived stat; raising its maximum keeps
+its points. Damage has a kind (`mechanics/damage.json`); each actor holds a resistance to every kind, the fraction of
+a hit it removes, with a negative resistance a weakness. A hit lands rounded after resistance and never takes more than
+the health left.
+
+An actor's stat block (`player/stats.json`, a resident kind's `stats`) gives every attribute, may set a derived stat's
+own `bases`, lists its `resistances` (absent is none), and its tracks' `initial` points (absent is full). A missing
+attribute, an unknown id or a value out of bounds fails validation naming the file and field. Weapons and resident
+kinds name the `damageKind` they deal. Add a stat, track or damage kind to the vocabulary once; every block then
+validates against it.
 
 ## Authoring a floor
 
@@ -224,7 +242,9 @@ plan (mission graph, layout and content, never boxes), with what the player left
 and the finds collected on it. A stored floor is rebuilt from its plan without drawing, after its generator version
 and the canonical hash of its plan are checked; a floor made by another generator version is refused like any other
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
-A version 1 checkpoint has no run and begins a new one.
+Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
+restored bases first, then the derived sources they feed, then track points. A checkpoint of another version is refused
+like any other invalid data.
 
 Recording the refuge checkpoint marks every visited floor due to shift; the next climb to it generates it again under
 the next shift number around its kept set (stair core, landmark, every door the player opened or holds the key to,

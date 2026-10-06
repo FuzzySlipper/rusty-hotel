@@ -1,0 +1,20 @@
+{
+  "attributes": [
+    { "id": "might", "name": "Might", "minimum": 1, "maximum": 99 },
+    { "id": "agility", "name": "Agility", "minimum": 1, "maximum": 99 },
+    { "id": "nerve", "name": "Nerve", "minimum": 1, "maximum": 99 },
+    { "id": "attunement", "name": "Attunement", "minimum": 1, "maximum": 99 }
+  ],
+  "derived": [
+    { "id": "maximum-health", "name": "Health", "base": 60, "minimum": 1, "maximum": 999, "from": [ { "attribute": "might", "perPoint": 2 }, { "attribute": "nerve", "perPoint": 2 } ] },
+    { "id": "maximum-stamina", "name": "Stamina", "base": 40, "minimum": 1, "maximum": 999, "from": [ { "attribute": "agility", "perPoint": 3 }, { "attribute": "might", "perPoint": 1 } ] },
+    { "id": "maximum-summon", "name": "Summon charges", "base": 2, "minimum": 0, "maximum": 99, "from": [ { "attribute": "attunement", "perPoint": 0.1 } ] },
+    { "id": "maximum-ammunition", "name": "Ammunition", "base": 24, "minimum": 0, "maximum": 999, "from": [] }
+  ],
+  "tracks": [
+    { "id": "health", "name": "Health", "maximum": "maximum-health" },
+    { "id": "stamina", "name": "Stamina", "maximum": "maximum-stamina" },
+    { "id": "summon", "name": "Summon", "maximum": "maximum-summon" },
+    { "id": "ammunition", "name": "Ammunition", "maximum": "maximum-ammunition" }
+  ]
+}

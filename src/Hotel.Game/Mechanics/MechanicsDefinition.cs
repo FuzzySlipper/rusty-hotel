@@ -1,0 +1,122 @@
+using Hotel.Game.Content;
+using Rusty.Engine;
+
+namespace Hotel.Game.Mechanics;
+
+/// <summary>
+/// The hotel's stat vocabulary: the attributes every actor has, the stats derived from them, the resource tracks those
+/// stats bound, and the kinds of damage with the resistance each actor holds against it. One vocabulary for the player
+/// and every resident; an actor's own numbers are its <see cref="ActorStatBlock"/>.
+/// </summary>
+internal sealed record MechanicsDefinition(AttributeDefinition[] Attributes, DerivedStatDefinition[] Derived, TrackDefinition[] Tracks,
+    DamageKindDefinition[] DamageKinds)
+{
+    internal const string StatsPath = "mechanics/stats.json";
+    internal const string DamagePath = "mechanics/damage.json";
+
+    internal static MechanicsDefinition Load(IEngineContext engine)
+    {
+        StatVocabulary stats = Authored.Read(engine, StatsPath, ContentJson.Default.StatVocabulary);
+        DamageVocabulary damage = Authored.Read(engine, DamagePath, ContentJson.Default.DamageVocabulary);
+        MechanicsDefinition definition = new(stats.Attributes, stats.Derived, stats.Tracks, damage.Kinds);
+        definition.Validate();
+        return definition;
+    }
+
+    internal DamageKindDefinition? DamageKind(string id) => DamageKinds.FirstOrDefault(k => k.Id == id);
+
+    private void Validate()
+    {
+        Unique(StatsPath, "attributes", Attributes.Select(a => a.Id));
+        Unique(StatsPath, "derived", Derived.Select(d => d.Id));
+        Unique(StatsPath, "tracks", Tracks.Select(t => t.Id));
+        Unique(DamagePath, "kinds", DamageKinds.Select(k => k.Id));
+        for (int i = 0; i < Attributes.Length; i++)
+            Authored.Require(Attributes[i].Maximum >= Attributes[i].Minimum, StatsPath, $"attributes[{i}].maximum", "must be at least the minimum.");
+        for (int i = 0; i < Derived.Length; i++)
+        {
+            DerivedStatDefinition d = Derived[i];
+            Authored.Require(d.Maximum >= d.Minimum, StatsPath, $"derived[{i}].maximum", "must be at least the minimum.");
+            Authored.Within(StatsPath, $"derived[{i}].base", d.Base, d.Minimum, d.Maximum);
+            for (int f = 0; f < d.From.Length; f++)
+            {
+                Authored.Require(Attributes.Any(a => a.Id == d.From[f].Attribute), StatsPath, $"derived[{i}].from[{f}].attribute",
+                    $"unknown attribute '{d.From[f].Attribute}'.");
+                Authored.Finite(StatsPath, $"derived[{i}].from[{f}].perPoint", d.From[f].PerPoint);
+            }
+        }
+        for (int i = 0; i < Tracks.Length; i++)
+            Authored.Require(Derived.Any(d => d.Id == Tracks[i].Maximum), StatsPath, $"tracks[{i}].maximum",
+                $"names '{Tracks[i].Maximum}', which is not a derived stat.");
+        for (int i = 0; i < DamageKinds.Length; i++)
+        {
+            DamageKindDefinition k = DamageKinds[i];
+            Authored.Within(DamagePath, $"kinds[{i}].minimumResistance", k.MinimumResistance, -10, 0);
+            Authored.Within(DamagePath, $"kinds[{i}].maximumResistance", k.MaximumResistance, 0, 1);
+        }
+    }
+
+    /// <summary>Checks an actor's stat block against the vocabulary, naming the file and field that is wrong.</summary>
+    internal void Validate(string path, string field, ActorStatBlock block)
+    {
+        foreach (AttributeDefinition a in Attributes)
+        {
+            Authored.Require(block.Attributes.TryGetValue(a.Id, out float value), path, $"{field}.attributes.{a.Id}", "is missing.");
+            Authored.Within(path, $"{field}.attributes.{a.Id}", value, a.Minimum, a.Maximum);
+        }
+        foreach (string id in block.Attributes.Keys)
+            Authored.Require(Attributes.Any(a => a.Id == id), path, $"{field}.attributes.{id}", "is not an attribute.");
+        foreach (var (id, value) in block.Bases)
+        {
+            DerivedStatDefinition? d = Derived.FirstOrDefault(s => s.Id == id);
+            Authored.Require(d is not null, path, $"{field}.bases.{id}", "is not a derived stat.");
+            Authored.Within(path, $"{field}.bases.{id}", value, d!.Minimum, d.Maximum);
+        }
+        foreach (var (id, value) in block.Resistances)
+        {
+            DamageKindDefinition? k = DamageKind(id);
+            Authored.Require(k is not null, path, $"{field}.resistances.{id}", "is not a damage kind.");
+            Authored.Within(path, $"{field}.resistances.{id}", value, k!.MinimumResistance, k.MaximumResistance);
+        }
+        foreach (var (id, value) in block.Initial)
+        {
+            Authored.Require(Tracks.Any(t => t.Id == id), path, $"{field}.initial.{id}", "is not a track.");
+            Authored.AtLeast(path, $"{field}.initial.{id}", value, 0);
+        }
+    }
+
+    private static void Unique(string path, string field, IEnumerable<string> ids)
+    {
+        string? repeated = ids.GroupBy(id => id).FirstOrDefault(g => g.Count() > 1)?.Key;
+        Authored.Require(repeated is null, path, field, $"id '{repeated}' appears more than once.");
+    }
+}
+
+/// <summary>A base attribute, bounded for every actor.</summary>
+internal sealed record AttributeDefinition(string Id, string Name, float Minimum, float Maximum);
+
+/// <summary>
+/// A stat derived from attributes: its base, bounds, and how much each point of an attribute adds. An actor's block
+/// may set its own base; the attribute contributions are Engine stat sources, so the value explains itself.
+/// </summary>
+internal sealed record DerivedStatDefinition(string Id, string Name, float Base, float Minimum, float Maximum, AttributeScaling[] From);
+internal sealed record AttributeScaling(string Attribute, float PerPoint);
+
+/// <summary>A resource pool (health, stamina, summon charges) bounded by a derived stat.</summary>
+internal sealed record TrackDefinition(string Id, string Name, string Maximum);
+
+/// <summary>A kind of damage; each actor holds a resistance to it as a fraction removed (negative is a weakness).</summary>
+internal sealed record DamageKindDefinition(string Id, string Name, float MinimumResistance, float MaximumResistance);
+
+/// <summary>
+/// One actor's numbers in the vocabulary: every attribute, any derived bases it overrides, its resistances (absent is
+/// none), and the tracks' starting values (absent is full).
+/// </summary>
+internal sealed record ActorStatBlock(Dictionary<string, float> Attributes, Dictionary<string, float> Bases,
+    Dictionary<string, float> Resistances, Dictionary<string, float> Initial);
+
+/// <summary>Damage of one kind about to land on an actor, before its resistance.</summary>
+internal readonly record struct DamagePacket(int Amount, string Kind);
+
+internal sealed record StatVocabulary(AttributeDefinition[] Attributes, DerivedStatDefinition[] Derived, TrackDefinition[] Tracks);
+internal sealed record DamageVocabulary(DamageKindDefinition[] Kinds);

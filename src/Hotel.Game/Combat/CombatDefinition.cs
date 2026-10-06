@@ -1,13 +1,22 @@
 using System.Text.Json.Serialization;
 using Hotel.Game.Content;
+using Hotel.Game.Mechanics;
+using Hotel.Game.Supplies;
 using Rusty.Engine;
 
 namespace Hotel.Game.Combat;
 
-/// <summary>The combat domain's authored files: timing, weapons, resident kinds and player-facing text.</summary>
-internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] Weapons, ResidentKind[] Residents, CombatMessages Text)
+/// <summary>
+/// The combat domain's authored files: timing, weapons, resident kinds and player-facing text, with the stat vocabulary
+/// a resident's block and a hit's damage kind are written in.
+/// </summary>
+internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] Weapons, ResidentKind[] Residents, CombatMessages Text,
+    MechanicsDefinition Mechanics)
 {
-    internal static CombatDefinition Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys)
+    /// <summary>The health a resident of this kind starts and is bounded at, from its stat block.</summary>
+    internal int MaximumHealth(ResidentKind kind) => (int)new ActorStats(Mechanics, kind.Stats, null).Track(HotelSupplies.HealthTrack).MaximumValue;
+
+    internal static CombatDefinition Load(IEngineContext engine, IReadOnlyDictionary<string, string> keys, MechanicsDefinition mechanics)
     {
         CombatMessages text = Authored.Read(engine, CombatMessages.Path, ContentJson.Default.CombatMessages, keys);
         text.Validate();
@@ -17,6 +26,8 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
         {
             WeaponDefinition w = weapons[i];
             Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].damage", w.Damage, 0);
+            Authored.Require(mechanics.DamageKind(w.DamageKind) is not null, WeaponCatalog.Path, $"weapons[{i}].damageKind",
+                $"unknown damage kind '{w.DamageKind}'.");
             Authored.Positive(WeaponCatalog.Path, $"weapons[{i}].range", w.Range);
             Authored.AtLeast(WeaponCatalog.Path, $"weapons[{i}].windup", w.Windup, 0);
             Authored.Positive(WeaponCatalog.Path, $"weapons[{i}].commit", w.Commit);
@@ -33,8 +44,10 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
         {
             ResidentKind r = residents[i];
             Template.Plain(ResidentCatalog.Path, ($"residents[{i}].name", r.Name));
-            Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].health", r.Health, 1);
+            mechanics.Validate(ResidentCatalog.Path, $"residents[{i}].stats", r.Stats);
             Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].damage", r.Damage, 0);
+            Authored.Require(mechanics.DamageKind(r.DamageKind) is not null, ResidentCatalog.Path, $"residents[{i}].damageKind",
+                $"unknown damage kind '{r.DamageKind}'.");
             Authored.AtLeast(ResidentCatalog.Path, $"residents[{i}].speed", r.Speed, 0);
             Authored.Positive(ResidentCatalog.Path, $"residents[{i}].sightRange", r.SightRange);
             Authored.Positive(ResidentCatalog.Path, $"residents[{i}].attackRange", r.AttackRange);
@@ -47,7 +60,10 @@ internal sealed record CombatDefinition(CombatTuning Tuning, WeaponDefinition[] 
             // The eye sits within the upper half of the body, measured from its centre.
             Authored.Within(ResidentCatalog.Path, $"residents[{i}].eyeHeight", residents[i].EyeHeight, 0, residents[i].Height / 2);
         }
-        return new(tuning, weapons, residents, text);
+        CombatDefinition definition = new(tuning, weapons, residents, text, mechanics);
+        for (int i = 0; i < residents.Length; i++)
+            Authored.Require(definition.MaximumHealth(residents[i]) >= 1, ResidentCatalog.Path, $"residents[{i}].stats", "gives no health.");
+        return definition;
     }
 }
 
@@ -73,7 +89,8 @@ internal sealed record WeaponCatalog(WeaponDefinition[] Weapons)
 /// <param name="ShortName">How notices name the weapon in a sentence ("pistol").</param>
 /// <param name="WindupLabel">The HUD action while drawing back or steadying.</param>
 /// <param name="CommitLabel">The HUD action at the moment of the strike or shot.</param>
-internal sealed record WeaponDefinition(string Id, string Name, string ShortName, int Damage, float Range,
+/// <param name="DamageKind">The kind of damage a hit deals, against the target's resistance to it.</param>
+internal sealed record WeaponDefinition(string Id, string Name, string ShortName, int Damage, string DamageKind, float Range,
     float Windup, float Commit, float Recovery, int AmmoCost, string WindupLabel, string CommitLabel);
 
 /// <summary>Combat notices and HUD action states.</summary>
@@ -100,8 +117,9 @@ internal sealed record ResidentCatalog(ResidentKind[] Residents)
     internal const string Path = "combat/residents.json";
 }
 /// <param name="EyeHeight">Height of the resident's eye above its body centre: sight lines, beams and summon targets start here.</param>
+/// <param name="Stats">The kind's stat block in the mechanics vocabulary: its health, resistances and attributes.</param>
 internal sealed record ResidentKind(string Id, string Name, ResidentBehavior Behavior,
-    int Health, int Damage, float Speed, float SightRange, float AttackRange, float Windup, float Commit,
+    ActorStatBlock Stats, int Damage, string DamageKind, float Speed, float SightRange, float AttackRange, float Windup, float Commit,
     float Recovery, float Leash, float Radius, float Height, float EyeHeight);
 
 /// <summary>Which authored silhouette and tell a resident presents. Shared approach/attack rules use its tuning.</summary>

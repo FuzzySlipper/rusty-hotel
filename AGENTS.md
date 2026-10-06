@@ -32,6 +32,10 @@ and pause only decisions that need unavailable authority.
   door appearance/collision poses. `Route/HotelRoute.cs` owns door/latch state,
   readings and the Engine world-interaction adapter. Extend that owner for world
   actions; do not add a second ray/focus or interaction registry.
+  `Mechanics/` owns the stat vocabulary and each actor's Engine stats (`ActorStats`):
+  attributes, derived stats, tracks and damage kinds with resistances. Supplies spends
+  the investigator's tracks and Combat the residents'; do not keep a resource as a
+  plain number beside them.
   `Supplies/HotelSupplies.cs` owns carried stacks, collected finds and resource
   values. UI and developer actions share its capacity, eligibility and revision
   checks; room entry and case navigation must not reset it. Route inventory claims

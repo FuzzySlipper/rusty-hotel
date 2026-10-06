@@ -1,0 +1,8 @@
+{
+  "kinds": [
+    { "id": "blunt", "name": "Blunt", "minimumResistance": -1, "maximumResistance": 0.9 },
+    { "id": "pierce", "name": "Piercing", "minimumResistance": -1, "maximumResistance": 0.9 },
+    { "id": "fire", "name": "Fire", "minimumResistance": -1, "maximumResistance": 0.9 },
+    { "id": "spirit", "name": "Spirit", "minimumResistance": -1, "maximumResistance": 0.9 }
+  ]
+}

@@ -169,6 +169,7 @@ host.Call(engine =>
         Check(fresh.RootElement.GetProperty("occupiedPockets").GetInt32() == 0 && fresh.RootElement.GetProperty("health").GetInt32() == 70 &&
             MathF.Abs(Position().Z - 3.5f) < .01f, "developer reset applies the initial excursion through the recovery path");
 });
+host.Call(MechanicsChecks.Run);
 host.Call(KitChecks.Run);
 host.Call(LightingChecks.Run);
 host.Call(MissionChecks.Run);

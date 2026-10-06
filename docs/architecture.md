@@ -16,8 +16,9 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Floors/HotelFloors.cs` | The run: its seed, the current depth, each generated floor (generated on first entry, then kept), what the player left each floor as, and the finds collected on them; captured into, validated against and restored from the checkpoint as resolved plans |
 | `src/Hotel.Game/Floors/FloorExcursion.cs` | A generated floor as an `ExcursionDefinition`: display fixtures for finds, depth-namespaced ids, stairs, readings, residents and the bell |
 | `src/Hotel.Game/Route/HotelRoute.cs` | Door, latch and lock state, the keys held on the current floor, room identity, reading and stair facts, and the Engine world-interaction adapter |
-| `src/Hotel.Game/Supplies/HotelSupplies.cs` | Carried stacks, collected-find identities, capacity and use rules, health/ammo/summon reserves and inventory revision |
-| `src/Hotel.Game/Combat/HotelCombat.cs` | Selected weapon, admitted windup/commit/recovery/reload timing, damage policy, resident behavior and Engine spatial hit/approach calls |
+| `src/Hotel.Game/Mechanics/` | The stat vocabulary (`MechanicsDefinition`: attributes, derived stats, tracks, damage kinds) and `ActorStats`, one actor's Engine `StatsComponent`: attribute-sourced derived stats, tracks, resistance-reduced damage, capture and restore |
+| `src/Hotel.Game/Supplies/HotelSupplies.cs` | Carried stacks, collected-find identities, capacity and use rules, the investigator's stats (health, ammunition and summon tracks) and inventory revision |
+| `src/Hotel.Game/Combat/HotelCombat.cs` | Selected weapon, admitted windup/commit/recovery/reload timing, typed damage, residents (each with its own `ActorStats`), resident behavior and Engine spatial hit/approach calls |
 | `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident/weapon meshes and attack poses contributed to the existing scene snapshot |
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | Pact acquisition/equipping, semantic equip claims, summon eligibility and transient manifestation phase |
 | `src/Hotel.Game/Spirits/SpiritView.cs` | Authored bell-headed moth mesh parts and admitted-time entrance, wing poses and departure |

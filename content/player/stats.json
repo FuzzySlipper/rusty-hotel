@@ -1,0 +1,6 @@
+{
+  "attributes": { "might": 10, "agility": 10, "nerve": 10, "attunement": 10 },
+  "bases": {},
+  "resistances": {},
+  "initial": { "health": 70, "stamina": 70, "summon": 0, "ammunition": 0 }
+}

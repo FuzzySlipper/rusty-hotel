@@ -9,10 +9,14 @@ using EngineItemDefinition = Rusty.Engine.Mechanics.ItemDefinition;
 
 namespace Hotel.Game.Supplies;
 
-/// <summary>One owner for carried stacks, collected finds and player resources.</summary>
+/// <summary>
+/// One owner for carried stacks, collected finds and player resources. The resources are the investigator's Engine
+/// stats: health, ammunition and summon charges are tracks bounded by derived stats (see <see cref="Mechanics.ActorStats"/>).
+/// </summary>
 internal sealed class HotelSupplies
 {
-    private readonly SupplyResources resources;
+    // The tracks this owner spends and restores, by vocabulary id.
+    internal const string HealthTrack = "health", AmmoTrack = "ammunition", SummonTrack = "summon";
     private readonly ItemDefinition[] items;
     private readonly SupplyMessages text;
     private readonly FindDefinition[] finds;
@@ -24,9 +28,10 @@ internal sealed class HotelSupplies
     private ulong nextStack;
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
 
-    internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner)
+    internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner,
+        Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats)
     {
-        resources = definition.Resources;
+        Stats = new(mechanics, playerStats, owner);
         items = definition.Items;
         text = definition.Text;
         this.finds = finds;
@@ -34,19 +39,22 @@ internal sealed class HotelSupplies
         slots = new InventoryStackId?[capacity];
         itemMechanics = definition.Items.ToDictionary(i => i.Id,
             i => new EngineItemDefinition(ItemDefinitionId.Parse(i.Id), ItemKind.Fungible, (ulong)i.StackLimit));
-        health = new(resources.MaximumHealth, resources.InitialHealth, quantum: 1);
-        ammo = new(resources.MaximumAmmo, 0, quantum: 1);
-        summon = new(resources.MaximumSummon, 0, quantum: 1);
+        health = Stats.Track(HealthTrack);
+        ammo = Stats.Track(AmmoTrack);
+        summon = Stats.Track(SummonTrack);
         Reset();
     }
 
+    /// <summary>The investigator's stats; the resource tracks above are its tracks.</summary>
+    internal Mechanics.ActorStats Stats { get; }
+
     internal ulong Revision { get; private set; }
     internal int Health => health.ValueInt;
-    internal int MaximumHealth => resources.MaximumHealth;
+    internal int MaximumHealth => (int)health.MaximumValue;
     internal int Ammo => ammo.ValueInt;
-    internal int MaximumAmmo => resources.MaximumAmmo;
+    internal int MaximumAmmo => (int)ammo.MaximumValue;
     internal int Summon => summon.ValueInt;
-    internal int MaximumSummon => resources.MaximumSummon;
+    internal int MaximumSummon => (int)summon.MaximumValue;
     internal int Capacity => slots.Length;
     internal int Occupied => slots.Count(s => s is not null);
     private float noticeSeconds;
@@ -177,11 +185,11 @@ internal sealed class HotelSupplies
     }
 
     internal bool SpendAmmo(int amount) => Spend(amount, false);
-    internal int Damage(int amount)
+    /// <summary>A hit on the investigator, after their resistance to its kind; returns the health taken.</summary>
+    internal int Damage(Mechanics.DamagePacket packet)
     {
-        if (amount <= 0 || Health == 0) return 0;
-        int applied = Math.Min(amount, Health);
-        health.Spend(applied);
+        if (packet.Amount <= 0 || Health == 0) return 0;
+        int applied = Stats.TakeDamage(packet, HealthTrack);
         Revision++;
         return applied;
     }
@@ -223,13 +231,14 @@ internal sealed class HotelSupplies
         return true;
     }
 
-    internal SuppliesState Capture() => new(Health, Ammo, Summon,
+    internal SuppliesState Capture() => new(Stats.Capture(),
         Enumerable.Range(0, Capacity).Select(Slot).ToArray(), collected.Order().ToArray());
 
     internal void Validate(SuppliesState state)
     {
-        if (state.Health <= 0 || state.Health > MaximumHealth || state.Ammo < 0 || state.Ammo > MaximumAmmo ||
-            state.Summon < 0 || state.Summon > MaximumSummon || state.Pockets is null || state.Pockets.Length != Capacity ||
+        if (state.Stats is null) throw new InvalidOperationException("Checkpoint supplies have no stats.");
+        Stats.Validate(state.Stats);
+        if (!(state.Stats.Tracks.GetValueOrDefault(HealthTrack) > 0) || state.Pockets is null || state.Pockets.Length != Capacity ||
             state.Collected is null || state.Collected.Distinct().Count() != state.Collected.Length ||
             state.Collected.Any(id => !finds.Any(f => f.Id == id)))
             throw new InvalidOperationException("Checkpoint supplies or collected finds are invalid.");
@@ -251,7 +260,7 @@ internal sealed class HotelSupplies
         }
         edit.Publish();
         collected.UnionWith(state.Collected);
-        health.SetCurrent(state.Health); ammo.SetCurrent(state.Ammo); summon.SetCurrent(state.Summon);
+        Stats.Restore(state.Stats);
     }
 
     internal void Reset()
@@ -261,9 +270,7 @@ internal sealed class HotelSupplies
         inventory = new();
         inventory.RegisterInventory(new(owner));
         nextStack = 0;
-        health.SetCurrent(resources.InitialHealth);
-        ammo.SetCurrent(0);
-        summon.SetCurrent(0);
+        Stats.Reset();
         Revision++;
         Message = "";
     }

@@ -4,8 +4,8 @@ using Rusty.Engine;
 
 namespace Hotel.Game.Supplies;
 
-/// <summary>The supplies domain's authored files: reserve bounds, item kinds and player-facing text.</summary>
-internal sealed record SuppliesDefinition(SupplyResources Resources, ItemDefinition[] Items, SupplyMessages Text)
+/// <summary>The supplies domain's authored files: item kinds and player-facing text. Resource bounds are stats.</summary>
+internal sealed record SuppliesDefinition(ItemDefinition[] Items, SupplyMessages Text)
 {
     internal static SuppliesDefinition Load(IEngineContext engine)
     {
@@ -22,20 +22,10 @@ internal sealed record SuppliesDefinition(SupplyResources Resources, ItemDefinit
             Authored.AtLeast(ItemCatalog.Path, $"items[{i}].stackLimit", items[i].StackLimit, 1);
             Authored.AtLeast(ItemCatalog.Path, $"items[{i}].amount", items[i].Amount, 0);
         }
-        SupplyResources resources = Authored.Read(engine, SupplyResources.Path, ContentJson.Default.SupplyResources);
-        Authored.AtLeast(SupplyResources.Path, "maximumHealth", resources.MaximumHealth, 1);
-        Authored.Within(SupplyResources.Path, "initialHealth", resources.InitialHealth, 1, resources.MaximumHealth);
-        Authored.AtLeast(SupplyResources.Path, "maximumAmmo", resources.MaximumAmmo, 0);
-        Authored.AtLeast(SupplyResources.Path, "maximumSummon", resources.MaximumSummon, 0);
-        return new(resources, items, text);
+        return new(items, text);
     }
 }
 
-/// <summary>Health, ammunition and summon reserve bounds.</summary>
-internal sealed record SupplyResources(int InitialHealth, int MaximumHealth, int MaximumAmmo, int MaximumSummon)
-{
-    internal const string Path = "supplies/resources.json";
-}
 
 /// <summary>Every carried item kind, independent of where an excursion places it.</summary>
 internal sealed record ItemCatalog(ItemDefinition[] Items)

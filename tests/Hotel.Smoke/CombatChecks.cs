@@ -72,7 +72,7 @@ internal static class CombatChecks
         Check(supplies.Health == 54, "uncovered locked shot damages the existing health owner once");
         Steps(8);
         Check(supplies.Health == 54, "enemy commit cannot double-hit");
-        Check(supplies.Damage(1000) == 54 && supplies.Health == 0 && supplies.Damage(2) == 0 && supplies.Damage(-5) == 0,
+        Check(supplies.Damage(new(1000, "blunt")) == 54 && supplies.Health == 0 && supplies.Damage(new(2, "blunt")) == 0 && supplies.Damage(new(-5, "blunt")) == 0,
             "damage saturates at zero and refuses invalid/defeated targets");
         Check(!combat.Attack() && !combat.Reload(), "defeat suppresses new combat actions");
         combat.Reset(); supplies.Reset(); player.Reset();
