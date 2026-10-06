@@ -243,7 +243,8 @@ and the finds collected on it. A stored floor is rebuilt from its plan without d
 and the canonical hash of its plan are checked; a floor made by another generator version is refused like any other
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
-restored bases first, then the derived sources they feed, then track points. A checkpoint of another version is refused
+restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
+same way, on the floor it was left on and in the refuge, beside its pose. A checkpoint of another version is refused
 like any other invalid data.
 
 Recording the refuge checkpoint marks every visited floor due to shift; the next climb to it generates it again under

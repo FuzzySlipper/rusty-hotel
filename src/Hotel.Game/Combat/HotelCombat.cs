@@ -2,6 +2,7 @@ using System.Numerics;
 using Hotel.Game.Player;
 using Hotel.Game.Expedition;
 using Hotel.Game.Content;
+using Hotel.Game.Mechanics;
 using Hotel.Game.Scene;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
@@ -227,7 +228,7 @@ internal sealed class HotelCombat
         ReadOnlyMemory<SpatialEntityCollider>.Empty)).Present;
 
     internal ResidentState[] Capture() => Enemies.Select(e => new ResidentState(e.Id,
-        e.Health.ValueInt, e.Position.X, e.Position.Y, e.Position.Z, e.Yaw)).ToArray();
+        e.Stats.Capture(), e.Position.X, e.Position.Y, e.Position.Z, e.Yaw)).ToArray();
 
     internal void Validate(string weapon, ResidentState[] residents)
     {
@@ -237,10 +238,11 @@ internal sealed class HotelCombat
         foreach (ResidentState? state in residents)
         {
             HotelEnemy? enemy = Enemies.FirstOrDefault(e => e.Id == state?.Id);
-            if (state is null || enemy is null || state.Health < 0 || state.Health > enemy.Health.MaximumValue ||
+            if (state is null || enemy is null || state.Stats is null ||
                 !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
                 Vector3.Distance(new(state.X, state.Y, state.Z), enemy.Spawn) > enemy.Kind.Leash + 1)
                 throw new InvalidOperationException("Checkpoint resident values are invalid.");
+            enemy.Stats.Validate(state.Stats);
         }
     }
 
@@ -251,7 +253,7 @@ internal sealed class HotelCombat
         foreach (ResidentState state in residents)
         {
             HotelEnemy enemy = Enemies.Single(e => e.Id == state.Id);
-            enemy.Health.SetCurrent(state.Health, false);
+            enemy.Stats.Restore(state.Stats);
             enemy.Yaw = state.Yaw;
             enemy.Phase = enemy.Alive ? AttackPhase.Ready : AttackPhase.Defeated;
             scene.Entities.Set(enemy.Entity, EngineComponentTypes.Transform,

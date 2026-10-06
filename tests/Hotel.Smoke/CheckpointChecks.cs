@@ -3,6 +3,7 @@ using System.Text;
 using Hotel.Game.Combat;
 using Hotel.Game.Content;
 using Hotel.Game.Expedition;
+using Hotel.Game.Mechanics;
 using Hotel.Game.Player;
 using Hotel.Game.Route;
 using Hotel.Game.Scene;
@@ -41,6 +42,7 @@ internal static class CheckpointChecks
                 f.Combat.SelectWeapon(1);
                 f.Combat.Enemies[0].Health.SetCurrent(0);
                 var lamp = f.Combat.Enemies[1]; lamp.Health.SetCurrent(36); lamp.Yaw = .4f;
+                lamp.Stats.Stat("might").BaseValue = 14; lamp.Stats.RefreshDerived(); lamp.Stats.Track("stamina").SetCurrent(20);
                 f.Route.Restore(["survey", "return"]);
                 f.At(0, -8, new(-2.33f, .93f, 2.85f));
                 f.Route.Use();
@@ -54,6 +56,9 @@ internal static class CheckpointChecks
                     new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
                 saved = store.Load(HotelExpedition.Key).State!;
                 var tracks = saved.Supplies.Stats.Tracks;
+                ActorStatsState lampSaved = saved.Residents.Single(r => r.Id == lamp.Id).Stats;
+                Check(lampSaved.Bases["might"] == 14 && lampSaved.Tracks["stamina"] == 20 && lampSaved.Tracks["health"] == 36,
+                    "a resident's checkpoint carries its stat bases and every track's current points");
                 Check(tracks["health"] == 57 && tracks["ammunition"] == 4 && tracks["summon"] == 1 && saved.Supplies.Stats.Bases["might"] == 10 &&
                     saved.Supplies.Pockets[7]?.Item == "bandage", "durable checkpoint keeps stat bases, track currents and pockets");
                 string Stored() => System.Text.Json.JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState);
@@ -88,7 +93,7 @@ internal static class CheckpointChecks
                     Stats(saved, tracks: ("health", 0)), Stats(saved, tracks: ("health", 101)), Stats(saved, tracks: ("courage", 3)),
                     Stats(saved, bases: ("might", 500)), Stats(saved, bases: ("luck", 5)),
                     saved with { Spirit = saved.Spirit with { Acquired = false, Equipped = true } },
-                    saved with { Residents = [] }, saved with { SecuredFinds = [] } })
+                    saved with { Residents = [] }, Resident(saved, tracks: ("stamina", 500)), Resident(saved, bases: ("might", 0)), saved with { SecuredFinds = [] } })
                 {
                     store.Save(HotelExpedition.Key, invalid);
                     bool rejected = false;
@@ -118,7 +123,9 @@ internal static class CheckpointChecks
             f.Supplies.Health == 57 && f.Supplies.Ammo == 4 && f.Supplies.Summon == 1 && f.Supplies.Slot(7)?.Count == 1 && f.Supplies.Occupied == 1 &&
             f.Supplies.Collected("survey-reel") && !f.Supplies.Collected("portrait-dressing") && f.Spirit.Acquired && f.Spirit.Equipped && !f.Spirit.Active &&
             f.Route.OpenDoors.Order().SequenceEqual(new[] { "return", "survey" }) && f.Combat.Weapon.Id == "pistol" &&
-            !f.Combat.Enemies[0].Alive && f.Combat.Enemies[1].Health.ValueInt == 36 && f.Combat.Enemies[1].Phase == AttackPhase.Ready &&
+            !f.Combat.Enemies[0].Alive && f.Combat.Enemies[1].Health.ValueInt == 36 &&
+            f.Combat.Enemies[1].Stats.Stat("might").Value == 14 && f.Combat.Enemies[1].Stats.Track("stamina").ValueInt == 20 &&
+            f.Combat.Enemies[1].Health.MaximumValue == f.Content.Combat.MaximumHealth(f.Combat.Enemies[1].Kind) + 8 && f.Combat.Enemies[1].Phase == AttackPhase.Ready &&
             f.Combat.Phase == AttackPhase.Ready && Vector3.Distance(f.Player.Position, new(0, .875f, 3.5f)) < .01f,
             "checkpoint restores coherent inventory, resources, pact, refuge, weapon, loot, doors and residents");
     }
@@ -130,6 +137,16 @@ internal static class CheckpointChecks
         if (bases is { } x) b[x.Id] = x.Value;
         if (tracks is { } y) t[y.Id] = y.Value;
         return saved with { Supplies = saved.Supplies with { Stats = new(b, t) } };
+    }
+
+    // The saved state with the last resident's stat bases or tracks' currents changed.
+    private static CheckpointState Resident(CheckpointState saved, (string Id, double Value)? bases = null, (string Id, double Value)? tracks = null)
+    {
+        ResidentState last = saved.Residents[^1];
+        Dictionary<string, double> b = new(last.Stats.Bases), t = new(last.Stats.Tracks);
+        if (bases is { } x) b[x.Id] = x.Value;
+        if (tracks is { } y) t[y.Id] = y.Value;
+        return saved with { Residents = [.. saved.Residents[..^1], last with { Stats = new(b, t) }] };
     }
 
     private sealed class Fixture : IDisposable

@@ -5,6 +5,7 @@ using Hotel.Game.Expedition;
 using Hotel.Game.Content;
 using Hotel.Game.Floors.Layout;
 using Hotel.Game.Floors.Modules;
+using Hotel.Game.Mechanics;
 using Hotel.Game.Scene.Kit;
 using Hotel.Game.Supplies;
 using Rusty.Engine;
@@ -196,10 +197,11 @@ internal sealed class HotelFloors
         {
             ResidentPlacement? placed = roster.FirstOrDefault(p => p.Id == state?.Id);
             ResidentKind? kind = placed is null ? null : content.Combat.Residents.FirstOrDefault(k => k.Id == placed.Kind);
-            if (state is null || placed is null || kind is null || state.Health < 0 || state.Health > content.Combat.MaximumHealth(kind) ||
+            if (state is null || placed is null || kind is null || state.Stats is null ||
                 !float.IsFinite(state.X) || !float.IsFinite(state.Y) || !float.IsFinite(state.Z) || !float.IsFinite(state.Yaw) ||
                 System.Numerics.Vector3.Distance(new(state.X, state.Y, state.Z), Authored.Vector(placed.Position)) > kind.Leash + 1)
                 throw new InvalidOperationException($"Checkpoint floor {depth}'s resident values are invalid.");
+            new ActorStats(content.Combat.Mechanics, kind.Stats, null).Validate(state.Stats);
         }
     }
 

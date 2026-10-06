@@ -21,7 +21,10 @@ internal static class LayoutChecks
         }
         string Hash(FloorSeed seed, FloorLayout layout) { CanonicalText text = new(); layout.Write(text); return FloorIdentity.Of(seed, text).PlanHash; }
 
-        FloorSeed seed = FloorSeed.Current(run: 5, depth: 1, shift: 0);
+        // The first depth-1 seed whose floor has a locked edge and lays out, so the refusals below have a lock to remove.
+        FloorSeed seed = Enumerable.Range(0, 40).Select(r => FloorSeed.Current((ulong)r, depth: 1, shift: 0)).First(s =>
+            MissionGenerator.Generate(mission, new FloorDraws(engine.Random, s)).Graph.Edges.Any(e => e.Kind == MissionEdgeKind.Locked) &&
+            Lay(s).Failure is null);
         FloorLayouts.Laid first = Lay(seed);
         Check(first.Failure is null, "a floor lays out: " + first.Failure);
         Check(Hash(seed, Lay(seed).Layout!) == Hash(seed, first.Layout!), "the same seed lays out the same floor");
