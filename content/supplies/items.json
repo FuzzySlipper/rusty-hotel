@@ -122,7 +122,8 @@
         },
         "effects": [
           "mending"
-        ]
+        ],
+        "action": "dress-wound"
       }
     },
     {
@@ -143,7 +144,8 @@
         "restores": {
           "ammunition": 6
         },
-        "effects": []
+        "effects": [],
+        "action": "use-supply"
       }
     },
     {
@@ -166,7 +168,8 @@
         },
         "effects": [
           "warded"
-        ]
+        ],
+        "action": "use-supply"
       }
     },
     {
@@ -187,7 +190,8 @@
         "restores": {},
         "effects": [
           "match-light"
-        ]
+        ],
+        "action": "use-supply"
       }
     },
     {
@@ -208,8 +212,10 @@
         "restores": {},
         "effects": [
           "keen",
-          "steadied"
-        ]
+          "steadied",
+          "steeled"
+        ],
+        "action": "use-supply"
       }
     },
     {
@@ -247,7 +253,7 @@
     {
       "id": "night-coat",
       "name": "Night porter's coat",
-      "description": "A heavy wool coat with brass buttons, still warm from someone. Worn, it turns a blow and keeps off a little heat.",
+      "description": "A heavy wool coat with brass buttons, still warm from someone. Worn, it turns a blow, keeps off a little heat, and its padding takes the edge off every hit.",
       "mark": "▥",
       "form": "Unique",
       "stackLimit": 1,
@@ -271,7 +277,14 @@
             "amount": 0.1
           }
         ],
-        "contributions": [],
+        "contributions": [
+          {
+            "stage": "Applying",
+            "side": "Incoming",
+            "kinds": [],
+            "add": -2
+          }
+        ],
         "actions": []
       }
     },
@@ -300,12 +313,12 @@
         ],
         "contributions": [
           {
+            "stage": "Damage",
             "side": "Outgoing",
             "kinds": [
               "blunt"
             ],
-            "add": 2,
-            "multiply": 1
+            "add": 2
           }
         ],
         "actions": []
@@ -368,7 +381,7 @@
     {
       "id": "signet-ring",
       "name": "Hotel signet",
-      "description": "A heavy ring stamped with the hotel's mark. Worn, the spirits hear you a little better. One signet answers at a time.",
+      "description": "A heavy ring stamped with the hotel's mark. Worn, the spirits hear you a little better, and their blows pass you by. One signet answers at a time.",
       "mark": "○",
       "form": "Unique",
       "stackLimit": 1,
@@ -388,7 +401,16 @@
             "amount": 4
           }
         ],
-        "contributions": [],
+        "contributions": [
+          {
+            "stage": "Hit",
+            "side": "Incoming",
+            "kinds": [
+              "spirit"
+            ],
+            "prevent": true
+          }
+        ],
         "actions": []
       }
     }

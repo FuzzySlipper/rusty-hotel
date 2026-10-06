@@ -3,12 +3,9 @@
   "name": "Hushwing",
   "description": "A velvet moth with a brass bell for a head. It has had enough of being rung. Free it in {place} and it will quiet the hotel for you.\n\n{key.summon} calls it at the resident under your reticle, within {range} paces and clear sight. Costs {cost} summon charge. Its arrival interrupts the resident, holding it still for {interrupt} seconds while you strike or retreat. It then folds its wings and leaves.",
   "welcomeCharges": 2,
-  "cost": 1,
-  "range": 6,
   "arrival": 0.4,
   "hold": 1.8,
   "departure": 0.8,
-  "effect": "hushed",
   "text": {
     "callHint": "{key.summon} · Hush a visible resident",
     "callResult": "{spirit} hushes {resident} · −{cost} summon",
@@ -22,5 +19,6 @@
     "lift": 0.15,
     "entranceFraction": 0.2,
     "entranceDrop": 0.25
-  }
+  },
+  "action": "hushwing-call"
 }

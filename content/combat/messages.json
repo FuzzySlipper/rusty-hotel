@@ -11,5 +11,7 @@
   "miss": "Miss",
   "hit": "Hit · {resident}",
   "residentFalls": "{resident} falls still",
-  "residentHits": "{resident} hits · −{damage} health"
+  "residentHits": "{resident} hits · −{damage} health",
+  "residentTurnsAside": "{resident} turns the blow aside",
+  "blowTurnedAside": "{resident}'s blow is turned aside"
 }

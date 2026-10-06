@@ -58,7 +58,11 @@ internal static class SpiritChecks
         scene.PlaceDoor("survey", true);
         At(1.55f, -14.8f, lamp.Eye); Step(1);
         Check(lamp.Phase == AttackPhase.Windup, "lamp starts a real attack tell");
-        Check(spirit.Call() && supplies.Summon == 1 && lamp.Phase == AttackPhase.Interrupted, "accepted call spends once and cancels windup");
+        Check(spirit.Call() && supplies.Summon == 1 && combat.PactUser.Current?.Id == spirit.Definition.Action, "an accepted call is the pact's action, spent once");
+        Check(!spirit.Call() && !spirit.Equip(false, spirit.Revision) && supplies.Summon == 1, "a call under way rejects another call and unequip");
+        Step(1);
+        Check(lamp.Phase == AttackPhase.Interrupted && lamp.Stats.Effects.Held && spirit.Phase == ManifestationPhase.Arriving,
+            "the call lands its hold through the one resolution, cancelling the windup, and the creature arrives");
         Check(!spirit.Call() && !spirit.Equip(false, spirit.Revision) && supplies.Summon == 1, "active manifestation rejects duplicate call and unequip without cost");
         view.Publish(); Step(60); view.Publish();
         Check(spirit.Phase == ManifestationPhase.Holding && supplies.Health == 70, "creature arrives and holds interruption across original attack deadline");
@@ -71,7 +75,7 @@ internal static class SpiritChecks
         Check(!spirit.Call() && supplies.Summon == 0 && spirit.Message == Template.Fill(content.SpiritText.NoCharge, ("spirit", spirit.Definition.Name)), "empty reserve refuses intelligibly");
         supplies.RestoreSummon(1);
         Check(spirit.Call(), "resource restoration permits another ordinary call");
-        supplies.Damage(new(1000, "blunt")); spirit.Step(1f / 60);
+        supplies.Damage(new(1000, "blunt")); Step(1);
         Check(!spirit.Active && !spirit.Call() && supplies.Summon == 0, "defeat ends manifestation and refuses further summons");
         spirit.Reset(); combat.Reset(); supplies.Reset(); view.Publish();
         Check(!spirit.Acquired && !spirit.Equipped && !spirit.Active && spirit.Calls == 0, "excursion reset clears pact and transient presence coherently");

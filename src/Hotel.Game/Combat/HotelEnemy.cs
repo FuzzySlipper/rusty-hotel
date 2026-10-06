@@ -52,8 +52,8 @@ internal sealed class HotelEnemy : IActionActor
     internal CharacterMotion Motion => scene.Entities.Get(EntityId, EngineComponentTypes.CharacterMotion);
     public Vector3 Eye => Position + new Vector3(0, Kind.EyeHeight, 0);
     public bool Alive => Health.Value > 0;
-    // Residents wear nothing yet; their contributions come with what they carry.
-    public IEnumerable<DamageContribution> Contributions => [];
+    // Residents wear nothing; their contributions come from the effects they bear.
+    public IEnumerable<ActiveContribution> Contributions => Stats.Effects.HitContributions;
     /// <summary>What the resident is doing: fallen, held, or its action's phase.</summary>
     internal AttackPhase Phase => !Alive ? AttackPhase.Defeated : Stats.Effects.Held ? AttackPhase.Interrupted : User.Phase switch
     {

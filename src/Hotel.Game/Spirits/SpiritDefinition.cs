@@ -4,14 +4,14 @@ using Rusty.Engine;
 namespace Hotel.Game.Spirits;
 
 /// <summary>One spirit's pact terms, manifestation timing and its own wording.</summary>
-/// <param name="Description">Field-case description; may use {place}, {range}, {cost} and {interrupt} (the hold's seconds).</param>
-/// <param name="Effect">The hold effect a call puts on its resident, by id in the effect catalog.</param>
+/// <param name="Description">Field-case description; may use {place}, and {range}, {cost} and {interrupt} (its hold's seconds) from its action.</param>
+/// <param name="Action">What calling it does, by id in the action catalog: aimed at a resident, costing summon charge, putting a hold on it.</param>
 internal sealed record SpiritDefinition(string Id, string Name, string Description, int WelcomeCharges,
-    int Cost, float Range, float Arrival, float Hold, float Departure, string Effect, SpiritText Text, ManifestationTuning Manifestation)
+    float Arrival, float Hold, float Departure, string Action, SpiritText Text, ManifestationTuning Manifestation)
 {
     internal static string Path(string id) => $"spirits/{id}.json";
     internal static SpiritDefinition Load(IEngineContext engine, string id, IReadOnlyDictionary<string, string> keys,
-        Mechanics.MechanicsDefinition mechanics)
+        Mechanics.MechanicsDefinition mechanics, Actions.ActionCatalog actions)
     {
         SpiritDefinition spirit = Authored.Read(engine, Path(id), ContentJson.Default.SpiritDefinition, keys);
         Authored.Require(spirit.Id == id, Path(id), "id", $"the file for '{id}' names '{spirit.Id}'.");
@@ -21,13 +21,14 @@ internal sealed record SpiritDefinition(string Id, string Name, string Descripti
         Template.Check(path, "description", spirit.Description, "place", "range", "cost", "interrupt");
         Template.Check(path, "text.callResult", spirit.Text.CallResult, "spirit", "resident", "cost");
         Authored.AtLeast(path, "welcomeCharges", spirit.WelcomeCharges, 0);
-        Authored.AtLeast(path, "cost", spirit.Cost, 0);
-        Authored.Positive(path, "range", spirit.Range);
         Authored.Positive(path, "arrival", spirit.Arrival);
         Authored.Positive(path, "hold", spirit.Hold);
         Authored.Positive(path, "departure", spirit.Departure);
-        Authored.Require(mechanics.Effect(spirit.Effect)?.Hold is not null, path, "effect",
-            $"'{spirit.Effect}' is not a hold effect in content/{Mechanics.EffectDefinition.Path}.");
+        actions.Require(path, "action", spirit.Action);
+        Actions.ActionDefinition call = actions.Action(spirit.Action)!;
+        Authored.Require(call.Delivery.Kind != Actions.DeliveryKind.Self && call.Effects.Any(e => mechanics.Effect(e)!.Hold is not null) &&
+            call.Cost.Tracks.Keys.All(t => t == Supplies.HotelSupplies.SummonTrack), path, "action",
+            $"'{spirit.Action}' must reach a resident, hold it, and cost only summon charge.");
         ManifestationTuning at = spirit.Manifestation;
         Authored.Finite(path, "manifestation.approach", at.Approach);
         Authored.Finite(path, "manifestation.side", at.Side);

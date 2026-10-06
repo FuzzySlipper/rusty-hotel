@@ -14,14 +14,18 @@ internal enum ManifestationPhase { Absent, Arriving, Holding, Departing }
 
 /// <summary>One pact, equipped choice and brief intervention; resources and combat keep their owners.</summary>
 internal sealed class HotelSpirit(SpiritDefinition definition, SpiritMessages text, SpiritBellPlacement placement,
-    HotelSupplies supplies, HotelCombat combat, HotelPlayer player, Mechanics.EffectDefinition hold)
+    HotelSupplies supplies, HotelCombat combat, HotelPlayer player, Actions.ActionDefinition call, Mechanics.MechanicsDefinition mechanics)
 {
+    // The call's reach, its charge, and how long its hold keeps a resident still.
+    private float Range => call.Delivery.Range;
+    private int Cost => call.Cost.Tracks.GetValueOrDefault(HotelSupplies.SummonTrack);
+    private float Interrupt => call.Effects.Select(e => mechanics.Effect(e)!).First(e => e.Hold is not null).Duration;
     internal SpiritDefinition Definition => definition;
     /// <summary>Where this excursion keeps the spirit's bell before the pact.</summary>
     internal Vector3 Bell { get; } = Authored.Vector(placement.Point);
     internal string BellLabel => Named(text.BellLabel);
     internal string Description => Template.Fill(definition.Description, ("place", placement.Place),
-        ("range", definition.Range), ("cost", definition.Cost), ("interrupt", hold.Duration));
+        ("range", Range), ("cost", Cost), ("interrupt", Interrupt));
     /// <summary>The HUD's held-spirit line.</summary>
     internal string HudLabel => Equipped ? definition.Name : Acquired ? text.HudInCase : text.HudNone;
     internal bool Acquired { get; private set; }
@@ -37,7 +41,8 @@ internal sealed class HotelSpirit(SpiritDefinition definition, SpiritMessages te
     internal Vector3 Destination { get; private set; }
     internal Quaternion Facing { get; private set; } = Quaternion.Identity;
     private float noticeTime;
-    internal bool Active => Phase != ManifestationPhase.Absent;
+    /// <summary>A call is under way through the pact slot, or the creature is here.</summary>
+    internal bool Active => Phase != ManifestationPhase.Absent || combat.PactUser.Busy;
     internal string EquipReason => combat.Defeated ? text.EquipOverwhelmed : Active ? Named(text.EquipWhileActive) : "";
     internal string Status => combat.Defeated ? text.StatusOverwhelmed : Phase switch
     {
@@ -94,12 +99,18 @@ internal sealed class HotelSpirit(SpiritDefinition definition, SpiritMessages te
         if (combat.Defeated) return Refuse(text.CallOverwhelmed);
         if (!Equipped) return Refuse(Acquired ? Named(text.NotEquipped) : Template.Fill(text.NoPactCall, ("place", placement.Place)));
         if (Active) return Refuse(Named(text.AlreadyHere));
-        if (supplies.Summon < definition.Cost) return Refuse(Named(text.NoCharge));
-        HotelEnemy? target = combat.SpiritTarget(definition.Range);
-        if (target is null) return Refuse(Template.Fill(text.NoTarget, ("range", definition.Range)));
-        if (!supplies.SpendSummon(definition.Cost)) return false;
-        combat.Interrupt(target, hold, $"spirit.{definition.Id}");
+        if (supplies.Summon < Cost) return Refuse(Named(text.NoCharge));
+        if (combat.SpiritTarget(Range) is null) return Refuse(Template.Fill(text.NoTarget, ("range", Range)));
+        // The call is an action through the pact: Combat admits and times it and lands its hold; the visit follows.
+        if (!combat.CallPact(call, Manifest)) return false;
         Calls++;
+        return true;
+    }
+
+    // The call has landed: on a resident, the creature arrives between it and the investigator; on nothing, it does not come.
+    private void Manifest(HotelEnemy? target)
+    {
+        if (target is null) { Announce(Template.Fill(text.NoTarget, ("range", Range))); return; }
         Elapsed = 0;
         Phase = ManifestationPhase.Arriving;
         Vector3 towardPlayer = Vector3.Normalize(player.Eye - target.Eye);
@@ -108,8 +119,7 @@ internal sealed class HotelSpirit(SpiritDefinition definition, SpiritMessages te
         Destination = target.Eye + towardPlayer * at.Approach + side * at.Side + new Vector3(0, at.Lift, 0);
         Entrance = Vector3.Lerp(player.Eye, Destination, at.EntranceFraction) - new Vector3(0, at.EntranceDrop, 0);
         Facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, MathF.Atan2(-towardPlayer.X, -towardPlayer.Z));
-        Announce(Template.Fill(definition.Text.CallResult, ("spirit", definition.Name), ("resident", target.Kind.Name), ("cost", definition.Cost)));
-        return true;
+        Announce(Template.Fill(definition.Text.CallResult, ("spirit", definition.Name), ("resident", target.Kind.Name), ("cost", Cost)));
     }
 
     internal void Step(float seconds)

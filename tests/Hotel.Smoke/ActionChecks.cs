@@ -98,7 +98,43 @@ internal static class ActionChecks
         Check(combat.HandAction(false)?.Delivery.Kind == DeliveryKind.Hitscan && combat.Act(false), "the pistol fires");
         Steps(actions.Action("pistol-shot")!.Timing.Windup + 2f / 60);
         Check(!porter.Alive || porter.Health.ValueInt <= health - 36 + 1, "the shot lands on the porter");
-        Console.WriteLine($"Action checks passed: {actions.Actions.Length} actions; melee, area, projectile, self and hitscan deliveries through Engine queries, " +
-            "costs spent once and refused whole, cooldowns, and worn contributions raising damage.");
+        // Contribution stages, gathered user-then-target around the one health change. Applying: the coat's padding
+        // comes off after the investigator's own resistance. Hit: a signet turns spirit blows aside, effects and all.
+        // Defeating: steeled keeps the investigator standing once, and is spent.
+        combat.Reset(); supplies.Reset();
+        ActionResolution resolution = new(engine, scene.Session, content.Mechanics);
+        PlayerActor me = new(scene, player, supplies);
+        ActionDefinition swipe = actions.Action("porter-swipe")!, chime = actions.Action("bell-ring")!;
+        int plain = resolution.Hit(swipe, porter, me)!.Value;
+        Hold("night-coat");
+        supplies.SetHealth(supplies.MaximumHealth);
+        int padded = resolution.Hit(swipe, porter, me)!.Value;
+        int expected = (int)Math.Round(Math.Round(12 * (1 - .15f)) - 2, MidpointRounding.AwayFromZero);
+        Check(plain == 12 && padded == expected, $"the coat's resistance, then its applying padding: {plain} then {padded}, not {expected}");
+        Check(resolution.Hit(chime, porter, me) > 0, "a spirit blow lands on the unguarded investigator");
+        Hold("signet-ring");
+        supplies.Stats.Effects.Clear();
+        int before = supplies.Health;
+        Check(resolution.Hit(chime, porter, me) is null && supplies.Health == before && !supplies.Stats.Effects.Active.Any(),
+            "the signet turns a spirit blow aside: no damage and no effects");
+        supplies.Afflict("steeled", "item.salts");
+        supplies.SetHealth(3);
+        Check(resolution.Hit(swipe, porter, me) == 2 && supplies.Health == 1 && !supplies.Stats.Effects.Active.Any(e => e.Definition.Id == "steeled"),
+            "steeled keeps the investigator at one health against a killing blow, and is spent");
+        Check(resolution.Hit(swipe, porter, me) == 1 && supplies.Health == 0, "spent, it saves no one twice");
+
+        // The belt and the pact go through the same admission and timing: a quick-key use waits out its action, then
+        // the supplies owner uses the item.
+        combat.Reset(); supplies.Reset();
+        supplies.Give("bandage", 1); supplies.SetHealth(40);
+        int pocket = supplies.PocketOf("remedy");
+        ActionDefinition dress = actions.Action(supplies.Item("bandage").Use!.Action)!;
+        Check(combat.UseBelt(pocket) && combat.User.Current == dress && supplies.Health == 40, "a belt use starts its item's action and waits");
+        Check(!combat.Act(false) && !combat.UseBelt(pocket), "the hands are busy while it is under way");
+        Steps(dress.Timing.Windup + 2f / 60);
+        Check(supplies.Health == 40 + supplies.Item("bandage").Restores(HotelSupplies.HealthTrack) && supplies.Slot(pocket) is null,
+            "the item is used once, by its own rules, as the action lands");
+                Console.WriteLine($"Action checks passed: {actions.Actions.Length} actions; melee, area, projectile, self and hitscan deliveries through Engine queries, " +
+            "costs spent once and refused whole, cooldowns, contributions at the hit, damage, applying and defeating stages, and belt use through the pipeline.");
     }
 }

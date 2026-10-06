@@ -69,14 +69,25 @@ internal sealed class ActorStats
         }
     }
 
-    /// <summary>Lands a hit on the health track after this actor's resistance to its kind; returns what was taken.</summary>
-    internal int TakeDamage(DamagePacket packet, string track)
+    /// <summary>Lands damage on a track after this actor's resistance to its kind; returns what was taken.</summary>
+    internal int TakeDamage(DamagePacket packet, string track) => Apply(Resist(packet), packet.Kind, track);
+
+    /// <summary>What a packet comes to after this actor's resistance to its kind.</summary>
+    internal float Resist(DamagePacket packet) => Math.Max(0, packet.Amount * (float)(1 - Resistance(packet.Kind)));
+
+    /// <summary>
+    /// Applies damage already resisted: wards against its kind take their share, then the track, never below empty. When it
+    /// would take the last point, <paramref name="defeating"/> may name health to keep. Returns what was taken.
+    /// </summary>
+    internal int Apply(float amount, string kind, string track, Func<int>? defeating = null)
     {
-        if (packet.Amount <= 0) return 0;
+        int landed = (int)Math.Round(amount, MidpointRounding.AwayFromZero);
+        if (landed <= 0) return 0;
         Track health = Track(track);
-        int landed = (int)Math.Round(packet.Amount * (1 - Resistance(packet.Kind)), MidpointRounding.AwayFromZero);
-        landed = Effects.Absorb(packet.Kind, landed);
+        landed = Effects.Absorb(kind, landed);
         int applied = Math.Clamp(landed, 0, health.ValueInt);
+        if (applied > 0 && applied >= health.ValueInt && defeating?.Invoke() is int keep and > 0)
+            applied = Math.Max(0, health.ValueInt - keep);
         health.Spend(applied);
         return applied;
     }

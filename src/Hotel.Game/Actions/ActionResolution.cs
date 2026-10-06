@@ -13,13 +13,16 @@ internal interface IActionActor
     Vector3 Position { get; }
     SpatialEntityCollider Hitbox { get; }
     bool Alive { get; }
-    /// <summary>The damage contributions this actor brings to a hit, from what it wears.</summary>
-    IEnumerable<DamageContribution> Contributions { get; }
+    /// <summary>The hit contributions this actor brings, from what it wears and the effects it bears.</summary>
+    IEnumerable<ActiveContribution> Contributions { get; }
 }
 
-/// <summary>What one landed action did to one target, or where it ended when it hit none (<see cref="Surface"/>: against a surface).</summary>
+/// <summary>
+/// What one landed action did to one target, or where it ended when it hit none (<see cref="Surface"/>: against a
+/// surface); <see cref="TurnedAside"/> when a hit contribution prevented it.
+/// </summary>
 internal sealed record ActionImpact(ActionDefinition Action, IActionActor User, IActionActor? Target, Vector3 End, int Damage, bool Defeated,
-    bool Surface = false);
+    bool Surface = false, bool TurnedAside = false);
 
 /// <summary>A projectile in flight: who shot it, its action, where it is, its heading and how far it may still go.</summary>
 internal sealed class Projectile(ActionDefinition action, IActionActor user, Vector3 position, Vector3 heading)
@@ -103,21 +106,34 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
         ReadOnlyMemory<SpatialEntityCollider>.Empty, ReadOnlyMemory<ulong>.Empty, ReadOnlyMemory<SpatialEntityCollider>.Empty)).Present;
 
     /// <summary>
-    /// Applies one hit: each packet, scaled and contributed, against the target's resistance and wards, then the effects.
-    /// Returns the health taken.
+    /// Applies one hit in its stages, the user's outgoing contributions before the target's incoming ones at each: a hit
+    /// contribution may turn it aside; each packet, scaled by the user's stats, takes the damage stage, then the
+    /// target's resistance, then the applying stage, then wards and health once, where a defeating contribution may keep
+    /// the target standing. The action's effects follow a hit that was not turned aside. Returns the health taken, or
+    /// null when the hit was turned aside.
     /// </summary>
-    internal int Hit(ActionDefinition action, IActionActor user, IActionActor target)
+    internal int? Hit(ActionDefinition action, IActionActor user, IActionActor target)
     {
+        ActiveContribution[] outgoing = user.Contributions.ToArray(), incoming = target.Contributions.ToArray();
+        IEnumerable<ActiveContribution> At(ContributionStage stage, string kind) =>
+            outgoing.Where(c => c.Contribution.Applies(stage, ContributionSide.Outgoing, kind))
+                .Concat(incoming.Where(c => c.Contribution.Applies(stage, ContributionSide.Incoming, kind)));
+        if (action.Damage.Any(p => At(ContributionStage.Hit, p.Kind).Any(c => c.Contribution.Prevent))) return null;
         int taken = 0;
         foreach (DamageDefinition packet in action.Damage)
         {
             float amount = packet.Amount + packet.Scaling.Sum(s => (float)user.Stats.Stat(s.Stat).Value * s.PerPoint);
-            foreach (DamageContribution c in user.Contributions.Where(c => c.Applies(ContributionSide.Outgoing, packet.Kind)))
-                amount = (amount + c.Add) * c.Multiply;
-            foreach (DamageContribution c in target.Contributions.Where(c => c.Applies(ContributionSide.Incoming, packet.Kind)))
-                amount = (amount + c.Add) * c.Multiply;
-            int rounded = Math.Max(0, (int)Math.Round(amount, MidpointRounding.AwayFromZero));
-            taken += target.Stats.TakeDamage(new(rounded, packet.Kind), ActorStats.HealthTrack);
+            foreach (ActiveContribution c in At(ContributionStage.Damage, packet.Kind)) amount = c.Contribution.Change(amount);
+            float applying = target.Stats.Resist(new((int)Math.Round(amount, MidpointRounding.AwayFromZero), packet.Kind));
+            foreach (ActiveContribution c in At(ContributionStage.Applying, packet.Kind)) applying = c.Contribution.Change(applying);
+            ActiveContribution[] defeating = At(ContributionStage.Defeating, packet.Kind).ToArray();
+            taken += target.Stats.Apply(applying, packet.Kind, ActorStats.HealthTrack, defeating.Length == 0 ? null : () =>
+            {
+                // The strongest saving contribution is used, and spent.
+                ActiveContribution saving = defeating.MaxBy(c => c.Contribution.Retain)!;
+                saving.Spend?.Invoke();
+                return saving.Contribution.Retain;
+            });
         }
         if (target.Alive)
             foreach (string effect in action.Effects) target.Stats.Effects.Apply(mechanics.Effect(effect)!, $"action.{action.Id}");
@@ -133,8 +149,8 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
     {
         IActionActor? target = hit.Present && hit.Kind == SpatialHitKind.Entity ? living.FirstOrDefault(t => t.Entity == hit.Entity) : null;
         if (target is null) return new(action, user, null, hit.Present ? hit.Point : miss, 0, false, hit.Present);
-        int taken = Hit(action, user, target);
-        return new(action, user, target, hit.Point, taken, !target.Alive);
+        int? taken = Hit(action, user, target);
+        return new(action, user, target, hit.Point, taken ?? 0, !target.Alive, TurnedAside: taken is null);
     }
 
     // Every body whose box overlaps the area's box and has a clear line from its centre.
@@ -148,8 +164,8 @@ internal sealed class ActionResolution(IEngineContext engine, SpatialSession ses
                 new[] { target.Hitbox }, new[] { user.Entity })).Present;
             if (!within || Vector3.Distance(target.Position, centre) > action.Delivery.Radius + MathF.Max(target.Hitbox.Max.X - target.Hitbox.Min.X, 0) / 2
                 || !Clear(centre, target.Eye)) continue;
-            int taken = Hit(action, user, target);
-            impacts.Add(new(action, user, target, target.Eye, taken, !target.Alive));
+            int? taken = Hit(action, user, target);
+            impacts.Add(new(action, user, target, target.Eye, taken ?? 0, !target.Alive, TurnedAside: taken is null));
         }
         return impacts.Count == 0 ? [new(action, user, null, centre, 0, false)] : impacts.ToArray();
     }

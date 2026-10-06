@@ -77,7 +77,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         {
             HotelWorld w = world;
             if (w.Combat.Defeated && pendingSecondary) { Restart(); break; }
-            if (pendingQuick >= 0) { w.Supplies.Use(pendingQuick, w.Supplies.Revision); pendingQuick = -1; }
+            if (pendingQuick >= 0) { w.Combat.UseBelt(pendingQuick); pendingQuick = -1; }
             if (pendingSwap) { pendingSwap = false; w.Combat.SwapHands(); }
             if (pendingPrimary) { pendingPrimary = false; w.Combat.Act(secondary: false); }
             if (pendingSecondary) { pendingSecondary = false; w.Combat.Act(secondary: true); }

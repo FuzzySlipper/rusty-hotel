@@ -45,6 +45,13 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, Classification
     internal void ValidateActions(Actions.ActionCatalog actions, MechanicsDefinition mechanics)
     {
         for (int i = 0; i < Items.Length; i++)
+            if (Items[i].Use is { } use)
+            {
+                actions.Require(ItemCatalog.Path, $"items[{i}].use.action", use.Action);
+                Authored.Require(actions.Action(use.Action)!.Delivery.Kind == Actions.DeliveryKind.Self, ItemCatalog.Path, $"items[{i}].use.action",
+                    "using an item is a self action.");
+            }
+        for (int i = 0; i < Items.Length; i++)
             if (Items[i].Wear is { } wear)
             {
                 actions.Require(ItemCatalog.Path, $"items[{i}].wear.actions", wear.Actions);
@@ -52,7 +59,7 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, Classification
                 bool held = Slots.Any(s => s.Hand is not null && s.Accepts.Intersect(Items[i].Classifications).Any());
                 Authored.Require(held == (wear.Actions.Length > 0) && held == (wear.Look is not null), ItemCatalog.Path, $"items[{i}].wear",
                     "an item held in a hand has actions and a look; a worn item has neither.");
-                Hotel.Game.Actions.ActionValidation.Validate(wear.Contributions, ItemCatalog.Path, $"items[{i}].wear.contributions", mechanics);
+                DamageContribution.Validate(wear.Contributions, ItemCatalog.Path, $"items[{i}].wear.contributions", mechanics, fromEffect: false);
             }
     }
 
@@ -162,15 +169,18 @@ internal sealed record ItemDefinition(string Id, string Name, string Description
     internal SourceDefinitionId WornSource => SourceDefinitionId.Parse($"worn.{Id}");
 }
 
-/// <summary>What using an item does: points restored to tracks at once, and effects applied to the investigator.</summary>
-internal sealed record ItemUse(Dictionary<string, int> Restores, string[] Effects);
+/// <summary>
+/// What using an item does: points restored to tracks at once, and effects applied to the investigator. Used from the
+/// belt during play it is <see cref="Action"/>, a self action whose timing the hands go through before the item is used.
+/// </summary>
+internal sealed record ItemUse(Dictionary<string, int> Restores, string[] Effects, string Action);
 
 /// <summary>
 /// How an item is worn: how many slots it fills, the exclusivity group no two worn items may share (null for none),
 /// what it adds to stats while worn, the damage contributions it brings to its wearer's hits, and, for a held item,
 /// the actions it grants to the hand that holds it (first the primary, then the secondary) and how it looks in hand.
 /// </summary>
-internal sealed record ItemWear(int Slots, string? Exclusive, StatEffect[] Stats, Actions.DamageContribution[] Contributions,
+internal sealed record ItemWear(int Slots, string? Exclusive, StatEffect[] Stats, DamageContribution[] Contributions,
     string[] Actions, HeldLook? Look = null);
 
 /// <summary>How a held item is drawn in the investigator's hand.</summary>

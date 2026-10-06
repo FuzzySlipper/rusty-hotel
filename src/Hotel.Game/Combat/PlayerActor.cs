@@ -16,7 +16,8 @@ internal sealed class PlayerActor(HotelScene scene, HotelPlayer player, HotelSup
     public Vector3 Eye => player.Eye;
     public Vector3 Position => player.Position;
     public bool Alive => supplies.Health > 0;
-    public IEnumerable<DamageContribution> Contributions => supplies.Worn.SelectMany(w => w.Item.Wear!.Contributions);
+    public IEnumerable<ActiveContribution> Contributions => supplies.Worn.SelectMany(w => w.Item.Wear!.Contributions)
+        .Select(c => new ActiveContribution(c)).Concat(supplies.Stats.Effects.HitContributions);
     internal ActionUser User { get; } = new();
 
     public SpatialEntityCollider Hitbox

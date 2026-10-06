@@ -64,6 +64,10 @@ internal sealed class ActorEffects
     internal LightEffect? Light => live.Values.Select(e => e.Definition.Light).Where(l => l is not null).MaxBy(l => l!.Range);
     /// <summary>The widest reveal, if any.</summary>
     internal RevealEffect? Reveal => live.Values.Select(e => e.Definition.Reveal).Where(r => r is not null).MaxBy(r => r!.Radius);
+    /// <summary>The hit contributions guards in force bring; a defeating one ends its effect when used.</summary>
+    internal IEnumerable<ActiveContribution> HitContributions => Active.Where(e => e.Definition.Guard is not null)
+        .Select(e => new ActiveContribution(e.Definition.Guard!, () => End(e, EffectEnd.Spent)));
+
     /// <summary>The Engine stat sources every active effect holds, for the stats to evaluate.</summary>
     internal IEnumerable<StatSource> Sources => live.Values.SelectMany(e => e.Sources);
 

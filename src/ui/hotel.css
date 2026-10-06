@@ -102,6 +102,9 @@
 .hotel-ui .hurt-screen { position:absolute; inset:0; box-shadow:inset 0 0 70px 15px #9b382777; }
 .hotel-ui .reticle.hit::after { content:'×'; position:absolute; top:-15px; left:-8px; color:#fff1c8; font:24px system-ui; }
 .hotel-ui [data-combat-action] { margin-top:4px; letter-spacing:.08em; }
+/* The Hands column keeps one width: a long action phase wraps rather than pushing the band into the hint row. */
+.hotel-ui .held-status>div:nth-child(2) { width:150px; }
+.hotel-ui .held-status>div:nth-child(2)>span:last-child { font-size:13px; line-height:1.25; }
 .hotel-ui .travel-hint { flex-wrap:wrap; max-width:75%; }
 
 /* A single pact card and its relevant equip action within the existing field case. */

@@ -46,7 +46,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
             surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, combat,
-            SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys, mechanics), SpiritMessages.Load(engine, keys),
+            SpiritDefinition.Load(engine, excursion.Placements.SpiritBells[0].Spirit, keys, mechanics, actions), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
         return content;

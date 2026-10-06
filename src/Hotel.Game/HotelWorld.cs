@@ -40,7 +40,7 @@ internal sealed class HotelWorld : IDisposable
                 content.Mechanics, content.PlayerStats);
             Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents);
             Spirit = new HotelSpirit(content.Spirit, content.SpiritText, excursion.Placements.SpiritBells[0], Supplies, Combat, Player,
-                content.Mechanics.Effect(content.Spirit.Effect)!);
+                content.Combat.Actions.Action(content.Spirit.Action)!, content.Mechanics);
             Route = new HotelRoute(engine, Scene, Player, Supplies, Spirit, content.Route, excursion.Route,
                 excursion.Placements.Refuge, returnToRefuge, publishInterface, travel, interaction);
             Ambience = Own(new HotelAmbience(engine, excursion.Ambience));

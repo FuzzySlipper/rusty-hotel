@@ -93,7 +93,9 @@ Engine clear events clear FPS held/pending input. Pause and resume callbacks
 also clear it; restart resets the player to the authored spawn and cuts the
 camera to the new pose. Pending use, primary, secondary and swap-hands edges clear at
 these same boundaries. No jump action is implemented. Restart restores the established refuge checkpoint
-and clears readings. Physical Q calls the equipped spirit. Shutdown releases the checkpoint store and spirit/combat appearances,
+and clears readings. Physical Q calls the equipped spirit: `HotelSpirit` checks the pact's
+own eligibility and passes its call action to Combat's pact slot, which admits, costs and
+times it and lands its hold through the one resolution; the spirit's visit follows the landing. Shutdown releases the checkpoint store and spirit/combat appearances,
 then ambient voices before their clips, the UI stream,
 camera, collision session, lights, appearances, meshes, materials, model/texture
 resources and entity store in ownership order.
@@ -164,8 +166,10 @@ The `hotel.supplies` typed claim reaches `HotelSupplies.HandleIntents` through
 both Update and HandlePausedIntents. Only that owner mutates resources/stacks;
 paused claims publish without stepping the world. Browser selection and drag
 origin/revision are transient presentation, with no optimistic inventory mutation.
-Keys 3–5 use pockets 0–2 on the next admitted step; clear/pause/resume cancel
-pending presses. These pockets already participate in the whole checkpoint.
+Keys 3–5 use pockets 0–2 through the hands: the item's use action is admitted and
+timed like any other, and the supplies owner uses the item, at the revision it was
+chosen at, when the action lands; clear/pause/resume cancel pending presses.
+Paused field-case use is immediate. These pockets already participate in the whole checkpoint.
 Use refuses defeated players; recovery remains the expedition owner's action.
 Use and movement check the current inventory revision; full resources, empty
 pockets and expedition keepsakes refuse consumption. Resource spending cannot

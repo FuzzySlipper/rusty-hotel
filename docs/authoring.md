@@ -112,15 +112,19 @@ role:
 
 | Role | Settings | Meaning |
 | --- | --- | --- |
-| `use` | `restores` (track to points), `effects` | Used from a pocket or a quick key; consumed one at a time |
+| `use` | `restores` (track to points), `effects`, `action` | Used from a pocket or a quick key; consumed one at a time. From a quick key during play it is `action` (a self action), timed through the hands before the item is used |
 | `wear` | `slots`, `exclusive`, `stats` | A single item worn in that many equipment slots that accept one of its classifications; `stats` add to stats or resistances (`resistance.<kind>`) as an Engine source while worn; no two worn items share an `exclusive` group |
 | `deposit` | `true` | An expedition find, carried back and deposited at the refuge |
 
 Slots (`supplies/equipment.json`) are the hands, the worn slots and the rings; a slot `accepts` classifications,
 and exactly one slot is each `hand` (`Main`, `Off`). An item worn in a hand is held: its `wear.actions` give its
 primary and secondary actions (at most two) and `wear.look` how it is drawn (`Bar`, `Pistol`, `Bell`, `Flare`); a
-worn item has neither. `wear.contributions` add to the damage of hits its wearer deals (`Outgoing`) or takes
-(`Incoming`), for the listed damage kinds or all of them: `add` then `multiply`, before resistance. `player/kit.json`
+worn item has neither. `wear.contributions` change hits its wearer deals (`Outgoing`) or takes (`Incoming`), for
+the listed damage kinds or all of them, at one `stage`: `Hit` (`prevent`: the hit is turned aside, with no damage and
+no effects), `Damage` (`add` then `multiply`, before resistance) or `Applying` (`add` then `multiply`, after resistance
+and before wards and health). At each stage the user's outgoing contributions come before the target's incoming ones.
+A `Defeating` contribution (`retain` health from a killing blow) is spent when used, so it comes only with an effect
+(`guard`). `player/kit.json`
 names what is worn and held at the start, by item and slots.
 Wearing into a full slot trades places with what it held. The first `quickPockets` pockets are the belt the quick keys
 use: consumables are stacks, and Engine equipment holds single items only, so the belt is pocket layout rather than an
@@ -176,6 +180,7 @@ An effect (`mechanics/effects.json`) is something an actor bears for a while: an
 | `slow` | `factor` | multiplies pace; the strongest slow wins |
 | `reveal` | `radius`, `sensed` | the HUD names how many living residents are within `radius`, through walls (`{count}`) |
 | `light` | `color`, `intensity`, `range`, `lift` | a shadowless light carried at the bearer's eye |
+| `guard` | a contribution (`stage`, `side`, `kinds`, and its fields) | brings that hit contribution while it lasts; a `Defeating` guard ends when it saves its bearer |
 
 `stacking` decides how another application meets an effect already in its group. `Independent` keeps one instance per
 source (an item, a resident, a weapon, a spirit) up to `maximumInstances`, and the same source again restarts its own;

@@ -234,7 +234,9 @@ hands' items; there is no key per weapon, and changing what is held otherwise is
 Wear action in the field case. Windup, strike and recovery are shown by the actual
 first-person pose of the held item and the Hands HUD state, which names the item in
 hand and the one at your side. Swapping and another action cannot cancel the
-committed action; an unmet cost or a cooldown is a brief notice. A hit marks the reticle and names the
+committed action; an unmet cost or a cooldown is a brief notice. A quick key (3–5) uses its belt item through the
+hands: the Hands state shows the use's own windup (unwrapping a dressing, reaching for a supply), and the item is
+used as it lands. Q calls the equipped pact through its own slot. A hit marks the reticle and names the
 resident in a short result notice; damage briefly accents the viewport border
 and updates the supplies owner's health.
 

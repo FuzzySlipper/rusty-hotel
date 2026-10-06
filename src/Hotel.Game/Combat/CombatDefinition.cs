@@ -61,7 +61,7 @@ internal sealed record CombatTuning(float NoticeSeconds, float HitFlashSeconds, 
 /// <summary>Combat notices and HUD action states.</summary>
 internal sealed record CombatMessages(string Overwhelmed, string Recovering, string Ready, string EmptyHands, string NotEnough,
     string NeedsItem, string NotReady, string Swapped, string StruckSurroundings, string Miss, string Hit,
-    string ResidentFalls, string ResidentHits)
+    string ResidentFalls, string ResidentHits, string ResidentTurnsAside, string BlowTurnedAside)
 {
     internal const string Path = "combat/messages.json";
 
@@ -77,6 +77,8 @@ internal sealed record CombatMessages(string Overwhelmed, string Recovering, str
         Template.Check(Path, "hit", Hit, "resident");
         Template.Check(Path, "residentFalls", ResidentFalls, "resident");
         Template.Check(Path, "residentHits", ResidentHits, "resident", "damage");
+        Template.Check(Path, "residentTurnsAside", ResidentTurnsAside, "resident");
+        Template.Check(Path, "blowTurnedAside", BlowTurnedAside, "resident");
     }
 }
 

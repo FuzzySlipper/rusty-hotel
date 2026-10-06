@@ -9,7 +9,11 @@
       "maximumStacks": 2,
       "maximumInstances": 1,
       "duration": 6,
-      "restore": { "track": "health", "amount": 3, "interval": 1 }
+      "restore": {
+        "track": "health",
+        "amount": 3,
+        "interval": 1
+      }
     },
     {
       "id": "warded",
@@ -20,7 +24,15 @@
       "maximumStacks": 1,
       "maximumInstances": 1,
       "duration": 40,
-      "ward": { "absorb": 24, "damageKinds": [ "fire", "spirit", "blunt", "pierce" ] }
+      "ward": {
+        "absorb": 24,
+        "damageKinds": [
+          "fire",
+          "spirit",
+          "blunt",
+          "pierce"
+        ]
+      }
     },
     {
       "id": "burning",
@@ -31,7 +43,11 @@
       "maximumStacks": 1,
       "maximumInstances": 2,
       "duration": 2,
-      "damage": { "damageKind": "fire", "amount": 1, "interval": 0.5 }
+      "damage": {
+        "damageKind": "fire",
+        "amount": 1,
+        "interval": 0.5
+      }
     },
     {
       "id": "staggered",
@@ -42,7 +58,9 @@
       "maximumStacks": 1,
       "maximumInstances": 1,
       "duration": 1.5,
-      "slow": { "factor": 0.55 }
+      "slow": {
+        "factor": 0.55
+      }
     },
     {
       "id": "hushed",
@@ -64,7 +82,16 @@
       "maximumStacks": 1,
       "maximumInstances": 1,
       "duration": 45,
-      "light": { "color": [ 1.0, 0.72, 0.42 ], "intensity": 3.2, "range": 4.5, "lift": 0.1 }
+      "light": {
+        "color": [
+          1.0,
+          0.72,
+          0.42
+        ],
+        "intensity": 3.2,
+        "range": 4.5,
+        "lift": 0.1
+      }
     },
     {
       "id": "keen",
@@ -75,7 +102,10 @@
       "maximumStacks": 1,
       "maximumInstances": 1,
       "duration": 25,
-      "reveal": { "radius": 10, "sensed": "{count} stirring" }
+      "reveal": {
+        "radius": 10,
+        "sensed": "{count} stirring"
+      }
     },
     {
       "id": "steadied",
@@ -86,7 +116,26 @@
       "maximumStacks": 1,
       "maximumInstances": 1,
       "duration": 25,
-      "stat": { "stat": "nerve", "amount": 4 }
+      "stat": {
+        "stat": "nerve",
+        "amount": 4
+      }
+    },
+    {
+      "id": "steeled",
+      "name": "Steeled",
+      "mark": "✚",
+      "group": "steeled",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 40,
+      "guard": {
+        "stage": "Defeating",
+        "side": "Incoming",
+        "kinds": [],
+        "retain": 1
+      }
     }
   ]
 }

@@ -21,10 +21,6 @@ internal enum DeliveryKind
     Self,
 }
 
-/// <summary>Which side of a hit a damage contribution belongs to.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<ContributionSide>))]
-internal enum ContributionSide { Outgoing, Incoming }
-
 /// <summary>
 /// One gameplay action used by the investigator's hands and by residents alike: how it is delivered, what it costs, its
 /// timing, the damage packets it deals (scaled by the user's stats) and the effects it puts on what it hits and on its
@@ -51,15 +47,6 @@ internal sealed record ActionTiming(float Windup, float Commit, float Recovery, 
 /// <summary>A damage packet: its kind, base amount and how much each point of a stat adds.</summary>
 internal sealed record DamageDefinition(string Kind, int Amount, StatScaling[] Scaling);
 internal sealed record StatScaling(string Stat, float PerPoint);
-
-/// <summary>
-/// A worn item's change to the damage of hits its wearer deals (outgoing) or takes (incoming), of the named kinds (none
-/// is every kind): added, then multiplied, before resistance.
-/// </summary>
-internal sealed record DamageContribution(ContributionSide Side, string[] Kinds, int Add, float Multiply)
-{
-    internal bool Applies(ContributionSide side, string kind) => Side == side && (Kinds.Length == 0 || Kinds.Contains(kind));
-}
 
 internal sealed record ActionCatalog(ActionDefinition[] Actions)
 {
@@ -137,17 +124,5 @@ internal static class ActionValidation
         }
         mechanics.RequireEffects(path, $"{at}.effects", a.Effects);
         mechanics.RequireEffects(path, $"{at}.selfEffects", a.SelfEffects);
-    }
-
-    /// <summary>Checks a list of damage contributions authored on an item or elsewhere.</summary>
-    internal static void Validate(DamageContribution[] contributions, string path, string field, MechanicsDefinition mechanics)
-    {
-        for (int i = 0; i < contributions.Length; i++)
-        {
-            for (int k = 0; k < contributions[i].Kinds.Length; k++)
-                Authored.Require(mechanics.DamageKind(contributions[i].Kinds[k]) is not null, path, $"{field}[{i}].kinds[{k}]",
-                    $"unknown damage kind '{contributions[i].Kinds[k]}'.");
-            Authored.AtLeast(path, $"{field}[{i}].multiply", contributions[i].Multiply, 0);
-        }
     }
 }

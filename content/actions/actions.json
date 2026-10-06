@@ -314,6 +314,74 @@
       "selfEffects": [],
       "windupLabel": "Taking aim",
       "commitLabel": "Throw"
+    },
+    {
+      "id": "use-supply",
+      "name": "Use a supply",
+      "delivery": {
+        "kind": "Self"
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.35,
+        "commit": 0.05,
+        "recovery": 0.2,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Reaching for it",
+      "commitLabel": "Used"
+    },
+    {
+      "id": "dress-wound",
+      "name": "Dress a wound",
+      "delivery": {
+        "kind": "Self"
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.7,
+        "commit": 0.05,
+        "recovery": 0.3,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Unwrapping a dressing",
+      "commitLabel": "Dressed"
+    },
+    {
+      "id": "hushwing-call",
+      "name": "Call Hushwing",
+      "delivery": {
+        "kind": "Hitscan",
+        "range": 6
+      },
+      "cost": {
+        "tracks": {
+          "summon": 1
+        }
+      },
+      "timing": {
+        "windup": 0,
+        "commit": 0.1,
+        "recovery": 0,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [
+        "hushed"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Calling",
+      "commitLabel": "Called"
     }
   ]
 }

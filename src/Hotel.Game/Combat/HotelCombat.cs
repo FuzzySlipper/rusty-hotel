@@ -32,6 +32,9 @@ internal sealed class HotelCombat
     private readonly ResidentSenses perception;
     private readonly ResidentConduct conduct;
     private float noticeRemaining;
+    // A belt use under way (its pocket and the case revision it was chosen at), and a pact call's landing.
+    private (ActionDefinition Action, int Pocket, ulong Revision)? belt;
+    private Action<HotelEnemy?>? pactLanded;
 
     internal HotelCombat(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelSupplies supplies,
         CombatDefinition definition, ResidentPlacement[] residents)
@@ -49,8 +52,10 @@ internal sealed class HotelCombat
 
     internal HotelEnemy[] Enemies { get; }
     internal IReadOnlyList<Projectile> Projectiles => resolution.Projectiles;
-    /// <summary>The investigator's action in progress and cooldowns.</summary>
+    /// <summary>The investigator's action in progress and cooldowns, for the hands and the belt.</summary>
     internal ActionUser User => investigator.User;
+    /// <summary>The investigator's pact slot: a call is an action of its own, alongside the hands.</summary>
+    internal ActionUser PactUser { get; } = new();
     internal AttackPhase Phase => User.Phase switch
     {
         ActionPhase.Windup => AttackPhase.Windup, ActionPhase.Commit => AttackPhase.Commit,
@@ -108,6 +113,39 @@ internal sealed class HotelCombat
         return true;
     }
 
+    /// <summary>
+    /// Uses the item in a belt pocket through the hands: its use action is admitted and timed like any other, and the
+    /// item is used, by the supplies owner's rules, when it lands. Refused as the supplies owner would refuse it.
+    /// </summary>
+    internal bool UseBelt(int pocket)
+    {
+        if (Defeated || supplies.Stats.Effects.Held) return false;
+        if (supplies.UseReason(pocket).Length > 0) return supplies.Use(pocket, supplies.Revision);
+        ActionDefinition action = definition.Actions.Action(supplies.Item(supplies.Slot(pocket)!.Value.Item).Use!.Action)!;
+        switch (User.Readiness(action))
+        {
+            case ActionRefusal.Busy: return false;
+            case ActionRefusal.Cooldown: Announce(Template.Fill(text.NotReady, ("action", action.Name))); return false;
+        }
+        belt = (action, pocket, supplies.Revision);
+        User.Begin(action, player.Forward);
+        return true;
+    }
+
+    /// <summary>
+    /// Calls the equipped pact with its action: admitted, costed and timed through the pact slot, landed through the
+    /// one resolution (which puts its effects on the resident it reaches); <paramref name="landed"/> receives that resident.
+    /// </summary>
+    internal bool CallPact(ActionDefinition action, Action<HotelEnemy?> landed)
+    {
+        if (Defeated || PactUser.Readiness(action) != ActionRefusal.None || CostRefusal(action) is not null) return false;
+        foreach (var (track, amount) in action.Cost.Tracks) supplies.Stats.Track(track).TrySpend(amount);
+        supplies.Changed();
+        pactLanded = landed;
+        PactUser.Begin(action, player.Forward);
+        return true;
+    }
+
     /// <summary>Trades what the hands hold, while no action is under way.</summary>
     internal bool SwapHands()
     {
@@ -122,9 +160,16 @@ internal sealed class HotelCombat
         HitFlash = Math.Max(0, HitFlash - delta);
         noticeRemaining = Math.Max(0, noticeRemaining - delta);
         if (noticeRemaining == 0) Notice = "";
-        if (Defeated) { User.Interrupt(); resolution.Clear(); return; }
-        if (supplies.Stats.Effects.Held) User.Interrupt();
+        if (Defeated) { User.Interrupt(); PactUser.Interrupt(); belt = null; pactLanded = null; resolution.Clear(); return; }
+        if (supplies.Stats.Effects.Held) { User.Interrupt(); belt = null; }
         if (User.Step(delta) is { } landed) Land(landed, User.Aim);
+        if (PactUser.Step(delta) is { } call)
+        {
+            HotelEnemy? reached = resolution.Land(call, investigator, PactUser.Aim, Enemies).Select(i => i.Target).OfType<HotelEnemy>().FirstOrDefault();
+            Action<HotelEnemy?>? answer = pactLanded;
+            pactLanded = null;
+            answer?.Invoke(reached);
+        }
         perception.Update(Enemies, Bodies, Faction, delta);
         foreach (HotelEnemy enemy in Enemies) StepEnemy(enemy, delta);
         foreach (ActionImpact impact in resolution.Step(delta, Bodies)) Settle(impact);
@@ -167,6 +212,14 @@ internal sealed class HotelCombat
     // The investigator's action lands: an item cost is used now, then the delivery resolves against the residents.
     private void Land(ActionDefinition action, Vector3 aim)
     {
+        // A belt use lands as the item's own use, by the supplies owner's current rules.
+        if (belt is { } use && use.Action == action)
+        {
+            belt = null;
+            supplies.Use(use.Pocket, use.Revision);
+            return;
+        }
+        belt = null;
         if (action.Cost.Item is { } classification)
         {
             int pocket = supplies.PocketOf(classification);
@@ -183,7 +236,9 @@ internal sealed class HotelCombat
         if (impact.User == investigator)
         {
             if (impact.Action.Delivery.Kind == DeliveryKind.Self) return;
-            if (impact.Target is HotelEnemy victim)
+            if (impact.Target is HotelEnemy turned && impact.TurnedAside)
+                Announce(Template.Fill(text.ResidentTurnsAside, ("resident", turned.Kind.Name)));
+            else if (impact.Target is HotelEnemy victim)
             {
                 LandedHits++;
                 HitFlash = definition.Tuning.HitFlashSeconds;
@@ -195,7 +250,9 @@ internal sealed class HotelCombat
         }
         if (impact.User is not HotelEnemy enemy) return;
         if (impact.Action.Delivery.Kind == DeliveryKind.Hitscan) { enemy.BeamEnd = impact.End; enemy.BeamTime = impact.Action.Timing.Commit; }
-        if (impact.Target == investigator)
+        if (impact.Target == investigator && impact.TurnedAside)
+            Announce(Template.Fill(text.BlowTurnedAside, ("resident", enemy.Kind.Name)));
+        else if (impact.Target == investigator)
         {
             supplies.Changed();
             HurtFlash = definition.Tuning.HurtFlashSeconds;
@@ -263,7 +320,7 @@ internal sealed class HotelCombat
     internal void Reset()
     {
         foreach (HotelEnemy enemy in Enemies) enemy.Reset();
-        User.Reset(); resolution.Clear();
+        User.Reset(); PactUser.Reset(); resolution.Clear(); belt = null; pactLanded = null;
         noticeRemaining = HurtFlash = HitFlash = 0;
         AcceptedAttacks = LandedHits = 0; Notice = "";
     }
