@@ -68,16 +68,7 @@ internal sealed class HotelScene : IDisposable
                 surfaces.Add(surface.Id, material);
                 this.surfaceDefinitions.Add(surface.Id, surface);
             }
-            AddBoxes(geometry.Boxes, 0, meshes, appearances, placed, assets, instances, findFacts);
-            foreach (Moulding moulding in geometry.Mouldings)
-            {
-                MeshResource mesh = RoomGeometry.Moulding(engine, surfaces[moulding.Material], moulding);
-                meshes.Add(mesh);
-                Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
-                appearances.Add(appearance);
-                placed.Add(new AppearanceFact(Entities.Create().Value, false, 0, new(Vector3.Zero, Quaternion.Identity, Vector3.One),
-                    appearance, true, RenderLayer.Scene));
-            }
+            AddBoxes(geometry.Boxes, geometry.Mouldings, 0, meshes, appearances, placed, assets, instances, findFacts);
             Dictionary<string, RenderResource> opened = new(StringComparer.Ordinal);
             foreach (ModelDefinition model in geometry.Models)
             {
@@ -131,35 +122,62 @@ internal sealed class HotelScene : IDisposable
         catch { Dispose(); throw; }
     }
 
-    // Meshes, appearances and solid collision for authored boxes. Shape and size were validated when the floor built.
-    private void AddBoxes(RoomBox[] boxes, ulong assetBase, List<MeshResource> meshList, List<Appearance> appearanceList, List<AppearanceFact> placed,
-        List<StaticMeshAsset> assetList, List<StaticMeshInstance> instanceList, Dictionary<string, List<int>>? finds)
+    // Static geometry is drawn in batches: one mesh per surface per square of this many metres, so the shell of a whole
+    // generated floor is a few dozen draws (and a few dozen per shadow face) rather than one per box.
+    private const float BatchCell = 8;
+
+    // Meshes, appearances and solid collision for authored boxes and mouldings. Shape and size were validated when the
+    // floor built. Collision keeps one mesh per solid box; a box that shows a find is drawn alone so it can be hidden.
+    private void AddBoxes(RoomBox[] boxes, Moulding[] mouldings, ulong assetBase, List<MeshResource> meshList, List<Appearance> appearanceList,
+        List<AppearanceFact> placed, List<StaticMeshAsset> assetList, List<StaticMeshInstance> instanceList, Dictionary<string, List<int>>? finds)
     {
+        Dictionary<(string Material, int X, int Z), MeshBatch> batches = [];
+        MeshBatch Batch(string material, Vector3 at)
+        {
+            var key = (material, (int)MathF.Floor(at.X / BatchCell), (int)MathF.Floor(at.Z / BatchCell));
+            if (!batches.TryGetValue(key, out MeshBatch? batch)) batches.Add(key, batch = new());
+            return batch;
+        }
+        Transform pose = new(Vector3.Zero, Quaternion.Identity, Vector3.One);
+        void Show(MeshResource mesh, List<int>? indices)
+        {
+            Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
+            appearanceList.Add(appearance);
+            indices?.Add(placed.Count);
+            placed.Add(new AppearanceFact(Entities.Create().Value, false, 0, pose, appearance, true, RenderLayer.Scene));
+        }
         foreach (RoomBox box in boxes)
         {
             Vector3 min = Authored.Vector(box.Min), max = Authored.Vector(box.Max);
             SurfaceDefinition surface = surfaceDefinitions[box.Material];
-            MeshResource mesh = RoomGeometry.Box(engine, surfaces[box.Material], min, max, new(surface.TileWidth, surface.TileHeight));
-            meshList.Add(mesh);
-            EntityId entity = Entities.Create();
-            Transform pose = new(Vector3.Zero, Quaternion.Identity, Vector3.One);
-            if (!box.Hidden)
-            {
-                Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
-                appearanceList.Add(appearance);
-                if (finds is not null && box.Find is string find)
-                {
-                    if (!finds.TryGetValue(find, out List<int>? indices)) finds.Add(find, indices = []);
-                    indices.Add(placed.Count);
-                }
-                placed.Add(new AppearanceFact(entity.Value, false, 0, pose, appearance, true, RenderLayer.Scene));
-            }
+            Vector2 tile = new(surface.TileWidth, surface.TileHeight);
+            MeshResource? solid = null;
             if (box.Solid)
             {
+                solid = RoomGeometry.Box(engine, surfaces[box.Material], min, max, tile);
+                meshList.Add(solid);
                 ulong asset = checked(assetBase + (ulong)assetList.Count + 1);
-                assetList.Add(new StaticMeshAsset(asset, new MeshResourceReference(mesh), 0, 0, 0, 0));
-                instanceList.Add(new StaticMeshInstance(entity.Value, asset, pose));
+                assetList.Add(new StaticMeshAsset(asset, new MeshResourceReference(solid), 0, 0, 0, 0));
+                instanceList.Add(new StaticMeshInstance(Entities.Create().Value, asset, pose));
             }
+            if (box.Hidden) continue;
+            if (finds is not null && box.Find is string find)
+            {
+                if (!finds.TryGetValue(find, out List<int>? indices)) finds.Add(find, indices = []);
+                MeshResource mesh = solid ?? RoomGeometry.Box(engine, surfaces[box.Material], min, max, tile);
+                if (solid is null) meshList.Add(mesh);
+                Show(mesh, indices);
+                continue;
+            }
+            Batch(box.Material, (min + max) / 2).Box(min, max, tile);
+        }
+        foreach (Moulding moulding in mouldings)
+            Batch(moulding.Material, Authored.Vector(moulding.Start)).Moulding(moulding);
+        foreach (var ((material, _, _), batch) in batches)
+        {
+            MeshResource mesh = batch.Create(engine, surfaces[material]);
+            meshList.Add(mesh);
+            Show(mesh, null);
         }
     }
 
@@ -250,7 +268,7 @@ internal sealed class HotelScene : IDisposable
         Preview shown = new();
         preview = shown;
         List<AppearanceFact> placed = [];
-        AddBoxes(boxes, PreviewIds, shown.Meshes, shown.Appearances, placed, shown.Assets, shown.Instances, null);
+        AddBoxes(boxes, [], PreviewIds, shown.Meshes, shown.Appearances, placed, shown.Assets, shown.Instances, null);
         shown.Facts = [.. placed];
         shown.Lights.AddRange(PointLights(points, PreviewIds));
         ReplaceCollision();
