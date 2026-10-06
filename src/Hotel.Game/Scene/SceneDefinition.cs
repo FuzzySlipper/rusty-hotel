@@ -18,8 +18,9 @@ internal sealed record SurfaceCatalog(SurfaceDefinition[] Surfaces)
             Authored.Positive(Path, $"surfaces[{i}].tileHeight", s.TileHeight);
             Authored.Within(Path, $"surfaces[{i}].roughness", s.Roughness, 0, 1);
             Authored.AtLeast(Path, $"surfaces[{i}].emission", s.Emission, 0);
-            Authored.Require((s.NormalMap is null) == (s.NormalScale is null), Path, $"surfaces[{i}].normalScale",
-                "a normal map and its scale are given together.");
+            // Name the half that is missing.
+            Authored.Require((s.NormalMap is null) == (s.NormalScale is null), Path,
+                s.NormalMap is null ? $"surfaces[{i}].normalMap" : $"surfaces[{i}].normalScale", "a normal map and its scale are given together.");
             if (s.NormalScale is { } scale) Authored.Positive(Path, $"surfaces[{i}].normalScale", scale);
         }
         return catalog;
