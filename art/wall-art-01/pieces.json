@@ -1,0 +1,13 @@
+{
+  "textureSize": 1536,
+  "finishes": {
+    "gilt": { "colour": [0.55, 0.42, 0.2], "roughness": 0.45, "metallic": 0.25 },
+    "wood": { "colour": [0.23, 0.13, 0.07], "roughness": 0.6 },
+    "board": { "colour": [0.12, 0.11, 0.09], "roughness": 0.85 }
+  },
+  "pieces": {
+    "landscape": { "kind": "frame", "width": 0.98, "centre": [0, 1.455], "front": 0.105, "border": 0.065, "depth": 0.06, "finish": "gilt" },
+    "pinned": { "kind": "frame", "width": 0.72, "centre": [0, 1.455], "front": 0.1, "border": 0.06, "depth": 0.055, "finish": "wood" },
+    "notice": { "kind": "board", "width": 0.6, "centre": [0, 1.56], "front": 0.05, "border": 0.05, "depth": 0.025, "finish": "board" }
+  }
+}

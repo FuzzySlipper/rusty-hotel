@@ -36,235 +36,55 @@
     {
       "id": "expedition-notice",
       "mount": "Wall",
-      "parts": [
-        {
-          "name": "backing",
-          "material": "equipment",
-          "min": [
-            -0.36,
-            1.1,
-            0.025
-          ],
-          "max": [
-            0.36,
-            2.02,
-            0.045
-          ]
-        },
-        {
-          "name": "paper",
-          "material": "paper",
-          "min": [
-            -0.31,
-            1.15,
-            0.046
-          ],
-          "max": [
-            0.31,
-            1.97,
-            0.057
-          ]
-        },
-        {
-          "name": "heading",
-          "material": "trim",
-          "min": [
-            -0.23,
-            1.78,
-            0.058
-          ],
-          "max": [
-            0.23,
-            1.84,
-            0.062
-          ]
-        },
-        {
-          "name": "ink",
-          "material": "equipment",
-          "min": [
-            -0.23,
-            1.63,
-            0.058
-          ],
-          "max": [
-            0.23,
-            1.65,
-            0.062
-          ]
-        },
-        {
-          "name": "ink",
-          "material": "equipment",
-          "min": [
-            -0.23,
-            1.55,
-            0.058
-          ],
-          "max": [
-            0.18,
-            1.57,
-            0.062
-          ]
-        },
-        {
-          "name": "ink",
-          "material": "equipment",
-          "min": [
-            -0.23,
-            1.47,
-            0.058
-          ],
-          "max": [
-            0.23,
-            1.49,
-            0.062
-          ]
-        },
-        {
-          "name": "ink",
-          "material": "equipment",
-          "min": [
-            -0.23,
-            1.39,
-            0.058
-          ],
-          "max": [
-            0.18,
-            1.41,
-            0.062
-          ]
-        },
-        {
-          "name": "ink",
-          "material": "equipment",
-          "min": [
-            -0.23,
-            1.31,
-            0.058
-          ],
-          "max": [
-            0.23,
-            1.33,
-            0.062
-          ]
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           1.55,
           0.09
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/wall-art/notice.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "pinned-frame",
       "mount": "Wall",
-      "parts": [
+      "parts": [],
+      "models": [
         {
-          "name": "frame",
-          "material": "trim",
-          "min": [
-            -0.425,
-            0.96,
-            0.04
+          "path": "models/wall-art/pinned.glb",
+          "offset": [
+            0,
+            0,
+            0
           ],
-          "max": [
-            0.425,
-            1.95,
-            0.115
-          ]
-        },
-        {
-          "name": "insert",
-          "material": "paper",
-          "min": [
-            -0.365,
-            1.02,
-            0.116
-          ],
-          "max": [
-            0.365,
-            1.88,
-            0.123
-          ]
-        },
-        {
-          "name": "page",
-          "material": "canvas",
-          "min": [
-            0.05,
-            1.16,
-            0.125
-          ],
-          "max": [
-            0.31,
-            1.45,
-            0.13
-          ]
-        },
-        {
-          "name": "page",
-          "material": "canvas",
-          "min": [
-            -0.25,
-            1.5,
-            0.125
-          ],
-          "max": [
-            0.01,
-            1.79,
-            0.13
-          ]
+          "scale": 1
         }
       ]
     },
     {
       "id": "landscape-picture",
       "mount": "Wall",
-      "parts": [
+      "parts": [],
+      "models": [
         {
-          "name": "frame",
-          "material": "trim",
-          "min": [
-            -0.55,
-            0.96,
-            0.04
+          "path": "models/wall-art/landscape.glb",
+          "offset": [
+            0,
+            0,
+            0
           ],
-          "max": [
-            0.55,
-            1.95,
-            0.115
-          ]
-        },
-        {
-          "name": "insert",
-          "material": "picture",
-          "min": [
-            -0.49,
-            1.02,
-            0.116
-          ],
-          "max": [
-            0.49,
-            1.88,
-            0.123
-          ]
-        },
-        {
-          "name": "horizon",
-          "material": "picture-light",
-          "min": [
-            -0.47,
-            1.16,
-            0.124
-          ],
-          "max": [
-            0.47,
-            1.37,
-            0.127
-          ]
+          "scale": 1
         }
       ]
     },

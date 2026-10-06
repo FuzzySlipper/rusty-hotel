@@ -237,6 +237,8 @@ internal sealed class HotelScene : IDisposable
     // The light an effect has the investigator carry, present only while one is carried.
     private Light? carried;
     private const ulong CarriedLightId = PreviewIds - 1;
+    /// <summary>The first light id the residents' tells use, one apiece below the carried light.</summary>
+    internal const ulong ResidentLightIds = PreviewIds - 1024;
 
     /// <summary>Places the carried light at the eye, or puts it out when none is carried. It casts no shadow.</summary>
     internal void Carry(Mechanics.LightEffect? light, Vector3 eye)

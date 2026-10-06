@@ -49,9 +49,10 @@ internal static class FloorSaveChecks
                 for (ulong s = 1; s < 40 && seed == 0; s++)
                 {
                     product.Floors.Begin(s);
-                    if (product.Floors.Floor(1) is { } f && f.Route.Keys.Length > 0) seed = s;
+                    if (product.Floors.Floor(1) is { } f && f.Route.Keys.Length > 0 && f.Placements.Residents.Length > 0 &&
+                        f.Placements.Containers.Length > 0) seed = s;
                 }
-                Check(seed != 0, "some run's first floor has a lock");
+                Check(seed != 0, "some run's first floor has a lock, a resident and a container");
                 Check(commands.Hotel!.Floor(seed, 1).Status == Rusty.Engine.Debugging.DebugCommandStatus.Success, "enter the floor");
                 ExcursionDefinition floor = product.World.Excursion;
                 KeyDefinition held = floor.Route.Keys[0];

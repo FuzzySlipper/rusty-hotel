@@ -1,0 +1,72 @@
+{
+ "runFamily": "hotel-wall-art-01",
+ "sourcePrompt": "request.json (common + per-piece spec)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec), one image per piece",
+ "conversion": "Local Blender 5.2.2 LTS; build.py: canvas plane with exact UVs at the image's aspect, parametric frame (gilt, wood) or pinned board; 1536 JPEG; .blend master per piece",
+ "decision": "Retain the landscape painting, the pinned photographs and the expedition notice sheet.",
+ "limitations": [
+  "The notice's typed marks are illegible by design; the reading text stays in content."
+ ],
+ "files": [
+  {
+   "path": "art/wall-art-01/build.py",
+   "sha256": "d2a819c5fe178899d6baaacfc2d9be48952830c14c944633206511b5546866cd"
+  },
+  {
+   "path": "art/wall-art-01/landscape.blend",
+   "sha256": "50f5461ee7c6a4dfe003f1a38b14ed4b269eb654870548db2c3b6f0695c9e2ad"
+  },
+  {
+   "path": "art/wall-art-01/notice.blend",
+   "sha256": "6177e94da53fda5fd5edcf826849a59261bd9f2be537d02dc69d30cebf8d88ac"
+  },
+  {
+   "path": "art/wall-art-01/pieces.json",
+   "sha256": "dd5756c59ea7f3f2bea7557cc12863cbc86443c5efc6cc0a6715e0760ea95e07"
+  },
+  {
+   "path": "art/wall-art-01/pinned.blend",
+   "sha256": "7c16ed42ba323aa101d22f3bbb6f5471535014f8a2cb24eafc25238d0f8d73fa"
+  },
+  {
+   "path": "art/wall-art-01/request.json",
+   "sha256": "c54a271165b5f21e9bc831b0d99ddaceb3c677286c12bb6997afe59ed73df437"
+  },
+  {
+   "path": "art/wall-art-01/source-landscape.png",
+   "sha256": "6012017cd1c633413820603aecb792d9906234a56b1a2f37f6b70ccae944492c"
+  },
+  {
+   "path": "art/wall-art-01/source-notice.png",
+   "sha256": "a80ac93e2b2f40f177f8421dae18b8f2ae1206efe2ae767190a87c601a989b14"
+  },
+  {
+   "path": "art/wall-art-01/source-pinned.png",
+   "sha256": "46807a34de5579479eabcfef4b2813d967bb73b958c3fcd629e962c445aecb0c"
+  },
+  {
+   "path": "art/wall-art-01/textures/landscape.jpg",
+   "sha256": "d916afe20c5f47860712ad1cedd7c5e5e252982d8add7116d610c72a5cf7e301"
+  },
+  {
+   "path": "art/wall-art-01/textures/notice.jpg",
+   "sha256": "fa2a7fe52b43a141774eb409207b65e23c4ea2b4ed4d186978257a0ce016f5af"
+  },
+  {
+   "path": "art/wall-art-01/textures/pinned.jpg",
+   "sha256": "3e8fafc2734d31f919b2812d33dab4ffed886dc572715d964d7bdbca2c578a20"
+  },
+  {
+   "path": "content/models/wall-art/landscape.glb",
+   "sha256": "5b682031f0edc718f8584761d3f25ea6f97391070c197e4465e88ddd191fd999"
+  },
+  {
+   "path": "content/models/wall-art/notice.glb",
+   "sha256": "2ad4fbbe9ce102a482115466250fd6e339760873e2d49631d15898c5cb691185"
+  },
+  {
+   "path": "content/models/wall-art/pinned.glb",
+   "sha256": "dd05fafb856c0432230ebb60362cce31a509ecca37423f5a830ee96295b093cd"
+  }
+ ]
+}

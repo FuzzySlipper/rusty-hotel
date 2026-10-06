@@ -151,6 +151,34 @@ master with its textures as JPEG files in `textures/`. The displays in
 blender -b --python art/props-01/prepare.py
 ```
 
+## Residents
+
+`residents-01/request.json` fixes the shared style (an uncanny hotel resident in a neutral A-pose, front view) and one
+subject per resident; each `source-<resident>.png` is one GPT image call. Each model is one paid Tripo P2 image-to-model
+generation, rigged with Tripo's humanoid rig (`v1.0-20240301`; the newer rig model is for non-humanoids) and
+retargeted one clip at a time (idle, walk), each download a whole rigged model with one clip
+(`native/<resident>-<clip>.glb`). `residents-01/prepare.py` gathers those clips onto one armature, keys the clips
+Tripo did not supply (attack, hurt, fall) from the idle pose with the arm, spine and hips turned and moved in armature
+space (`pieces.json` `authored`), scales each resident to its kind's height with its feet at the origin, writes 1024
+JPEG textures and exports `content/models/residents/<resident>.glb` with every clip, saving a `.blend` master. Clip ids
+are the names in `content/combat/looks.json`; the attack's keyed strike time divided by its length is the look's
+`strikeAt`. `provenance.json` records the provider tasks and use limits.
+
+```text
+blender -b --python art/residents-01/prepare.py
+```
+
+## Wall art
+
+`wall-art-01/request.json` fixes one GPT image per piece (the landscape painting, the pinned photographs, the
+expedition notice sheet). `wall-art-01/build.py` builds each as a model: a canvas plane carrying its image at the
+image's own aspect with exact UVs, set in a parametric moulded frame (gilt or wood) or on a pinned board, placed in
+the wall fixture's frame (`pieces.json`), and writes `content/models/wall-art/<piece>.glb` with a `.blend` master.
+
+```text
+blender -b --python art/wall-art-01/build.py
+```
+
 ## Ambient audio and primitive props
 
 `tools/author-ambience.py` authors the two deterministic mono PCM WAV loops in

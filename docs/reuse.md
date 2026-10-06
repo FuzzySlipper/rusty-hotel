@@ -232,9 +232,10 @@ Hotel's `HotelCombat` uses its existing supplies owner, real scene identities,
 Engine Track, spatial casts and character controller. Its explicit windup,
 locked direction, recovery, standoff and short sight-limited approach are Hotel
 policy. No E1M1 catalogs, density, random damage, projectiles, drops, armor,
-entity remapping, session framework or donor navigation were imported. The resident
-silhouettes are authored here using the existing material palette and Engine mesh
-resources. The held items are generated models (`art/held-01`): sources from GPT image
+entity remapping, session framework or donor navigation were imported. The residents
+are rigged models (`art/residents-01`): sources from GPT image generation, meshes and rigs
+from Tripo with its idle and walk clips, and attack, recoil and fall clips keyed here in
+Blender on that rig; the Engine animation service plays them. The held items are generated models (`art/held-01`): sources from GPT image
 generation and meshes from asset-pipeline's native ComfyUI image-to-3D runner (TRELLIS.2,
 run on the owner's GPU), prepared offline in Blender. They are ordinary GLB content the
 Engine loads through its animation content path and draws on its viewmodel layer; the

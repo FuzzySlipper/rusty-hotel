@@ -1,0 +1,11 @@
+{
+  "goal": "The three resident kinds of Hotel Endless as rigged, animated humanoid models (Tripo P2 with rigging and retargeted presets).",
+  "style": "Single full-body character for image-to-3D reconstruction and humanoid rigging: an uncanny resident of an impossible 1970s hotel, grounded slightly stylized realism, worn tactile fabrics, muted burgundy, olive, amber and ivory palette, unsettling but not gory. Standing in a neutral A-pose: straight legs slightly apart, arms held out and down at about 45 degrees away from the body, open hands, fingers together, nothing held in the hands, nothing touching the body. Straight-on front view at eye level, the whole figure in frame from head to feet with generous margin, centred, nothing cropped. Plain flat light-grey seamless background, soft even studio lighting, no cast shadow, no ground, no props, no other figures. Solid opaque materials, no glow, no transparency. NO text, NO letters, NO logos. Square image around 1024x1024.",
+  "pieces": {
+    "porter": "Subject: The Porter, a broad heavyset night porter in a long burgundy wool coat with two rows of brass buttons and brass epaulettes, a peaked porter's cap, dark trousers and heavy black boots. His face is a smooth, featureless pale mask with only faint hollows for eyes.",
+    "lamplighter": "Subject: The Lamplighter, a tall thin figure in a long olive-grey dustcoat and leather gloves, whose head is a domed amber glass lamp shade with a dark filament inside instead of a face, a brass collar where the neck would be.",
+    "night-maid": "Subject: The Night Maid, a slender hotel chambermaid in a black knee-length dress with a starched white apron and white cuffs, black stockings and flat shoes, a white maid's cap, her face hidden behind a hanging veil of grey lace."
+  },
+  "imageProducer": "codex-image-gen (GPT image via codex exec)",
+  "meshProducer": "asset-pipeline tools/tripo/tripo.py generate --rig --animations"
+}

@@ -8,7 +8,7 @@ using Rusty.Engine;
 
 namespace Hotel.Game.Combat;
 
-/// <summary>Authored low-poly silhouettes and attack poses in the existing scene snapshot.</summary>
+/// <summary>The combat presentation in the existing scene snapshot: the residents (<see cref="ResidentView"/>), what the hands hold, and flares in flight.</summary>
 internal sealed class CombatView : IDisposable
 {
     private readonly IEngineContext engine;
@@ -18,8 +18,7 @@ internal sealed class CombatView : IDisposable
     private readonly List<MeshResource> meshes = [];
     private readonly List<Appearance> appearances = [];
     private readonly Dictionary<string, MeshResource> boxes = [];
-    private readonly Dictionary<string, Part[]> residents = [];
-    private readonly Dictionary<string, ResidentLook> looks = [];
+    private readonly ResidentView residents;
     // The model each held look shows, and the flash at a firearm's commit.
     private readonly List<RenderResource> models = [];
     private readonly Dictionary<HeldLook, (ulong Entity, Appearance Appearance, HeldModel Model)> held = [];
@@ -28,20 +27,13 @@ internal sealed class CombatView : IDisposable
     // Enough flare boxes for the shots one hand can have in flight at once.
     private const int ShownProjectiles = 6;
     private readonly Part[] flares;
-    private readonly Dictionary<string, Part> beams = [];
 
     internal CombatView(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelCombat combat, CombatDefinition definition)
     {
         this.engine = engine; this.scene = scene; this.player = player; this.combat = combat;
         try
         {
-            foreach (HotelEnemy enemy in combat.Enemies)
-            {
-                ResidentLook look = definition.Look(enemy.Kind);
-                looks[enemy.Id] = look;
-                residents[enemy.Id] = look.Parts.Select(part => Box(part.Material, Authored.Vector(part.Offset), Authored.Vector(part.Size), part.Role)).ToArray();
-                beams.Add(enemy.Id, Box("tell-amber", default, Vector3.One));
-            }
+            residents = new ResidentView(engine, scene, combat, definition);
             heldLooks = definition.Held;
             foreach (HeldModel look in heldLooks.Looks)
             {
@@ -59,7 +51,7 @@ internal sealed class CombatView : IDisposable
         catch { Dispose(); throw; }
     }
 
-    private Part Box(string material, Vector3 offset, Vector3 size, LookRole role = LookRole.Body)
+    private Part Box(string material, Vector3 offset, Vector3 size)
     {
         if (!boxes.TryGetValue(material, out MeshResource? mesh))
         {
@@ -68,7 +60,7 @@ internal sealed class CombatView : IDisposable
         }
         Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
         appearances.Add(appearance);
-        return new(scene.Entities.Create().Value, appearance, offset, size, role);
+        return new(scene.Entities.Create().Value, appearance, offset, size);
     }
 
     internal void Publish()
@@ -77,32 +69,7 @@ internal sealed class CombatView : IDisposable
         void Place(Part part, Vector3 origin, Quaternion rotation, bool visible, Vector3? offset = null, Vector3? size = null)
             => facts.Add(new(part.Entity, false, 0,
                 new(origin + Vector3.Transform(offset ?? part.Offset, rotation), rotation, size ?? part.Size), part.Appearance, visible, RenderLayer.Scene));
-        foreach (HotelEnemy enemy in combat.Enemies)
-        {
-            Quaternion facing = Quaternion.CreateFromAxisAngle(Vector3.UnitY, -enemy.Yaw);
-            Vector3 origin = enemy.Position;
-            // A fallen resident lies on its back where it fell, its remains there to be searched.
-            if (!enemy.Alive)
-            {
-                facing *= Quaternion.CreateFromAxisAngle(Vector3.UnitX, -MathF.PI / 2);
-                origin.Y += -enemy.Kind.Height / 2 + residents[enemy.Id].Max(p => MathF.Abs(p.Offset.Z) + p.Size.Z / 2);
-            }
-            bool winding = enemy.Phase == AttackPhase.Windup, committed = enemy.Phase == AttackPhase.Commit;
-            ResidentLook silhouette = looks[enemy.Id];
-            foreach (Part part in residents[enemy.Id])
-            {
-                Vector3 offset = part.Offset;
-                if (part.Role == LookRole.Arm) offset += winding ? Authored.Vector(silhouette.ArmWindup) : committed ? Authored.Vector(silhouette.ArmStrike) : Vector3.Zero;
-                if (enemy.Phase is AttackPhase.Recovery or AttackPhase.Interrupted) offset.Y -= silhouette.Droop;
-                Place(part, origin, facing, part.Role != LookRole.Tell || enemy.Alive && (winding || committed), offset);
-            }
-            Part beam = beams[enemy.Id];
-            bool showBeam = enemy.Alive && enemy.BeamTime > 0;
-            Vector3 delta = enemy.BeamEnd - enemy.Eye;
-            float length = delta.Length();
-            Quaternion beamRotation = length > .001f ? Facing(delta / length) : Quaternion.Identity;
-            Place(beam, (enemy.Eye + enemy.BeamEnd) / 2, beamRotation, showBeam, Vector3.Zero, new(.045f, .045f, Math.Max(.001f, length)));
-        }
+        residents.Publish(facts);
         Quaternion camera = Facing(player.Forward);
         HandPose pose = heldLooks.Hand;
         Vector3 hand = Authored.Vector(pose.Rest);
@@ -124,6 +91,7 @@ internal sealed class CombatView : IDisposable
         for (int i = 0; i < flares.Length; i++)
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         scene.PublishCombat(facts.ToArray());
+        residents.Animate();
     }
 
     private static Quaternion Facing(Vector3 forward)
@@ -136,9 +104,10 @@ internal sealed class CombatView : IDisposable
     public void Dispose()
     {
         scene.PublishCombat([]);
+        residents?.Dispose();
         foreach (Appearance appearance in appearances) appearance.Dispose();
         foreach (MeshResource mesh in meshes) mesh.Dispose();
         foreach (RenderResource model in models) model.Dispose();
     }
-    private sealed record Part(ulong Entity, Appearance Appearance, Vector3 Offset, Vector3 Size, LookRole Role);
+    private sealed record Part(ulong Entity, Appearance Appearance, Vector3 Offset, Vector3 Size);
 }

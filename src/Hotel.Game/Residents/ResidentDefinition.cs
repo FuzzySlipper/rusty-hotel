@@ -88,16 +88,28 @@ internal sealed record FactionCatalog(FactionDefinition[] Factions, string[][] H
 }
 internal sealed record FactionDefinition(string Id, string Name);
 
-/// <summary>What a look part is to its tells: the body, the arm that rises and strikes, or the tell that lights during an attack.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<LookRole>))]
-internal enum LookRole { Body, Arm, Tell }
+/// <summary>
+/// How a resident is drawn: its rigged model (a GLB whose origin is at its feet, facing -z, turned by
+/// <see cref="YawDegrees"/> and sized by <see cref="Scale"/>), the clip it plays in each state, the moment in its attack
+/// clip that is the strike (<see cref="StrikeAt"/>, normalized), and its tell: the light it flares with while it winds up
+/// and commits.
+/// </summary>
+internal sealed record ResidentLook(string Id, string Model, float Scale, float YawDegrees, ResidentClips Clips, float StrikeAt, TellGlow Tell);
 
 /// <summary>
-/// A resident silhouette in boxes, in the resident's own frame (metres from its body centre, facing -z), and the tell
-/// poses that make its attacks readable: where the arm goes in windup and at the strike, and how far it droops in recovery.
+/// A resident's clips by state: standing, walking, its attack (windup runs up to the strike, commit and recovery after
+/// it), recoiling when held or interrupted, and falling, whose last frame is its remains.
 /// </summary>
-internal sealed record ResidentLook(string Id, LookPart[] Parts, float[] ArmWindup, float[] ArmStrike, float Droop);
-internal sealed record LookPart(string Material, float[] Offset, float[] Size, LookRole Role);
+internal sealed record ResidentClips(string Idle, string Walk, string Attack, string Hurt, string Fall)
+{
+    internal string[] All => [Idle, Walk, Attack, Hurt, Fall];
+}
+
+/// <summary>
+/// A tell: a point light (linear RGB colour, intensity, range in metres) that flares at the resident's eye, raised by
+/// <see cref="Lift"/>, while it winds up and commits. It casts no shadow.
+/// </summary>
+internal sealed record TellGlow(float[] Colour, float Intensity, float Range, float Lift);
 
 internal sealed record LookCatalog(ResidentLook[] Looks)
 {
@@ -156,14 +168,16 @@ internal static class ResidentValidation
     internal static void Validate(this ResidentLook look, int i, string[] materials)
     {
         string path = LookCatalog.Path, at = $"looks[{i}]";
-        Authored.Require(look.Parts.Length > 0, path, $"{at}.parts", "a look needs a part.");
-        for (int p = 0; p < look.Parts.Length; p++)
-        {
-            Authored.Require(materials.Contains(look.Parts[p].Material), path, $"{at}.parts[{p}].material", $"unknown surface '{look.Parts[p].Material}'.");
-            Authored.Require(look.Parts[p].Offset.Length == 3 && look.Parts[p].Offset.All(float.IsFinite), path, $"{at}.parts[{p}].offset", "is x, y, z.");
-            Authored.Require(look.Parts[p].Size.Length == 3 && look.Parts[p].Size.All(s => s > 0), path, $"{at}.parts[{p}].size", "is three positive sizes.");
-        }
-        Authored.Require(look.ArmWindup.Length == 3 && look.ArmStrike.Length == 3, path, at, "armWindup and armStrike are x, y, z offsets.");
-        Authored.AtLeast(path, $"{at}.droop", look.Droop, 0);
+        Authored.Require(look.Model.EndsWith(".glb", StringComparison.Ordinal), path, $"{at}.model", "must be a GLB content path.");
+        Authored.Positive(path, $"{at}.scale", look.Scale);
+        Authored.Finite(path, $"{at}.yawDegrees", look.YawDegrees);
+        Authored.Within(path, $"{at}.strikeAt", look.StrikeAt, 0.05f, 0.95f);
+        foreach (var (field, clip) in new[] { ("idle", look.Clips.Idle), ("walk", look.Clips.Walk), ("attack", look.Clips.Attack),
+            ("hurt", look.Clips.Hurt), ("fall", look.Clips.Fall) })
+            Authored.Require(!string.IsNullOrWhiteSpace(clip), path, $"{at}.clips.{field}", "names a clip in the model.");
+        Authored.Colour(path, $"{at}.tell.colour", look.Tell.Colour);
+        Authored.Positive(path, $"{at}.tell.intensity", look.Tell.Intensity);
+        Authored.Positive(path, $"{at}.tell.range", look.Tell.Range);
+        Authored.Finite(path, $"{at}.tell.lift", look.Tell.Lift);
     }
 }

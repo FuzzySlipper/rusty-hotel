@@ -1,0 +1,11 @@
+{
+  "goal": "Wall art for Hotel Endless: framed artwork textures and the expedition notice, replacing box inserts.",
+  "common": "Flat artwork image, viewed perfectly straight-on, filling the entire image edge to edge with no border, no frame, no wall, no shadow, no perspective. NO legible text, NO letters, NO numbers, NO logos, NO signatures.",
+  "pieces": {
+    "landscape": "A 1970s hotel-room oil painting of a perfectly still dark lake at dusk with low olive hills, and on the far shore a long low pale hotel with every window lit amber, reflected exactly in the water; muted amber, olive and dusty rose palette, soft brushwork, faintly uncanny, slightly faded and yellowed varnish. Landscape orientation 3:2.",
+    "pinned": "A cream card mount board seen flat, with two small faded 1970s photographs pinned to it by brass drawing pins at slight angles: one of an empty hotel corridor with a patterned carpet, one of a closed numbered door seen close (no legible numbers), plus a small torn slip of paper with illegible pencil scribbles; slightly stained and foxed. Square.",
+    "notice": "A typewritten notice sheet on aged cream paper seen flat, with a bold black header bar block at the top, then many lines of small illegible typewriter marks that read as text from a distance but contain no real letters, a faded red circular rubber stamp near the bottom, a brass paperclip at the top corner, slight creases and coffee stains. Portrait orientation 3:4."
+  },
+  "imageProducer": "codex-image-gen (GPT image via codex exec)",
+  "frames": "parametric in Blender (build.py)"
+}

@@ -1,0 +1,198 @@
+{
+ "runFamily": "hotel-residents-01",
+ "sourcePrompt": "request.json (style + per-resident subject, A-pose front view)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec), one image per resident",
+ "meshProducer": "Tripo P2 image-to-model, 12,000 triangles, standard texture; humanoid rig v1.0-20240301 (biped, spec tripo); one retarget per clip (preset:biped:idle, preset:biped:walk), in place",
+ "providerTasks": {
+  "porter": {
+   "generate": "e0ded539-aa02-4d3c-9402-990417c56250",
+   "rigV1": "adbf642a-661a-4a3b-ba67-36ca2fe9bdb3",
+   "retargetIdle": "ccce410c-f5ef-4dec-bf80-569c7a6688d0",
+   "retargetWalk": "c4adbde5-9171-40d2-b698-3c7413bce486",
+   "unusedBatchRetarget": "10e117c8-b384-4902-9b92-a7965e903d20",
+   "failedV25": "rig and retarget with v2.5-20260210 failed (see asset-pipeline Den task 9613)"
+  },
+  "lamplighter": {
+   "generate": "1e07bcb7-c679-4c09-9c9c-b40b06fb3d69",
+   "rigV1": "d977719f-6639-45d6-b0ea-88b81765f59b",
+   "retargetIdle": "5c7aa039-8e16-4793-873e-82fb5d1ac06a",
+   "retargetWalk": "0745790c-59bf-429c-8d89-3fd2187e1279",
+   "unusedBatchRetarget": "e98acf96-c1d9-40f4-b19e-f918864083a7",
+   "failedV25": "rig and retarget with v2.5-20260210 failed (see asset-pipeline Den task 9613)"
+  },
+  "night-maid": {
+   "generate": "1554b641-b1c7-4757-9061-43d279512ab6",
+   "rigV1": "47578e5f-4063-483f-a5a0-004585437da8",
+   "retargetIdle": "f85d0cc0-68f0-470a-bea2-47bd86acc4fc",
+   "retargetWalk": "fd440527-9109-4c55-b8b6-21fafacda942",
+   "unusedBatchRetarget": "c3c43586-06ed-4f0c-ab49-cb21aae952ca",
+   "failedV25": "rig and retarget with v2.5-20260210 failed (see asset-pipeline Den task 9613)"
+  }
+ },
+ "authoredClips": "attack, hurt and fall are keyed in Blender by prepare.py from the idle clip's first pose (pieces.json authored); Tripo's chop/cast_a_spell/slash and hit_to_body_01 retargets were refused for lack of credit, and its defeat_02 is a standing slump, not a fall",
+ "conversion": "Local Blender 5.2.2 LTS; prepare.py: clips gathered onto one armature, scaled to the kind's height with feet at the origin, 1024 JPEG textures; prepared .blend master per resident with textures in textures/",
+ "decision": "Retain all three as the resident looks; Tripo-authored idle and walk, Hotel-keyed attack, recoil and fall.",
+ "limitations": [
+  "Attack, recoil and fall are simple keyed poses, not motion-captured.",
+  "Skirt and coat skinning bulges at extreme arm poses.",
+  "No facial or finger animation; the walk is in place and its stride is not matched to movement speed."
+ ],
+ "files": [
+  {
+   "path": "art/residents-01/lamplighter.blend",
+   "sha256": "19e3b97a7a5fed3d472bfdf52fe4c7db05df7610b0b2585a1708438eac1bb6db"
+  },
+  {
+   "path": "art/residents-01/native/lamplighter-idle.glb",
+   "sha256": "1e390bffcdf0ae98029b423fa3b0c71283579f49723eed1db794663d60d5393b"
+  },
+  {
+   "path": "art/residents-01/native/lamplighter-walk.glb",
+   "sha256": "4614490cd788df86b310c323bd9eff9f703728f8529cfc40e38a00703cc4e318"
+  },
+  {
+   "path": "art/residents-01/native/night-maid-idle.glb",
+   "sha256": "99f46e9faa371ace773470cd49abdeefdf84f3e3ee6a11211b9a46bbe7952a88"
+  },
+  {
+   "path": "art/residents-01/native/night-maid-walk.glb",
+   "sha256": "abe22f8c146ec86f691f3b40a739d2d164ec29cddd70bde28f143b10b1da4a94"
+  },
+  {
+   "path": "art/residents-01/native/porter-idle.glb",
+   "sha256": "0d25d6a0140dd30051de74eabb763b79d2acc25232acb9e4e21021f3750a2666"
+  },
+  {
+   "path": "art/residents-01/native/porter-walk.glb",
+   "sha256": "3feda1aaee4b5f6862960a2b66fb0bde6cb6c7f8bdfe5d4970ca35d694ff9dee"
+  },
+  {
+   "path": "art/residents-01/night-maid.blend",
+   "sha256": "3fb302c8f62602d0e6147082ee76dfb8dfe0f4beb6b4594b6f1a0970c625ff0e"
+  },
+  {
+   "path": "art/residents-01/pieces.json",
+   "sha256": "614f048a16754405925d15e7d077a3adbaf2edc57b562985b12c91efb585a49c"
+  },
+  {
+   "path": "art/residents-01/porter.blend",
+   "sha256": "8b35cdaa4d202253368e6f806676da7c7e3c26ccb09385b035e034486c80d138"
+  },
+  {
+   "path": "art/residents-01/prepare.py",
+   "sha256": "6cff2add406adaf1f17b32589577301699c3b8b58663dcaa1403c484abc0e168"
+  },
+  {
+   "path": "art/residents-01/request.json",
+   "sha256": "21bf070293be75c50c53ce37fab6fdcdc7ab55ea4d8a81db2d226a64338a0ce8"
+  },
+  {
+   "path": "art/residents-01/source-lamplighter.png",
+   "sha256": "4ba4e213e5eb48d50dc2aad36c15516c8d4eae1caf5de91f134f778be4d4409c"
+  },
+  {
+   "path": "art/residents-01/source-night-maid.png",
+   "sha256": "f6defaecab6bdbe29c942bcd7b1eed9e7daf071bdfbe8cd6c6372a43617b9c93"
+  },
+  {
+   "path": "art/residents-01/source-porter.png",
+   "sha256": "df9001afaa502719c922e08fa79b1adace92e92b92421cd1e9b9b295aad06f05"
+  },
+  {
+   "path": "art/residents-01/textures/lamplighter-0.jpg",
+   "sha256": "5f466874a2a316fb6848af7d23ad33b9d55e991a7209d70f923f34e01e096cc1"
+  },
+  {
+   "path": "art/residents-01/textures/lamplighter-1.jpg",
+   "sha256": "5f466874a2a316fb6848af7d23ad33b9d55e991a7209d70f923f34e01e096cc1"
+  },
+  {
+   "path": "art/residents-01/textures/lamplighter-2.jpg",
+   "sha256": "73c6e0f13bbc781db30f90d8b0ba19b29219ff67e76861a463a4ba80afacbbf8"
+  },
+  {
+   "path": "art/residents-01/textures/lamplighter-3.jpg",
+   "sha256": "73c6e0f13bbc781db30f90d8b0ba19b29219ff67e76861a463a4ba80afacbbf8"
+  },
+  {
+   "path": "art/residents-01/textures/lamplighter-4.jpg",
+   "sha256": "9f6d0f316fd9f67d1d00504ce3b09203186a0efd781683d7ed721abfe001470c"
+  },
+  {
+   "path": "art/residents-01/textures/lamplighter-5.jpg",
+   "sha256": "9f6d0f316fd9f67d1d00504ce3b09203186a0efd781683d7ed721abfe001470c"
+  },
+  {
+   "path": "art/residents-01/textures/night-maid-0.jpg",
+   "sha256": "e8e17f4c33801cc6c58d1881288fab6d9988634fb9f5a9c1b4b61b4201f46c78"
+  },
+  {
+   "path": "art/residents-01/textures/night-maid-1.jpg",
+   "sha256": "e8e17f4c33801cc6c58d1881288fab6d9988634fb9f5a9c1b4b61b4201f46c78"
+  },
+  {
+   "path": "art/residents-01/textures/night-maid-2.jpg",
+   "sha256": "769eb3728fbedefda4a845b85a6077c53013d1b2e109dcb213a28fe3a4b4acf2"
+  },
+  {
+   "path": "art/residents-01/textures/night-maid-3.jpg",
+   "sha256": "769eb3728fbedefda4a845b85a6077c53013d1b2e109dcb213a28fe3a4b4acf2"
+  },
+  {
+   "path": "art/residents-01/textures/night-maid-4.jpg",
+   "sha256": "8ad5ff0093f814b84e115c724e5c1410460db22c55c3f8f7917df1204f8a9ffd"
+  },
+  {
+   "path": "art/residents-01/textures/night-maid-5.jpg",
+   "sha256": "8ad5ff0093f814b84e115c724e5c1410460db22c55c3f8f7917df1204f8a9ffd"
+  },
+  {
+   "path": "art/residents-01/textures/porter-0.jpg",
+   "sha256": "1accd09ef809f6376f9cf147e38e08f2d41fd31cc4b9598a2d94733e1c054174"
+  },
+  {
+   "path": "art/residents-01/textures/porter-1.jpg",
+   "sha256": "1accd09ef809f6376f9cf147e38e08f2d41fd31cc4b9598a2d94733e1c054174"
+  },
+  {
+   "path": "art/residents-01/textures/porter-2.jpg",
+   "sha256": "82f9303b67aec1081ddcf3358f36ac8aaa2693beed393a2ec259d2d2b8244e00"
+  },
+  {
+   "path": "art/residents-01/textures/porter-3.jpg",
+   "sha256": "82f9303b67aec1081ddcf3358f36ac8aaa2693beed393a2ec259d2d2b8244e00"
+  },
+  {
+   "path": "art/residents-01/textures/porter-4.jpg",
+   "sha256": "aa1502c37376bb11527531271ba932cb0d800279bdfecece305f6b7609020baf"
+  },
+  {
+   "path": "art/residents-01/textures/porter-5.jpg",
+   "sha256": "aa1502c37376bb11527531271ba932cb0d800279bdfecece305f6b7609020baf"
+  },
+  {
+   "path": "art/residents-01/textures/porter-6.jpg",
+   "sha256": "aa1502c37376bb11527531271ba932cb0d800279bdfecece305f6b7609020baf"
+  },
+  {
+   "path": "art/residents-01/textures/porter-7.jpg",
+   "sha256": "aa1502c37376bb11527531271ba932cb0d800279bdfecece305f6b7609020baf"
+  },
+  {
+   "path": "art/residents-01/textures/porter-8.jpg",
+   "sha256": "aa1502c37376bb11527531271ba932cb0d800279bdfecece305f6b7609020baf"
+  },
+  {
+   "path": "content/models/residents/lamplighter.glb",
+   "sha256": "f956041900b1af5f63f0095c1890a6716fed2b9db76cc9dd248bc461d8edf873"
+  },
+  {
+   "path": "content/models/residents/night-maid.glb",
+   "sha256": "17e17f1a921e098486f1fca884003528950682992945cd3927e42a9dada97432"
+  },
+  {
+   "path": "content/models/residents/porter.glb",
+   "sha256": "49478d74f38ff49ff0185d9f20023c7c9adda4d8ace3664665340f5a5824f00b"
+  }
+ ]
+}

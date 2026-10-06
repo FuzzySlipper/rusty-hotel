@@ -44,7 +44,7 @@ its own folder. Geometry is kept apart from tuning.
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
 | `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height, the loot table its remains give and the experience felling it gives; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
 | `combat/held.json` | First-person held items: the hand's rest and phase offsets, the muzzle flash size, and per held look (`HeldLook`) its model, offset, rotation, scale and muzzle point, in camera space; `CombatView`, drawn on the Engine viewmodel layer |
-| `combat/looks.json` | Resident silhouettes as boxes in their own frame, with arm, body and tell roles and the tell poses; `CombatView` |
+| `combat/looks.json` | Resident looks: the rigged model, its scale and turn, the clip for each state, the strike's moment in the attack clip and the tell light; `ResidentView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
 | `progression/growth.json` | Levels (experience thresholds and what each level past the first adds) and skills grown by use (what practises them, the uses each rank needs, what each rank adds); `GrowthDefinition`, `InvestigatorGrowth` |
@@ -184,7 +184,7 @@ A resident kind (`combat/residents.json`) is composed from parts; adding a kind 
 
 | Part | Fields | Meaning |
 | --- | --- | --- |
-| `look` | a look id | its silhouette and tells (`combat/looks.json`): boxes with a `Body`, `Arm` or `Tell` role; `armWindup` and `armStrike` move the arm, `droop` lowers it in recovery, and `Tell` parts light during an attack |
+| `look` | a look id | its look (`combat/looks.json`): a rigged GLB `model` (feet at the origin, turned by `yawDegrees` to face -z) and the clips it plays (`idle`, `walk`, `attack`, `hurt`, `fall`, each a clip id the model must contain, checked when combat loads). The attack clip is sampled at the action's progress, with windup running to `strikeAt` (its normalized moment of the strike) and commit and recovery after it. `fall` plays once and its last frame is the remains. `tell` is the warm light (colour, intensity, range, lift above the eye) that flares while it winds up and commits |
 | `faction` | a faction id | who it is hostile to (`combat/factions.json`); it notices and attacks hostile bodies, residents included |
 | `perception` | `range`, `fieldOfView`, `memory`, `nearSense` | an Engine visibility cone from where it faces, a near radius it senses all around, and how long it stays aware after losing sight |
 | `movement` | `speed`, `leash`, one of `post`, `patrol` (`points`, `pause`), `stalk`, `ambush` (`trigger`); optional `flee` (`below`, `distance`) | how it keeps its post when unaware and closes in within its leash when aware; an ambusher notices nothing until a hostile is within its trigger; a fleeing resident below that fraction of health backs away instead of attacking |

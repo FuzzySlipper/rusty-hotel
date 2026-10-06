@@ -25,7 +25,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Loot/` | The loot catalog (`LootCatalog`: qualities, affixes, tables), item generation and table rolls through one keyed-draw interface: floor generation's content draws, or `SearchLootDraws` under the run seed for searches made in play |
 | `src/Hotel.Game/Residents/` | Resident kinds composed from parts (`ResidentDefinition`: look, faction, perception, movement, action choices), `ResidentSenses` (one Engine visibility query a step for every resident, near sense and awareness memory) and `ResidentConduct` (the movement parts and action choice, as Engine character steps) |
 | `src/Hotel.Game/Combat/HotelEnemy.cs`, `PlayerActor.cs` | The two kinds of action actor: a placed resident (body, `ActorStats`, `ActionUser`) and the investigator (player body, supplies' stats, worn contributions) |
-| `src/Hotel.Game/Combat/CombatView.cs` | Retained low-poly resident meshes, the held-item models (`HeldDefinition.cs`, `content/combat/held.json`) on the Engine viewmodel layer, flares in flight and attack poses contributed to the existing scene snapshot |
+| `src/Hotel.Game/Combat/CombatView.cs` | The held-item models (`HeldDefinition.cs`, `content/combat/held.json`) on the Engine viewmodel layer and flares in flight, contributed to the existing scene snapshot with the residents |
+| `src/Hotel.Game/Combat/ResidentView.cs` | Each resident's rigged model and Engine animation instance: the clip for its state, its attack clip sampled at the action's progress, the tell light, the hitscan beam |
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | The roster's pacts: freeing spirits at bells, the pact slot, semantic equip claims, call eligibility through Combat's pact slot, and the transient visit |
 | `src/Hotel.Game/Spirits/SpiritView.cs` | Each spirit's body and hinged wing models (`content/models/spirits/`) and admitted-time entrance, wing poses and departure |
 | `src/Hotel.Game/Input/` | The authored binding table (`ControlBindings`) and its uses (`HotelControls`): Engine FPS walk/use keys, game-control presses, playtest actions, Controls screen rows, quick-pocket keys and the opening hint |
@@ -231,8 +232,11 @@ It does not search for routes or pursue around corners. The stationary Lamplight
 charges and fires along its locked direction; a sidestep or real world geometry
 can stop its shot. No local navigation or collision mechanism is present.
 
-`CombatView` owns only meshes/appearances and authored poses: raised arm, glowing
-eye, strike, beam, recovery droop, flares in flight and the held item by its authored look. Held items are GLB models
+`ResidentView` and `CombatView` own only meshes, appearances, animation instances and authored poses. Each resident is
+a rigged GLB playing its look's clips through the Engine animation service (which runs on world time, so it holds when
+the world does): idle or walk by its motion, the attack clip sampled at its action's progress, the recoil when held or
+interrupted, and the fall, whose last frame is its remains. Its tell is a light at the eye during windup and commit, and
+its hitscan beam shows while it lasts. `CombatView` adds flares in flight and the held item by its authored look. Held items are GLB models
 placed in camera space on the viewmodel layer, which the Engine lights with its neutral viewmodel rig, so they read
 in dim rooms. `HotelScene` publishes
 one combined static/combat snapshot. The DOM receives what the hands hold, action state and
