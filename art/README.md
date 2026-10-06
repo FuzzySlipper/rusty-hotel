@@ -36,17 +36,19 @@ blender -b --python art/fittings-01/build.py
 
 ## Furniture
 
-`furniture-01/build.py` builds the furniture set parametrically in Blender: bevelled
-case goods and upholstery, each fitted to its fixture's footprint in
-`content/scene/fixtures.json`, with seeded tileable walnut, oak, teak, marble and
-vinyl textures it writes to `furniture-01/textures/`. Runtime GLBs go to
-`content/models/furniture/`; `.blend` masters stay beside the script, and
-`provenance.json` records hashes. `request.json` records the Tripo plan for the
-set, which the provider refused for lack of credit; nothing was generated or
-charged. The lounge armchair below is the one generated piece.
+`furniture-01/request.json` fixes the goal, the shared style suffix and one
+text prompt per piece; each piece is one paid Tripo P2 text-to-model generation
+(triangles, 10,000 faces), retained as `furniture-01/native/<piece>.glb`.
+`furniture-01/prepare.py` turns, fits and cleans each download using
+`pieces.json` (its quarter turn, the fixture footprint, and the working-surface
+height finds and props rest on), saves a `.blend` master per piece, writes
+`content/models/furniture/<piece>.glb`, and renders inspection views into
+ignored `.runtime/mesh-review/furniture/`. `provenance.json` records the
+provider tasks, hashes and use limits; raw receipts carry signed URLs and are
+not retained. The lounge armchair below belongs to the same set.
 
 ```text
-blender -b --python art/furniture-01/build.py
+blender -b --python art/furniture-01/prepare.py
 ```
 
 ## Lounge armchair
