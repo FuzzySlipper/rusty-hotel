@@ -57,7 +57,7 @@ its own folder. Geometry is kept apart from tuning.
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}`; `HotelSpirit` |
 | `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
 | `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim styles (bands, moulding profiles and architraves), door frames and space styles (surface sets); `KitBuilder` |
-| `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, packets, frames, pictures. Each is boxes in its own frame, plus lights and named sockets; `KitBuilder` |
+| `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, find displays, frames, pictures. Each is boxes and GLB models in its own frame, plus lights and named sockets; `KitBuilder` |
 | `excursions/<id>/plan.json` | The floor plan: spaces, the links between them, the fixtures placed in them, ambient light and GLB props; built by `KitBuilder` |
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, stairs (direction and the fixture socket they are used at), and the fallback location label; `HotelRoute` |
 | `excursions/<id>/placements.json` | Arrival point, refuge notebook socket, item finds at sockets, placed residents (id, kind and the post they stand on) spirit bells (socket, and the `place` their text names), and `fromAbove`, where the player stands after coming down the stairs |
@@ -298,7 +298,9 @@ faces. The west wing names its style in `plan.json`; a generated floor draws one
 **Fixture models.** A fixture may show authored GLB `models` at an `offset` in its frame, turned with it; a model
 never collides and is not mirrored, so give a mirrored fixture a symmetric model. Where it must block, give it a
 `collider` part: a solid box that is never drawn. Furniture is built this way, its models fitted to the colliders'
-footprint so its sockets stay where finds and readings rest. A fixture needs at least one part or model.
+footprint so its sockets stay where finds and readings rest. A model may turn by its own `yawDegrees`, and with
+`find` it shows the fixture's find and disappears when the find is taken, as find parts do; the find displays are
+built this way. A fixture needs at least one part or model.
 
 A new kind of furnishing goes into `scene/fixtures.json` once, then is placed wherever it is wanted. A new
 surface set or trim style goes into `scene/kit.json`. One-off geometry has no place in a plan; make it a fixture.

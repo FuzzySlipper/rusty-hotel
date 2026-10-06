@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-locket.png",
+ "image_sha256": "bf6e05358fe53f3c97ac2985ef0bc71a53ab6dcbd4ebc96774a1e7aeecdc6323",
+ "prompt_id": "2cb746bb-3e49-450e-b166-c9ba7ac8d5ae",
+ "wall_seconds": 105.1,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 14.58,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 739302,
+   "sha256": "2409efdce8840b8347e29dd010ce2d9d6a867a290bb2f8b989d002643beb6c95"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5014272,
+   "sha256": "1b870d09bcbc983586d42a3fde2b7227c7b9b5f81f843e84d69261401679c7f0"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3425920,
+   "sha256": "51703f064f47d199e924addc12753a6db262728fcac7f57c5cca293775fd1926"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12825208,
+   "sha256": "dc76c1100a89b5c1d6d778bc3e31ebbe9be1e0375965cf0c52c37435575630eb"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

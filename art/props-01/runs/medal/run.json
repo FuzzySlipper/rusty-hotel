@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-medal.png",
+ "image_sha256": "084b9db8ec2c715d1413c76136b5eb389006b3ce3e6f58cab7480678b712757b",
+ "prompt_id": "49ae7224-ea4d-487b-8cd2-1369c32d5965",
+ "wall_seconds": 60.1,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.93,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 748663,
+   "sha256": "67de2b4c542b697f9c2598b67aa9f8c074d399b11777ebc753d2bb023a8e1b5d"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4863394,
+   "sha256": "c1b47efb218c4462004a4fd8b88ac42d5b7fe30653c42b3148daa80780fdcf34"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 2919378,
+   "sha256": "0c81ffac71f20982236890908a488106edb5b918062d0245a8bdbc6e588a375c"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12328040,
+   "sha256": "4fa461e58d762f4f0e2e4f5c25028587bc974f7a61b16d0c824d8151917bf1b9"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

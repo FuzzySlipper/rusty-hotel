@@ -52,14 +52,14 @@ internal sealed record ContentTuning(SpiritWeight[] Spirits, string FallbackLoca
         for (int i = 0; i < t.Displays.Length; i++)
         {
             FixtureDefinition? shown = fixtures.Fixtures.FirstOrDefault(f => f.Id == t.Displays[i].Fixture);
-            Authored.Require(shown is { Mount: FixtureMount.Socket } && shown.Parts.Any(p => p.Find) && shown.Sockets?.ContainsKey("focus") == true,
+            Authored.Require(shown is { Mount: FixtureMount.Socket } && shown.ShowsFind && shown.Sockets?.ContainsKey("focus") == true,
                 Path, $"displays[{i}].fixture", $"'{t.Displays[i].Fixture}' must be a socket fixture with find parts and a focus socket.");
         }
         Template.Plain(Path, ("doors.lockedLabel", t.Doors.LockedLabel), ("doors.latchLabel", t.Doors.LatchLabel), ("doors.latchPrompt", t.Doors.LatchPrompt));
         Template.Check(Path, "doors.lockedPrompt", t.Doors.LockedPrompt, "key");
         Template.Check(Path, "doors.keyName", t.Doors.KeyName, "room");
         FixtureDefinition? keyShown = fixtures.Fixtures.FirstOrDefault(f => f.Id == t.Doors.KeyFixture);
-        Authored.Require(keyShown is { Mount: FixtureMount.Socket } && keyShown.Parts.Any(p => p.Find) && keyShown.Sockets?.ContainsKey("focus") == true,
+        Authored.Require(keyShown is { Mount: FixtureMount.Socket } && keyShown.ShowsFind && keyShown.Sockets?.ContainsKey("focus") == true,
             Path, "doors.keyFixture", $"'{t.Doors.KeyFixture}' must be a socket fixture with find parts and a focus socket.");
         foreach (string item in t.Objective.Concat(t.Supplies).Select(w => w.Item).Distinct())
             Authored.Require(t.Displays.Count(d => d.Item == item) == 1, Path, "displays", $"'{item}' needs exactly one display fixture.");

@@ -135,6 +135,22 @@ its textures as JPEG files in `textures/`.
 blender -b --python art/spirits-01/prepare.py
 ```
 
+## Find props
+
+`props-01/request.json` fixes the shared style (a find resting as it would on a table, three-quarter view) and one
+subject per prop. Each `source-<prop>.png` is one GPT image call; each mesh is one local TRELLIS.2 bf16 run on
+den-patch at 6,000 faces, or, where TRELLIS could not reconstruct a thin or hollow object even at a higher budget,
+one paid Tripo P2 image-to-model generation from the same source (`provenance.json` names which, with the provider
+task). `native/<prop>.glb` is the download. `props-01/prepare.py` turns each prop, fits it uniformly inside its
+display's footprint (`pieces.json` `fit`), stands it on the ground with its origin at the centre of its base, and
+writes `content/models/props/<prop>.glb` with 1024 JPEG textures and softened metal, saving each prepared `<prop>.blend`
+master with its textures as JPEG files in `textures/`. The displays in
+`content/scene/fixtures.json` show these as find models; the flat ledger page stays an authored box.
+
+```text
+blender -b --python art/props-01/prepare.py
+```
+
 ## Ambient audio and primitive props
 
 `tools/author-ambience.py` authors the two deterministic mono PCM WAV loops in

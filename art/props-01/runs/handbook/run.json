@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-handbook.png",
+ "image_sha256": "f53414ab1d7cc1cb7e47f307faaeedb37d573cda05daf741a5955da3d16a234e",
+ "prompt_id": "fc3e87bd-feb4-40e8-b4de-a2f3322d5015",
+ "wall_seconds": 80.1,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 14.73,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 1186529,
+   "sha256": "948017b3543cf6afab317e017a88e4f27e3ee3c25d73f041479b78f7f38d7b4b"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5660301,
+   "sha256": "04a8c60b18905e098eacc345670550c87a95099fee9d60086394d13a12fbea27"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 1800256,
+   "sha256": "9a2d5e1503f269bb05513834f4c92c016d3c090ae30807e15aaee78a9be513e9"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12741536,
+   "sha256": "ef2a27c8ac02f204c08bcece8837770d54ca20cb33ec638745202d798ff64eb4"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

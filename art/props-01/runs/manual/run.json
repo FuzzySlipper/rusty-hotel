@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-manual.png",
+ "image_sha256": "3844924ae6963a136cec4ab47facd26f2b035f1cbff8ca1d7cb8545f4ea43367",
+ "prompt_id": "a4b82fe2-1f95-45de-8f76-b3fbe26a884b",
+ "wall_seconds": 115.1,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 8.72,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 862104,
+   "sha256": "6036f59cff370f4a4c488b805c995b5986bd22da691f6e262a1e6f5b0755a705"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5655238,
+   "sha256": "5f509e1c388b38b0ab4941a553b27b3a102459a8294d4bf70c753ce32fe37c4d"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 1005046,
+   "sha256": "9983b938192abb81b5c7b143a1a24dd7b9417448e0a9c9db41ca23b893c85d23"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12009596,
+   "sha256": "7327eefcb5076f727fc95a38acf22bd2a5e67940894b6bb729b2262742e35068"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

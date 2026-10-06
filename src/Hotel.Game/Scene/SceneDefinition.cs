@@ -79,4 +79,5 @@ internal sealed record PointLightDefinition(float[] Position, float[] Color, flo
 /// about every <see cref="Seconds"/>. Sparse and slow, never a strobe.
 /// </summary>
 internal sealed record LightFlicker(float Depth, float Seconds);
-internal sealed record ModelDefinition(string Path, float[] Position, float Scale, float YawDegrees);
+/// <param name="Find">The collectable find this model shows; it disappears when the find is taken.</param>
+internal sealed record ModelDefinition(string Path, float[] Position, float Scale, float YawDegrees, string? Find = null);

@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-gloves.png",
+ "image_sha256": "dec80b0bbae3f179bfec2e986d08a82155e9b2b47c89019ff7322aeef2010a30",
+ "prompt_id": "4e308267-a6d2-45aa-8cfe-3b93e2e19013",
+ "wall_seconds": 251.1,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 512,
+ "min_vram_free_gib": 11.88,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 825635,
+   "sha256": "ccdec2043680767815ec522dc1eaf53fcc99ced2243725bece4a5fe571d0ef7f"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4828473,
+   "sha256": "6bd5c80a1be0536f46be7c4c233ab5995ecea0710f85c18562d1398c4f55dfa1"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 4805012,
+   "sha256": "cb6761e6595876013461e738b01eba3ba82ed3d576ae98234d7a0f279a30185e"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 16122704,
+   "sha256": "fd1dda4531486ca73c55e70c5c9d5ea27fce37f8f6035093add9e46f73c67f01"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

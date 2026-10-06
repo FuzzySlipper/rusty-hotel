@@ -644,9 +644,9 @@
           0.1
         ],
         "dressing": [
-          -0.025,
-          0.855,
-          0.75
+          -0.3,
+          0.83,
+          0.05
         ],
         "recorder": [
           -0.025,
@@ -1132,281 +1132,127 @@
     {
       "id": "dressing-packet",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "wrap",
-          "material": "dressing-wrap",
-          "min": [
-            -0.2,
-            0.005,
-            -0.15
-          ],
-          "max": [
-            0.2,
-            0.07,
-            0.15
-          ],
-          "find": true
-        },
-        {
-          "name": "label",
-          "material": "dressing-mark",
-          "min": [
-            -0.11,
-            0.073,
-            -0.04
-          ],
-          "max": [
-            0.11,
-            0.083,
-            0.04
-          ],
-          "find": true
-        },
-        {
-          "name": "cross",
-          "material": "dressing-mark",
-          "min": [
-            -0.035,
-            0.084,
-            -0.1
-          ],
-          "max": [
-            0.035,
-            0.092,
-            0.1
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.12,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/dressing.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "rounds-packet",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "wrap",
-          "material": "dressing-wrap",
-          "min": [
-            -0.2,
-            0.005,
-            -0.15
-          ],
-          "max": [
-            0.2,
-            0.07,
-            0.15
-          ],
-          "find": true
-        },
-        {
-          "name": "label",
-          "material": "paper",
-          "min": [
-            -0.11,
-            0.073,
-            -0.04
-          ],
-          "max": [
-            0.11,
-            0.083,
-            0.04
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.12,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/cartridges.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "incense-packet",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "wrap",
-          "material": "incense-wrap",
-          "min": [
-            -0.2,
-            0.005,
-            -0.15
-          ],
-          "max": [
-            0.2,
-            0.07,
-            0.15
-          ],
-          "find": true
-        },
-        {
-          "name": "label",
-          "material": "paper",
-          "min": [
-            -0.11,
-            0.073,
-            -0.04
-          ],
-          "max": [
-            0.11,
-            0.083,
-            0.04
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.12,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/incense.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "matchbook",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "cover",
-          "material": "paper",
-          "min": [
-            -0.16,
-            0.005,
-            -0.11
-          ],
-          "max": [
-            0.16,
-            0.045,
-            0.11
-          ],
-          "find": true
-        },
-        {
-          "name": "striker",
-          "material": "brass",
-          "min": [
-            -0.16,
-            0.045,
-            0.07
-          ],
-          "max": [
-            0.16,
-            0.052,
-            0.1
-          ],
-          "find": true
-        },
-        {
-          "name": "heads",
-          "material": "tell-amber",
-          "min": [
-            -0.12,
-            0.045,
-            -0.09
-          ],
-          "max": [
-            0.12,
-            0.058,
-            -0.02
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.1,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/matchbook.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "salts-bottle",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "bottle",
-          "material": "equipment",
-          "min": [
-            -0.07,
-            0.0,
-            -0.07
-          ],
-          "max": [
-            0.07,
-            0.2,
-            0.07
-          ],
-          "find": true
-        },
-        {
-          "name": "label",
-          "material": "paper",
-          "min": [
-            -0.071,
-            0.06,
-            -0.05
-          ],
-          "max": [
-            -0.069,
-            0.14,
-            0.05
-          ],
-          "find": true
-        },
-        {
-          "name": "stopper",
-          "material": "brass",
-          "min": [
-            -0.04,
-            0.2,
-            -0.04
-          ],
-          "max": [
-            0.04,
-            0.25,
-            0.04
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.28,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/salts.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "coat-stand",
       "mount": "Floor",
       "parts": [
-        {
-          "name": "foot",
-          "material": "trim",
-          "min": [
-            -0.22,
-            0.0,
-            -0.22
-          ],
-          "max": [
-            0.22,
-            0.04,
-            0.22
-          ]
-        },
         {
           "name": "pole",
           "material": "trim",
@@ -1422,20 +1268,6 @@
           ],
           "solid": true,
           "collider": true
-        },
-        {
-          "name": "hook",
-          "material": "brass",
-          "min": [
-            -0.02,
-            1.6,
-            0.03
-          ],
-          "max": [
-            0.02,
-            1.64,
-            0.12
-          ]
         }
       ],
       "sockets": {
@@ -1444,323 +1276,186 @@
           1.62,
           0.1
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/coat-stand.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "hung-coat",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "coat",
-          "material": "porter-coat",
-          "min": [
-            -0.24,
-            -1.05,
-            -0.06
-          ],
-          "max": [
-            0.24,
-            -0.05,
-            0.08
-          ],
-          "find": true
-        },
-        {
-          "name": "collar",
-          "material": "porter-coat",
-          "min": [
-            -0.12,
-            -0.08,
-            -0.04
-          ],
-          "max": [
-            0.12,
-            0.02,
-            0.06
-          ],
-          "find": true
-        },
-        {
-          "name": "buttons",
-          "material": "brass",
-          "min": [
-            -0.015,
-            -0.85,
-            0.08
-          ],
-          "max": [
-            0.015,
-            -0.25,
-            0.09
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           -0.5,
           0.12
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/night-coat.glb",
+          "offset": [
+            0,
+            -1.08,
+            0.02
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "glove-pair",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "left",
-          "material": "porter-coat",
-          "min": [
-            -0.2,
-            0.0,
-            -0.1
-          ],
-          "max": [
-            -0.02,
-            0.04,
-            0.12
-          ],
-          "find": true
-        },
-        {
-          "name": "right",
-          "material": "porter-coat",
-          "min": [
-            0.02,
-            0.0,
-            -0.12
-          ],
-          "max": [
-            0.2,
-            0.04,
-            0.1
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.1,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/gloves.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "folded-cap",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "crown",
-          "material": "tell-amber",
-          "min": [
-            -0.1,
-            0.0,
-            -0.1
-          ],
-          "max": [
-            0.1,
-            0.09,
-            0.1
-          ],
-          "find": true
-        },
-        {
-          "name": "band",
-          "material": "brass",
-          "min": [
-            -0.105,
-            0.0,
-            -0.105
-          ],
-          "max": [
-            0.105,
-            0.02,
-            0.105
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.14,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/cap.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "shoe-pair",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "left",
-          "material": "trim",
-          "min": [
-            -0.16,
-            0.0,
-            -0.14
-          ],
-          "max": [
-            -0.03,
-            0.07,
-            0.15
-          ],
-          "find": true
-        },
-        {
-          "name": "right",
-          "material": "trim",
-          "min": [
-            0.03,
-            0.0,
-            -0.15
-          ],
-          "max": [
-            0.16,
-            0.07,
-            0.14
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.12,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/shoes.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "ring-box",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "box",
-          "material": "porter-coat",
-          "min": [
-            -0.07,
-            0.0,
-            -0.06
-          ],
-          "max": [
-            0.07,
-            0.06,
-            0.06
-          ],
-          "find": true
-        },
-        {
-          "name": "ring",
-          "material": "brass",
-          "min": [
-            -0.03,
-            0.06,
-            -0.03
-          ],
-          "max": [
-            0.03,
-            0.08,
-            0.03
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.12,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/ring-box.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "cartridge-packet",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "packet",
-          "material": "brass",
-          "min": [
-            -0.17,
-            0.0,
-            -0.13
-          ],
-          "max": [
-            0.17,
-            0.16,
-            0.13
-          ],
-          "find": true
-        },
-        {
-          "name": "label",
-          "material": "dressing-wrap",
-          "min": [
-            -0.11,
-            0.16,
-            -0.09
-          ],
-          "max": [
-            0.11,
-            0.174,
-            0.07
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.13,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/cartridges.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "reel-case",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "case",
-          "material": "service-paint",
-          "min": [
-            -0.29,
-            0.005,
-            -0.28
-          ],
-          "max": [
-            0.29,
-            0.14,
-            0.28
-          ],
-          "find": true
-        },
-        {
-          "name": "label",
-          "material": "paper",
-          "min": [
-            -0.15,
-            0.145,
-            -0.15
-          ],
-          "max": [
-            0.15,
-            0.155,
-            0.15
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.22,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/reel-case.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "stair-up",
@@ -2050,101 +1745,145 @@
     {
       "id": "room-key",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "tag",
-          "material": "paper",
-          "min": [
-            -0.03,
-            0,
-            -0.06
-          ],
-          "max": [
-            0.03,
-            0.006,
-            0.02
-          ],
-          "find": true
-        },
-        {
-          "name": "bow",
-          "material": "brass",
-          "min": [
-            -0.025,
-            0,
-            0.02
-          ],
-          "max": [
-            0.025,
-            0.012,
-            0.06
-          ],
-          "find": true
-        },
-        {
-          "name": "shank",
-          "material": "brass",
-          "min": [
-            -0.006,
-            0,
-            0.06
-          ],
-          "max": [
-            0.006,
-            0.01,
-            0.14
-          ],
-          "find": true
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0,
           0.1,
           0.04
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/room-key.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     },
     {
       "id": "sewing-tin",
       "mount": "Socket",
-      "parts": [
-        {
-          "name": "tin",
-          "material": "brass",
-          "min": [
-            -0.15,
-            0.0,
-            -0.11
-          ],
-          "max": [
-            0.15,
-            0.08,
-            0.11
-          ]
-        },
-        {
-          "name": "lid",
-          "material": "porter-coat",
-          "min": [
-            -0.155,
-            0.08,
-            -0.115
-          ],
-          "max": [
-            0.155,
-            0.1,
-            0.115
-          ]
-        }
-      ],
+      "parts": [],
       "sockets": {
         "focus": [
           0.0,
           0.14,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/props/sewing-tin.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "medal-display",
+      "mount": "Socket",
+      "parts": [],
+      "sockets": {
+        "focus": [
+          0,
+          0.1,
+          0
+        ]
+      },
+      "models": [
+        {
+          "path": "models/props/medal.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
+    },
+    {
+      "id": "locket-display",
+      "mount": "Socket",
+      "parts": [],
+      "sockets": {
+        "focus": [
+          0,
+          0.1,
+          0
+        ]
+      },
+      "models": [
+        {
+          "path": "models/props/locket.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
+    },
+    {
+      "id": "handbook-display",
+      "mount": "Socket",
+      "parts": [],
+      "sockets": {
+        "focus": [
+          0,
+          0.1,
+          0
+        ]
+      },
+      "models": [
+        {
+          "path": "models/props/handbook.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
+    },
+    {
+      "id": "manual-display",
+      "mount": "Socket",
+      "parts": [],
+      "sockets": {
+        "focus": [
+          0,
+          0.1,
+          0
+        ]
+      },
+      "models": [
+        {
+          "path": "models/props/manual.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1,
+          "find": true
+        }
+      ]
     }
   ]
 }

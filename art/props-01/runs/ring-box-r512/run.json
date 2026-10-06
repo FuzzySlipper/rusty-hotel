@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-ring-box.png",
+ "image_sha256": "6851a238ed62f763b9a2e8856b95a9ac76a1550d2572f0ec9b461a6710adda92",
+ "prompt_id": "b3ddf843-90b5-43a7-b9da-c38123a3f7a4",
+ "wall_seconds": 290.8,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 512,
+ "min_vram_free_gib": 7.49,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 884347,
+   "sha256": "d5480c6d58ddaf2be5c06cd489da18198eb2d0d0b19ab3aad71c0acf5885399d"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5875608,
+   "sha256": "ae4b8a8ed1edbd921c51ef351d6e2c320fc1d4e0a92e722a473ff13427e97ebe"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3188195,
+   "sha256": "532ee841aa4f1fe44c03505709a236d98f1c7078eec4126dabb7d6b36978cd7b"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 14088332,
+   "sha256": "fb31d8e6ccc7bf097764786bb1eddaeb9ec25454c20277c547032726ea146171"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

@@ -1,0 +1,137 @@
+{
+  "triangleBudget": 6500,
+  "textureSize": 1024,
+  "metallicScale": 0.35,
+  "pieces": {
+    "dressing": {
+      "fit": [
+        0.36,
+        0.1,
+        0.26
+      ]
+    },
+    "cartridges": {
+      "fit": [
+        0.3,
+        0.16,
+        0.24
+      ]
+    },
+    "incense": {
+      "fit": [
+        0.38,
+        0.1,
+        0.2
+      ]
+    },
+    "matchbook": {
+      "fit": [
+        0.2,
+        0.24,
+        0.1
+      ]
+    },
+    "salts": {
+      "fit": [
+        0.16,
+        0.26,
+        0.16
+      ]
+    },
+    "gloves": {
+      "fit": [
+        0.4,
+        0.08,
+        0.3
+      ],
+      "triangleBudget": 7000
+    },
+    "cap": {
+      "fit": [
+        0.22,
+        0.14,
+        0.22
+      ]
+    },
+    "shoes": {
+      "fit": [
+        0.34,
+        0.14,
+        0.32
+      ],
+      "triangleBudget": 7000
+    },
+    "ring-box": {
+      "fit": [
+        0.14,
+        0.14,
+        0.14
+      ],
+      "triangleBudget": 12500
+    },
+    "reel-case": {
+      "fit": [
+        0.58,
+        0.2,
+        0.56
+      ]
+    },
+    "room-key": {
+      "fit": [
+        0.24,
+        0.03,
+        0.24
+      ]
+    },
+    "sewing-tin": {
+      "fit": [
+        0.3,
+        0.14,
+        0.24
+      ],
+      "triangleBudget": 7000
+    },
+    "coat-stand": {
+      "fit": [
+        0.5,
+        1.8,
+        0.5
+      ]
+    },
+    "night-coat": {
+      "fit": [
+        0.5,
+        1.1,
+        0.24
+      ]
+    },
+    "medal": {
+      "fit": [
+        0.2,
+        0.03,
+        0.2
+      ]
+    },
+    "locket": {
+      "fit": [
+        0.2,
+        0.2,
+        0.2
+      ]
+    },
+    "handbook": {
+      "fit": [
+        0.22,
+        0.06,
+        0.22
+      ]
+    },
+    "manual": {
+      "fit": [
+        0.26,
+        0.03,
+        0.26
+      ]
+    }
+  }
+}

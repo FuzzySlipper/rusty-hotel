@@ -1,0 +1,821 @@
+{
+ "runFamily": "hotel-props-01",
+ "sourcePrompt": "request.json (style + per-prop subject, sent verbatim as one spec)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec), one accepted image per prop; corrupt or truncated writes from parallel runs (cap, reel case, handbook) were regenerated",
+ "meshHost": "den-patch (owner desktop, RTX 5090), native ComfyUI 0.37, TRELLIS.2 bf16 via asset-pipeline run_native.py (cc5f70e); Tripo P2 image-to-model as the paid backup",
+ "pieces": {
+  "dressing": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/dressing",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 25.0,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "91dc76706b8dcf338e0704693a7c706a4c867dd22d05ee81b8439264ee6add4b"
+  },
+  "cartridges": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/cartridges",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 110.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "8c4c6381f623183199d5e14324f159ce425351a477c4786af8924510fc5f7ddb"
+  },
+  "incense": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/incense",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 80.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "d54217e0f5e2599a644504c264245ad42d4f8f2546abdd2e7f18c637e5515168"
+  },
+  "matchbook": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/matchbook",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 205.3,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "8cd12f4a1cf8aa0603d39fe412e7e1d8602cf3bec35e19b296107aa39d90f702"
+  },
+  "salts": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/salts",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 230.3,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "20648096c12b2e3a1ffe2410ab290d71c089139e2157f08c273f705a4afc0eae"
+  },
+  "gloves": {
+   "meshProducer": "tripo",
+   "trellisAttempts": [
+    {
+     "run": "runs/gloves",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 160.2,
+     "kept": false
+    },
+    {
+     "run": "runs/gloves-r512",
+     "faces": null,
+     "remesh": 512,
+     "wallSeconds": 251.1,
+     "kept": false
+    }
+   ],
+   "tripo": {
+    "model": "P2",
+    "topology": "triangle",
+    "faces": 6000,
+    "taskId": "22d930c7-e6f2-414c-b898-da040270137c",
+    "paidGenerationCount": 1
+   },
+   "downloadSha256": "14b55645b7cbcade165162779eda4ce051ee87b797041b462123f0a4bdc354a4"
+  },
+  "cap": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/cap",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 185.5,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "6f40e40bce9e4d6c785f97ea2fb218b4b32e74fd0c90948bfb0112c21887b92b"
+  },
+  "shoes": {
+   "meshProducer": "tripo",
+   "trellisAttempts": [
+    {
+     "run": "runs/shoes",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 275.3,
+     "kept": false
+    },
+    {
+     "run": "runs/shoes-r512",
+     "faces": null,
+     "remesh": 512,
+     "wallSeconds": 310.8,
+     "kept": false
+    }
+   ],
+   "tripo": {
+    "model": "P2",
+    "topology": "triangle",
+    "faces": 6000,
+    "taskId": "e266bd1d-4a70-4c1e-9e59-aab016f061a7",
+    "paidGenerationCount": 1
+   },
+   "downloadSha256": "93c2431e0bf7f1ca34d0368b3d1a1ba18096b68a72a096678ca374ff4245a4e2"
+  },
+  "ring-box": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/ring-box",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 325.8,
+     "kept": false
+    },
+    {
+     "run": "runs/ring-box-r512",
+     "faces": null,
+     "remesh": 512,
+     "wallSeconds": 290.8,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "fb31d8e6ccc7bf097764786bb1eddaeb9ec25454c20277c547032726ea146171"
+  },
+  "reel-case": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/reel-case",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 309.9,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "fa74574bbbf25d663f51bcbe6bf340ca3aa663e5158844db377f3876253f5dd6"
+  },
+  "room-key": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/room-key",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 60.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "e5795eb05c1cc4cf789e1842fbdddc2c83fafd6e6948d3628221e111258a71ef"
+  },
+  "sewing-tin": {
+   "meshProducer": "tripo",
+   "trellisAttempts": [
+    {
+     "run": "runs/sewing-tin",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 300.8,
+     "kept": false
+    },
+    {
+     "run": "runs/sewing-tin-r512",
+     "faces": null,
+     "remesh": 512,
+     "wallSeconds": 377.1,
+     "kept": false
+    }
+   ],
+   "tripo": {
+    "model": "P2",
+    "topology": "triangle",
+    "faces": 6000,
+    "taskId": "e7c65ee8-c5af-4bcc-841c-ebf58d620a98",
+    "paidGenerationCount": 1
+   },
+   "downloadSha256": "9253c61fb7b29b44743a899c3e004afc6165145bb9bd4b882c035cc1032226c6"
+  },
+  "coat-stand": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/coat-stand",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 35.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "f76e1dec87d6e33bda19c748c3cdee520402309401bab644dabde135d0543b62"
+  },
+  "night-coat": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/night-coat",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 85.4,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "6e06e8e9a7b4089985c534876dbaf3ec546872bd40c70a11b458e99ca244c201"
+  },
+  "medal": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/medal",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 60.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "4fa461e58d762f4f0e2e4f5c25028587bc974f7a61b16d0c824d8151917bf1b9"
+  },
+  "locket": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/locket",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 105.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "dc76c1100a89b5c1d6d778bc3e31ebbe9be1e0375965cf0c52c37435575630eb"
+  },
+  "handbook": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/handbook",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 80.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "ef2a27c8ac02f204c08bcece8837770d54ca20cb33ec638745202d798ff64eb4"
+  },
+  "manual": {
+   "meshProducer": "trellis2",
+   "trellisAttempts": [
+    {
+     "run": "runs/manual",
+     "faces": null,
+     "remesh": 256,
+     "wallSeconds": 115.1,
+     "kept": true
+    }
+   ],
+   "downloadSha256": "7327eefcb5076f727fc95a38acf22bd2a5e67940894b6bb729b2262742e35068"
+  }
+ },
+ "retention": "native/<prop>.glb is the download re-encoded by retain.py (geometry and materials as downloaded, textures at 1024 JPEG); downloadSha256 is the original download",
+ "conversion": "Local Blender 5.2.2 LTS; prepare.py with pieces.json: turn, uniform fit to the display footprint, base-centre origin, 1024 JPEG textures, metallic scaled; prepared .blend master per prop with its textures as JPEG files in textures/",
+ "decision": "15 props from TRELLIS (the ring box at a 12k retry); gloves, shoes and sewing tin from Tripo after TRELLIS shredded them at both budgets.",
+ "limitations": [
+  "Unseen backs and undersides are reconstructed from one view.",
+  "The matchbook and locket reconstructed standing rather than lying.",
+  "Static meshes; no lids or moving parts."
+ ],
+ "files": [
+  {
+   "path": "art/props-01/cap.blend",
+   "sha256": "98da2ec66e9bcc14d7e91624af5c1e7d4cbcda1f4a5ec6c2d08a8bc03eabd5ba"
+  },
+  {
+   "path": "art/props-01/cartridges.blend",
+   "sha256": "0af61aa8708d2398ddc395a42975b4c9c1d28a1fad59a2c58788f54fdaf9b8ff"
+  },
+  {
+   "path": "art/props-01/coat-stand.blend",
+   "sha256": "a5a81393b239583c4bd9583252c58778d0c9019816cc209777dd71a7a3a0c5e2"
+  },
+  {
+   "path": "art/props-01/dressing.blend",
+   "sha256": "864bd49fe2e4e6565167d631b7f336606a878da8973094ac4a269f6092e677c1"
+  },
+  {
+   "path": "art/props-01/gloves.blend",
+   "sha256": "c266d8e2afbd1e68fb8dd0c4b9af0229d2a9e97e0475f2b29fb431f8128944c8"
+  },
+  {
+   "path": "art/props-01/handbook.blend",
+   "sha256": "7004098a811db49490405f4ccf63fdc82b3f2dde6906a94a7499bf1f37882a4b"
+  },
+  {
+   "path": "art/props-01/incense.blend",
+   "sha256": "fbb0a788798faefed0248a124fda10dca49243d913d993c6f2cc379cc7bbde50"
+  },
+  {
+   "path": "art/props-01/locket.blend",
+   "sha256": "94228008d6d03900e68a00f4c58ef2341fdac465ff3c5cdd17a64eeb67e80b9e"
+  },
+  {
+   "path": "art/props-01/manual.blend",
+   "sha256": "de1cce4893f7316b218a799f38806d38c97afe0155f96961f85cb3fe161e082b"
+  },
+  {
+   "path": "art/props-01/matchbook.blend",
+   "sha256": "e037fda85548fb45c1cda4e87ac9dc25d5d7417318af8e73edb68c2b15b1603e"
+  },
+  {
+   "path": "art/props-01/medal.blend",
+   "sha256": "939818fa777267ad7cc743c9a8995e6a820f9f14025c2c52ca17e9cfedaa8295"
+  },
+  {
+   "path": "art/props-01/native/cap.glb",
+   "sha256": "c243c0dc3a6ccc9f21a2fbca2695dad9b160df5232df316839fe42b098925bcf"
+  },
+  {
+   "path": "art/props-01/native/cartridges.glb",
+   "sha256": "5178769eab1e98bdbee9908e9941d2b28f27ec2703d2c9e161bcc12f29c447a0"
+  },
+  {
+   "path": "art/props-01/native/coat-stand.glb",
+   "sha256": "416833bcd744c966e4a1b64298989fb71549f39ce3be849f315fb1c27eb22a28"
+  },
+  {
+   "path": "art/props-01/native/dressing.glb",
+   "sha256": "ce41b566ec610ff1ce4d165adad8e1ab70d41cf2f71aeb6b165fff42ee9d0867"
+  },
+  {
+   "path": "art/props-01/native/gloves.glb",
+   "sha256": "d049ca7fd3550b4bb4effbf40119def90459361294bf2138e87cb0144f806898"
+  },
+  {
+   "path": "art/props-01/native/handbook.glb",
+   "sha256": "5ea8f31e70ebdb1b4c96808bcae87449baeaf617b9c8ed561873e40ca4e41ad4"
+  },
+  {
+   "path": "art/props-01/native/incense.glb",
+   "sha256": "178b34c3a1ec1e3f4d5a808f16d9c0aa3de8fa94cf7fb063bfc8d28f26273777"
+  },
+  {
+   "path": "art/props-01/native/locket.glb",
+   "sha256": "7a640f778d2f93a7c229c8e0e076f410e7a54963af0f04c1d910961cbe0fbcf4"
+  },
+  {
+   "path": "art/props-01/native/manual.glb",
+   "sha256": "8ccc48efe4dbcc15a2348ea7c5b43486ed6c8f914d4566a0c464995127997ad4"
+  },
+  {
+   "path": "art/props-01/native/matchbook.glb",
+   "sha256": "0157b0f2eb6ab94365c5487a59a2ffbec493051979cf176806a4fe70f4cd3838"
+  },
+  {
+   "path": "art/props-01/native/medal.glb",
+   "sha256": "aabbbac5b286c6a593061607e5a692f40337c2f8781894e47fb6784f67f3fac7"
+  },
+  {
+   "path": "art/props-01/native/night-coat.glb",
+   "sha256": "affefc77d6693a0d09649e91d984023e0c29d9a2b3a6675b7fdc932efb0004af"
+  },
+  {
+   "path": "art/props-01/native/reel-case.glb",
+   "sha256": "96e088a711533ed4ee5877bda176acd6129f8517647c6520631451f1db461159"
+  },
+  {
+   "path": "art/props-01/native/ring-box.glb",
+   "sha256": "ac71c71546b0aecf3f8ce9b8c3efe6c12da285b513de11a0e100d0d8c53b42f7"
+  },
+  {
+   "path": "art/props-01/native/room-key.glb",
+   "sha256": "184c7fe158116ae41ec4e957aaa50709baba7fc77e40c2f5c9a1247da63beb2a"
+  },
+  {
+   "path": "art/props-01/native/salts.glb",
+   "sha256": "5ed8b827c875ce2fd38aaae8ff2a3a7e72de0a55aceb95d90da4bb20c8b6fe10"
+  },
+  {
+   "path": "art/props-01/native/sewing-tin.glb",
+   "sha256": "df8a4e9f985919f19944dfe56aabbd07e1c195fd4f7da73b32342f6d8b643cfe"
+  },
+  {
+   "path": "art/props-01/native/shoes.glb",
+   "sha256": "beb6a22507e9c16d1df3b721744a0688eb7d4a63335db408d14a8dec18febf5e"
+  },
+  {
+   "path": "art/props-01/night-coat.blend",
+   "sha256": "49e03f7f5a73f18d48e9ad228cc334e11885c8c8762131749dbb04d95a561d2e"
+  },
+  {
+   "path": "art/props-01/pieces.json",
+   "sha256": "7eae0c84a00db65810fb89bb9cd6547ecbcb737718f80dccc993c6b3a387fe2c"
+  },
+  {
+   "path": "art/props-01/prepare.py",
+   "sha256": "8bec2a7ba3b474f138af80c2f3a925d2de87bbeb478dc935a7278cd0aefe37e9"
+  },
+  {
+   "path": "art/props-01/reel-case.blend",
+   "sha256": "4b2972b6897863504281ae38e061dc2517ccb9fbf11d45919f4097314914acf5"
+  },
+  {
+   "path": "art/props-01/request.json",
+   "sha256": "c3cd893298b14d70e5765b150c711df7c823076fd822d982699a79405a33e7d9"
+  },
+  {
+   "path": "art/props-01/retain.py",
+   "sha256": "a90915cdf71324123012776f4ceb2820b3b25b715d7cf25d752edb3db5faf5e1"
+  },
+  {
+   "path": "art/props-01/ring-box.blend",
+   "sha256": "a67d6e50bb578bbb6e96d4626e58350fe98013bf9d6989d54d89cb454fb9c842"
+  },
+  {
+   "path": "art/props-01/room-key.blend",
+   "sha256": "1e9f5f136126396bd36e6be80401da574f6eb9cfa602c540730cad61b0c61658"
+  },
+  {
+   "path": "art/props-01/salts.blend",
+   "sha256": "de75325a29a786cc134044a59b3e3377f90b43fcf1b478cfa024b631ddc39f33"
+  },
+  {
+   "path": "art/props-01/sewing-tin.blend",
+   "sha256": "d119e13d116095e3e6eebbb2374869843e71256cebec542d13c7403f9064a504"
+  },
+  {
+   "path": "art/props-01/shoes.blend",
+   "sha256": "f4fd652bb6af0f20cde7f00a61ba2df3b45c20304b444d7284cfd1faa53e8b86"
+  },
+  {
+   "path": "art/props-01/source-cap.png",
+   "sha256": "aecf98565232f45e97d2f51a432d0e7fb3f79b2cfd33af4a535be179be91c04f"
+  },
+  {
+   "path": "art/props-01/source-cartridges.png",
+   "sha256": "8ebca109d614431d0e922f09664fc612d27c68314c77f3c4ab52445773e6522c"
+  },
+  {
+   "path": "art/props-01/source-coat-stand.png",
+   "sha256": "c22a0553e7cd826c11d91a2e5e4002a7bfeab12310d0901fa86f9fdb40775046"
+  },
+  {
+   "path": "art/props-01/source-dressing.png",
+   "sha256": "f9d945553450641e9c198570387c58263ee6fffa49f6abc4db3a667655f1eac9"
+  },
+  {
+   "path": "art/props-01/source-gloves.png",
+   "sha256": "dec80b0bbae3f179bfec2e986d08a82155e9b2b47c89019ff7322aeef2010a30"
+  },
+  {
+   "path": "art/props-01/source-handbook.png",
+   "sha256": "f53414ab1d7cc1cb7e47f307faaeedb37d573cda05daf741a5955da3d16a234e"
+  },
+  {
+   "path": "art/props-01/source-incense.png",
+   "sha256": "013b551e4635f3a5d7dbe40ca74d4636f4bad9196d23c00b84471f2d4f3df163"
+  },
+  {
+   "path": "art/props-01/source-locket.png",
+   "sha256": "bf6e05358fe53f3c97ac2985ef0bc71a53ab6dcbd4ebc96774a1e7aeecdc6323"
+  },
+  {
+   "path": "art/props-01/source-manual.png",
+   "sha256": "3844924ae6963a136cec4ab47facd26f2b035f1cbff8ca1d7cb8545f4ea43367"
+  },
+  {
+   "path": "art/props-01/source-matchbook.png",
+   "sha256": "9d15c7e906d9e37bd7f0068add1eb5449fee85401d22e346e5295a1eab395afc"
+  },
+  {
+   "path": "art/props-01/source-medal.png",
+   "sha256": "084b9db8ec2c715d1413c76136b5eb389006b3ce3e6f58cab7480678b712757b"
+  },
+  {
+   "path": "art/props-01/source-night-coat.png",
+   "sha256": "8b6fef85eb51968638085d03a5d61aca22652e611ac35bd71499fea6eebf42e9"
+  },
+  {
+   "path": "art/props-01/source-reel-case.png",
+   "sha256": "dda72795e870c99e42dc340cb94fd1fc598670f584dde59fb09eefc008aeb4d1"
+  },
+  {
+   "path": "art/props-01/source-ring-box.png",
+   "sha256": "6851a238ed62f763b9a2e8856b95a9ac76a1550d2572f0ec9b461a6710adda92"
+  },
+  {
+   "path": "art/props-01/source-room-key.png",
+   "sha256": "a43e613eb022356e6d80117f55c136dd5aed652013f3e1291ecca3539d837ee4"
+  },
+  {
+   "path": "art/props-01/source-salts.png",
+   "sha256": "0f27dd10425cc8cc046af8083fa26baa9de6a2aef069f29271158034d4f4d0d4"
+  },
+  {
+   "path": "art/props-01/source-sewing-tin.png",
+   "sha256": "1f314cfa20dfa826fd2dc7d56d5dce3c09b7fa66c6550aaae093b74c9df28ab9"
+  },
+  {
+   "path": "art/props-01/source-shoes.png",
+   "sha256": "b142728ae3c1489b3d4cf876b4ca6f0c5368338d49de1aa54b4dba37b3008548"
+  },
+  {
+   "path": "art/props-01/textures/cap-0.jpg",
+   "sha256": "ace1308ddc0e7bd2a1222e66c30fd0d978275d84edb473bb82c3990fe6233a81"
+  },
+  {
+   "path": "art/props-01/textures/cap-1.jpg",
+   "sha256": "73494994ee2248bad6c49594101bef455644efa3e9b146ae36016ae64c61f189"
+  },
+  {
+   "path": "art/props-01/textures/cap-2.jpg",
+   "sha256": "44ce526f237fce8428f083132bfd149a63a3427ac48310f9ea7fe0629fb16f96"
+  },
+  {
+   "path": "art/props-01/textures/cartridges-0.jpg",
+   "sha256": "7c0c6045e4f6ed738f934ce6a8cb792ba701a7c9f27dceb7ee2a75b8067ae094"
+  },
+  {
+   "path": "art/props-01/textures/cartridges-1.jpg",
+   "sha256": "95b7b0bd43d1f30bbca889cb2772ce273e2fdabc9ca3a4b77edb4584ff05f135"
+  },
+  {
+   "path": "art/props-01/textures/cartridges-2.jpg",
+   "sha256": "013d656c10520fb2aa113cf5ff5ba58228ce071f5af16ce11e027dbef1f31c84"
+  },
+  {
+   "path": "art/props-01/textures/coat-stand-0.jpg",
+   "sha256": "783d70586f3ecdcc31a07a9be5d2014d7d3f0a2e189da66af25e654a47912c10"
+  },
+  {
+   "path": "art/props-01/textures/coat-stand-1.jpg",
+   "sha256": "ab345d5024ed498c4b9b3b12f410d163ca84c57323e975ac754bb9821c7841c5"
+  },
+  {
+   "path": "art/props-01/textures/coat-stand-2.jpg",
+   "sha256": "ef9c3aab85f740ee5fa6fa1e7ea8609b368fb4a7ffdb9e045ed415b1280fa837"
+  },
+  {
+   "path": "art/props-01/textures/dressing-0.jpg",
+   "sha256": "c3df1efa54981d19b8d3f72f681a620ce3bb7aee4a5294f9dabffb6d22417fd9"
+  },
+  {
+   "path": "art/props-01/textures/dressing-1.jpg",
+   "sha256": "9278a26ffef945594f689920406f63e93c966cb7408fa1df02f6233ff1389921"
+  },
+  {
+   "path": "art/props-01/textures/dressing-2.jpg",
+   "sha256": "ddcad17755d313f70f02d479a5654cf32e27f1a1a9fc972d9c00f9973508ebe3"
+  },
+  {
+   "path": "art/props-01/textures/gloves-0.jpg",
+   "sha256": "d2254a65e2c63b8b010ee4412bbba7d1f7ce7b5baa564b81b590f0c82ee69832"
+  },
+  {
+   "path": "art/props-01/textures/gloves-1.jpg",
+   "sha256": "5f73563eab9cf0372b98a3b1e7698e04d6a4c6b227f7e8797b010bd49029abda"
+  },
+  {
+   "path": "art/props-01/textures/gloves-2.jpg",
+   "sha256": "f1acfb9da733b8ac6f25c0ecf3f375be17741ed05ec7be49932cd12fdb9cf17a"
+  },
+  {
+   "path": "art/props-01/textures/handbook-0.jpg",
+   "sha256": "3c3a3601b74f73c7393453a01fdac2b4220473f4fb5302ca7b37519eeb2a3db9"
+  },
+  {
+   "path": "art/props-01/textures/handbook-1.jpg",
+   "sha256": "456ec4869ae845109384a9709996954edec1d087cb3f0750297ac6937aeb9355"
+  },
+  {
+   "path": "art/props-01/textures/handbook-2.jpg",
+   "sha256": "cfaf9bde2e25d239dc7c9c55aecc517a16f1cda1615440fe6373165b3e9c69b4"
+  },
+  {
+   "path": "art/props-01/textures/incense-0.jpg",
+   "sha256": "44bee8335a9591890c757b467c9015b53b979f7a74bc74cb5a6a0739551cc930"
+  },
+  {
+   "path": "art/props-01/textures/incense-1.jpg",
+   "sha256": "5673cc851da345d6f27d5f310edaeb9a8fab5770529e10d0e9ff6ff78c9dd967"
+  },
+  {
+   "path": "art/props-01/textures/incense-2.jpg",
+   "sha256": "2f02ab4780ad5703883063c1cd823242e348a328c16fae8e5754ed6b84d72ccd"
+  },
+  {
+   "path": "art/props-01/textures/locket-0.jpg",
+   "sha256": "c58828fc9f6377725a99af11e0b2a07359c900d4bbc0b1e035d5eaf544833767"
+  },
+  {
+   "path": "art/props-01/textures/locket-1.jpg",
+   "sha256": "0fdd9a20d92aaa836169ce523d411340f008bf87b097934f937f4a8de13f39eb"
+  },
+  {
+   "path": "art/props-01/textures/locket-2.jpg",
+   "sha256": "f2a9c3cb1c6e89fa848d1216ea4aa24555faf51a45bf09643d8973590d335642"
+  },
+  {
+   "path": "art/props-01/textures/manual-0.jpg",
+   "sha256": "a0996b7acc981abc87bd00405c5a2bb2282ad18b2fa6fb2bd018eb56f08b2b30"
+  },
+  {
+   "path": "art/props-01/textures/manual-1.jpg",
+   "sha256": "681b29d539924f4fe5fb2f5959e9b282e660c6cd607d17e172b61d74438c8e9e"
+  },
+  {
+   "path": "art/props-01/textures/manual-2.jpg",
+   "sha256": "979f3f844db689983a3187a5ce94a5f464cb2ae5112d40a08cf233b08588f2e2"
+  },
+  {
+   "path": "art/props-01/textures/matchbook-0.jpg",
+   "sha256": "decccd5d6385c53a214911e5cdb3fc1c639fc19f5381cab25fd53d0290d6d87a"
+  },
+  {
+   "path": "art/props-01/textures/matchbook-1.jpg",
+   "sha256": "3a757fd8bfb4bf4d5d36d5e5df75ce6a19697ab0468fe896d31c357b1c091c2c"
+  },
+  {
+   "path": "art/props-01/textures/matchbook-2.jpg",
+   "sha256": "eb54af8b798da70a4870acb1764bec8d13762510c0e7f1abb1a5ff3f916f7e0b"
+  },
+  {
+   "path": "art/props-01/textures/medal-0.jpg",
+   "sha256": "b4c53428aec36318917f9f1843acc81fc03f9be7810e394183ed57191ee9e747"
+  },
+  {
+   "path": "art/props-01/textures/medal-1.jpg",
+   "sha256": "8392fc93a20547c56626abf0b78b280b11dce9a083c24dfee4f02ad8be17e946"
+  },
+  {
+   "path": "art/props-01/textures/medal-2.jpg",
+   "sha256": "55040798b1a8fa6b094ceb0223e601245c390809f8e652fd52305741edc881c9"
+  },
+  {
+   "path": "art/props-01/textures/night-coat-0.jpg",
+   "sha256": "bb31483682a5c33f4502990f41af3701245c34bf7cd8940089ef35e538d61522"
+  },
+  {
+   "path": "art/props-01/textures/night-coat-1.jpg",
+   "sha256": "213ee8350266caf17d834a425d6adf859970d4ca84ddd64336be14200119d6fc"
+  },
+  {
+   "path": "art/props-01/textures/night-coat-2.jpg",
+   "sha256": "8e786a5780eb6f0d61bed744c8c507766ddbc8437e36ae49e21908c144f94783"
+  },
+  {
+   "path": "art/props-01/textures/reel-case-0.jpg",
+   "sha256": "76a5c33f631aca831678b5928d40c9ddd048f90c11fc33c7525ea87890fd9f7f"
+  },
+  {
+   "path": "art/props-01/textures/reel-case-1.jpg",
+   "sha256": "c939dd1fdbe0db84b8025da1b729acc573f208098bc2f7f6a380ba6af0615af0"
+  },
+  {
+   "path": "art/props-01/textures/reel-case-2.jpg",
+   "sha256": "e3e9210637512b0f22c4a5abb86f278e054fd95a4619d28dbdc4ab1fe3c37a41"
+  },
+  {
+   "path": "art/props-01/textures/ring-box-0.jpg",
+   "sha256": "a676fb300105547320483fc3053194aa3d1e49c5f3246a9348d6006cd7b3da46"
+  },
+  {
+   "path": "art/props-01/textures/ring-box-1.jpg",
+   "sha256": "8878d8a09a7356533b3c197a894275464900bd44ba9ed9b3d8c78b27e2695d64"
+  },
+  {
+   "path": "art/props-01/textures/ring-box-2.jpg",
+   "sha256": "0c4379c36a87362020625768ed19901dbd6cf632a3bc4c1a6601db83aa28bb61"
+  },
+  {
+   "path": "art/props-01/textures/room-key-0.jpg",
+   "sha256": "396b5c7ce33c1365e6a234906bc5686b8612e684cf636d69629c230afb7a9f80"
+  },
+  {
+   "path": "art/props-01/textures/room-key-1.jpg",
+   "sha256": "19005406128a2922a54e13647c91dd59912fd47eabfdeb66ee069fe1a7a900e2"
+  },
+  {
+   "path": "art/props-01/textures/room-key-2.jpg",
+   "sha256": "793793e3da77d13bfdc27e6184df4f445fad233144c378e93c556f45413a32fb"
+  },
+  {
+   "path": "art/props-01/textures/salts-0.jpg",
+   "sha256": "945af1b92e8a81b3d1769e099b991fe4deb6a261ada88f2e75718ee5739a3d13"
+  },
+  {
+   "path": "art/props-01/textures/salts-1.jpg",
+   "sha256": "e185f686925bf0f15da27276b1a166bf3ab9bdd52e89f63967907426ee72a225"
+  },
+  {
+   "path": "art/props-01/textures/salts-2.jpg",
+   "sha256": "03081a0b973c921b08454e5508dfa3a5369e4aa0674cc65abccfbf6d4d533a82"
+  },
+  {
+   "path": "art/props-01/textures/sewing-tin-0.jpg",
+   "sha256": "0189d567447f68b8bdedd2b970d18b5a95da09f2187d4e482d0d78731fa63a46"
+  },
+  {
+   "path": "art/props-01/textures/sewing-tin-1.jpg",
+   "sha256": "07d386608c7161c96abdf08326191c3ac46938397220f485cabff8ecb189a30a"
+  },
+  {
+   "path": "art/props-01/textures/sewing-tin-2.jpg",
+   "sha256": "43926d30ea93686b1e3aca11ce9a088de155806736d59f75092829a196a33f29"
+  },
+  {
+   "path": "art/props-01/textures/shoes-0.jpg",
+   "sha256": "89d3434f62aaf13a8e5a85ff6c325030bc5dfabe27f9ec1848b59edc6aee72b1"
+  },
+  {
+   "path": "art/props-01/textures/shoes-1.jpg",
+   "sha256": "f84107038f45c77f4d5b22eb6b64dc66f0710533b545018e196e5d65a1542f85"
+  },
+  {
+   "path": "art/props-01/textures/shoes-2.jpg",
+   "sha256": "cdd77d54155a9f7d3111de1d91d4e75ccb144ffdc0bf04625a39a044b9f59b45"
+  },
+  {
+   "path": "content/models/props/cap.glb",
+   "sha256": "e5685a42962091f43768989909d18577b2b67429353d75a0617c3942bb2e556b"
+  },
+  {
+   "path": "content/models/props/cartridges.glb",
+   "sha256": "67c1777828456a82813b6ee5e3fb11101fc85df9b347a3eca6fcbfa330cc5d90"
+  },
+  {
+   "path": "content/models/props/coat-stand.glb",
+   "sha256": "4dee861ff0a307090ca0497e09bc3f749be738f9083181e3cf922509acb68866"
+  },
+  {
+   "path": "content/models/props/dressing.glb",
+   "sha256": "c6154570e862bf26f5f6467d6e221dce6d7009ead1acd1296a728c36a2e584c9"
+  },
+  {
+   "path": "content/models/props/gloves.glb",
+   "sha256": "da78cb75cf4f54606b4641be2a6117708ed28e28cec763ce230cc23565ed6f2b"
+  },
+  {
+   "path": "content/models/props/handbook.glb",
+   "sha256": "d0e6426f65f3f3663a69507c0819e17faef593689e9cd03e8d7685cfb43680e5"
+  },
+  {
+   "path": "content/models/props/incense.glb",
+   "sha256": "a854fc824e5b7b01e4b19bba061f2f84849d176e2b0cc5d2dd1529a401fe3a54"
+  },
+  {
+   "path": "content/models/props/locket.glb",
+   "sha256": "31b4ce4283d427817d4c912775400ff0422edfc5e903c7931ee1b8dafbdc3c82"
+  },
+  {
+   "path": "content/models/props/manual.glb",
+   "sha256": "0ac5fa313fe1f3c7714a41c011367093e735fda64548acd362b1ed6f8de03802"
+  },
+  {
+   "path": "content/models/props/matchbook.glb",
+   "sha256": "2da080ae13f3d5d91ee47416bf9989ae1bcd70df919a515d517f27a389b31e3f"
+  },
+  {
+   "path": "content/models/props/medal.glb",
+   "sha256": "967ab379ca8b07f8f662bf38a95fb6795a5eac97854ed6a8f5296f5d084d7b92"
+  },
+  {
+   "path": "content/models/props/night-coat.glb",
+   "sha256": "118d8d8de4045f4aaf989f3a550699099b5598287d9247d7ed51539b376c95e5"
+  },
+  {
+   "path": "content/models/props/reel-case.glb",
+   "sha256": "32c8be3c02d6e2695631af2863ff626730befb0245bd0bb263e7449deac579bf"
+  },
+  {
+   "path": "content/models/props/ring-box.glb",
+   "sha256": "5bce7ac7d76cd773dce1d3e507a7eaa20aaa9d8fc3786901ce259171dc005c1c"
+  },
+  {
+   "path": "content/models/props/room-key.glb",
+   "sha256": "e296f120acfea5bc65e46acd3c550fb6f294664ca508252bebd9c2a03464d5e5"
+  },
+  {
+   "path": "content/models/props/salts.glb",
+   "sha256": "9ece5ccf5fdd3d4b02de754a29b44362216e51f29b541c0e64388a9700fe2edc"
+  },
+  {
+   "path": "content/models/props/sewing-tin.glb",
+   "sha256": "c8a92697844a24f852a72aea8f4d3281136d1eb23e828c9947dff2021f45afad"
+  },
+  {
+   "path": "content/models/props/shoes.glb",
+   "sha256": "1afe4f929fd31c0b80ebc3f06e1616d6fe75af74b78e7cb96e548d53ff9c6796"
+  }
+ ]
+}

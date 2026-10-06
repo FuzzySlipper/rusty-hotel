@@ -306,7 +306,7 @@ internal static class KitBuilder
                 Authored.Require(kinds.TryGetValue(placed.Kind, out FixtureDefinition? fixture), path, $"{at}.kind", $"unknown fixture '{placed.Kind}'.");
                 if (placed.Id is { } id) Authored.Require(ids.Add(id), path, $"{at}.id", $"id '{id}' appears more than once.");
                 (Vector3 origin, int turn, Space space, string field) = Origin(fixture!, placed, at);
-                bool showsFind = fixture!.Parts.Any(p => p.Find);
+                bool showsFind = fixture!.ShowsFind;
                 Authored.Require(showsFind == placed.Find is not null, path, $"{at}.find", showsFind
                     ? $"'{placed.Kind}' shows a find; name the find it shows."
                     : $"'{placed.Kind}' has no part that shows a find.");
@@ -330,7 +330,8 @@ internal static class KitBuilder
                 foreach (FixtureModel model in fixture.Models ?? [])
                 {
                     Vector3 position = KitTransform.Point(model.Offset, origin, turn, placed.Mirror);
-                    models.Add(new(model.Path, [position.X, position.Y, position.Z], model.Scale, turn * 90));
+                    models.Add(new(model.Path, [position.X, position.Y, position.Z], model.Scale, turn * 90 + model.YawDegrees,
+                        model.Find ? placed.Find : null));
                 }
                 foreach (FixtureLight light in fixture.Lights ?? [])
                 {

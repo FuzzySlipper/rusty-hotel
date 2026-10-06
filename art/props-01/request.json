@@ -1,0 +1,26 @@
+{
+  "goal": "Find and pickup props for Hotel Endless, replacing box-built displays; TRELLIS.2 image-to-3D on den-patch.",
+  "style": "Single isolated small object for image-to-3D reconstruction, a find in a 1970s hotel. Grounded, slightly stylized realism with worn tactile materials, muted amber, burgundy, olive and ivory palette. The object rests naturally as it would on a table or floor. Three-quarter view from slightly above (about 25 degrees elevation, 30 degrees yaw) so the top and two sides are visible. The entire object is fully in frame and centred with generous margin, nothing cropped. Plain flat light-grey seamless background, soft even studio lighting, no cast shadow, no ground plane, no table, no hands, no other objects. Solid opaque materials, no glow, no smoke, no transparency. NO text, NO letters, NO numbers, NO logos, NO people. Square image around 1024x1024.",
+  "pieces": {
+    "dressing": "Subject: A sealed first-aid field dressing: a flat rectangular khaki paper packet, its edges crimped, tied once with a narrow white cotton tape, with a plain red cross printed on its face.",
+    "cartridges": "Subject: A small open paper carton of revolver cartridges lying on its side, a few brass cartridges spilled out beside it, the carton plain buff card, slightly crushed.",
+    "incense": "Subject: A waxed brown paper packet of incense sticks folded shut and tied with red string, three dark incense sticks poking out of one end.",
+    "matchbook": "Subject: An open hotel matchbook with a burgundy card cover and a gold foil band, a row of paper matches with red heads standing up inside, one match torn out.",
+    "salts": "Subject: A small squat amber-brown glass bottle of smelling salts with a ground-glass stopper and a plain blank cream paper label tied on with thread.",
+    "gloves": "Subject: A pair of stiff brown leather work gloves lying flat side by side, palms worn smooth and darker, cuffs slightly curled.",
+    "cap": "Subject: A bellhop's pillbox cap in burgundy felt with a gold braid band around it and a thin frayed black chin strap, sitting upright.",
+    "shoes": "Subject: A pair of black leather crepe-soled shoes for night staff, side by side, thick pale crepe soles, laces loosely tied, scuffed toes.",
+    "ring-box": "Subject: A small open ring box covered in burgundy velvet, lid open, holding a heavy gold signet ring with a flat engraved bezel showing a simple key emblem.",
+    "reel-case": "Subject: A flat square blue enamelled metal case for a large tape reel, the lid slightly open showing a brown tape reel inside, with brass catches and corners.",
+    "room-key": "Subject: A hotel room key: a long old brass key on a ring attached to a large diamond-shaped burgundy plastic key fob with brass rivets, lying flat.",
+    "sewing-tin": "Subject: A round flat biscuit-tin style sewing tin with a burgundy and gold floral painted lid, the lid slightly ajar showing cotton reels and pins.",
+    "coat-stand": "Subject: A freestanding bentwood coat stand, tall and slender, dark stained wood, four curved feet and six curled hooks at the top. Standing upright.",
+    "night-coat": "Subject: A heavy dark burgundy wool night porter's coat with brass buttons hanging from a wooden coat hanger, seen hanging straight down, the hanger hook at the top.",
+    "medal": "Subject: A brass long-service medal on a short faded striped ribbon, lying flat, the round medal worn smooth at the edges.",
+    "locket": "Subject: An oval silver locket on a fine chain, lying open, one half holding a pressed grey moth wing under its rim.",
+    "handbook": "Subject: A small closed staff handbook with a worn olive cloth cover and a cracked spine, a few paper slips poking out of the pages as bookmarks.",
+    "manual": "Subject: A thin closed grey paper-covered manual, slightly curled and dog-eared, held with a single steel staple at the spine."
+  },
+  "imageProducer": "codex-image-gen (GPT image via codex exec)",
+  "meshProducer": "asset-pipeline run_native.py, TRELLIS.2 bf16"
+}

@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-shoes.png",
+ "image_sha256": "b142728ae3c1489b3d4cf876b4ca6f0c5368338d49de1aa54b4dba37b3008548",
+ "prompt_id": "6f28d8ce-ea9e-4125-9b16-edc5b547514e",
+ "wall_seconds": 275.3,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 11.32,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 754156,
+   "sha256": "2634490c57cf2eed6399c8822b271c8ce8dbb272da8865e91df55d00914cbc98"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4114814,
+   "sha256": "3057e9c7e11731fe082d562e7cc511a23707d1c1b3557a0294417b147eda4ce2"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 4099911,
+   "sha256": "6f9ac702918a86a5b72699b1af73eed328cfa69a1edb84611d14c90fb7dc0fd0"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 13587276,
+   "sha256": "31b2ef82b7c72e480ae95244143d79a4af9430e2f53d17f3fe055086e54070aa"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

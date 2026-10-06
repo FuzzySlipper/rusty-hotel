@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-incense.png",
+ "image_sha256": "013b551e4635f3a5d7dbe40ca74d4636f4bad9196d23c00b84471f2d4f3df163",
+ "prompt_id": "a5381833-2efe-4670-9d4b-84852cb90615",
+ "wall_seconds": 80.1,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 14.93,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 446495,
+   "sha256": "2d5780fb42adb68ae019089517c64ddfb2ec75a91c0d95ff1b623998d7eba68e"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4556786,
+   "sha256": "ceef18f5816a5d4c4f630b77b8ae796d23b741da328ddfb378f67de54fe474ad"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 2776773,
+   "sha256": "a41eb0bddec8d5233c2db1f4c6a8fb1b9c107a4e3ca11c1847acbe2f248f5ccc"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 10591700,
+   "sha256": "d54217e0f5e2599a644504c264245ad42d4f8f2546abdd2e7f18c637e5515168"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-night-coat.png",
+ "image_sha256": "8b6fef85eb51968638085d03a5d61aca22652e611ac35bd71499fea6eebf42e9",
+ "prompt_id": "4f234ba2-be19-4b25-9136-0909329021ba",
+ "wall_seconds": 85.4,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.56,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 488636,
+   "sha256": "7062104bf51a9dc8abb1672afb42dd98c224287adc0c02771f91572d3d444ac8"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 3612114,
+   "sha256": "86a32c2c8c7c5d07b5b6742e39140407a4fc4c49f3c94dbecc646bb0bc2a9981"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 2579907,
+   "sha256": "b7f3bbe5d26396ec3e343b0dcd1d29505ffc0b167ee21c247bd181efa231e0f1"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 9873188,
+   "sha256": "6e06e8e9a7b4089985c534876dbaf3ec546872bd40c70a11b458e99ca244c201"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

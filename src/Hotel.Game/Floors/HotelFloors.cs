@@ -44,7 +44,7 @@ internal sealed class HotelFloors
             Template.Plain(Floors.Content.ContentTuning.Path, ($"containers[{i}].name", c.Name));
             Authored.Require(content.Loot.Table(c.Table) is not null, Floors.Content.ContentTuning.Path, $"containers[{i}].table", $"unknown loot table '{c.Table}'.");
             Authored.Require(content.Fixtures.Fixtures.FirstOrDefault(f => f.Id == c.Fixture) is { Mount: Scene.Kit.FixtureMount.Socket } shown &&
-                shown.Sockets?.ContainsKey("focus") == true && !shown.Parts.Any(p => p.Find), Floors.Content.ContentTuning.Path, $"containers[{i}].fixture",
+                shown.Sockets?.ContainsKey("focus") == true && !shown.ShowsFind, Floors.Content.ContentTuning.Path, $"containers[{i}].fixture",
                 $"'{c.Fixture}' must be a socket fixture with a focus socket and no find parts.");
             c.Weight.Validate(Floors.Content.ContentTuning.Path, $"containers[{i}].weight");
         }

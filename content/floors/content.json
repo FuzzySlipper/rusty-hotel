@@ -219,6 +219,22 @@
     {
       "item": "signet-ring",
       "fixture": "ring-box"
+    },
+    {
+      "item": "service-medal",
+      "fixture": "medal-display"
+    },
+    {
+      "item": "moth-locket",
+      "fixture": "locket-display"
+    },
+    {
+      "item": "porters-handbook",
+      "fixture": "handbook-display"
+    },
+    {
+      "item": "range-manual",
+      "fixture": "manual-display"
     }
   ],
   "doors": {

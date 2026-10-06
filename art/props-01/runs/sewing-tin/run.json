@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/props-01/source-sewing-tin.png",
+ "image_sha256": "1f314cfa20dfa826fd2dc7d56d5dce3c09b7fa66c6550aaae093b74c9df28ab9",
+ "prompt_id": "39add934-1b1a-463a-b1a8-9f9425af18a0",
+ "wall_seconds": 300.8,
+ "status": "success",
+ "faces_target": 6000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 8.46,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 1222471,
+   "sha256": "3547f2ea1b1ebbcf6300e048895db95d349c7191c818bd9e29aed2ab19b2f95f"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5760275,
+   "sha256": "f236454ea4968d600b1e3e960eefe90bb9f0424ed11db047f50290adf4e7907c"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3968467,
+   "sha256": "d51543d23b7c41eacff6c597b64ad860d384cbdc99291cb81230d592be5339a8"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 14814616,
+   "sha256": "7645ea6bbd8dd2f3b4237aae40f82c2abfd2669545a1dc202005fc13bb04cc0e"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

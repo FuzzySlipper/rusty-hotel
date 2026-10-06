@@ -42,6 +42,7 @@ internal sealed record FixtureCatalog(FixtureDefinition[] Fixtures)
                 Authored.Require(model.Path.EndsWith(".glb", StringComparison.Ordinal), Path, $"{at}.models[{m}].path", "must be a GLB content path.");
                 Authored.Point(Path, $"{at}.models[{m}].offset", model.Offset);
                 Authored.Positive(Path, $"{at}.models[{m}].scale", model.Scale);
+                Authored.Finite(Path, $"{at}.models[{m}].yawDegrees", model.YawDegrees);
             }
         }
         string? repeated = catalog.Fixtures.GroupBy(f => f.Id).FirstOrDefault(g => g.Count() > 1)?.Key;
@@ -59,13 +60,18 @@ internal enum FixtureMount { Floor, Wall, Ceiling, Socket }
 /// into the room. <see cref="Sockets"/> name points other fixtures and placements can attach to.
 /// </summary>
 internal sealed record FixtureDefinition(string Id, FixtureMount Mount, FixturePart[] Parts,
-    FixtureLight[]? Lights = null, Dictionary<string, float[]>? Sockets = null, FixtureModel[]? Models = null);
+    FixtureLight[]? Lights = null, Dictionary<string, float[]>? Sockets = null, FixtureModel[]? Models = null)
+{
+    /// <summary>Whether a part or a model of this fixture shows the find placed with it.</summary>
+    internal bool ShowsFind => Parts.Any(p => p.Find) || (Models ?? []).Any(m => m.Find);
+}
 
 /// <summary>
-/// An authored mesh (GLB content path) shown at <see cref="Offset"/> in the fixture's frame, turned with it. Presentation
-/// only: a model never collides, so a fixture that blocks keeps a solid part for that.
+/// An authored mesh (GLB content path) shown at <see cref="Offset"/> in the fixture's frame, turned with it by its own
+/// <see cref="YawDegrees"/>. Presentation only: a model never collides, so a fixture that blocks keeps a solid part for
+/// that. With <see cref="Find"/> it shows the fixture's find and disappears when the find is taken.
 /// </summary>
-internal sealed record FixtureModel(string Path, float[] Offset, float Scale);
+internal sealed record FixtureModel(string Path, float[] Offset, float Scale, bool Find = false, float YawDegrees = 0);
 
 /// <param name="Find">The part shows a collectable find and disappears when it is taken.</param>
 /// <param name="Collider">The part is solid but never drawn: the collision of a fixture whose look is a model.</param>

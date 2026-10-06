@@ -83,6 +83,12 @@ internal sealed class HotelScene : IDisposable
                 Appearance appearance = engine.Animation.CreateAnimatedMeshAppearance(new(resource));
                 appearances.Add(appearance);
                 EntityId entity = Entities.Create();
+                // A model that shows a find hides with it, as a find's boxes do.
+                if (model.Find is string find)
+                {
+                    if (!findFacts.TryGetValue(find, out List<int>? indices)) findFacts.Add(find, indices = []);
+                    indices.Add(placed.Count);
+                }
                 placed.Add(new AppearanceFact(entity.Value, false, 0,
                     new Transform(Authored.Vector(model.Position), Quaternion.CreateFromAxisAngle(Vector3.UnitY, model.YawDegrees * MathF.PI / 180), new Vector3(model.Scale)),
                     appearance, true, RenderLayer.Scene));
