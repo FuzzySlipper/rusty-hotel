@@ -324,7 +324,7 @@ internal static class KitBuilder
                     float inset = fixture.Mount == FixtureMount.Wall ? Half - Tolerance : Half;
                     Authored.Require(space.Inside(min.X, min.Z, inset) && space.Inside(max.X, max.Z, inset), path, field,
                         $"'{placed.Kind}' part '{part.Name}' reaches {min.X}..{max.X}, {min.Z}..{max.Z}, outside '{space.Definition.Id}'.");
-                    Add($"{label} {part.Name}", min, max, part.Material, part.Solid, part.Find ? placed.Find : null);
+                    Add($"{label} {part.Name}", min, max, part.Material, part.Solid, part.Find ? placed.Find : null, part.Collider);
                 }
                 // A model turns with its fixture; mirroring does not flip it, so a mirrored fixture's model should be symmetric.
                 foreach (FixtureModel model in fixture.Models ?? [])
@@ -403,7 +403,7 @@ internal static class KitBuilder
         private static bool SamePair(LinkDefinition a, LinkDefinition b) =>
             a.Between.Order().SequenceEqual(b.Between.Order());
 
-        private void Add(string name, Vector3 min, Vector3 max, string material, bool solid, string? find = null) =>
-            boxes.Add(new(name, [min.X, min.Y, min.Z], [max.X, max.Y, max.Z], material, solid, find));
+        private void Add(string name, Vector3 min, Vector3 max, string material, bool solid, string? find = null, bool hidden = false) =>
+            boxes.Add(new(name, [min.X, min.Y, min.Z], [max.X, max.Y, max.Z], material, solid, find, hidden));
     }
 }

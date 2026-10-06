@@ -127,8 +127,9 @@ faces. The west wing names its style in `plan.json`; a generated floor draws one
 `trimStyles` and keeps it through every shift, and the module catalog names the style a module is built in alone.
 
 **Fixture models.** A fixture may show authored GLB `models` at an `offset` in its frame, turned with it; a model
-never collides and is not mirrored, so give a mirrored fixture a symmetric model and keep a solid part where it must
-block. A fixture needs at least one part or model.
+never collides and is not mirrored, so give a mirrored fixture a symmetric model. Where it must block, give it a
+`collider` part: a solid box that is never drawn. Furniture is built this way, its models fitted to the colliders'
+footprint so its sockets stay where finds and readings rest. A fixture needs at least one part or model.
 
 A new kind of furnishing goes into `scene/fixtures.json` once, then is placed wherever it is wanted. A new
 surface set or trim style goes into `scene/kit.json`. One-off geometry has no place in a plan; make it a fixture.

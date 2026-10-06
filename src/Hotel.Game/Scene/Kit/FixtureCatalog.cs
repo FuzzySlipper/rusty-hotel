@@ -24,6 +24,8 @@ internal sealed record FixtureCatalog(FixtureDefinition[] Fixtures)
                 Authored.Point(Path, $"{at}.parts[{p}].max", part.Max);
                 Authored.Require(part.Max[0] > part.Min[0] && part.Max[1] > part.Min[1] && part.Max[2] > part.Min[2],
                     Path, $"{at}.parts[{p}].max", "must be larger than min on every axis.");
+                Authored.Require(!part.Collider || (part.Solid && !part.Find), Path, $"{at}.parts[{p}].collider",
+                    "a collider is solid and shows no find.");
             }
             for (int l = 0; l < (fixture.Lights ?? []).Length; l++)
             {
@@ -66,6 +68,8 @@ internal sealed record FixtureDefinition(string Id, FixtureMount Mount, FixtureP
 internal sealed record FixtureModel(string Path, float[] Offset, float Scale);
 
 /// <param name="Find">The part shows a collectable find and disappears when it is taken.</param>
-internal sealed record FixturePart(string Name, string Material, float[] Min, float[] Max, bool Solid = false, bool Find = false);
+/// <param name="Collider">The part is solid but never drawn: the collision of a fixture whose look is a model.</param>
+internal sealed record FixturePart(string Name, string Material, float[] Min, float[] Max, bool Solid = false, bool Find = false,
+    bool Collider = false);
 /// <param name="Shadow">The light casts shadows. Each shadowed point light renders the scene six more times a frame.</param>
 internal sealed record FixtureLight(float[] Offset, float[] Color, float Intensity, float Range, bool Shadow);

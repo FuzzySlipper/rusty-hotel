@@ -1,0 +1,108 @@
+{
+ "runFamily": "hotel-furniture-01",
+ "producer": "art/furniture-01/build.py (Blender, parametric; seeded procedural textures; no source images, prompts or provider calls)",
+ "providerAttempt": "Nine Tripo P2 text-to-model requests from request.json were refused with HTTP 403 (insufficient credit) on 2026-10-05; no task was created and nothing was charged.",
+ "files": [
+  {
+   "path": "art/furniture-01/build.py",
+   "sha256": "96b26c10a50562313263eb8dd438246fac3fb079ad68872e53f8c26bcdd2feb7"
+  },
+  {
+   "path": "art/furniture-01/request.json",
+   "sha256": "2652452fdfa769e98ccd6d62ce092a5d2a3d7586e9830a9dbdf98ce3dfa3f985"
+  },
+  {
+   "path": "art/furniture-01/bell-pedestal.blend",
+   "sha256": "40d9ab816fcd6320e428d19b32c4ff8085e08f235f845cfef49123a8290c2521"
+  },
+  {
+   "path": "art/furniture-01/cartridge-table.blend",
+   "sha256": "468d73166c745d1922b8cb9d6a055c4f523a5468b09a333b20e1aa6dcbd996b1"
+  },
+  {
+   "path": "art/furniture-01/guest-bench.blend",
+   "sha256": "6006ffa8145c7c226513c1f9c4e024cf062e18fc2a800d3f4715c7ac9f20cb75"
+  },
+  {
+   "path": "art/furniture-01/log-desk.blend",
+   "sha256": "79d257e4915c9a158b4c5b6bede7b7318aec64fafd636356adcac62e8266e9af"
+  },
+  {
+   "path": "art/furniture-01/low-cabinet.blend",
+   "sha256": "36b166317e8c15b5c19cb40543f06815d6a86b441294da03f20f4949b77009a3"
+  },
+  {
+   "path": "art/furniture-01/luggage-table.blend",
+   "sha256": "f9510fe87a4e8f545b039d2e990ec30d1da89d8e27416cd00b619aee444f5c5a"
+  },
+  {
+   "path": "art/furniture-01/reel-desk.blend",
+   "sha256": "9594c6ba3901379d3c99996e1f28717f4d51eeef773c03121badd08b0f133a45"
+  },
+  {
+   "path": "art/furniture-01/side-table.blend",
+   "sha256": "fae075c89c94fc77f285310e8433ed19b929df1ea8e6e7884ec5f4856d93f137"
+  },
+  {
+   "path": "art/furniture-01/writing-desk.blend",
+   "sha256": "8f48004d80b81590781c142d653c32183c6724d74ccd3f4d59741d628c858655"
+  },
+  {
+   "path": "art/furniture-01/textures/marble.png",
+   "sha256": "6c42703475391caf30d8cd51cc83bdb7b3a3243294e496cc91867615aedc12dc"
+  },
+  {
+   "path": "art/furniture-01/textures/mustard-vinyl.png",
+   "sha256": "76f1c58b1c5e035b84850a9c1b9d26987e6a3cf193473f4c61119b1ce0b7c2a6"
+  },
+  {
+   "path": "art/furniture-01/textures/oak.png",
+   "sha256": "da7fab457521315baa49f7c3b548090d685d02f0ef42722215ba20c143a004f3"
+  },
+  {
+   "path": "art/furniture-01/textures/teak.png",
+   "sha256": "8befff34d4ce5315bece487e40bca8eca62ba52ebd4d63f067312c8d0b309a7b"
+  },
+  {
+   "path": "art/furniture-01/textures/walnut.png",
+   "sha256": "f8782257c5889a8f062a89bdda15eb8b8effa0190727358f88af7e774a029f7e"
+  },
+  {
+   "path": "content/models/furniture/bell-pedestal.glb",
+   "sha256": "f8ce02743a774e4ef62b0e0c495d3348d1d1104c3514b0701caf77cc83340f40"
+  },
+  {
+   "path": "content/models/furniture/cartridge-table.glb",
+   "sha256": "69f1ee47c5ba4d11a6fc8765e51fd07e1f82f9310052196141344f022dd19d4c"
+  },
+  {
+   "path": "content/models/furniture/guest-bench.glb",
+   "sha256": "a4d80bc023a4645572e823f2325696bb8b26daf5367f1731d0e1cc76befae7ac"
+  },
+  {
+   "path": "content/models/furniture/log-desk.glb",
+   "sha256": "55b9aa617175b30a4346059415f64e20376bc935dc0caddb5967141bea13d068"
+  },
+  {
+   "path": "content/models/furniture/low-cabinet.glb",
+   "sha256": "db1d14fde629fd21ff0dbcc191c7cc929e22b7ac5f6080ba48914cc57c1952d0"
+  },
+  {
+   "path": "content/models/furniture/luggage-table.glb",
+   "sha256": "0b269e4622c022b24668360e40214bac183bca2625f307764d85f34e264ba38c"
+  },
+  {
+   "path": "content/models/furniture/reel-desk.glb",
+   "sha256": "cbdb72c54307e55f737c3254707652cfebd73bd5b4c74f9ee276c2d1629ab4ee"
+  },
+  {
+   "path": "content/models/furniture/side-table.glb",
+   "sha256": "fc557e4d8f5e6989b95d0180806d14cdfa79801f1b6473eba2f0ace711878a44"
+  },
+  {
+   "path": "content/models/furniture/writing-desk.glb",
+   "sha256": "c411188c7e11f210c49f2506b3b3d49cf9bc7980c7a4b8437dc7d77e2d9aaffa"
+  }
+ ],
+ "use": "Product-authored; unrestricted within Hotel Endless."
+}

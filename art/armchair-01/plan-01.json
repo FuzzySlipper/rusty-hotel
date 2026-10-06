@@ -1,0 +1,23 @@
+{
+  "api": "https://openapi.tripo3d.ai/v3",
+  "command": "generate",
+  "cost": "Provider-priced paid tasks; no local price estimate or spending cap.",
+  "mode": "execute",
+  "pollTimeoutSeconds": 840.0,
+  "stages": [
+    {
+      "id": "generate",
+      "payload": {
+        "face_limit": 12000,
+        "model": "P2-20260801",
+        "pbr": true,
+        "prompt": "A single 1970s hotel lounge armchair, game prop. Low wide seat, rounded tub back that wraps into thick padded arms, mustard-ochre crushed velvet upholstery with deep vertical channel tufting on the inside back, one loose seat cushion, short tapered dark walnut legs. Slightly worn, faded nap on the arms. Sturdy simple forms, no thin parts, no cushions beyond the seat, no fringe. Complete object, standing on the ground, centered.",
+        "quad": false,
+        "texture": true,
+        "texture_quality": "standard"
+      },
+      "route": "/generation/text-to-model"
+    }
+  ],
+  "taskId": null
+}

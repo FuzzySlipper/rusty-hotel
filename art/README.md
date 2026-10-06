@@ -34,6 +34,35 @@ hashes. Run from the repository root:
 blender -b --python art/fittings-01/build.py
 ```
 
+## Furniture
+
+`furniture-01/build.py` builds the furniture set parametrically in Blender: bevelled
+case goods and upholstery, each fitted to its fixture's footprint in
+`content/scene/fixtures.json`, with seeded tileable walnut, oak, teak, marble and
+vinyl textures it writes to `furniture-01/textures/`. Runtime GLBs go to
+`content/models/furniture/`; `.blend` masters stay beside the script, and
+`provenance.json` records hashes. `request.json` records the Tripo plan for the
+set, which the provider refused for lack of credit; nothing was generated or
+charged. The lounge armchair below is the one generated piece.
+
+```text
+blender -b --python art/furniture-01/build.py
+```
+
+## Lounge armchair
+
+`armchair-01/request.json` fixes the goal, the text prompt and the one paid
+Tripo P2 text-to-model generation (triangles, 12,000 faces). `native-01.glb` is
+Tripo's download; `prepare.py` makes `armchair.blend` and
+`content/models/furniture/armchair.glb` and renders inspection views into
+ignored `.runtime/mesh-review/`. `provenance.json` records the provider task,
+hashes and use limits. Raw provider receipts carry signed URLs and are not
+retained.
+
+```text
+blender -b --python art/armchair-01/prepare.py
+```
+
 ## Expedition recorder
 
 `expedition-recorder-01/request.json` fixes the goal, source prompt, attempt
@@ -72,7 +101,7 @@ bed is global and the tape-machine loop is spatial, with volumes and range in
 `content/excursions/west-wing/ambience.json`. Engine owns all playback and listener motion. Later interactive
 audio must be balanced against these quiet beds.
 
-Doors, furniture, field cases, notebook, pencil and abstract framed
+Doors, field cases, notebook, pencil and abstract framed
 pictures are product-authored box compositions; trim is built from the kit's
 trim styles in `content/scene/kit.json`, and light fittings are the models above: fixtures in
 `content/scene/fixtures.json`, placed by `content/excursions/west-wing/plan.json`. They introduce

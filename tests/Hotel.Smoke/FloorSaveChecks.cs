@@ -113,7 +113,7 @@ internal static class FloorSaveChecks
                     saved with { Floors = saved.Floors with { Collected = [.. saved.Floors.Collected, "floor-9/p1/table"] } },
                     saved with { Floors = saved.Floors with { Floors = [record with { Memory = record.Memory! with { Keys = ["no-such-key"] } }] } },
                     saved with { Floors = saved.Floors with { Floors = [record with { Memory = record.Memory! with { OpenDoors = ["floor-1/no-such-door"] } }] } },
-                    saved with { Floors = saved.Floors with { Floors = [record with { Memory = record.Memory! with { Residents = [] } }] } } })
+                    saved with { Floors = saved.Floors with { Floors = [record with { Memory = record.Memory! with { Residents = [.. record.Memory!.Residents ?? [], new ResidentState("floor-1/no-such-resident", 1, 0, 0, 0, 0)] } }] } } })
                 {
                     store.Save(HotelExpedition.Key, invalid);
                     string stored = JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState);

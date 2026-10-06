@@ -55,6 +55,10 @@ internal static class KitChecks
         Check(unknown, "an unknown trim style is refused naming the plan's field");
         int sconces = content.Excursion.Plan.Fixtures.Count(f => f.Kind == "sconce");
         Check(content.Excursion.Geometry.Models.Count(m => m.Path == "models/sconce.glb") == sconces && sconces > 0, "every sconce shows its fitting model");
-        Console.WriteLine("Kit checks passed: per-side wall surfaces, door, open and hatch links, lintel, continuing trim, trim styles with mouldings and architraves, fixture models, rooms and fixture lights.");
+        // Furniture is a model with hidden collider boxes: it blocks like the boxes it replaced and draws only the model.
+        RoomBox[] colliders = boxes.Where(b => b.Hidden).ToArray();
+        Check(colliders.Length > 0 && colliders.All(b => b.Solid) && content.Excursion.Geometry.Models.Any(m => m.Path.StartsWith("models/furniture/")),
+            "furniture models keep solid, undrawn collider boxes");
+        Console.WriteLine("Kit checks passed: per-side wall surfaces, door, open and hatch links, lintel, continuing trim, trim styles with mouldings and architraves, fixture models, furniture colliders, rooms and fixture lights.");
     }
 }

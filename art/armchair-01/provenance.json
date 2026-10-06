@@ -1,0 +1,49 @@
+{
+ "runFamily": "hotel-armchair-01",
+ "sourcePrompt": "request.json",
+ "imageProducer": "none (text-to-model)",
+ "meshProducer": "asset-pipeline tools/tripo/tripo.py generate --execute (standalone, output outside the asset-pipeline checkout)",
+ "provider": "Tripo",
+ "providerTaskId": "d8f4a606-5784-4868-8fd0-28c4cd01a10e",
+ "status": "succeeded",
+ "model": "P2-20260801",
+ "topology": "triangle",
+ "targetFaces": 12000,
+ "textureQuality": "standard",
+ "paidGenerationCount": 1,
+ "creditCharge": null,
+ "creditChargeNote": "Exact charged credits not reported in the retained result; no estimate asserted.",
+ "conversion": "Local Blender; prepare.py rotates the seat to face glTF +Z, sets a floor pivot and 0.82 m height, welds duplicates and drops degenerate faces; no paid conversion.",
+ "decision": "Placed as the armchair fixture (collider box, linen room); the one generated piece in the furniture set.",
+ "limitations": [
+  "Upholstery texture is mottled rather than a true crushed-velvet nap.",
+  "Generated texture detail, slightly richer than the parametric furniture beside it."
+ ],
+ "files": [
+  {
+   "path": "art/armchair-01/request.json",
+   "sha256": "6b82ccffd02618bd0bad238e4f28163ad64d787e8cd8afc9b8a5c961070a3264"
+  },
+  {
+   "path": "art/armchair-01/plan-01.json",
+   "sha256": "5493c0d572c20fd7833e287d552be0b57b91daf0249e7d25344ef858400d75d2"
+  },
+  {
+   "path": "art/armchair-01/native-01.glb",
+   "sha256": "80a5f4a170e3ed2e54cb1c81d72f38d573b8ed9ece92ae423c99ad97f9aa5539"
+  },
+  {
+   "path": "art/armchair-01/prepare.py",
+   "sha256": "84b183affe40d87f2d6079dd181482aa09e69e602f5590450e669736464f68f9"
+  },
+  {
+   "path": "art/armchair-01/armchair.blend",
+   "sha256": "deb8da4193094a322febf74b20fa342c19e33dce8799e7655511a3c6852650c5"
+  },
+  {
+   "path": "content/models/furniture/armchair.glb",
+   "sha256": "6953b0d9ecaebabe13b91c1ba66803fcd2c3943b7f2e5611387d51fd39ef237b"
+  }
+ ],
+ "providerReceipts": "Raw provider requests/responses contain signed download URLs and are not retained in the repository."
+}

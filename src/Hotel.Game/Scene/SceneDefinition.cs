@@ -60,7 +60,8 @@ internal sealed record ExcursionGeometry(RoomBox[] Boxes, Moulding[] Mouldings, 
         }
     }
 }
-internal sealed record RoomBox(string Name, float[] Min, float[] Max, string Material, bool Solid = true, string? Find = null);
+/// <param name="Hidden">Collision only: the box is never drawn.</param>
+internal sealed record RoomBox(string Name, float[] Min, float[] Max, string Material, bool Solid = true, string? Find = null, bool Hidden = false);
 
 /// <summary>
 /// A straight moulding run: its [out, across] profile swept from <see cref="Start"/> to <see cref="End"/> (on the wall

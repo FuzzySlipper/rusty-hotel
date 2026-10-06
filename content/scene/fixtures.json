@@ -399,7 +399,8 @@
             0.85,
             0.45
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -414,7 +415,8 @@
             0.78,
             0.3
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -429,7 +431,8 @@
             0.78,
             0.3
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         }
       ],
       "sockets": {
@@ -438,7 +441,18 @@
           0.85,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/furniture/side-table.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "writing-desk",
@@ -457,7 +471,8 @@
             0.83,
             1.05
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -472,7 +487,8 @@
             0.74,
             -0.89
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -487,7 +503,8 @@
             0.74,
             0.96
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -502,7 +519,8 @@
             0.74,
             -0.89
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -517,7 +535,8 @@
             0.74,
             0.96
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "case",
@@ -634,7 +653,18 @@
           0.83,
           -0.5
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/furniture/writing-desk.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "cartridge-table",
@@ -653,7 +683,8 @@
             0.84,
             0.32
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         }
       ],
       "sockets": {
@@ -662,7 +693,18 @@
           0.84,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/furniture/cartridge-table.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "log-desk",
@@ -681,7 +723,8 @@
             0.87,
             0.4
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -696,7 +739,8 @@
             0.78,
             0.3
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -711,7 +755,8 @@
             0.78,
             0.3
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "log",
@@ -734,7 +779,18 @@
           0.97,
           0.06
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/furniture/log-desk.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "reel-desk",
@@ -753,7 +809,8 @@
             0.87,
             0.8
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -768,7 +825,8 @@
             0.78,
             -0.66
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "leg",
@@ -783,7 +841,8 @@
             0.78,
             0.74
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         }
       ],
       "sockets": {
@@ -792,7 +851,18 @@
           0.87,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/furniture/reel-desk.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "guest-bench",
@@ -811,7 +881,8 @@
             0.55,
             0.275
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "base",
@@ -826,7 +897,52 @@
             0.3,
             0.205
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
+        }
+      ],
+      "models": [
+        {
+          "path": "models/furniture/guest-bench.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "armchair",
+      "mount": "Floor",
+      "parts": [
+        {
+          "name": "body",
+          "material": "trim",
+          "min": [
+            -0.46,
+            0.0,
+            -0.34
+          ],
+          "max": [
+            0.46,
+            0.8,
+            0.34
+          ],
+          "solid": true,
+          "collider": true
+        }
+      ],
+      "models": [
+        {
+          "path": "models/furniture/armchair.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
         }
       ]
     },
@@ -847,7 +963,19 @@
             0.85,
             0.9
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
+        }
+      ],
+      "models": [
+        {
+          "path": "models/furniture/low-cabinet.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
         }
       ]
     },
@@ -868,7 +996,8 @@
             0.8,
             0.4
           ],
-          "solid": true
+          "solid": true,
+          "collider": true
         },
         {
           "name": "case",
@@ -898,6 +1027,17 @@
             0.24
           ]
         }
+      ],
+      "models": [
+        {
+          "path": "models/furniture/luggage-table.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
       ]
     },
     {
@@ -917,21 +1057,8 @@
             0.72,
             0.28
           ],
-          "solid": true
-        },
-        {
-          "name": "foot",
-          "material": "brass",
-          "min": [
-            -0.22,
-            0.72,
-            -0.22
-          ],
-          "max": [
-            0.22,
-            0.78,
-            0.22
-          ]
+          "solid": true,
+          "collider": true
         }
       ],
       "sockets": {
@@ -940,7 +1067,18 @@
           1.15,
           0.0
         ]
-      }
+      },
+      "models": [
+        {
+          "path": "models/furniture/bell-pedestal.glb",
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "scale": 1
+        }
+      ]
     },
     {
       "id": "open-door-leaf",

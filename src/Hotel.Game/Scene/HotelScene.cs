@@ -141,16 +141,19 @@ internal sealed class HotelScene : IDisposable
             SurfaceDefinition surface = surfaceDefinitions[box.Material];
             MeshResource mesh = RoomGeometry.Box(engine, surfaces[box.Material], min, max, new(surface.TileWidth, surface.TileHeight));
             meshList.Add(mesh);
-            Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
-            appearanceList.Add(appearance);
             EntityId entity = Entities.Create();
             Transform pose = new(Vector3.Zero, Quaternion.Identity, Vector3.One);
-            if (finds is not null && box.Find is string find)
+            if (!box.Hidden)
             {
-                if (!finds.TryGetValue(find, out List<int>? indices)) finds.Add(find, indices = []);
-                indices.Add(placed.Count);
+                Appearance appearance = engine.Graphics.CreateMeshAppearance(mesh);
+                appearanceList.Add(appearance);
+                if (finds is not null && box.Find is string find)
+                {
+                    if (!finds.TryGetValue(find, out List<int>? indices)) finds.Add(find, indices = []);
+                    indices.Add(placed.Count);
+                }
+                placed.Add(new AppearanceFact(entity.Value, false, 0, pose, appearance, true, RenderLayer.Scene));
             }
-            placed.Add(new AppearanceFact(entity.Value, false, 0, pose, appearance, true, RenderLayer.Scene));
             if (box.Solid)
             {
                 ulong asset = checked(assetBase + (ulong)assetList.Count + 1);

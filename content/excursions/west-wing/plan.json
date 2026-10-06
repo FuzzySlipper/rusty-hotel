@@ -616,6 +616,15 @@
         8.9
       ],
       "turn": 2
+    },
+    {
+      "kind": "armchair",
+      "space": "east",
+      "at": [
+        4.7,
+        -9.4
+      ],
+      "turn": 3
     }
   ],
   "lighting": {

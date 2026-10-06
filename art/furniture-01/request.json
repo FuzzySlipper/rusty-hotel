@@ -1,0 +1,19 @@
+{
+ "humanRequest": "Owner, 2026-10-05: the box furniture all needs replacing; replace it as one coherent batch (#9517). Paid Tripo generations authorized.",
+ "goal": "One set of 1970s hotel furniture at a shared level of detail, fitted to the existing fixture footprints, readable in low warm lamp light.",
+ "runFamily": "hotel-furniture-01",
+ "imageProducer": "none: no image-generation tool in this session, so Tripo text-to-model",
+ "paidMeshAllowance": "One P2 text-to-model generation per piece, triangle topology, 10000 faces, standard textures; inspect before any retry.",
+ "styleSuffix": "1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+ "pieces": {
+  "side-table": "A square walnut side table with a thick plain top and two solid panel ends instead of legs. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "writing-desk": "A long plain walnut writing table with four square tapered legs, a flat empty top and a shallow apron, no drawers. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "cartridge-table": "A small closed walnut cabinet with a plain front panel, a flat top and a short plinth base. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "log-desk": "A small oak reception writing table with two solid side panels, a flat empty top and a modesty panel. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "reel-desk": "A long teak work table with thick plank ends and a flat empty top. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "guest-bench": "A long upholstered hotel corridor bench with a mustard vinyl cushion seat on a dark wood plinth base, no back. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "low-cabinet": "A long low walnut sideboard cabinet with two sliding doors, small brass pulls and short tapered legs. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "luggage-table": "A hotel luggage rack table: a dark wood frame with brass corner caps and a slatted wooden top. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered.",
+  "bell-pedestal": "A short square wooden pedestal stand with a moulded base and a plain marble top. 1970s hotel furniture game prop. Sturdy simple forms, realistic slightly worn materials, no thin parts, no objects on or around it. Complete object standing on the ground, centered."
+ }
+}
