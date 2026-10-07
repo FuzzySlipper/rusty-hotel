@@ -35,7 +35,7 @@ internal sealed class HotelScene : IDisposable
     private readonly Dictionary<string, SurfaceDefinition> surfaceDefinitions = new(StringComparer.Ordinal);
     private Preview? preview;
 
-    internal HotelScene(IEngineContext engine, SurfaceDefinition[] surfaceDefinitions, ExcursionGeometry geometry, DoorDefinition[] doorDefinitions)
+    internal HotelScene(IEngineContext engine, SurfaceDefinition[] surfaceDefinitions, AgingCatalog aging, ExcursionGeometry geometry, DoorDefinition[] doorDefinitions)
     {
         this.engine = engine;
         Entities = new EntityStore([EngineComponentTypes.Transform, EngineComponentTypes.CharacterMotion]);
@@ -45,6 +45,7 @@ internal sealed class HotelScene : IDisposable
         try
         {
             List<AppearanceFact> placed = [];
+            RenderResource? agedShader = null;
             Dictionary<string, RenderResourceReference> texturePaths = new(StringComparer.Ordinal);
             foreach (SurfaceDefinition surface in surfaceDefinitions)
             {
@@ -61,9 +62,23 @@ internal sealed class HotelScene : IDisposable
                 }
                 RenderResourceReference texture = surface.Texture is string path ? Texture(path, TextureColorSpace.Srgb) : default;
                 RenderResourceReference normal = surface.NormalMap is string map ? Texture(map, TextureColorSpace.Linear) : default;
+                RenderResourceReference orm = surface.OrmMap is string packed ? Texture(packed, TextureColorSpace.Linear) : default;
+                MaterialShader shader = default;
+                if (surface.Aging is string profile)
+                {
+                    if (agedShader is null)
+                    {
+                        agedShader = engine.Graphics.OpenResource(new RenderResourceRequest(aging.Shader)).Handle;
+                        textures.Add(agedShader);
+                    }
+                    (Vector4 wear, Vector4 stain, Vector4 seam, Vector4 tint) = AgingCatalog.Parameters(aging.Profiles[profile], surface);
+                    shader = new(new RenderResourceReference(agedShader.Handle.Value), wear, stain, seam, tint,
+                        Texture(aging.Noise, TextureColorSpace.Linear), default);
+                }
                 Material material = engine.Graphics.CreateMaterial(new MaterialRequest(
                     new Color(rgb.X, rgb.Y, rgb.Z, 1), texture, surface.Roughness, new Color(1, 1, 1, 1), surface.Emission > 0 ? rgb : Vector3.Zero,
-                    surface.Emission, false, MaterialAlphaMode.Opaque, 0, 0, normal, surface.NormalScale ?? 0));
+                    surface.Emission, false, MaterialAlphaMode.Opaque, 0, 0, normal, surface.NormalScale ?? 0)
+                    { OrmMap = orm, StochasticTiling = surface.StochasticTiling, Shader = shader });
                 materials.Add(material);
                 surfaces.Add(surface.Id, material);
                 this.surfaceDefinitions.Add(surface.Id, surface);

@@ -9,17 +9,26 @@ exact prompts and portable provenance. These authoring tools never run during
 `materials-01/` adopts tileable PBR sets made by asset-pipeline's `tools/materials` (GPT 2×2 swatches cut to one
 period for designed repeats; Z-Image with native seamless tiling on den-m5 for organic surfaces; DeepBump normals and
 region-spec roughness, height and AO). `requests/` keeps each set's exact request; `<id>/material.json` its manifest
-(prompt, seed, hosts, seams, hashes) and `<id>/orm.png` its packed occlusion, roughness and metalness, which the pinned
-Engine cannot sample yet. `sets.json` lists the adopted sets. Run, with the asset-pipeline output folder:
+(prompt, seed, hosts, seams, hashes) and `<id>/` every map it declares, byte for byte: albedo, normal, height, the
+DeepBump height, roughness, AO and the packed ORM. `sets.json` lists the adopted sets with their normal scale and,
+for a set without a direction, its hex tiling. Run, with the asset-pipeline output folder:
 
 ```text
 python3 art/materials-01/adopt.py /home/agent/dev/asset-pipeline/live-evidence/materials
 ```
 
-It writes the runtime albedo and normal as RGBA8 PNG into `content/materials/<id>/` and prints each surface entry
-(repeat from the manifest and the map's aspect, roughness as the ORM's mean). Thirteen wallpapers and carpets come
+It refuses a map whose hash differs from its manifest, writes the runtime albedo, normal and ORM as RGBA8 PNG into
+`content/materials/<id>/` and prints each surface entry (repeat from the manifest and the map's aspect). With
+`--verify` in place of the folder it checks every retained map against its manifest's hash and every runtime map's
+pixels against its retained map, with no source. Thirteen wallpapers and carpets come
 from asset-pipeline's library `hotel-01`; the ceilings (stucco, acoustic tile), painted plaster and woods (walnut
 veneer on doors and trim, oak panelling) were made for the hotel with the same tool.
+
+## Weathering noise
+
+`weathering-01/noise.py` writes `content/materials/weathering/noise.png`, the tileable linear noise the aged-surface
+shader samples (red wear, green stains, blue seam lift, alpha grain), from a fixed seed with numpy; rerunning it
+reproduces the file.
 
 ## Wallpaper and carpet (first set)
 

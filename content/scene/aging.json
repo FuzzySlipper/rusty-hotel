@@ -1,0 +1,26 @@
+{
+  "shader": "shaders/aged.wgsl",
+  "noise": "materials/weathering/noise.png",
+  "profiles": {
+    "wallpaper": {
+      "wear": { "strength": 0.5, "size": 1.6 },
+      "fade": { "strength": 0.45, "reach": 1.4 },
+      "stain": { "strength": 0.7, "size": 1.1, "foot": 1.5, "head": 2.6, "colour": [0.82, 0.68, 0.46] },
+      "seam": { "strength": 0.8 }
+    },
+    "plaster": {
+      "wear": { "strength": 0.4, "size": 1.8 },
+      "fade": { "strength": 0.35, "reach": 1.4 },
+      "stain": { "strength": 0.6, "size": 1.1, "foot": 1.5, "head": 2.6, "colour": [0.82, 0.7, 0.5] }
+    },
+    "carpet": {
+      "wear": { "strength": 0.8, "size": 1.6 },
+      "stain": { "strength": 0.7, "size": 0.9, "foot": 0, "head": 0, "colour": [0.72, 0.6, 0.48] }
+    },
+    "ceiling": {
+      "wear": { "strength": 0.3, "size": 2.0 },
+      "fade": { "strength": 0.3, "reach": 1.0 },
+      "stain": { "strength": 0.6, "size": 1.3, "foot": 0, "head": 0, "colour": [0.78, 0.64, 0.42] }
+    }
+  }
+}

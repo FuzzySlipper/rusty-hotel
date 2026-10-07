@@ -18,7 +18,7 @@ internal static class KeyChecks
         DoorDefinition survey = content.Excursion.Route.Doors.Single(d => d.Id == "survey") with { Key = "test-key", LockedPrompt = "Locked · Needs the test key" };
         KeyDefinition key = new("test-key-find", "test-key", "test key", [0, 0.2f, -11.4f]);
         ExcursionRoute keyed = content.Excursion.Route with { Doors = [survey, .. content.Excursion.Route.Doors.Where(d => d.Id != "survey")], Keys = [key] };
-        using HotelScene scene = new(engine, content.Surfaces, content.Excursion.Geometry, keyed.Doors);
+        using HotelScene scene = new(engine, content.Surfaces, content.Aging, content.Excursion.Geometry, keyed.Doors);
         using var player = Owners.Player(engine, scene, content);
         var supplies = Owners.Supplies(content, scene.PlayerEntity);
         var combat = Owners.Combat(engine, scene, player, supplies, content);

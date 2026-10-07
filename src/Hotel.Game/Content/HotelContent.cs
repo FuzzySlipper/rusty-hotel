@@ -22,7 +22,7 @@ namespace Hotel.Game.Content;
 /// </summary>
 internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, MechanicsDefinition Mechanics, ActorStatBlock PlayerStats,
     RouteDefinition Route, InterfaceTuning Interface,
-    SurfaceDefinition[] Surfaces, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, Hotel.Game.Loot.LootCatalog Loot, Hotel.Game.Progression.GrowthDefinition Growth, CombatDefinition Combat, SpiritDefinition[] Spirits,
+    SurfaceDefinition[] Surfaces, AgingCatalog Aging, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, Hotel.Game.Loot.LootCatalog Loot, Hotel.Game.Progression.GrowthDefinition Growth, CombatDefinition Combat, SpiritDefinition[] Spirits,
     SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
@@ -44,7 +44,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         RouteDefinition route = RouteDefinition.Load(engine, keys);
         ModuleCatalog modules = ModuleCatalog.Load(engine, kit, fixtures, ModuleBody.Of(player, route.Interaction));
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
-            surfaces, SceneLook.Load(engine), kit, fixtures, modules, supplies, loot, growth, combat,
+            surfaces, AgingCatalog.Load(engine), SceneLook.Load(engine), kit, fixtures, modules, supplies, loot, growth, combat,
             SpiritRoster.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray()), SpiritMessages.Load(engine, keys),
             ExpeditionMessages.Load(engine), excursion);
         content.Validate();
@@ -57,6 +57,9 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
     private void Validate()
     {
         Unique(Surfaces.Select(s => s.Id), SurfaceCatalog.Path, "surfaces");
+        for (int i = 0; i < Surfaces.Length; i++)
+            if (Surfaces[i].Aging is string aging)
+                Authored.Require(Aging.Profiles.ContainsKey(aging), SurfaceCatalog.Path, $"surfaces[{i}].aging", $"unknown profile '{aging}' in {AgingCatalog.Path}.");
         Authored.Require(Controls.QuickPockets.Length == Interface.QuickPockets && Interface.QuickPockets > 0, ControlBindings.Path, "quickPockets",
             $"one binding per quick pocket in {InterfaceTuning.Path} ({Interface.QuickPockets}).");
         Unique(Supplies.Items.Select(i => i.Id), ItemCatalog.Path, "items");

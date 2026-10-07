@@ -22,13 +22,20 @@ internal sealed record SurfaceCatalog(SurfaceDefinition[] Surfaces)
             Authored.Require((s.NormalMap is null) == (s.NormalScale is null), Path,
                 s.NormalMap is null ? $"surfaces[{i}].normalMap" : $"surfaces[{i}].normalScale", "a normal map and its scale are given together.");
             if (s.NormalScale is { } scale) Authored.Positive(Path, $"surfaces[{i}].normalScale", scale);
+            Authored.Require(s.StochasticTiling == 0 || s.StochasticTiling >= 1, Path, $"surfaces[{i}].stochasticTiling",
+                "is 0 for none or a blend sharpness of 1 or more.");
         }
         return catalog;
     }
 }
 /// <param name="NormalMap">A linear tangent-space normal map tiled like <see cref="Texture"/>, bent by <see cref="NormalScale"/>.</param>
+/// <param name="OrmMap">A linear packed map tiled like <see cref="Texture"/>: red occlusion, green roughness (times
+/// <see cref="Roughness"/>), blue metalness.</param>
+/// <param name="StochasticTiling">Hex tiling's blend sharpness, breaking the repeat of a texture without a direction; 0 for none.</param>
+/// <param name="Aging">The scene/aging.json profile that wears, fades and stains this surface.</param>
 internal sealed record SurfaceDefinition(string Id, float[] Color, string? Texture = null,
-    float TileWidth = 1, float TileHeight = 1, float Roughness = .9f, float Emission = 0, string? NormalMap = null, float? NormalScale = null);
+    float TileWidth = 1, float TileHeight = 1, float Roughness = .9f, float Emission = 0, string? NormalMap = null, float? NormalScale = null,
+    string? OrmMap = null, float StochasticTiling = 0, string? Aging = null);
 
 /// <summary>One excursion's static boxes, props and lights.</summary>
 internal sealed record ExcursionGeometry(RoomBox[] Boxes, Moulding[] Mouldings, ModelDefinition[] Models, LightingDefinition Lighting)

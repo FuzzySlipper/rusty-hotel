@@ -29,7 +29,8 @@ its own folder. Geometry is kept apart from tuning.
 | `route/interaction.json` | Reach and focus distances/angles for every world interaction; `HotelRoute` |
 | `route/messages.json` | Focus prompt wording and the labels of the take/notebook interactions; `HotelRoute` |
 | `interface/tuning.json` | Field-case pocket count and how many appear as HUD quick pockets; `HotelHud`, `HotelSupplies` |
-| `scene/surfaces.json` | Reusable surfaces: tint, texture, world-metre tile size, roughness, emission; `HotelScene` |
+| `scene/surfaces.json` | Reusable surfaces: tint, texture, world-metre tile size, roughness, emission, normal and ORM maps, hex tiling, aging profile; `HotelScene` |
+| `scene/aging.json` | Aging profiles (wear, lamp fade, water stains, wallpaper seam lift), the aged-surface shader and its noise; `AgingCatalog` |
 | `mechanics/stats.json` | The stat vocabulary every actor shares: attributes, stats derived from them, and the resource tracks those bound; `ActorStats` |
 | `mechanics/damage.json` | Damage kinds and the bounds of each actor's resistance to them; `ActorStats` |
 | `mechanics/effects.json` | Every effect an actor can bear: name, mark, stacking group and rule, duration and one kind's settings; `ActorEffects` |
@@ -299,7 +300,7 @@ faces. The west wing names its style in `plan.json`; a generated floor draws one
 generated floor draws one from `floors/layout.json`'s `decors` and keeps it through every shift. A decor gives, per
 space style (`corridor`, `guest-room`, `service`), the `wall`, `floor` and `ceiling` surfaces that replace the style's
 own; any it leaves out, and any a space overrides itself, stand. Decor surfaces are the material library in
-`content/materials/<id>/` (albedo and normal, adopted by `art/materials-01/adopt.py`); a surface's `tileWidth` and
+`content/materials/<id>/` (albedo, normal and ORM, adopted by `art/materials-01/adopt.py`); a surface's `tileWidth` and
 `tileHeight` are the material's real repeat, its height following the map's aspect for non-square periods.
 
 **Fixture models.** A fixture may show authored GLB `models` at an `offset` in its frame, turned with it; a model
@@ -324,7 +325,19 @@ readability of doors, finds, resident tells and the spirit, and record its frame
 
 Material IDs connect fixtures, styles and doors to surfaces. `tileWidth`/`tileHeight` set
 world-metre repeats, and a textured surface may add a `normalMap` (a linear tangent-space map tiled like its texture)
-with its `normalScale`; give both or neither. Keep wallpaper relief faint (printed paper, not stucco); room geometry projects UVs from world position so adjacent
+with its `normalScale`; give both or neither. An `ormMap` is a linear packed map tiled the same way (red occlusion,
+green roughness, blue metalness): its green multiplies `roughness`, so a library surface sets `roughness` 1 and its
+flock, ink and ground keep their own sheen. `stochasticTiling` (0 for none; around 6 keeps the texture crisp) reads
+texture, normal and ORM as rotated, offset hex tiles to hide the repeat; give it only to a surface without a
+direction (stucco, plaster, berber, shag, embossed vinyl), never to a designed repeat, stripes, grain or weave.
+
+**Aging.** A surface's `aging` names a profile in `scene/aging.json`, drawn by `content/shaders/aged.wgsl` over the
+standard shading in world space, so marks cross repeats, boxes and rooms. Every part is optional: `wear` darkens broad
+patches about `size` metres across; `fade` washes colour toward a paler grey within `reach` metres of each lamp;
+`stain` lays water stains `size` metres across in `colour` with a darker tide line, fading in from world height
+`foot` to full at `head` (a head at or below the foot stains everywhere, as on ceilings and carpets); `seam` lifts
+wallpaper at its strip joins, one strip per texture repeat. Strengths run 0 to 1. Judge a change at eye height
+against the same fixed `hotel.dev.view` points with and without it, and record the frame time. Keep wallpaper relief faint (printed paper, not stucco); room geometry projects UVs from world position so adjacent
 wall sections share a pattern phase. Inspect near/far repeats at eye height in
 motion. Preserve the broad wallpaper/fine dark carpet hierarchy from the two
 original images in `docs/references/`.
