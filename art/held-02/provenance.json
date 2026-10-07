@@ -1,0 +1,223 @@
+{
+ "runFamily": "hotel-held-02",
+ "sourcePrompt": "request.json (style + per-piece subject)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec), one image per piece",
+ "meshProducer": "asset-pipeline legacy/experiments/comfy-native-image-to-3d/run_native.py, TRELLIS.2 bf16 on the RTX 5090 ComfyUI (den-patch); runs/<piece>/ keeps each run's prompt and settings",
+ "runs": {
+  "fire-axe": {
+   "wallSeconds": 40.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "letter-opener": {
+   "wallSeconds": 45.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "walking-cane": {
+   "wallSeconds": 45.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "candelabra": {
+   "wallSeconds": 50.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "coach-gun": {
+   "wallSeconds": 45.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "bar-darts": {
+   "wallSeconds": 40.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "fire-extinguisher": {
+   "wallSeconds": 50.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "hotel-bible": {
+   "wallSeconds": 100.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  }
+ },
+ "conversion": "Local Blender; prepare.py (from held-01, with a level option for pieces reconstructed lying diagonally); textures 1024 JPEG, metal softened",
+ "files": [
+  {
+   "path": "art/held-02/bar-darts.blend",
+   "sha256": "1b683bc366b88e045b73e4807672ff4dbcb562b4f3334ddfb90aac7291130d1b"
+  },
+  {
+   "path": "art/held-02/candelabra.blend",
+   "sha256": "9007f90aaacc077af1908ab9d38659295926d5a74b8641ead598957ef7fd1808"
+  },
+  {
+   "path": "art/held-02/coach-gun.blend",
+   "sha256": "c4a541ac629c3de4973c6a9ab8f160ef668a682077669e6dfba5cc2d62ef58fb"
+  },
+  {
+   "path": "art/held-02/fire-axe.blend",
+   "sha256": "4826ec52b7e68e57b0687f72f96990669527bc6c6a24fb5cf6f3607264915a57"
+  },
+  {
+   "path": "art/held-02/fire-extinguisher.blend",
+   "sha256": "da7d3c407171b396eac265e23abf6eeb8afde86d4c8318feda1770f6a656e2cc"
+  },
+  {
+   "path": "art/held-02/hotel-bible.blend",
+   "sha256": "861b5fb8877ca53a7fce2e8e8fcc5276860b0b3388d81a77a3462aa1db7cf362"
+  },
+  {
+   "path": "art/held-02/letter-opener.blend",
+   "sha256": "4989720e683b5370990b4b8448e4354bf6a86d60277b7aebab927fb0b5a7ea86"
+  },
+  {
+   "path": "art/held-02/native/bar-darts.glb",
+   "sha256": "70f922c50087c7720604d7ae2b27b0dd677b408cdbd88daedf8aff3c8c3e47dc"
+  },
+  {
+   "path": "art/held-02/native/candelabra.glb",
+   "sha256": "f9bed39df7dc801fca6ef909bfeb3e9a15f54bc9872accaa5087d8547ad0901f"
+  },
+  {
+   "path": "art/held-02/native/coach-gun.glb",
+   "sha256": "fa725df2652da7d9178f2fc10ed708908bf80461d6c5bc11b021e2a1e8178c73"
+  },
+  {
+   "path": "art/held-02/native/fire-axe.glb",
+   "sha256": "d6678f33cc948cf0c799974de98ae6b93b38084f5d14742cf28d3af90c6b684e"
+  },
+  {
+   "path": "art/held-02/native/fire-extinguisher.glb",
+   "sha256": "bd4ec6769a1908c86c1d9042f10bc96052d0abb26c61e669c61ffe535d37ce8e"
+  },
+  {
+   "path": "art/held-02/native/hotel-bible.glb",
+   "sha256": "1f29639555cb914270dc69cfbe07c7b5f44353a5008a0e88385e09aacd5d502e"
+  },
+  {
+   "path": "art/held-02/native/letter-opener.glb",
+   "sha256": "592ae716c78eb3424136b2b05d8e63d95fb22df7b55c939bedf5f3a46cf537d8"
+  },
+  {
+   "path": "art/held-02/native/walking-cane.glb",
+   "sha256": "2d601daaa93fe874b1fecf2aed5152588bdbbde4c28e85a635231afdbf98751f"
+  },
+  {
+   "path": "art/held-02/pieces.json",
+   "sha256": "d4f5443d37ce572a2adccb30f2fa699f2638ef8406a9d43b966b6501dbd14008"
+  },
+  {
+   "path": "art/held-02/prepare.py",
+   "sha256": "fd04e8307d21fa9401aadca36fc8ad2c015da2c017686cb0fc914fd349e328a3"
+  },
+  {
+   "path": "art/held-02/request.json",
+   "sha256": "92dfdd00414ffa3bc12537722d66bd2e307848655ab93a735a18ff17460421b4"
+  },
+  {
+   "path": "art/held-02/source-bar-darts.png",
+   "sha256": "db041546672afc1b98fe2079e40ae6c3e63505da1ff2b0d409e6a89a802bfd84"
+  },
+  {
+   "path": "art/held-02/source-candelabra.png",
+   "sha256": "f3b69f95ac3b8b052a26902d2e9d8c07883d26806f835f035d08c9c4eafd4098"
+  },
+  {
+   "path": "art/held-02/source-coach-gun.png",
+   "sha256": "85a74cd4fb6ca2c511820dcc1da53ce43f34ab370a1fcc6ba6cae3a4a8451b79"
+  },
+  {
+   "path": "art/held-02/source-fire-axe.png",
+   "sha256": "bc5639f54b119edf1c9402256956e825bdca06ef727da13b9498c8e3eb93ad35"
+  },
+  {
+   "path": "art/held-02/source-fire-extinguisher.png",
+   "sha256": "054f6bbe1348c01e4f7a030ad5efab19cdd50be493535fa4bc5901aa9222d276"
+  },
+  {
+   "path": "art/held-02/source-hotel-bible.png",
+   "sha256": "8a92093c57ea73e361f95507ce18018d11eaf8ac1de08fddb3dab518e56cf8f2"
+  },
+  {
+   "path": "art/held-02/source-letter-opener.png",
+   "sha256": "ea453ecee28ab542fd4fafbaf8f5ecc631973ac83afa7bdaa670bffff407f0f2"
+  },
+  {
+   "path": "art/held-02/source-walking-cane.png",
+   "sha256": "fe3c6bf15b196682c76fd75bbd5e5acd785248edc87618e8b30a7a2a6a23cdcf"
+  },
+  {
+   "path": "art/held-02/walking-cane.blend",
+   "sha256": "c77b03fe4a3f675b8fefdada154ebc067193b2ed13981486dc5b6afd44a8508d"
+  },
+  {
+   "path": "content/models/held/bar-darts.glb",
+   "sha256": "3703f3cc433d194a2130c31944914216b4e3645c95f3760757633cbc3d57bd90"
+  },
+  {
+   "path": "content/models/held/candelabra.glb",
+   "sha256": "275020d0e6b4f34acc8c91f03b0a029711ae223905f6204b06a25688a8af0c41"
+  },
+  {
+   "path": "content/models/held/coach-gun.glb",
+   "sha256": "98cc5a7a8551a9cf51f73209ec47737d5b21cd6fe48555242cb0f15e86dc2e84"
+  },
+  {
+   "path": "content/models/held/fire-axe.glb",
+   "sha256": "581fdf32ed629d1f470bd022ddc8e65b834b6c4817c82b5c25ab4082bcc8a937"
+  },
+  {
+   "path": "content/models/held/fire-extinguisher.glb",
+   "sha256": "6f3eb5525fc4279281f31ddbb2dd8eb1bc65a51079e89740f8c0eed4b1fee0f0"
+  },
+  {
+   "path": "content/models/held/hotel-bible.glb",
+   "sha256": "3bd0a85922e7a1d94dc26308d3454f24a20ddf960bd060d2a6ef61cfc76f2dab"
+  },
+  {
+   "path": "content/models/held/letter-opener.glb",
+   "sha256": "622b50536c53463d2bf75f51403c13ea9177554dd02c7d2b96264d440bb0d3c0"
+  },
+  {
+   "path": "content/models/held/walking-cane.glb",
+   "sha256": "3c06cdb7995410de0437ee4b7b0f1554b5b4f69cc9b28f7e47eb28d149857881"
+  }
+ ]
+}

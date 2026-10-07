@@ -23,7 +23,7 @@
           "prybar-swing",
           "prybar-shove"
         ],
-        "look": "Bar"
+        "look": "prybar"
       }
     },
     {
@@ -49,7 +49,7 @@
           "pistol-shot",
           "pistol-reload"
         ],
-        "look": "Pistol"
+        "look": "survey-pistol"
       }
     },
     {
@@ -74,7 +74,7 @@
         "actions": [
           "bell-ring"
         ],
-        "look": "Bell"
+        "look": "service-bell"
       }
     },
     {
@@ -99,7 +99,7 @@
         "actions": [
           "flare-shot"
         ],
-        "look": "Flare"
+        "look": "flare-pistol"
       }
     },
     {
@@ -524,6 +524,590 @@
           "stats": [],
           "practice": {
             "marksmanship": 6
+          }
+        }
+      }
+    },
+    {
+      "id": "fire-axe",
+      "name": "Fire axe",
+      "description": "The corridor's fire axe, its red head chipped to bright steel. Slow, and it lands like a dropped trunk; heft it fully and it cleaves and staggers.",
+      "mark": "⚒",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 8,
+        "space": 3
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "axe-chop",
+          "axe-cleave"
+        ],
+        "look": "fire-axe"
+      }
+    },
+    {
+      "id": "letter-opener",
+      "name": "Brass letter opener",
+      "description": "A slim brass dagger from a writing desk. It barely wounds, but it is quick, and quicker in nimble hands.",
+      "mark": "†",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "opener-stab"
+        ],
+        "look": "letter-opener"
+      }
+    },
+    {
+      "id": "walking-cane",
+      "name": "Silver-topped cane",
+      "description": "An ebony cane with a heavy silver knob. It reaches farther than an arm, and its crook hooks a resident off its feet and away.",
+      "mark": "ʃ",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 3,
+        "space": 2
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "cane-strike",
+          "cane-hook"
+        ],
+        "look": "walking-cane"
+      }
+    },
+    {
+      "id": "candelabra",
+      "name": "Brass candelabra",
+      "description": "Three candle stubs on a weighted brass stem, still lit. Swung, it bruises and sets what it strikes alight.",
+      "mark": "Ψ",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 5,
+        "space": 2
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "candelabra-swing"
+        ],
+        "look": "candelabra"
+      }
+    },
+    {
+      "id": "coach-gun",
+      "name": "Coach gun",
+      "description": "The night watchman's double-barrelled shotgun. Both barrels at once, close, from the ammunition reserve; it throws a resident back on its heels. Its second action loads carried cartridges.",
+      "mark": "═",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 7,
+        "space": 3
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "coach-gun-blast",
+          "pistol-reload"
+        ],
+        "look": "coach-gun"
+      }
+    },
+    {
+      "id": "bar-darts",
+      "name": "Bar darts",
+      "description": "Three brass darts from the lounge board. Thrown, they fly true and come back to the hand; steadier hands throw them harder.",
+      "mark": "➶",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "darts-throw"
+        ],
+        "look": "bar-darts"
+      }
+    },
+    {
+      "id": "fire-extinguisher",
+      "name": "Fire extinguisher",
+      "description": "A soda-acid extinguisher, heavy and sloshing. Its cold spray slows everything it soaks.",
+      "mark": "◍",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 9,
+        "space": 3
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "extinguisher-spray"
+        ],
+        "look": "fire-extinguisher"
+      }
+    },
+    {
+      "id": "hotel-bible",
+      "name": "Hotel bible",
+      "description": "A bedside bible with gilt edges. Read aloud, a verse stings what is not quite alive around you and steadies your nerve.",
+      "mark": "✝",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "held"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [],
+        "contributions": [],
+        "actions": [
+          "bible-recite"
+        ],
+        "look": "hotel-bible"
+      }
+    },
+    {
+      "id": "bromide-tonic",
+      "name": "Bromide tonic",
+      "description": "A small blue bottle of nerve tonic. Restores {stamina} stamina, and you breathe easier for a while after.",
+      "mark": "♁",
+      "form": "Fungible",
+      "stackLimit": 3,
+      "classifications": [
+        "remedy"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {
+          "stamina": 30
+        },
+        "effects": [
+          "refreshed"
+        ],
+        "action": "use-supply"
+      }
+    },
+    {
+      "id": "hip-flask",
+      "name": "Hip flask",
+      "description": "A dented pewter flask of brandy. Restores {health} health and stiffens you against the next blow that would put you down.",
+      "mark": "◒",
+      "form": "Fungible",
+      "stackLimit": 2,
+      "classifications": [
+        "remedy"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {
+          "health": 10
+        },
+        "effects": [
+          "steeled"
+        ],
+        "action": "use-supply"
+      }
+    },
+    {
+      "id": "votive-candle",
+      "name": "Votive candle",
+      "description": "A red glass votive from the hotel chapel. Lit, it burns long beside you and its smoke wards you a little.",
+      "mark": "♨",
+      "form": "Fungible",
+      "stackLimit": 2,
+      "classifications": [
+        "remedy"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [
+          "candle-light"
+        ],
+        "action": "use-supply"
+      }
+    },
+    {
+      "id": "paper-shells",
+      "name": "Paper shells",
+      "description": "A box of paper-cased shotgun shells. Transfers up to {ammunition} rounds to your ammunition reserve.",
+      "mark": "▤",
+      "form": "Fungible",
+      "stackLimit": 3,
+      "classifications": [
+        "ammunition"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "use": {
+        "restores": {
+          "ammunition": 4
+        },
+        "effects": [],
+        "action": "use-supply"
+      }
+    },
+    {
+      "id": "doorman-greatcoat",
+      "name": "Doorman's greatcoat",
+      "description": "A long greatcoat of heavy burgundy melton, frogged in gold braid. Worn, blows and splinters barely reach you, but it weighs on every step.",
+      "mark": "▦",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "coat"
+      ],
+      "costs": {
+        "weight": 18,
+        "space": 5
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "resistance.blunt",
+            "amount": 0.2
+          },
+          {
+            "stat": "resistance.pierce",
+            "amount": 0.15
+          },
+          {
+            "stat": "agility",
+            "amount": -1
+          }
+        ],
+        "contributions": [],
+        "actions": []
+      }
+    },
+    {
+      "id": "leather-apron",
+      "name": "Kitchen apron",
+      "description": "A scorched leather apron from the night kitchen. Worn, fire hardly touches you.",
+      "mark": "▣",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "coat"
+      ],
+      "costs": {
+        "weight": 6,
+        "space": 2
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "resistance.fire",
+            "amount": 0.35
+          }
+        ],
+        "contributions": [],
+        "actions": []
+      }
+    },
+    {
+      "id": "kid-gloves",
+      "name": "Kid gloves",
+      "description": "Thin grey kid gloves, soft as skin. Worn, your hands are quicker.",
+      "mark": "☜",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "gloves"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "agility",
+            "amount": 2
+          }
+        ],
+        "contributions": [],
+        "actions": []
+      }
+    },
+    {
+      "id": "clerk-visor",
+      "name": "Night clerk's eyeshade",
+      "description": "A green celluloid eyeshade from the front desk. Worn, the spirits seem nearer.",
+      "mark": "◚",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "cap"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "attunement",
+            "amount": 2
+          }
+        ],
+        "contributions": [],
+        "actions": []
+      }
+    },
+    {
+      "id": "galoshes",
+      "name": "Rubber galoshes",
+      "description": "Black rubber overshoes, cold and sure-footed. Worn, you keep your nerve and your footing.",
+      "mark": "◟",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "shoes"
+      ],
+      "costs": {
+        "weight": 3,
+        "space": 2
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": null,
+        "stats": [
+          {
+            "stat": "nerve",
+            "amount": 2
+          },
+          {
+            "stat": "resistance.spirit",
+            "amount": 0.05
+          }
+        ],
+        "contributions": [],
+        "actions": []
+      }
+    },
+    {
+      "id": "mourning-ring",
+      "name": "Mourning ring",
+      "description": "A jet ring set with a lock of someone's hair. Worn, the spirits' touch is fainter, and you hear them better. One mourning ring answers at a time.",
+      "mark": "●",
+      "form": "Unique",
+      "stackLimit": 1,
+      "classifications": [
+        "ring"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 0
+      },
+      "wear": {
+        "slots": 1,
+        "exclusive": "mourning",
+        "stats": [
+          {
+            "stat": "attunement",
+            "amount": 2
+          },
+          {
+            "stat": "resistance.spirit",
+            "amount": 0.2
+          }
+        ],
+        "contributions": [],
+        "actions": []
+      }
+    },
+    {
+      "id": "room-key-fob",
+      "name": "Brass key fob",
+      "description": "A heavy brass fob for a room that is not on any floor. Kept close, it makes you a little harder to tire, for good.",
+      "mark": "⚷",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "relic"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [
+            {
+              "stat": "maximum-stamina",
+              "amount": 8
+            }
+          ],
+          "practice": {}
+        }
+      }
+    },
+    {
+      "id": "wedding-band",
+      "name": "Wedding band",
+      "description": "A thin gold band, warm, worn to a sliver. Kept, it binds you to the hotel's spirits a little more, for good.",
+      "mark": "○",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "relic"
+      ],
+      "costs": {
+        "weight": 1,
+        "space": 0
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [
+            {
+              "stat": "maximum-summon",
+              "amount": 1
+            }
+          ],
+          "practice": {}
+        }
+      }
+    },
+    {
+      "id": "guest-register",
+      "name": "Guest register",
+      "description": "A guest register with every room booked to the same name. Reading the names aloud teaches you how the spirits answer.",
+      "mark": "▥",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "tome"
+      ],
+      "costs": {
+        "weight": 3,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [],
+          "practice": {
+            "communion": 6
+          }
+        }
+      }
+    },
+    {
+      "id": "kitchen-ledger",
+      "name": "Night kitchen ledger",
+      "description": "The night kitchen's order book, every page a list of knives. Reading it teaches you where a blade should go.",
+      "mark": "▧",
+      "form": "Fungible",
+      "stackLimit": 1,
+      "classifications": [
+        "tome"
+      ],
+      "costs": {
+        "weight": 2,
+        "space": 1
+      },
+      "use": {
+        "restores": {},
+        "effects": [],
+        "action": "use-supply",
+        "growth": {
+          "stats": [],
+          "practice": {
+            "marksmanship": 4,
+            "striking": 4
           }
         }
       }

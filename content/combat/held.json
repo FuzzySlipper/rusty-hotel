@@ -24,7 +24,7 @@
   ],
   "looks": [
     {
-      "look": "Bar",
+      "look": "prybar",
       "model": "models/held/prybar.glb",
       "offset": [
         0,
@@ -39,7 +39,7 @@
       "scale": 1
     },
     {
-      "look": "Pistol",
+      "look": "survey-pistol",
       "model": "models/held/survey-pistol.glb",
       "offset": [
         -0.02,
@@ -59,7 +59,7 @@
       ]
     },
     {
-      "look": "Bell",
+      "look": "service-bell",
       "model": "models/held/service-bell.glb",
       "offset": [
         -0.04,
@@ -74,7 +74,7 @@
       "scale": 1.4
     },
     {
-      "look": "Flare",
+      "look": "flare-pistol",
       "model": "models/held/flare-pistol.glb",
       "offset": [
         -0.02,
@@ -92,6 +92,131 @@
         0.17,
         -0.28
       ]
+    },
+    {
+      "look": "fire-axe",
+      "model": "models/held/fire-axe.glb",
+      "offset": [
+        0.02,
+        0.0,
+        0.1
+      ],
+      "rotation": [
+        40.0,
+        10.0,
+        -80.0
+      ],
+      "scale": 0.85
+    },
+    {
+      "look": "letter-opener",
+      "model": "models/held/letter-opener.glb",
+      "offset": [
+        0.02,
+        0.07,
+        0.0
+      ],
+      "rotation": [
+        20.0,
+        10.0,
+        -10.0
+      ],
+      "scale": 1.6
+    },
+    {
+      "look": "walking-cane",
+      "model": "models/held/walking-cane.glb",
+      "offset": [
+        0.02,
+        -0.02,
+        0.12
+      ],
+      "rotation": [
+        18.0,
+        10.0,
+        -10.0
+      ],
+      "scale": 0.9
+    },
+    {
+      "look": "candelabra",
+      "model": "models/held/candelabra.glb",
+      "offset": [
+        -0.02,
+        -0.04,
+        -0.04
+      ],
+      "rotation": [
+        -8.0,
+        0.0,
+        0.0
+      ],
+      "scale": 0.9
+    },
+    {
+      "look": "coach-gun",
+      "model": "models/held/coach-gun.glb",
+      "offset": [
+        0.0,
+        0.01,
+        0.14
+      ],
+      "rotation": [
+        4.0,
+        10.0,
+        0.0
+      ],
+      "scale": 1.0,
+      "muzzle": [
+        0.0,
+        0.05,
+        -0.5
+      ]
+    },
+    {
+      "look": "bar-darts",
+      "model": "models/held/bar-darts.glb",
+      "offset": [
+        0.02,
+        0.1,
+        0.04
+      ],
+      "rotation": [
+        15.0,
+        10.0,
+        -10.0
+      ],
+      "scale": 2.2
+    },
+    {
+      "look": "fire-extinguisher",
+      "model": "models/held/fire-extinguisher.glb",
+      "offset": [
+        0.07,
+        0.03,
+        0.02
+      ],
+      "rotation": [
+        -10.0,
+        -8.0,
+        0.0
+      ],
+      "scale": 0.8
+    },
+    {
+      "look": "hotel-bible",
+      "model": "models/held/hotel-bible.glb",
+      "offset": [
+        0.02,
+        0.09,
+        0.0
+      ],
+      "rotation": [
+        -35.0,
+        25.0,
+        0.0
+      ],
+      "scale": 1.0
     }
   ]
 }

@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-02/source-coach-gun.png",
+ "image_sha256": "85a74cd4fb6ca2c511820dcc1da53ce43f34ab370a1fcc6ba6cae3a4a8451b79",
+ "prompt_id": "3e6ae212-cb9b-457e-8777-a999593ce2dc",
+ "wall_seconds": 45.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.93,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 282845,
+   "sha256": "39181743afa53d4030d39607d0e25422def6acf43131c41528d295631435a41c"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 1960245,
+   "sha256": "6c23a3fa085a024d03b341e0de8f2e1ee9d93a05b5a0ee58ef9811f5e88bd07f"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 3320476,
+   "sha256": "edfe9faf963dbe1852d51b315a5f7488a81b013febe69839c96e13ae5035e2ff"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 9308848,
+   "sha256": "fa725df2652da7d9178f2fc10ed708908bf80461d6c5bc11b021e2a1e8178c73"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

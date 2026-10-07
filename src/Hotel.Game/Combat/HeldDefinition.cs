@@ -20,7 +20,7 @@ internal sealed record HeldCatalog(HandPose Hand, float[] FlashSize, HeldModel[]
         return catalog;
     }
 
-    internal HeldModel Model(HeldLook look) => Looks.Single(l => l.Look == look);
+    internal HeldModel Model(string look) => Looks.Single(l => l.Look == look);
 
     private void Validate()
     {
@@ -29,8 +29,8 @@ internal sealed record HeldCatalog(HandPose Hand, float[] FlashSize, HeldModel[]
         Authored.Point(Path, "hand.commit", Hand.Commit);
         Authored.Finite(Path, "hand.recoveryDrop", Hand.RecoveryDrop);
         Authored.Point(Path, "flashSize", FlashSize);
-        foreach (HeldLook look in Enum.GetValues<HeldLook>())
-            Authored.Require(Looks.Count(l => l.Look == look) == 1, Path, "looks", $"needs exactly one entry for the {look} look.");
+        foreach (string look in Looks.Select(l => l.Look).Distinct())
+            Authored.Require(Looks.Count(l => l.Look == look) == 1, Path, "looks", $"names the '{look}' look more than once.");
         for (int i = 0; i < Looks.Length; i++)
         {
             HeldModel model = Looks[i];
@@ -51,7 +51,7 @@ internal sealed record HeldCatalog(HandPose Hand, float[] FlashSize, HeldModel[]
 internal sealed record HandPose(float[] Rest, float[] Windup, float[] Commit, float RecoveryDrop);
 
 /// <summary>
-/// One held look: its model, placed from the hand by an offset and a rotation (degrees about X, Y, Z) at a uniform
+/// One held look, named for the items that show it: its model, placed from the hand by an offset and a rotation (degrees about X, Y, Z) at a uniform
 /// scale, and, for a firearm, the muzzle point in the same hand space where its flash appears.
 /// </summary>
-internal sealed record HeldModel(HeldLook Look, string Model, float[] Offset, float[] Rotation, float Scale, float[]? Muzzle = null);
+internal sealed record HeldModel(string Look, string Model, float[] Offset, float[] Rotation, float Scale, float[]? Muzzle = null);

@@ -1,0 +1,89 @@
+{
+ "triangleBudget": 16000,
+ "textureSize": 1024,
+ "metallicScale": 0.35,
+ "pieces": {
+  "fire-axe": {
+   "native": "native/fire-axe.glb",
+   "forward": "+y",
+   "length": 0.8,
+   "grip": [
+    0.18,
+    0.5,
+    0.5
+   ]
+  },
+  "letter-opener": {
+   "native": "native/letter-opener.glb",
+   "level": true,
+   "forward": "+x",
+   "length": 0.25,
+   "grip": [
+    0.12,
+    0.5,
+    0.5
+   ]
+  },
+  "walking-cane": {
+   "native": "native/walking-cane.glb",
+   "level": true,
+   "forward": "+x",
+   "length": 0.9,
+   "grip": [
+    0.12,
+    0.5,
+    0.5
+   ]
+  },
+  "candelabra": {
+   "native": "native/candelabra.glb",
+   "forward": "+y",
+   "length": 0.28,
+   "grip": [
+    0.5,
+    0.5,
+    0.3
+   ]
+  },
+  "coach-gun": {
+   "native": "native/coach-gun.glb",
+   "forward": "-y",
+   "length": 0.7,
+   "grip": [
+    0.3,
+    0.5,
+    0.45
+   ]
+  },
+  "bar-darts": {
+   "native": "native/bar-darts.glb",
+   "forward": "-y",
+   "length": 0.15,
+   "grip": [
+    0.45,
+    0.5,
+    0.5
+   ]
+  },
+  "fire-extinguisher": {
+   "native": "native/fire-extinguisher.glb",
+   "forward": "+y",
+   "length": 0.15,
+   "grip": [
+    0.5,
+    0.5,
+    0.6
+   ]
+  },
+  "hotel-bible": {
+   "native": "native/hotel-bible.glb",
+   "forward": "+y",
+   "length": 0.082,
+   "grip": [
+    0.5,
+    0.5,
+    0.4
+   ]
+  }
+ }
+}

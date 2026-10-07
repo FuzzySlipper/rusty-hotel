@@ -1,0 +1,220 @@
+{
+ "runFamily": "hotel-residents-02",
+ "sourcePrompt": "request.json (style + per-resident subject, A-pose front view)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec), one image per resident",
+ "meshProducer": "Tripo P2 image-to-model, 12,000 triangles, standard texture; humanoid rig v1.0-20240301 (biped, spec tripo); one in-place retarget per clip: idle, walk, the kind's attack (slash, chop or cast_a_spell) and hit_to_body_01",
+ "providerTasks": {
+  "bellboy": {
+   "generate": "ca7d1c0f-3473-4360-bbb7-5ff0a125f2aa",
+   "rigV1": "f019033f-9672-4de8-887e-9ec3008882d2",
+   "retargets": {
+    "hit_to_body_01": "3dc87ff3-748d-49d9-b9ac-142f217e4575",
+    "idle": "ca837d21-a4d2-4c2a-a9d3-82a80619ca6d",
+    "slash": "f790e710-c8af-45cd-88c1-b7e4c3c4c727",
+    "walk": "5062806e-cad9-46c8-bdf1-3ec594a98c3b"
+   }
+  },
+  "chef": {
+   "generate": "fba63a51-6a9f-49cc-8533-acc45b7b95f5",
+   "rigV1": "49b501f4-54a5-403a-b303-2429a17d80ce",
+   "retargets": {
+    "chop": "ebc3c86a-297f-4730-9b64-5ad7c7fe1e27",
+    "hit_to_body_01": "e87995b3-e134-4ac7-991d-f1ae356f4598",
+    "idle": "71c59526-004f-4f5a-99cc-af529b318ac4",
+    "walk": "d2cbf610-d49f-473d-af7c-a76aaa685a7e"
+   }
+  },
+  "concierge": {
+   "generate": "bd470a02-0bf0-4f33-a04e-ebd1b6bf3973",
+   "rigV1": "eba6a1b5-e3aa-4f5c-af2f-23b32d2a0ed0",
+   "retargets": {
+    "cast_a_spell": "a8b61947-6775-4d42-9e8e-f58f0e74e123",
+    "hit_to_body_01": "9f049a13-dddd-45d8-9a44-822953c77add",
+    "idle": "d7ea2839-0902-4503-86c2-24470c62f06f",
+    "walk": "6f20919c-0880-4528-9d39-ff722ac70b97"
+   }
+  },
+  "sleepwalker": {
+   "generate": "a6a1ce20-c6f5-4d42-9f2a-b701fbc8158a",
+   "rigV1": "cf17c11c-ef02-453f-9ab8-5b4c52c4a7fc",
+   "retargets": {
+    "hit_to_body_01": "96dbeed9-52f0-4074-ae32-ef18be083c50",
+    "idle": "1beb7ac8-8bf4-48f5-b853-887a6cae8460",
+    "slash": "f5e4b52a-844e-47ae-afbc-c90677298763",
+    "walk": "c0ccc42a-b477-4f5d-8474-b8dd6d75e46c"
+   }
+  },
+  "bride": {
+   "generate": "848bf726-b11b-40be-975e-b6937a6b796f",
+   "rigV1": "16fb8cb8-87b6-474b-bf76-d7fb497df044",
+   "retargets": {
+    "cast_a_spell": "c06c318c-2143-4a03-827c-f5bb18d41eae",
+    "hit_to_body_01": "4f55f344-4238-4f7a-a73e-fecc1f223570",
+    "idle": "4de93710-22ef-4b6d-a289-7ffbbf046476",
+    "walk": "b8bc2d53-b066-4298-a887-9780a84d7cf0"
+   }
+  }
+ },
+ "authoredClips": "fall is keyed in Blender by prepare.py from the idle clip's first pose (pieces.json authored, the residents-01 fall)",
+ "strikeTiming": "the attack's strikeAt in content/combat/looks.json is where a hand reaches farthest from the hips (scratch strike.py); the Bride shares the Concierge's cast preset and takes its 0.55, her dress having misled the measure",
+ "conversion": "Local Blender; prepare.py (residents-01's, unchanged in method): clips gathered onto one armature, scaled to the kind's height with feet at the origin, 1024 JPEG textures; prepared .blend master per resident with textures in textures/",
+ "limitations": [
+  "The Bride's long dress is skinned to the leg bones and stretches through the walk and cast.",
+  "Retargeted clips are in place; the walk's stride is not matched to movement speed.",
+  "No facial or finger animation."
+ ],
+ "files": [
+  {
+   "path": "art/residents-02/bellboy.blend",
+   "sha256": "a74e34a74cfd95699b6507a280be8f6142983e48fe4e26c141835719f399fc7e"
+  },
+  {
+   "path": "art/residents-02/bride.blend",
+   "sha256": "7195a1a778c708b8007d1dd5cf2e7461feafaf6e0df8ad3752e139139ab2b275"
+  },
+  {
+   "path": "art/residents-02/chef.blend",
+   "sha256": "8d378c015312863ec3befb6d7034761c24d11d5584fa647b0a2adbd6d710dbf0"
+  },
+  {
+   "path": "art/residents-02/concierge.blend",
+   "sha256": "f4c687f41fbedca8674b3de38fb7beceaba5fc5250ba561bc5aa68c21e2248eb"
+  },
+  {
+   "path": "art/residents-02/native/bellboy-hit_to_body_01.glb",
+   "sha256": "53bb2884d542b60697fca64383fc63716a1d51aed145b218f3e47cdda6e0fcde"
+  },
+  {
+   "path": "art/residents-02/native/bellboy-idle.glb",
+   "sha256": "5587999c28583b6f8580e7305148d0cd2a75e134a5310f142bbab6ed221a2404"
+  },
+  {
+   "path": "art/residents-02/native/bellboy-slash.glb",
+   "sha256": "46c62c421eaca0245f5cd5d6288c850622de2ab32ac4bd8763a5b5c2045870d2"
+  },
+  {
+   "path": "art/residents-02/native/bellboy-walk.glb",
+   "sha256": "70fea0949110f6e9d0d733d4c7ae8bc6ad2b3e3dc5028ee7ea2bcf32ae68ec24"
+  },
+  {
+   "path": "art/residents-02/native/bride-cast_a_spell.glb",
+   "sha256": "5919528c1af05452bb5011541c2f8af95ca7d9b9d86be78a0c977ba2696e4bca"
+  },
+  {
+   "path": "art/residents-02/native/bride-hit_to_body_01.glb",
+   "sha256": "c9cdf0703e5d28501654c45370f6cb05ef3f374f4c541bf95ee3360fb49e48a2"
+  },
+  {
+   "path": "art/residents-02/native/bride-idle.glb",
+   "sha256": "a1130fd86c4b385eb0459b150457e0cadb128581075b8c26538165f264df9149"
+  },
+  {
+   "path": "art/residents-02/native/bride-walk.glb",
+   "sha256": "2a34fc65517dd0a415f07f5db8afdc7d3a484b4076809f8f360947c9469b48e8"
+  },
+  {
+   "path": "art/residents-02/native/chef-chop.glb",
+   "sha256": "a21af7465cd706547419e37599114b935168e046a627af8b6457e53c63618ef4"
+  },
+  {
+   "path": "art/residents-02/native/chef-hit_to_body_01.glb",
+   "sha256": "83f748d22ee9113b2b4caa9b691e12db0870e320340d00b832cf8aae11a27538"
+  },
+  {
+   "path": "art/residents-02/native/chef-idle.glb",
+   "sha256": "2324074848c7595ca092f22ad3d9eae06b7953ed2bfda8e3420a86f8d0e9566c"
+  },
+  {
+   "path": "art/residents-02/native/chef-walk.glb",
+   "sha256": "6c65cbc1ec38d97417aa516ddbabc7089d6b42c0b6be2c64259021e7b8b59f94"
+  },
+  {
+   "path": "art/residents-02/native/concierge-cast_a_spell.glb",
+   "sha256": "351236cc4b2a5fbe8a7c4d428ef8558bf0dd1892afb705bc7ee779e79e3d7a85"
+  },
+  {
+   "path": "art/residents-02/native/concierge-hit_to_body_01.glb",
+   "sha256": "9963df7da1a8c6e3ad24d2960e7a9abedc0a93f71e5df00f606ae73dff7844a9"
+  },
+  {
+   "path": "art/residents-02/native/concierge-idle.glb",
+   "sha256": "979b389400d69993aa8d9a727b8e316d745daac15933b99cc64934d419f57bd0"
+  },
+  {
+   "path": "art/residents-02/native/concierge-walk.glb",
+   "sha256": "acc6194a8d1a47804055075f334a3a98c03e5d653b576e50adb3b32a5e4b464d"
+  },
+  {
+   "path": "art/residents-02/native/sleepwalker-hit_to_body_01.glb",
+   "sha256": "0e08d942d929c2a8d0211798647c32655a435e675eed9aa996b3c046863413e1"
+  },
+  {
+   "path": "art/residents-02/native/sleepwalker-idle.glb",
+   "sha256": "428f697a6ec2b36327ec18d61ba41775f0343b14c30bfd3e3fac9df86846a281"
+  },
+  {
+   "path": "art/residents-02/native/sleepwalker-slash.glb",
+   "sha256": "473502084281c99f323e805b7e26ffa40ccfcacc1aafdf1443c6a2fcfc5c1cc7"
+  },
+  {
+   "path": "art/residents-02/native/sleepwalker-walk.glb",
+   "sha256": "574d0625ef8798def6fe0e510f32b3fc73368bb02dad894fe6c2c10ed74d2f41"
+  },
+  {
+   "path": "art/residents-02/pieces.json",
+   "sha256": "192ad9456aa2ce484422031d9432052309635fcaf5ec98191f53194dca02aca4"
+  },
+  {
+   "path": "art/residents-02/prepare.py",
+   "sha256": "dac5f21ef33a58c337bb655563d0564f419cfe8fab2acb452b5688cfac9d53ea"
+  },
+  {
+   "path": "art/residents-02/request.json",
+   "sha256": "3c7230f8e585d38dfc080d4d1d9e29f7205b5646d9c77c8b67ad31ede29af1b5"
+  },
+  {
+   "path": "art/residents-02/sleepwalker.blend",
+   "sha256": "d2b270c85ea970cddc7972bfd405d0a4710159e9a6767d1cfb144ad4d3169d4a"
+  },
+  {
+   "path": "art/residents-02/source-bellboy.png",
+   "sha256": "3f30a2bf7e39d9524e7a4c2a7926cbe22d3596877dc398428d48b3e3062ade9e"
+  },
+  {
+   "path": "art/residents-02/source-bride.png",
+   "sha256": "7b7cd287d6117e929917463e505694b1ada266b14dd932f02c0bcf69026d6d38"
+  },
+  {
+   "path": "art/residents-02/source-chef.png",
+   "sha256": "3d08898500e7318c0df21f8c307518c57afbf59ea6d9d8be0ef0c945444303a7"
+  },
+  {
+   "path": "art/residents-02/source-concierge.png",
+   "sha256": "3e9cdfaa6b7e4081cf1aa57b57941a5f12fe1e0a0583b2ac7caa6064b6583c98"
+  },
+  {
+   "path": "art/residents-02/source-sleepwalker.png",
+   "sha256": "5cd603e9b6cb24d926889124852ca6e630b877af156f30bdbd5020d57f39184b"
+  },
+  {
+   "path": "content/models/residents/bellboy.glb",
+   "sha256": "fc178f747e9ca6bd6ca695432bb8411455ea16e6451ad6994ef5bf068781daaa"
+  },
+  {
+   "path": "content/models/residents/bride.glb",
+   "sha256": "12c73deac23c77d1c31c67035c44deb043f261182446d567a0a90bf1843c65ac"
+  },
+  {
+   "path": "content/models/residents/chef.glb",
+   "sha256": "e74f84540c75adde625b090ea992d9c0be81c28d0a9dc9fb16264d700d082db7"
+  },
+  {
+   "path": "content/models/residents/concierge.glb",
+   "sha256": "d9311fdd6bfd44d90c2dd8c73ddb39b875eceaf4ef0c0a0ccccbf7c4e8ef6d78"
+  },
+  {
+   "path": "content/models/residents/sleepwalker.glb",
+   "sha256": "7de26836b3f440a638df70c26ca1de7f901611f2b62ee65e98395996ab10b24f"
+  }
+ ]
+}

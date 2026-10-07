@@ -1,0 +1,44 @@
+{
+  "id": "stillwing",
+  "name": "Stillwing",
+  "description": "A moth like a stopped watch, its wings ringed with numerals. For a moment, time near it forgets to pass.\n\n{key.summon} sends it where you aim, within {range} paces. Costs {cost} summon charge. Every resident near it stands stopped for {seconds} seconds.",
+  "welcomeCharges": 1,
+  "arrival": 0.5,
+  "hold": 1.4,
+  "departure": 0.8,
+  "action": "stillwing-stop",
+  "look": {
+    "body": "models/spirits/stillwing-body.glb",
+    "wings": [
+      "models/spirits/stillwing-left.glb",
+      "models/spirits/stillwing-right.glb"
+    ],
+    "hinges": [
+      [
+        -0.1125,
+        0.0117,
+        -0.0094
+      ],
+      [
+        0.1125,
+        0.0117,
+        -0.0098
+      ]
+    ],
+    "scale": 0.55
+  },
+  "text": {
+    "callHint": "{key.summon} · Send the Stillwing where you aim",
+    "callResult": "{spirit} stops the clocks · −{cost} summon",
+    "arriving": "Flying out",
+    "holding": "Ticking",
+    "departing": "Settling"
+  },
+  "manifestation": {
+    "approach": 0.25,
+    "side": 0.65,
+    "lift": 0.15,
+    "entranceFraction": 0.2,
+    "entranceDrop": 0.25
+  }
+}

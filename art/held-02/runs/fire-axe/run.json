@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-02/source-fire-axe.png",
+ "image_sha256": "bc5639f54b119edf1c9402256956e825bdca06ef727da13b9498c8e3eb93ad35",
+ "prompt_id": "d2f82579-9aec-413d-a1f5-30b6d42b6ff6",
+ "wall_seconds": 40.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 16.07,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 268025,
+   "sha256": "bafa519f70c409e2092f33745eafcc1159c6bdef8195458f4547f8b4809db6a7"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 1574006,
+   "sha256": "77920819123e489d7a1494f55c9a6eb4ed2c295e5a932c4c503ff3eed3c65a1a"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 3466614,
+   "sha256": "954166e22c9f2bdb02faf3d30e54f7904eb291b7b41e4f8bb4549eb6b00a95cf"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 8532216,
+   "sha256": "d6678f33cc948cf0c799974de98ae6b93b38084f5d14742cf28d3af90c6b684e"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

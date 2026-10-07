@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/spirits-02/source-embermoth.png",
+ "image_sha256": "5a56278dea13fab50ae08e54845dbe730af5aa227635de697e4ebe5e59ce15a6",
+ "prompt_id": "1699d8d0-b981-43e3-9231-3dce4c3c6e8b",
+ "wall_seconds": 80.1,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 16.44,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 1001206,
+   "sha256": "1eba0d9ad2021b72003c72eb37efe04a00f02babea0d9f29ba80ad373ce540c3"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3574003,
+   "sha256": "fdb004efd50d6c0d65f2461b9c6bfd0322b95e8e0a7e5af709947b41ecf4dffc"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5161564,
+   "sha256": "38e7d6500ab75f823e88386062b906ea46bb4c6d0f824c7737384f29ef13208c"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 13306136,
+   "sha256": "a0b19b374e42201bfee6588aebc86b4694fe802e17fc8955aacd089ac1228cf6"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

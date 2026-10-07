@@ -161,6 +161,271 @@
       "eyeHeight": 0.55,
       "loot": "maid-remains",
       "experience": 24
+    },
+    {
+      "id": "bellboy",
+      "name": "The Bellboy",
+      "look": "bellboy",
+      "faction": "staff",
+      "stats": {
+        "attributes": {
+          "might": 6,
+          "agility": 16,
+          "nerve": 8,
+          "attunement": 10
+        },
+        "bases": {
+          "maximum-health": 4
+        },
+        "resistances": {
+          "blunt": 0,
+          "pierce": 0,
+          "spirit": 0.1
+        },
+        "initial": {}
+      },
+      "perception": {
+        "range": 7,
+        "fieldOfView": 160,
+        "memory": 3,
+        "nearSense": 2
+      },
+      "movement": {
+        "speed": 1.6,
+        "leash": 8,
+        "stalk": {},
+        "flee": {
+          "below": 0.25,
+          "distance": 5
+        }
+      },
+      "actions": [
+        {
+          "action": "bellboy-jab",
+          "minimum": 0
+        }
+      ],
+      "radius": 0.26,
+      "height": 1.4,
+      "eyeHeight": 0.45,
+      "loot": "bellboy-remains",
+      "experience": 14
+    },
+    {
+      "id": "chef",
+      "name": "The Night Chef",
+      "look": "chef",
+      "faction": "staff",
+      "stats": {
+        "attributes": {
+          "might": 18,
+          "agility": 6,
+          "nerve": 14,
+          "attunement": 8
+        },
+        "bases": {
+          "maximum-health": 34
+        },
+        "resistances": {
+          "blunt": 0.2,
+          "pierce": 0.1,
+          "fire": 0.4,
+          "spirit": 0
+        },
+        "initial": {}
+      },
+      "perception": {
+        "range": 4.5,
+        "fieldOfView": 120,
+        "memory": 5,
+        "nearSense": 1
+      },
+      "movement": {
+        "speed": 0.7,
+        "leash": 5,
+        "stalk": {}
+      },
+      "actions": [
+        {
+          "action": "chef-chop",
+          "minimum": 0
+        }
+      ],
+      "radius": 0.42,
+      "height": 1.95,
+      "eyeHeight": 0.62,
+      "loot": "chef-remains",
+      "experience": 34
+    },
+    {
+      "id": "concierge",
+      "name": "The Concierge",
+      "look": "concierge",
+      "faction": "staff",
+      "stats": {
+        "attributes": {
+          "might": 8,
+          "agility": 10,
+          "nerve": 12,
+          "attunement": 16
+        },
+        "bases": {
+          "maximum-health": 6
+        },
+        "resistances": {
+          "blunt": 0,
+          "pierce": 0.1,
+          "spirit": 0.35
+        },
+        "initial": {}
+      },
+      "perception": {
+        "range": 9,
+        "fieldOfView": 200,
+        "memory": 6,
+        "nearSense": 2.5
+      },
+      "movement": {
+        "speed": 0,
+        "leash": 0,
+        "post": {}
+      },
+      "actions": [
+        {
+          "action": "concierge-bell",
+          "minimum": 0
+        },
+        {
+          "action": "concierge-key",
+          "minimum": 2.5
+        }
+      ],
+      "radius": 0.32,
+      "height": 1.9,
+      "eyeHeight": 0.6,
+      "loot": "concierge-remains",
+      "experience": 26
+    },
+    {
+      "id": "sleepwalker",
+      "name": "The Sleepwalker",
+      "look": "sleepwalker",
+      "faction": "guests",
+      "stats": {
+        "attributes": {
+          "might": 12,
+          "agility": 6,
+          "nerve": 10,
+          "attunement": 12
+        },
+        "bases": {
+          "maximum-health": 14
+        },
+        "resistances": {
+          "blunt": 0.1,
+          "pierce": 0,
+          "spirit": 0.3
+        },
+        "initial": {}
+      },
+      "perception": {
+        "range": 3,
+        "fieldOfView": 90,
+        "memory": 2,
+        "nearSense": 1.2
+      },
+      "movement": {
+        "speed": 0.55,
+        "leash": 7,
+        "patrol": {
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              -3
+            ],
+            [
+              0,
+              -3
+            ]
+          ],
+          "pause": 2.5
+        }
+      },
+      "actions": [
+        {
+          "action": "sleepwalker-grab",
+          "minimum": 0
+        }
+      ],
+      "radius": 0.34,
+      "height": 1.78,
+      "eyeHeight": 0.57,
+      "loot": "sleepwalker-remains",
+      "experience": 20
+    },
+    {
+      "id": "bride",
+      "name": "The Bride",
+      "look": "bride",
+      "faction": "guests",
+      "stats": {
+        "attributes": {
+          "might": 8,
+          "agility": 12,
+          "nerve": 14,
+          "attunement": 18
+        },
+        "bases": {
+          "maximum-health": 10
+        },
+        "resistances": {
+          "blunt": 0,
+          "pierce": 0.2,
+          "fire": -0.2,
+          "spirit": 0.5
+        },
+        "initial": {}
+      },
+      "perception": {
+        "range": 10,
+        "fieldOfView": 180,
+        "memory": 8,
+        "nearSense": 0
+      },
+      "movement": {
+        "speed": 0.9,
+        "leash": 6,
+        "ambush": {
+          "trigger": 4
+        },
+        "flee": {
+          "below": 0.3,
+          "distance": 5
+        }
+      },
+      "actions": [
+        {
+          "action": "bride-wail",
+          "minimum": 2
+        },
+        {
+          "action": "sleepwalker-grab",
+          "minimum": 0
+        }
+      ],
+      "radius": 0.3,
+      "height": 1.8,
+      "eyeHeight": 0.58,
+      "loot": "bride-remains",
+      "experience": 36
     }
   ]
 }

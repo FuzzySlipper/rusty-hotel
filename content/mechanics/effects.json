@@ -162,6 +162,76 @@
       "lure": {
         "speed": 1.2
       }
+    },
+    {
+      "id": "chilled",
+      "name": "Chilled",
+      "mark": "❄",
+      "group": "chilled",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 3,
+      "slow": {
+        "factor": 0.6
+      }
+    },
+    {
+      "id": "gripped",
+      "name": "Gripped",
+      "mark": "✊",
+      "group": "hold",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 1.2,
+      "hold": {}
+    },
+    {
+      "id": "stilled",
+      "name": "Stilled",
+      "mark": "◷",
+      "group": "hold",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 5,
+      "hold": {}
+    },
+    {
+      "id": "refreshed",
+      "name": "Refreshed",
+      "mark": "≋",
+      "group": "refreshed",
+      "stacking": "Refresh",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 10,
+      "restore": {
+        "track": "stamina",
+        "amount": 3,
+        "interval": 1
+      }
+    },
+    {
+      "id": "candle-light",
+      "name": "Votive flame",
+      "mark": "✦",
+      "group": "carried-light",
+      "stacking": "Replace",
+      "maximumStacks": 1,
+      "maximumInstances": 1,
+      "duration": 120,
+      "light": {
+        "color": [
+          1.0,
+          0.62,
+          0.38
+        ],
+        "intensity": 2.6,
+        "range": 4.0,
+        "lift": 0.1
+      }
     }
   ]
 }

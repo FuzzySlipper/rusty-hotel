@@ -63,6 +63,11 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         Authored.Require(Controls.QuickPockets.Length == Interface.QuickPockets && Interface.QuickPockets > 0, ControlBindings.Path, "quickPockets",
             $"one binding per quick pocket in {InterfaceTuning.Path} ({Interface.QuickPockets}).");
         Unique(Supplies.Items.Select(i => i.Id), ItemCatalog.Path, "items");
+        // Every held item shows a look the hand can draw.
+        for (int i = 0; i < Supplies.Items.Length; i++)
+            if (Supplies.Items[i].Wear?.Look is string look)
+                Authored.Require(Combat.Held.Looks.Any(l => l.Look == look), ItemCatalog.Path, $"items[{i}].wear.look",
+                    $"unknown look '{look}' in {Hotel.Game.Combat.HeldCatalog.Path}.");
         Unique(Combat.Residents.Select(r => r.Id), ResidentCatalog.Path, "residents");
 
         string plan = Excursion.PlanPath, route = Excursion.RoutePath, placements = Excursion.PlacementsPath;

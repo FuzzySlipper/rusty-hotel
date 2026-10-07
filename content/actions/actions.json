@@ -463,6 +463,609 @@
       "selfEffects": [],
       "windupLabel": "Calling",
       "commitLabel": "Called"
+    },
+    {
+      "id": "axe-chop",
+      "name": "Chop",
+      "delivery": {
+        "kind": "Melee",
+        "range": 2.1,
+        "width": 0.5
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.55,
+        "commit": 0.15,
+        "recovery": 0.9,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 22,
+          "scaling": [
+            {
+              "stat": "might",
+              "perPoint": 1.5
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Hefting",
+      "commitLabel": "Chop"
+    },
+    {
+      "id": "axe-cleave",
+      "name": "Cleave",
+      "delivery": {
+        "kind": "Melee",
+        "range": 2.1,
+        "width": 0.8
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 20
+        }
+      },
+      "timing": {
+        "windup": 0.8,
+        "commit": 0.2,
+        "recovery": 1.1,
+        "cooldown": 4
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 34,
+          "scaling": [
+            {
+              "stat": "might",
+              "perPoint": 2
+            }
+          ]
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Winding up",
+      "commitLabel": "Cleave"
+    },
+    {
+      "id": "opener-stab",
+      "name": "Stab",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.5,
+        "width": 0.3
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.12,
+        "commit": 0.08,
+        "recovery": 0.3,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "pierce",
+          "amount": 7,
+          "scaling": [
+            {
+              "stat": "agility",
+              "perPoint": 0.8
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Drawing back",
+      "commitLabel": "Stab"
+    },
+    {
+      "id": "cane-strike",
+      "name": "Strike",
+      "delivery": {
+        "kind": "Melee",
+        "range": 2.3,
+        "width": 0.35
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.22,
+        "commit": 0.1,
+        "recovery": 0.45,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 9,
+          "scaling": [
+            {
+              "stat": "agility",
+              "perPoint": 0.5
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Raising the cane",
+      "commitLabel": "Strike"
+    },
+    {
+      "id": "cane-hook",
+      "name": "Hook away",
+      "delivery": {
+        "kind": "Melee",
+        "range": 2.3,
+        "width": 0.5
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 10
+        }
+      },
+      "timing": {
+        "windup": 0.25,
+        "commit": 0.1,
+        "recovery": 0.5,
+        "cooldown": 2
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 3,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "pushed"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Reaching",
+      "commitLabel": "Hook"
+    },
+    {
+      "id": "candelabra-swing",
+      "name": "Swing",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.9,
+        "width": 0.5
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.4,
+        "commit": 0.12,
+        "recovery": 0.7,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 8,
+          "scaling": [
+            {
+              "stat": "might",
+              "perPoint": 0.6
+            }
+          ]
+        },
+        {
+          "kind": "fire",
+          "amount": 6,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "burning"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Drawing back",
+      "commitLabel": "Swing"
+    },
+    {
+      "id": "coach-gun-blast",
+      "name": "Fire both barrels",
+      "delivery": {
+        "kind": "Hitscan",
+        "range": 8
+      },
+      "cost": {
+        "tracks": {
+          "ammunition": 2
+        }
+      },
+      "timing": {
+        "windup": 0.2,
+        "commit": 0.12,
+        "recovery": 1.3,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "pierce",
+          "amount": 55,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Shouldering",
+      "commitLabel": "Blast"
+    },
+    {
+      "id": "darts-throw",
+      "name": "Throw a dart",
+      "delivery": {
+        "kind": "Projectile",
+        "range": 12,
+        "width": 0.06,
+        "speed": 18
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 6
+        }
+      },
+      "timing": {
+        "windup": 0.25,
+        "commit": 0.08,
+        "recovery": 0.4,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "pierce",
+          "amount": 10,
+          "scaling": [
+            {
+              "stat": "agility",
+              "perPoint": 0.7
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Taking aim",
+      "commitLabel": "Thrown"
+    },
+    {
+      "id": "extinguisher-spray",
+      "name": "Spray",
+      "delivery": {
+        "kind": "Area",
+        "range": 1.8,
+        "radius": 1.4
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 14
+        }
+      },
+      "timing": {
+        "windup": 0.3,
+        "commit": 0.4,
+        "recovery": 0.5,
+        "cooldown": 1
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 2,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "chilled"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Pulling the pin",
+      "commitLabel": "Spray"
+    },
+    {
+      "id": "bible-recite",
+      "name": "Recite",
+      "delivery": {
+        "kind": "Area",
+        "range": 0,
+        "radius": 3
+      },
+      "cost": {
+        "tracks": {
+          "stamina": 25
+        }
+      },
+      "timing": {
+        "windup": 0.9,
+        "commit": 0.2,
+        "recovery": 0.6,
+        "cooldown": 8
+      },
+      "damage": [
+        {
+          "kind": "spirit",
+          "amount": 14,
+          "scaling": [
+            {
+              "stat": "attunement",
+              "perPoint": 1
+            }
+          ]
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [
+        "steadied"
+      ],
+      "windupLabel": "Finding the verse",
+      "commitLabel": "Recited"
+    },
+    {
+      "id": "bellboy-jab",
+      "name": "Jab",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.4,
+        "width": 0.3
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.25,
+        "commit": 0.1,
+        "recovery": 0.5,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 6,
+          "scaling": []
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Darting in",
+      "commitLabel": "Jab"
+    },
+    {
+      "id": "chef-chop",
+      "name": "Chop",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.8,
+        "width": 0.5
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.8,
+        "commit": 0.15,
+        "recovery": 1.0,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "blunt",
+          "amount": 22,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Raising the cleaver",
+      "commitLabel": "Chop"
+    },
+    {
+      "id": "concierge-key",
+      "name": "Throw a key",
+      "delivery": {
+        "kind": "Projectile",
+        "range": 10,
+        "width": 0.08,
+        "speed": 9
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.5,
+        "commit": 0.1,
+        "recovery": 0.8,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "pierce",
+          "amount": 8,
+          "scaling": []
+        }
+      ],
+      "effects": [],
+      "selfEffects": [],
+      "windupLabel": "Drawing a key",
+      "commitLabel": "Thrown"
+    },
+    {
+      "id": "concierge-bell",
+      "name": "Ring for service",
+      "delivery": {
+        "kind": "Area",
+        "range": 0,
+        "radius": 2.5
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.6,
+        "commit": 0.2,
+        "recovery": 0.8,
+        "cooldown": 6
+      },
+      "damage": [
+        {
+          "kind": "spirit",
+          "amount": 6,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Lifting a hand",
+      "commitLabel": "Ring"
+    },
+    {
+      "id": "sleepwalker-grab",
+      "name": "Grab",
+      "delivery": {
+        "kind": "Melee",
+        "range": 1.3,
+        "width": 0.4
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.6,
+        "commit": 0.15,
+        "recovery": 0.9,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "spirit",
+          "amount": 4,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "gripped"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Reaching out",
+      "commitLabel": "Grab"
+    },
+    {
+      "id": "bride-wail",
+      "name": "Wail",
+      "delivery": {
+        "kind": "Hitscan",
+        "range": 9
+      },
+      "cost": {
+        "tracks": {}
+      },
+      "timing": {
+        "windup": 0.9,
+        "commit": 0.3,
+        "recovery": 1.0,
+        "cooldown": 3
+      },
+      "damage": [
+        {
+          "kind": "spirit",
+          "amount": 14,
+          "scaling": []
+        }
+      ],
+      "effects": [
+        "staggered"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Drawing breath",
+      "commitLabel": "Wail"
+    },
+    {
+      "id": "embermoth-scatter",
+      "name": "Scatter embers",
+      "delivery": {
+        "kind": "Area",
+        "range": 5,
+        "radius": 1.8
+      },
+      "cost": {
+        "tracks": {
+          "summon": 1
+        }
+      },
+      "timing": {
+        "windup": 0,
+        "commit": 0.1,
+        "recovery": 0,
+        "cooldown": 0
+      },
+      "damage": [
+        {
+          "kind": "fire",
+          "amount": 8,
+          "scaling": [
+            {
+              "stat": "attunement",
+              "perPoint": 0.5
+            }
+          ]
+        }
+      ],
+      "effects": [
+        "burning"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Calling",
+      "commitLabel": "Called"
+    },
+    {
+      "id": "stillwing-stop",
+      "name": "Stop the clocks",
+      "delivery": {
+        "kind": "Area",
+        "range": 5,
+        "radius": 2.2
+      },
+      "cost": {
+        "tracks": {
+          "summon": 1
+        }
+      },
+      "timing": {
+        "windup": 0,
+        "commit": 0.1,
+        "recovery": 0,
+        "cooldown": 0
+      },
+      "damage": [],
+      "effects": [
+        "stilled"
+      ],
+      "selfEffects": [],
+      "windupLabel": "Calling",
+      "commitLabel": "Called"
     }
   ]
 }

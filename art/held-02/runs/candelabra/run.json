@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-02/source-candelabra.png",
+ "image_sha256": "f3b69f95ac3b8b052a26902d2e9d8c07883d26806f835f035d08c9c4eafd4098",
+ "prompt_id": "7c823176-b4e6-4139-b41e-7c528784438a",
+ "wall_seconds": 50.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 16.04,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 386901,
+   "sha256": "92808120a3bc824e7202cd0c07beacf3b62b5467050411dd9d9baf20c105fa6f"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 3144527,
+   "sha256": "7302a831383e37533e4c5d21b7e3e7c28854e5ed386ac8c11961b8295c9a7b91"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4477494,
+   "sha256": "178dcea61c37275340fee4c3a797c3c21e92bd3e136e039d92c91b74ebd6f406"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12365824,
+   "sha256": "f9bed39df7dc801fca6ef909bfeb3e9a15f54bc9872accaa5087d8547ad0901f"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

@@ -345,6 +345,444 @@
             "perDepth": 1,
             "max": 2
           }
+        },
+        {
+          "item": "bromide-tonic",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "paper-shells",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "fire-extinguisher",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 0,
+            "perDepth": 1,
+            "max": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "bellboy-remains",
+      "rolls": 1,
+      "entries": [
+        {
+          "item": null,
+          "count": [
+            0,
+            0
+          ],
+          "weight": {
+            "base": 3,
+            "perDepth": 0,
+            "max": 3
+          }
+        },
+        {
+          "item": "bromide-tonic",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "paper-shells",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "bellhop-cap",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "bar-darts",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "room-key-fob",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 0,
+            "perDepth": 1,
+            "max": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "chef-remains",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": null,
+          "count": [
+            0,
+            0
+          ],
+          "weight": {
+            "base": 3,
+            "perDepth": 0,
+            "max": 3
+          }
+        },
+        {
+          "item": "bandage",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "hip-flask",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "leather-apron",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "fire-axe",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 0,
+            "perDepth": 1,
+            "max": 2
+          }
+        },
+        {
+          "item": "kitchen-ledger",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "concierge-remains",
+      "rolls": 1,
+      "entries": [
+        {
+          "item": null,
+          "count": [
+            0,
+            0
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "paper-shells",
+          "count": [
+            1,
+            2
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "clerk-visor",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "letter-opener",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "kid-gloves",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "guest-register",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 0,
+            "perDepth": 1,
+            "max": 2
+          }
+        },
+        {
+          "item": "coach-gun",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 0,
+            "perDepth": 1,
+            "max": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "sleepwalker-remains",
+      "rolls": 1,
+      "entries": [
+        {
+          "item": null,
+          "count": [
+            0,
+            0
+          ],
+          "weight": {
+            "base": 3,
+            "perDepth": 0,
+            "max": 3
+          }
+        },
+        {
+          "item": "hip-flask",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "votive-candle",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "galoshes",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "walking-cane",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "hotel-bible",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 0,
+            "perDepth": 1,
+            "max": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "bride-remains",
+      "rolls": 1,
+      "entries": [
+        {
+          "item": null,
+          "count": [
+            0,
+            0
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "votive-candle",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 2,
+            "perDepth": 0,
+            "max": 2
+          }
+        },
+        {
+          "item": "incense",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "mourning-ring",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
+        },
+        {
+          "item": "wedding-band",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 0,
+            "perDepth": 1,
+            "max": 2
+          }
+        },
+        {
+          "item": "candelabra",
+          "count": [
+            1,
+            1
+          ],
+          "weight": {
+            "base": 1,
+            "perDepth": 0,
+            "max": 1
+          }
         }
       ]
     }

@@ -15,6 +15,14 @@
     {
       "spirit": "wickling",
       "weight": 1
+    },
+    {
+      "spirit": "embermoth",
+      "weight": 1
+    },
+    {
+      "spirit": "stillwing",
+      "weight": 1
     }
   ],
   "fallbackLocation": "Upper floor",
@@ -157,12 +165,73 @@
         "perDepth": 1,
         "max": 3
       }
+    },
+    {
+      "kind": "bellboy",
+      "tags": [
+        "Corridor",
+        "Service"
+      ],
+      "weight": {
+        "base": 1,
+        "perDepth": 1,
+        "max": 3
+      }
+    },
+    {
+      "kind": "chef",
+      "tags": [
+        "Service",
+        "Corridor"
+      ],
+      "weight": {
+        "base": 0,
+        "perDepth": 1,
+        "max": 2
+      }
+    },
+    {
+      "kind": "concierge",
+      "tags": [
+        "Public",
+        "Landmark",
+        "Corridor"
+      ],
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
+    },
+    {
+      "kind": "sleepwalker",
+      "tags": [
+        "Guest",
+        "Corridor"
+      ],
+      "weight": {
+        "base": 1,
+        "perDepth": 0,
+        "max": 1
+      }
+    },
+    {
+      "kind": "bride",
+      "tags": [
+        "Guest",
+        "Landmark"
+      ],
+      "weight": {
+        "base": 0,
+        "perDepth": 1,
+        "max": 2
+      }
     }
   ],
   "extraResidents": {
-    "base": 1,
+    "base": 2,
     "perDepth": 1,
-    "max": 4
+    "max": 5
   },
   "pacing": {
     "recoveryItem": "bandage",

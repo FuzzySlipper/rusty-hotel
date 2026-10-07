@@ -1,0 +1,10 @@
+{
+ "goal": "Two more pact spirits as moth models for Hotel Endless (#9650), split into body and wings for flapping; TRELLIS.2 image-to-3D on den-patch.",
+ "style": "Single isolated small creature figure for image-to-3D reconstruction. A spirit moth from a 1970s hotel, grounded slightly stylized realism with tactile materials (velvet, felt, brass, paper, wax), muted amber, burgundy, ivory and olive palette. Its head is a small domed brass hotel service bell with two round glowing amber eyes on its front, and two feathered antennae. Shown upright and perfectly symmetric, straight-on front view at eye level, the body vertical and both pairs of wings spread fully open flat to each side like a pinned specimen, wings clearly separate from the narrow body. The entire figure is fully in frame and centred with generous margin, nothing cropped. Plain flat light-grey seamless background, soft even studio lighting, no cast shadow, no ground, no stand, no pin, no other objects. Solid opaque materials, no glow halo, no particles, no transparency. NO text, NO letters, NO people. Square image around 1024x1024.",
+ "pieces": {
+  "embermoth": "Subject: Embermoth, a moth of smouldering ash: charcoal-grey wings edged and veined with glowing orange ember lines like burning paper, a dark sooty felt body, a blackened brass bell head.",
+  "stillwing": "Subject: Stillwing, a moth like a stopped clock: pale ivory enamel wings marked with faint black clock numerals rings and fine radiating lines like a watch face, a slim brass body with a tiny winding crown at its tail, a polished brass bell head."
+ },
+ "imageProducer": "codex-image-gen (GPT image via codex exec)",
+ "meshProducer": "asset-pipeline run_native.py, TRELLIS.2 bf16"
+}

@@ -144,6 +144,14 @@ blender -b --python art/held-01/prepare.py
 Where each model sits in the hand is presentation tuning in `content/combat/held.json`, not part of the mesh.
 `provenance.json` records hashes, run times and use limits.
 
+`held-02` adds eight weapons the same way (fire axe, letter opener, walking cane, candelabra, coach gun, bar darts,
+fire extinguisher, hotel bible). Its `prepare.py` also takes `level`: a piece that TRELLIS reconstructed lying
+diagonally in its source's picture plane is first turned flat along its long axis.
+
+```text
+blender -b --python art/held-02/prepare.py
+```
+
 ## Spirits
 
 `spirits-01/request.json` fixes the shared style (an upright, symmetric bell-headed moth with its wings spread flat)
@@ -159,6 +167,13 @@ its textures as JPEG files in `textures/`.
 
 ```text
 blender -b --python art/spirits-01/prepare.py
+```
+
+`spirits-02` adds the Embermoth and the Stillwing with the same style, runner and script (`pieces.json` keeps the
+Hushwing's split).
+
+```text
+blender -b --python art/spirits-02/prepare.py
 ```
 
 ## Find props
@@ -192,6 +207,16 @@ are the names in `content/combat/looks.json`; the attack's keyed strike time div
 
 ```text
 blender -b --python art/residents-01/prepare.py
+```
+
+`residents-02` adds the Bellboy, Night Chef, Concierge, Sleepwalker and Bride with the same style and rig. Tripo
+supplied every clip but the fall: idle, walk, the kind's attack preset (slash, chop or cast_a_spell) and recoil
+(hit_to_body_01), one retarget each; the fall is keyed as in residents-01. Each look's `strikeAt` is where a hand
+reaches farthest from the hips in the attack clip, except the Bride, whose dress misleads that measure: she shares
+the Concierge's cast and its strike. Her dress is skinned to the leg bones, so her look walks with her idle clip.
+
+```text
+blender -b --python art/residents-02/prepare.py
 ```
 
 ## Wall art

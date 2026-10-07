@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-02/source-bar-darts.png",
+ "image_sha256": "db041546672afc1b98fe2079e40ae6c3e63505da1ff2b0d409e6a89a802bfd84",
+ "prompt_id": "2cb7c52d-61f0-4c46-9d63-5eb938a6aa26",
+ "wall_seconds": 40.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.99,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 511514,
+   "sha256": "3bf55818cf01047ad5a5894270d2977afac6ad07e34382083c7e96c2126854a5"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 2033883,
+   "sha256": "9d42c77297406f0495d5fde9c9e0ecc735bb07d816815956fe99cfe3494dd393"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 3797239,
+   "sha256": "8bcc21ee210df654cacc1bb8a784238779deddf19179ee1f92941189b954d2a0"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 10638048,
+   "sha256": "70f922c50087c7720604d7ae2b27b0dd677b408cdbd88daedf8aff3c8c3e47dc"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

@@ -180,14 +180,11 @@ internal sealed record ItemUse(Dictionary<string, int> Restores, string[] Effect
 /// <summary>
 /// How an item is worn: how many slots it fills, the exclusivity group no two worn items may share (null for none),
 /// what it adds to stats while worn, the damage contributions it brings to its wearer's hits, and, for a held item,
-/// the actions it grants to the hand that holds it (first the primary, then the secondary) and how it looks in hand.
+/// the actions it grants to the hand that holds it (first the primary, then the secondary) and how it looks in hand
+/// (a look in combat/held.json).
 /// </summary>
 internal sealed record ItemWear(int Slots, string? Exclusive, StatEffect[] Stats, DamageContribution[] Contributions,
-    string[] Actions, HeldLook? Look = null);
-
-/// <summary>How a held item is drawn in the investigator's hand.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter<HeldLook>))]
-internal enum HeldLook { Bar, Pistol, Bell, Flare }
+    string[] Actions, string? Look = null);
 
 /// <summary>Which hand a slot is, for the slots whose items grant actions.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<Hand>))]

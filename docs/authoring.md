@@ -44,7 +44,7 @@ its own folder. Geometry is kept apart from tuning.
 | `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
 | `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height, the loot table its remains give and the experience felling it gives; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
-| `combat/held.json` | First-person held items: the hand's rest and phase offsets, the muzzle flash size, and per held look (`HeldLook`) its model, offset, rotation, scale and muzzle point, in camera space; `CombatView`, drawn on the Engine viewmodel layer |
+| `combat/held.json` | First-person held items: the hand's rest and phase offsets, the muzzle flash size, and per held look (an id that held items name) its model, offset, rotation, scale and muzzle point, in camera space; `CombatView`, drawn on the Engine viewmodel layer |
 | `combat/looks.json` | Resident looks: the rigged model, its scale and turn, the clip for each state, the strike's moment in the attack clip and the tell light; `ResidentView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
@@ -126,7 +126,8 @@ role:
 
 Slots (`supplies/equipment.json`) are the hands, the worn slots and the rings; a slot `accepts` classifications,
 and exactly one slot is each `hand` (`Main`, `Off`). An item worn in a hand is held: its `wear.actions` give its
-primary and secondary actions (at most two) and `wear.look` how it is drawn (`Bar`, `Pistol`, `Bell`, `Flare`); a
+primary and secondary actions (at most two) and `wear.look` how it is drawn: a look id in `combat/held.json`, by convention
+the item's own id. A new weapon is a content edit: its actions, its item and its held look; a
 worn item has neither. `wear.contributions` change hits its wearer deals (`Outgoing`) or takes (`Incoming`), for
 the listed damage kinds or all of them, at one `stage`: `Hit` (`prevent`: the hit is turned aside, with no damage and
 no effects), `Damage` (`add` then `multiply`, before resistance) or `Applying` (`add` then `multiply`, after resistance

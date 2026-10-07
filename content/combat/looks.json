@@ -71,6 +71,126 @@
         "range": 2.0,
         "lift": 0.0
       }
+    },
+    {
+      "id": "bellboy",
+      "model": "models/residents/bellboy.glb",
+      "scale": 1,
+      "yawDegrees": 90,
+      "strikeAt": 0.316,
+      "clips": {
+        "idle": "idle",
+        "walk": "walk",
+        "attack": "attack",
+        "hurt": "hurt",
+        "fall": "fall"
+      },
+      "tell": {
+        "colour": [
+          1.0,
+          0.55,
+          0.18
+        ],
+        "intensity": 1.6,
+        "range": 2.0,
+        "lift": 0.0
+      }
+    },
+    {
+      "id": "chef",
+      "model": "models/residents/chef.glb",
+      "scale": 1,
+      "yawDegrees": 90,
+      "strikeAt": 0.316,
+      "clips": {
+        "idle": "idle",
+        "walk": "walk",
+        "attack": "attack",
+        "hurt": "hurt",
+        "fall": "fall"
+      },
+      "tell": {
+        "colour": [
+          1.0,
+          0.55,
+          0.18
+        ],
+        "intensity": 1.6,
+        "range": 2.0,
+        "lift": 0.0
+      }
+    },
+    {
+      "id": "concierge",
+      "model": "models/residents/concierge.glb",
+      "scale": 1,
+      "yawDegrees": 90,
+      "strikeAt": 0.55,
+      "clips": {
+        "idle": "idle",
+        "walk": "walk",
+        "attack": "attack",
+        "hurt": "hurt",
+        "fall": "fall"
+      },
+      "tell": {
+        "colour": [
+          1.0,
+          0.55,
+          0.18
+        ],
+        "intensity": 1.6,
+        "range": 2.0,
+        "lift": 0.0
+      }
+    },
+    {
+      "id": "sleepwalker",
+      "model": "models/residents/sleepwalker.glb",
+      "scale": 1,
+      "yawDegrees": 90,
+      "strikeAt": 0.316,
+      "clips": {
+        "idle": "idle",
+        "walk": "walk",
+        "attack": "attack",
+        "hurt": "hurt",
+        "fall": "fall"
+      },
+      "tell": {
+        "colour": [
+          1.0,
+          0.55,
+          0.18
+        ],
+        "intensity": 1.6,
+        "range": 2.0,
+        "lift": 0.0
+      }
+    },
+    {
+      "id": "bride",
+      "model": "models/residents/bride.glb",
+      "scale": 1,
+      "yawDegrees": 90,
+      "strikeAt": 0.55,
+      "clips": {
+        "idle": "idle",
+        "walk": "idle",
+        "attack": "attack",
+        "hurt": "hurt",
+        "fall": "fall"
+      },
+      "tell": {
+        "colour": [
+          1.0,
+          0.55,
+          0.18
+        ],
+        "intensity": 1.6,
+        "range": 2.0,
+        "lift": 0.0
+      }
     }
   ]
 }

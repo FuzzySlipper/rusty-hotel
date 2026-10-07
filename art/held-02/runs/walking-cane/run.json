@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-02/source-walking-cane.png",
+ "image_sha256": "fe3c6bf15b196682c76fd75bbd5e5acd785248edc87618e8b30a7a2a6a23cdcf",
+ "prompt_id": "9894e528-785a-4f55-877e-6c9e1ebaf432",
+ "wall_seconds": 45.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 16.09,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 144659,
+   "sha256": "afef64889cc2acdb87602ff86f2ca873aae0c22776cf4841886c1e19b0bea90d"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 1219780,
+   "sha256": "828eee257049d4edcb9b1a8e8887175bc30f1ad50b012779f8b359d540e8c908"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 2462448,
+   "sha256": "4159f7a5a819a40d7bc1a445b58b2208ec363dda4ef5a30c6646392f1a22209a"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 6391188,
+   "sha256": "2d601daaa93fe874b1fecf2aed5152588bdbbde4c28e85a635231afdbf98751f"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

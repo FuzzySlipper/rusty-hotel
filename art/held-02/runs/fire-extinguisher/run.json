@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-02/source-fire-extinguisher.png",
+ "image_sha256": "054f6bbe1348c01e4f7a030ad5efab19cdd50be493535fa4bc5901aa9222d276",
+ "prompt_id": "d99da4de-e36c-4818-aeb1-c7a9cd1a39ac",
+ "wall_seconds": 50.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.95,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 494140,
+   "sha256": "472fff2ebf4e81dfad0a80aeb8b1b345698d3e7c00fabfd8a4db6f9f75a91bc2"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 1762898,
+   "sha256": "13350fdb70111c5234022b7bfa85fad20550dace38673accd95ea17d17efceb9"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 4455269,
+   "sha256": "0b505378cdf72a67f2f28510250ae7238074880fc3e1dc86fd45e04ec8651fc1"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 11423312,
+   "sha256": "bd4ec6769a1908c86c1d9042f10bc96052d0abb26c61e669c61ffe535d37ce8e"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

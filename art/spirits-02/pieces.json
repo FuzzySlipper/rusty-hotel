@@ -1,0 +1,41 @@
+{
+ "triangleBudget": 12000,
+ "textureSize": 1024,
+ "imageFormat": "JPEG",
+ "metallicScale": 0.3,
+ "glow": 0.35,
+ "pieces": {
+  "embermoth": {
+   "native": "native/embermoth.glb",
+   "width": 1.5,
+   "hinge": 0.15,
+   "keep": [
+    [
+     0.55,
+     0.8
+    ],
+    [
+     0.25,
+     0.6
+    ]
+   ],
+   "hingeHeight": 0.51
+  },
+  "stillwing": {
+   "native": "native/stillwing.glb",
+   "width": 1.5,
+   "hinge": 0.15,
+   "keep": [
+    [
+     0.55,
+     0.8
+    ],
+    [
+     0.25,
+     0.6
+    ]
+   ],
+   "hingeHeight": 0.51
+  }
+ }
+}

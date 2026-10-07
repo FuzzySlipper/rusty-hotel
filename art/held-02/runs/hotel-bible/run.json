@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/held-02/source-hotel-bible.png",
+ "image_sha256": "8a92093c57ea73e361f95507ce18018d11eaf8ac1de08fddb3dab518e56cf8f2",
+ "prompt_id": "15eb7869-3df1-4150-8051-45305af50fd0",
+ "wall_seconds": 100.1,
+ "status": "success",
+ "faces_target": 15000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 15.41,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 1134217,
+   "sha256": "1df4466ae01bd553a11b412de0a7ec4d48aea4d5d9a84ca133456fd954b85e18"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 1878110,
+   "sha256": "0eb1a1c18af99ea725177abcb98beef4182287412ec7546ed8727d0381463935"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 6076304,
+   "sha256": "35af41c71b33aba3b244054f86794f95be46c73a855aabe25a111bc4984d4c6e"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 14324900,
+   "sha256": "1f29639555cb914270dc69cfbe07c7b5f44353a5008a0e88385e09aacd5d502e"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

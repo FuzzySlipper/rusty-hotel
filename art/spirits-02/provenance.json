@@ -1,0 +1,89 @@
+{
+ "runFamily": "hotel-spirits-02",
+ "sourcePrompt": "request.json (style + per-piece subject)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec), one image per piece",
+ "meshProducer": "asset-pipeline legacy/experiments/comfy-native-image-to-3d/run_native.py, TRELLIS.2 bf16 on the RTX 5090 ComfyUI (den-patch); runs/<piece>/ keeps each run's prompt and settings",
+ "runs": {
+  "embermoth": {
+   "wallSeconds": 80.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  },
+  "stillwing": {
+   "wallSeconds": 50.1,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  }
+ },
+ "conversion": "Local Blender; prepare.py (from spirits-01, unchanged); textures 1024 JPEG, metal softened",
+ "files": [
+  {
+   "path": "art/spirits-02/embermoth.blend",
+   "sha256": "6086629f20b8a001daa0e01829cc58ac9b6889a00fa07e887003fc7c1b3401db"
+  },
+  {
+   "path": "art/spirits-02/native/embermoth.glb",
+   "sha256": "a0b19b374e42201bfee6588aebc86b4694fe802e17fc8955aacd089ac1228cf6"
+  },
+  {
+   "path": "art/spirits-02/native/stillwing.glb",
+   "sha256": "2464f07e6eaaa443d37c48c334f07fc34e36ab5a057c3f52b6fcc414e98d6310"
+  },
+  {
+   "path": "art/spirits-02/pieces.json",
+   "sha256": "1b3a6ac523b05689c1dca6e8ae6f2ef73fa78ff459397e7754dd29ae07c031c9"
+  },
+  {
+   "path": "art/spirits-02/prepare.py",
+   "sha256": "13fada496eb7e50589e2971fc9719858fb17568e1003c7ad257e534f4d9024e6"
+  },
+  {
+   "path": "art/spirits-02/request.json",
+   "sha256": "f9bddf6ac49c4e2aa33a91c27de734dfafcf1948176ab17a862f6998700381fa"
+  },
+  {
+   "path": "art/spirits-02/source-embermoth.png",
+   "sha256": "5a56278dea13fab50ae08e54845dbe730af5aa227635de697e4ebe5e59ce15a6"
+  },
+  {
+   "path": "art/spirits-02/source-stillwing.png",
+   "sha256": "953b564db443014759dcd28d3b0f648eea57034e1f3983def48a0ac50dce3a5b"
+  },
+  {
+   "path": "art/spirits-02/stillwing.blend",
+   "sha256": "7a9467dfefc598691d09d2784edc640c3c19c432c26b2051774309a222f04534"
+  },
+  {
+   "path": "content/models/spirits/embermoth-body.glb",
+   "sha256": "a785f262e94ff2f7caf1af564d559f586df6b9b444dd3bfd8a49c475a87ce2d8"
+  },
+  {
+   "path": "content/models/spirits/embermoth-left.glb",
+   "sha256": "bbc5d8853765fd1b650aa46f13973200337246c9a45ae135860ce69b71706ed0"
+  },
+  {
+   "path": "content/models/spirits/embermoth-right.glb",
+   "sha256": "09afc64ea75fa4ab41c26f16f7c92153cde4adbc86d5a56c7b3ccaebe60bbe75"
+  },
+  {
+   "path": "content/models/spirits/stillwing-body.glb",
+   "sha256": "95c7e3ee686d49114f9f4ea14bee259c2a402c4b96d0b381b9b5cf5f65c56cd3"
+  },
+  {
+   "path": "content/models/spirits/stillwing-left.glb",
+   "sha256": "270d6db9e5ec18d7e37470f28a1f4bfe5f5b22150dc56f5a471b2e17d2ee0ba8"
+  },
+  {
+   "path": "content/models/spirits/stillwing-right.glb",
+   "sha256": "a4b2c1561be4029b0025477a034fa4c493837dcca866b44dce18cbe8fab14afc"
+  }
+ ]
+}

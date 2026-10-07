@@ -1,0 +1,47 @@
+{
+ "model": "trellis2",
+ "image": "art/spirits-02/source-stillwing.png",
+ "image_sha256": "953b564db443014759dcd28d3b0f648eea57034e1f3983def48a0ac50dce3a5b",
+ "prompt_id": "73b6e60d-4a63-46b3-909a-4fe445939ef6",
+ "wall_seconds": 50.1,
+ "status": "success",
+ "faces_target": 12000,
+ "seed_offset": 0,
+ "tex_res": 2048,
+ "upsample_res": 1536,
+ "weights": "bf16",
+ "decimate": "midpoint",
+ "remesh_res": 256,
+ "min_vram_free_gib": 16.05,
+ "comfy": "http://192.168.1.20:8188",
+ "files": [
+  {
+   "node": "404",
+   "file": "cutout_00001_.png",
+   "bytes": 849203,
+   "sha256": "62876d892bb3fe0ec0a853e48a82f945dec6235b1d39eef9a35415272707b783"
+  },
+  {
+   "node": "403",
+   "file": "normal_00001_.png",
+   "bytes": 2862421,
+   "sha256": "f02df3fd1c42b1330fe51364c6fcdfdd8552c2b63c0a5457b07f134c5ad42d36"
+  },
+  {
+   "node": "402",
+   "file": "basecolor_00001_.png",
+   "bytes": 5021836,
+   "sha256": "299513a32189f3ada7f53faf3e3377b6df682635cdb67f168b257b25566676fb"
+  },
+  {
+   "node": "401",
+   "file": "textured_00001_.glb",
+   "bytes": 12869076,
+   "sha256": "2464f07e6eaaa443d37c48c334f07fc34e36ab5a057c3f52b6fcc414e98d6310"
+  }
+ ],
+ "queue_before": {
+  "running": 0,
+  "pending": 0
+ }
+}

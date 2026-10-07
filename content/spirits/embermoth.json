@@ -1,0 +1,44 @@
+{
+  "id": "embermoth",
+  "name": "Embermoth",
+  "description": "A moth of smouldering ash, its wings veined with live embers. Where it bursts, everything catches.\n\n{key.summon} sends it where you aim, within {range} paces. Costs {cost} summon charge. It scatters embers that scorch every resident nearby and leave them burning.",
+  "welcomeCharges": 1,
+  "arrival": 0.5,
+  "hold": 0.9,
+  "departure": 0.8,
+  "action": "embermoth-scatter",
+  "look": {
+    "body": "models/spirits/embermoth-body.glb",
+    "wings": [
+      "models/spirits/embermoth-left.glb",
+      "models/spirits/embermoth-right.glb"
+    ],
+    "hinges": [
+      [
+        -0.1125,
+        0.0126,
+        -0.0058
+      ],
+      [
+        0.1125,
+        0.0126,
+        -0.0052
+      ]
+    ],
+    "scale": 0.55
+  },
+  "text": {
+    "callHint": "{key.summon} · Send the Embermoth where you aim",
+    "callResult": "{spirit} bursts into embers · −{cost} summon",
+    "arriving": "Flying out",
+    "holding": "Smouldering",
+    "departing": "Settling"
+  },
+  "manifestation": {
+    "approach": 0.25,
+    "side": 0.65,
+    "lift": 0.15,
+    "entranceFraction": 0.2,
+    "entranceDrop": 0.25
+  }
+}

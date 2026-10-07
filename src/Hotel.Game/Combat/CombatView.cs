@@ -21,7 +21,7 @@ internal sealed class CombatView : IDisposable
     private readonly ResidentView residents;
     // The model each held look shows, and the flash at a firearm's commit.
     private readonly List<RenderResource> models = [];
-    private readonly Dictionary<HeldLook, (ulong Entity, Appearance Appearance, HeldModel Model)> held = [];
+    private readonly Dictionary<string, (ulong Entity, Appearance Appearance, HeldModel Model)> held = new(StringComparer.Ordinal);
     private readonly HeldCatalog heldLooks;
     private readonly Part muzzle;
     // Enough flare boxes for the shots one hand can have in flight at once.
@@ -77,7 +77,7 @@ internal sealed class CombatView : IDisposable
         if (combat.Phase == AttackPhase.Commit) hand += Authored.Vector(pose.Commit);
         if (combat.Phase is AttackPhase.Recovery) hand.Y -= pose.RecoveryDrop;
         Vector3 handWorld = player.Eye + Vector3.Transform(hand, camera);
-        HeldLook? look = combat.Holding?.Item.Wear!.Look;
+        string? look = combat.Holding?.Item.Wear!.Look;
         foreach (var (kind, (entity, appearance, model)) in held)
         {
             Vector3 turn = Authored.Vector(model.Rotation) * (MathF.PI / 180);

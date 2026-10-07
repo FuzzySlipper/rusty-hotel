@@ -1,0 +1,16 @@
+{
+ "goal": "Eight more first-person held weapons for Hotel Endless (#9648); static meshes for local TRELLIS.2 image-to-3D on the RTX 5090.",
+ "style": "Single isolated hand-held object for image-to-3D reconstruction. Grounded, slightly stylized realism with physically plausible worn materials, consistent with a 1970s hotel in muted amber, olive and burgundy light: aged brass, chipped enamel paint, dull steel, worn bakelite and wood. Three-quarter view from slightly above (about 20 degrees elevation, 30 degrees yaw) so the top and two sides are visible. The entire object is fully in frame and centred with generous margin on all sides, nothing cropped. Plain flat light-grey seamless background, soft even studio lighting, no cast shadow, no ground plane, no hands, no other objects. Solid opaque materials, no glow, no smoke, no transparency. NO text, NO letters, NO logos, NO people. Square image around 1024x1024.",
+ "pieces": {
+  "fire-axe": "Subject: A hotel corridor fire axe about 80 cm long: a straight hickory handle varnished dark with age, a heavy steel head with a broad curved blade on one side and a pointed pick on the other, the head painted fire-engine red with the paint chipped away at the edges to bare steel.",
+  "letter-opener": "Subject: A long brass letter opener from a hotel writing desk, about 25 cm, shaped like a slim dagger: a narrow tapering double-edged blade, a short cross guard and an ornate cast-brass handle with a small round pommel, tarnished brass with polished wear on the grip.",
+  "walking-cane": "Subject: A gentleman's walking cane about 90 cm long: a straight dark ebony shaft with a brass ferrule at the tip and a heavy round silver knob handle engraved with a simple band, the silver tarnished and the ebony scuffed.",
+  "candelabra": "Subject: A heavy three-branch brass candelabra about 40 cm tall carried by its stem: a round weighted foot, a turned central stem and three curved arms each holding an ivory wax candle stub with a black wick, tarnished brass with drips of old wax.",
+  "coach-gun": "Subject: A short double-barrelled coach gun, a night watchman's shotgun about 70 cm long: two side-by-side steel barrels, two exposed hammers, a short walnut fore-end and a straight walnut stock, worn blued steel and dark oiled wood.",
+  "bar-darts": "Subject: A bundle of three brass-barrelled pub darts held together side by side, about 15 cm long, with steel points and faded burgundy and ivory feather flights, slightly bent and well used.",
+  "fire-extinguisher": "Subject: A 1970s soda-acid fire extinguisher about 50 cm tall: a cylindrical red-painted steel body with a domed brass top cap, a short black rubber hose ending in a brass nozzle clipped to its side and a brass carrying handle on top, the red paint faded and scratched.",
+  "hotel-bible": "Subject: A thick hotel bedside bible about 22 cm tall: a worn black leatherette cover with gilt edges to the pages, the corners rounded and scuffed, a faded burgundy ribbon marker hanging out, held closed."
+ },
+ "imageProducer": "codex-image-gen (gpt image via codex exec)",
+ "meshProducer": "asset-pipeline legacy/experiments/comfy-native-image-to-3d/run_native.py, TRELLIS.2 bf16"
+}
