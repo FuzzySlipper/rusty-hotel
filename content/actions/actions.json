@@ -869,7 +869,7 @@
       "damage": [
         {
           "kind": "blunt",
-          "amount": 22,
+          "amount": 18,
           "scaling": []
         }
       ],
