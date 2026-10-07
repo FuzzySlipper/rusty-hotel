@@ -162,6 +162,17 @@ host.Call(engine =>
     Check(commands.Hotel!.ShowModule("guest-room-a", 1).Status == DebugCommandStatus.Success && Position().X > 90,
         "the developer module viewer stands the player at a module built beside the hotel");
     Check(commands.Hotel!.ShowModule("ballroom", 0).Status == DebugCommandStatus.InvalidArguments, "an unknown module is refused");
+    // Developer placements land on clear floor: onto an occupied post, or into a wall, the player is moved aside and
+    // the next steps run.
+    product.Restart();
+    Vector3 lamp = product.World.Combat.Enemies.Single(e => e.Kind.Id == "lamp").Position;
+    Check(commands.Hotel!.GoTo("survey").Status == DebugCommandStatus.Success &&
+        new Vector2(Position().X - lamp.X, Position().Z - lamp.Z).Length() > content.Player.Radius, "goto onto a resident's post stands the player beside it");
+    Advance(30, Key(KeyboardControl.KeyW));
+    Check(commands.Hotel!.View(-1.9f, -3, 90, 0).Status == DebugCommandStatus.Success && MathF.Abs(Position().X + 1.9f) > content.Player.Radius,
+        "a view point inside a partition moves to clear floor");
+    Advance(30, Key(KeyboardControl.KeyD));
+    product.Restart();
     commands.Supplies!.Give("bandage", 1);
     Advance(60, Key(KeyboardControl.KeyW));
     commands.Hotel!.ReturnToEntrance();

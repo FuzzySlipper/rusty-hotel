@@ -18,6 +18,8 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     internal const string StartingExcursion = "west-wing";
 
     private readonly IEngineContext engine;
+    /// <summary>The Engine context, for developer overrides that query it.</summary>
+    internal IEngineContext Engine => engine;
     private readonly HotelContent content;
     private readonly HotelHud hud;
     private readonly HotelControls controls;

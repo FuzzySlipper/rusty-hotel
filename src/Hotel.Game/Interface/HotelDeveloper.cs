@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Hotel.Game.Floors;
 using Hotel.Game.Floors.Modules;
 using Hotel.Game.Route;
+using Rusty.Engine;
 using Rusty.Engine.Debugging;
 
 namespace Hotel.Game.Interface;
@@ -29,7 +30,10 @@ internal sealed class HotelDeveloper(HotelProduct product)
         // A space's first post is clear floor by authoring; its middle may hold furniture or a flight of stairs.
         float[] at = World.Excursion.Plan.Spaces.FirstOrDefault(s => s.Id == space)?.Posts?.Values.FirstOrDefault()
             ?? [(room.Min[0] + room.Max[0]) / 2, (room.Min[2] + room.Max[2]) / 2];
-        World.Player.Place(new(at[0], World.Player.Tuning.Height / 2, at[1]), World.Player.LookState.YawRadians * 180 / MathF.PI);
+        // A resident may stand on the post: the body goes to the nearest clear floor within the room.
+        if (ClearNear(new(at[0], at[1]), p => p.X > room.Min[0] && p.X < room.Max[0] && p.Y > room.Min[2] && p.Y < room.Max[2]) is not { } clear)
+            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"No clear floor for the player in '{space}'.");
+        World.Player.Place(clear, World.Player.LookState.YawRadians * 180 / MathF.PI);
         product.Publish();
         return Observe();
     }
@@ -38,11 +42,49 @@ internal sealed class HotelDeveloper(HotelProduct product)
     {
         if (!float.IsFinite(x) || !float.IsFinite(z) || !float.IsFinite(yaw) || !float.IsFinite(pitch))
             return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, "The point and angles must be finite numbers.");
+        // A point inside a wall, furniture or a resident moves to the nearest clear floor; none nearby is refused.
+        if (ClearNear(new(x, z), _ => true) is not { } clear)
+            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"No clear floor for the player near [{x}, {z}].");
         product.ClearActions();
-        World.Player.Place(new(x, World.Player.Tuning.Height / 2, z), yaw);
+        World.Player.Place(clear, yaw);
         World.Player.LookBy(0, pitch);
         product.Publish();
         return Observe();
+    }
+
+    // How far from the asked-for point a developer placement looks for clear floor, and how finely, in metres.
+    private const float SearchRadius = 2, SearchStep = .25f;
+
+    /// <summary>
+    /// The nearest point to <paramref name="at"/>, within the search radius and accepted by <paramref name="within"/>,
+    /// where the player's body overlaps no world collision and no living resident (an Engine box overlap query): the
+    /// body's centre there, or null. Placing a body into collision would leave the character controller unable to
+    /// resolve its next step.
+    /// </summary>
+    private Vector3? ClearNear(Vector2 at, Func<Vector2, bool> within)
+    {
+        HotelWorld w = World;
+        float half = w.Player.Tuning.Height / 2, radius = w.Player.Tuning.Radius;
+        SpatialEntityCollider[] residents = w.Combat.Enemies.Where(e => e.Alive).Select(e => e.Hitbox).ToArray();
+        bool Clear(Vector2 p)
+        {
+            // The body's box, lifted clear of the floor it stands on.
+            Vector3 centre = new(p.X, half, p.Y), extent = new(radius, half - .05f, radius);
+            return !product.Engine.Spatial.OverlapAabb(new(w.Scene.Session, centre - extent + new Vector3(0, .05f, 0), centre + extent,
+                Vector3.Zero, new(0, uint.MaxValue), residents, new[] { w.Scene.PlayerEntity.Value })).Present;
+        }
+        if (within(at) && Clear(at)) return new(at.X, half, at.Y);
+        for (float r = SearchStep; r <= SearchRadius + 1e-3f; r += SearchStep)
+        {
+            int steps = Math.Max(8, (int)MathF.Ceiling(2 * MathF.PI * r / SearchStep));
+            for (int i = 0; i < steps; i++)
+            {
+                float a = i * 2 * MathF.PI / steps;
+                Vector2 p = at + new Vector2(MathF.Cos(a), MathF.Sin(a)) * r;
+                if (within(p) && Clear(p)) return new(p.X, half, p.Y);
+            }
+        }
+        return null;
     }
 
     internal DebugCommandResult ShowModule(string id, int turn)
