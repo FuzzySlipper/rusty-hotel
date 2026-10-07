@@ -1,0 +1,128 @@
+{
+ "id": "cp-berber-fleck-brown",
+ "kind": "organic",
+ "repeat_m": [
+  0.4,
+  0.4
+ ],
+ "size_px": 1024,
+ "maps": {
+  "albedo": {
+   "file": "albedo.png",
+   "sha256": "c82db848263f491b5710919bf57c4ef3ec7e99906fb16a3f3f55b5e7412dc90b"
+  },
+  "normal": {
+   "file": "normal.png",
+   "sha256": "e1db0a38a242add87bbaa549389260b30192d8a60555f5162d3a6b2e2d2e4351"
+  },
+  "height": {
+   "file": "height.png",
+   "sha256": "eb348b3ecd76eee5cb3c1058f38e3a16ad207c901bb5dcb16a821f8db7593502"
+  },
+  "height-deepbump": {
+   "file": "height-deepbump.png",
+   "sha256": "fde3fa640318c633a7831610aeab272a33009921ca03e061a5674e5ad84d7457"
+  },
+  "roughness": {
+   "file": "roughness.png",
+   "sha256": "2b7e02c49302c0a446a32af1a4910ee1fd179c0ccb0091966faee3f3fd17aa5f"
+  },
+  "ao": {
+   "file": "ao.png",
+   "sha256": "2dceb34b557a2f9aae86c7508cbe7e307c3599904b82ba2be10c9b6dcc62e9f4"
+  },
+  "orm": {
+   "file": "orm.png",
+   "sha256": "b10bf9a71d40fc5ddd3f3655c70b8fda7ff2d2e1bb7ed59c62368351c6a40e69"
+  }
+ },
+ "orm_channels": "R occlusion, G roughness, B metalness",
+ "normal_convention": "DeepBump output (OpenGL, +Y up); verify against the target engine",
+ "seams": {
+  "albedo": 0.99,
+  "normal": 0.96,
+  "height": 1.03,
+  "height-deepbump": 1.06,
+  "roughness": 1.01,
+  "ao": 1.03,
+  "orm": 1.03
+ },
+ "seconds": 144.5,
+ "provenance": {
+  "request": {
+   "id": "cp-berber-fleck-brown",
+   "kind": "organic",
+   "repeat_m": [
+    0.4,
+    0.4
+   ],
+   "edge_blur_px": 0.6,
+   "ao_strength": 0.6,
+   "seed": 5,
+   "regions": [
+    {
+     "name": "wool-1",
+     "roughness": 0.97,
+     "height": 0.85,
+     "grain": 0.7
+    },
+    {
+     "name": "wool-2",
+     "roughness": 0.97,
+     "height": 0.9249999999999999,
+     "grain": 0.7
+    },
+    {
+     "name": "wool-3",
+     "roughness": 0.97,
+     "height": 1.0,
+     "grain": 0.7
+    }
+   ],
+   "subject": "Berber loop-pile carpet seen from directly above: tight small wool loops in warm mid brown with scattered cream and dark brown flecks, even texture, no pattern.",
+   "size": 1024
+  },
+  "steps": [
+   {
+    "step": "generate",
+    "tool": "z-image + Universal-Seamless-Tiles",
+    "host": "http://192.168.1.24:8188",
+    "seed": 5,
+    "prompt": "Flat orthographic texture swatch for a game material, photographed straight-on, the material fills the entire square frame edge to edge with no border, no perspective, no vignette, no cast shadows, soft perfectly even diffuse lighting with no highlights. The texture continues evenly off all four edges with no focal point. Period-correct for an eerie 1970s grand hotel. Muted, slightly aged colours. NO text, NO logos, NO objects, NO people. Square image.\n\nSubject: Berber loop-pile carpet seen from directly above: tight small wool loops in warm mid brown with scattered cream and dark brown flecks, even texture, no pattern."
+   },
+   {
+    "step": "normal_height",
+    "tool": "DeepBump fad19ba",
+    "overlap": "LARGE"
+   },
+   {
+    "step": "region_maps",
+    "spec": {
+     "regions": [
+      {
+       "name": "wool-1",
+       "roughness": 0.97,
+       "height": 0.85,
+       "grain": 0.7
+      },
+      {
+       "name": "wool-2",
+       "roughness": 0.97,
+       "height": 0.9249999999999999,
+       "grain": 0.7
+      },
+      {
+       "name": "wool-3",
+       "roughness": 0.97,
+       "height": 1.0,
+       "grain": 0.7
+      }
+     ],
+     "edge_blur_px": 0.6,
+     "ao_strength": 0.6,
+     "seed": 5
+    }
+   }
+  ]
+ }
+}

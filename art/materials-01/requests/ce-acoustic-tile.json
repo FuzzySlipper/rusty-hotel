@@ -1,0 +1,33 @@
+{
+ "id": "ce-acoustic-tile",
+ "kind": "registered",
+ "repeat_m": [
+  0.61,
+  0.61
+ ],
+ "edge_blur_px": 1.0,
+ "ao_strength": 0.5,
+ "seed": 1,
+ "size": 1024,
+ "regions": [
+  {
+   "name": "groove",
+   "roughness": 0.95,
+   "height": 0.0,
+   "grain": 0.2
+  },
+  {
+   "name": "pores",
+   "roughness": 0.95,
+   "height": 0.4,
+   "grain": 0.6
+  },
+  {
+   "name": "tile",
+   "roughness": 0.93,
+   "height": 0.8,
+   "grain": 0.5
+  }
+ ],
+ "subject": "1970s suspended acoustic ceiling tiles seen flat, square off-white mineral fibre tiles with scattered fissured pinholes, separated by thin dull cream metal grid strips, slightly aged and yellowed."
+}

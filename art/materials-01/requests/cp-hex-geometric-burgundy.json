@@ -1,0 +1,33 @@
+{
+ "id": "cp-hex-geometric-burgundy",
+ "kind": "registered",
+ "repeat_m": [
+  0.6,
+  0.6
+ ],
+ "regions": [
+  {
+   "name": "wool-1",
+   "roughness": 0.97,
+   "height": 0.85,
+   "grain": 0.6
+  },
+  {
+   "name": "wool-2",
+   "roughness": 0.97,
+   "height": 0.9249999999999999,
+   "grain": 0.6
+  },
+  {
+   "name": "wool-3",
+   "roughness": 0.97,
+   "height": 1.0,
+   "grain": 0.6
+  }
+ ],
+ "edge_blur_px": 1.0,
+ "ao_strength": 0.5,
+ "subject": "1970s hotel lobby carpet, cut-pile wool seen from directly above: a repeating interlocking hexagon and star geometric pattern in burgundy, old gold and charcoal, soft pile texture throughout.",
+ "size": 1024,
+ "seed": 1
+}

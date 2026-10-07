@@ -12,7 +12,7 @@ namespace Hotel.Game.Floors.Layout;
 /// </summary>
 internal sealed record KeptSet(LayoutPlacement[] Placements, IReadOnlyDictionary<MissionNodeKind, string> Places,
     SpaceDefinition[] Passage, LinkDefinition[] PassageLinks, FixturePlacement[] PassageFixtures, string? Latch, KeptDoor[] Doors,
-    string[] Open, string TrimStyle)
+    string[] Open, string TrimStyle, string Decor)
 {
     /// <summary>The route door id a lock's door is hung under on its floor.</summary>
     internal static string LockDoor(string floor, LayoutLock lck) => $"{floor}/lock/{lck.Edge}";
@@ -77,7 +77,7 @@ internal sealed record KeptSet(LayoutPlacement[] Placements, IReadOnlyDictionary
         if (shortcut) Keep(MissionNodeKind.Shortcut);
         return new(layout.Placements.Where(p => kept.Contains(p.Id)).Select(p => p with { Region = FloorEmbedding.OpenRegion }).ToArray(), places,
             shortcut ? layout.Passage : [], shortcut ? layout.PassageLinks : [], shortcut ? layout.PassageFixtures : [], shortcut ? layout.Latch : null,
-            [.. doors], [.. stillOpen], layout.TrimStyle);
+            [.. doors], [.. stillOpen], layout.TrimStyle, layout.Decor);
     }
 
     /// <summary>The key a held item becomes on the shifted floor: a held lock's kept key, or none.</summary>

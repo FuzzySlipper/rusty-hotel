@@ -28,9 +28,10 @@ internal sealed record LayoutLock(string Edge, string Link, string Item);
 /// <param name="Beyond">Spaces that stand in another region than their placement: a gate's far half, behind its door.</param>
 /// <param name="KeptDoors">Doors a shift kept because the player had opened them, or held their keys: hung again under their old ids.</param>
 /// <param name="TrimStyle">The kit trim style the whole floor is dressed in; a shift keeps it.</param>
+/// <param name="Decor">The kit decor the whole floor is furnished in; a shift keeps it.</param>
 internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition[] Passage, LinkDefinition[] PassageLinks,
     FixturePlacement[] PassageFixtures, IReadOnlyDictionary<string, string> Places, LayoutLock[] Locks, string? Latch,
-    IReadOnlyDictionary<string, string> Beyond, KeptDoor[] KeptDoors, string TrimStyle)
+    IReadOnlyDictionary<string, string> Beyond, KeptDoor[] KeptDoors, string TrimStyle, string Decor)
 {
     internal PlacedModule[] Placed(ModuleCatalog catalog) => Placements.Select(p =>
         new PlacedModule(p.Id, new(catalog.Find(p.Module)!, new(p.X, p.Z), p.Turn))).ToArray();
@@ -47,7 +48,7 @@ internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition
     }
 
     internal FloorPlan Realize(ModuleCatalog catalog) =>
-        ModuleRealizer.Plan(Placed(catalog), catalog, TrimStyle, Passage, PassageLinks, PassageFixtures);
+        ModuleRealizer.Plan(Placed(catalog), catalog, TrimStyle, Passage, PassageLinks, PassageFixtures, Decor);
 
     internal void Write(CanonicalText text)
     {
@@ -62,6 +63,7 @@ internal sealed record FloorLayout(LayoutPlacement[] Placements, SpaceDefinition
         foreach (LayoutLock l in Locks.OrderBy(l => l.Edge, StringComparer.Ordinal)) text.Line("layout.lock", l.Edge, l.Link, l.Item);
         text.Line("layout.latch", Latch ?? "");
         text.Line("layout.trim-style", TrimStyle);
+        text.Line("layout.decor", Decor);
         foreach (var (space, region) in Beyond.OrderBy(b => b.Key, StringComparer.Ordinal)) text.Line("layout.beyond", space, region);
         foreach (KeptDoor door in KeptDoors.OrderBy(d => d.Id, StringComparer.Ordinal)) text.Line("layout.kept-door", door.Id, door.Link, door.Locked?.Item ?? "", door.Locked?.Guards ?? "");
     }

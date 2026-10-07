@@ -1,0 +1,33 @@
+{
+ "id": "cp-berber-fleck-brown",
+ "kind": "organic",
+ "repeat_m": [
+  0.4,
+  0.4
+ ],
+ "edge_blur_px": 0.6,
+ "ao_strength": 0.6,
+ "seed": 5,
+ "regions": [
+  {
+   "name": "wool-1",
+   "roughness": 0.97,
+   "height": 0.85,
+   "grain": 0.7
+  },
+  {
+   "name": "wool-2",
+   "roughness": 0.97,
+   "height": 0.9249999999999999,
+   "grain": 0.7
+  },
+  {
+   "name": "wool-3",
+   "roughness": 0.97,
+   "height": 1.0,
+   "grain": 0.7
+  }
+ ],
+ "subject": "Berber loop-pile carpet seen from directly above: tight small wool loops in warm mid brown with scattered cream and dark brown flecks, even texture, no pattern.",
+ "size": 1024
+}

@@ -15,10 +15,12 @@ internal static class KitChecks
         RoomBox[] At(float x, float y, float z) => boxes.Where(b => b.Solid && b.Min[0] <= x && b.Max[0] >= x &&
             b.Min[1] <= y && b.Max[1] >= y && b.Min[2] <= z && b.Max[2] >= z).ToArray();
 
-        Check(At(-1.95f, 1.2f, -3).Any(b => b.Material == "medallion") && At(-1.85f, 1.2f, -3).Any(b => b.Material == "wall"),
+        // The west wing is furnished in its decor: the guest room's paper on its side, the corridor's on the other.
+        Dictionary<string, Hotel.Game.Scene.Kit.DecorSurfaces> decor = content.Kit.Decors[content.Excursion.Plan.Decor!];
+        Check(At(-1.95f, 1.2f, -3).Any(b => b.Material == decor["guest-room"].Wall) && At(-1.85f, 1.2f, -3).Any(b => b.Material == decor["corridor"].Wall),
             "a partition shows each room's own wallpaper on its own side");
         Check(At(-1.95f, 1.2f, -5).Length == 0 && At(-1.85f, 1.2f, -5).Length == 0, "the portrait-room door link cuts the partition");
-        Check(At(-1.85f, 2.4f, -5).Any(b => b.Material == "wall"), "a lintel closes the wall above the door");
+        Check(At(-1.85f, 2.4f, -5).Any(b => b.Material == decor["corridor"].Wall), "a lintel closes the wall above the door");
         // Profiled trim is a moulding run along the wall face rather than a box.
         Check(content.Excursion.Geometry.Mouldings.Any(m => m.Name.Contains("picture rail") && Math.Min(m.Start[2], m.End[2]) <= -5 &&
             Math.Max(m.Start[2], m.End[2]) >= -5 && Math.Abs(m.Start[0] + 1.8f) < .01f && m.Outward[0] > 0), "the picture rail continues over the door");

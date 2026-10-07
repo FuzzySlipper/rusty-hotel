@@ -5,11 +5,21 @@ namespace Hotel.Game.Scene.Kit;
 
 /// <summary>
 /// The hotel's architectural kit: how thick its walls, floors and ceilings are, the trim styles a floor can be dressed
-/// in, how door frames are cut, and the surface sets a space can be styled with.
+/// in, how door frames are cut, the surface sets a space can be styled with, and the decors a floor can be furnished
+/// in: per space style, the wallpaper, carpet and ceiling that replace the style's own.
 /// </summary>
 internal sealed record KitDefinition(float WallThickness, float FloorThickness, float CeilingThickness, DoorLeafTuning DoorLeaf,
-    Dictionary<string, TrimStyle> TrimStyles, Dictionary<string, FrameDefinition> Frames, Dictionary<string, SpaceStyle> Styles)
+    Dictionary<string, TrimStyle> TrimStyles, Dictionary<string, FrameDefinition> Frames, Dictionary<string, SpaceStyle> Styles,
+    Dictionary<string, Dictionary<string, DecorSurfaces>> Decors)
 {
+    /// <summary>A space style as a decor furnishes it: the decor's surfaces where it names them, the style's otherwise.</summary>
+    internal SpaceStyle Style(string style, string? decor)
+    {
+        SpaceStyle baseStyle = Styles[style];
+        if (decor is null || !Decors[decor].TryGetValue(style, out DecorSurfaces? surfaces)) return baseStyle;
+        return baseStyle with { Wall = surfaces.Wall ?? baseStyle.Wall, Floor = surfaces.Floor ?? baseStyle.Floor, Ceiling = surfaces.Ceiling ?? baseStyle.Ceiling };
+    }
+
     internal const string Path = "scene/kit.json";
 
     internal static KitDefinition Load(IEngineContext engine)
@@ -40,6 +50,9 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
             Authored.AtLeast(Path, $"frames.{id}.proud", frame.Proud, 0);
             Authored.Positive(Path, $"frames.{id}.headHeight", frame.HeadHeight);
         }
+        foreach (var (decor, styles) in kit.Decors)
+            foreach (var (style, _) in styles)
+                Authored.Require(kit.Styles.ContainsKey(style), Path, $"decors.{decor}.{style}", $"unknown space style '{style}'.");
         foreach (var (id, style) in kit.Styles)
         {
             // Every trim style dresses every role a space style names, so any floor can take any style.
@@ -87,6 +100,10 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
                 yield return ($"trimStyles.{styleId}.architraves.{frame}.material", architrave.Material);
         }
         foreach (var (id, frame) in Frames) yield return ($"frames.{id}.material", frame.Material);
+        foreach (var (decor, styles) in Decors)
+            foreach (var (style, surfaces) in styles)
+                foreach (var (field, surface) in new[] { ("wall", surfaces.Wall), ("floor", surfaces.Floor), ("ceiling", surfaces.Ceiling) })
+                    if (surface is not null) yield return ($"decors.{decor}.{style}.{field}", surface);
         foreach (var (id, style) in Styles)
         {
             yield return ($"styles.{id}.wall", style.Wall);
@@ -128,6 +145,9 @@ internal sealed record FrameDefinition(string Material, float JambWidth, float I
 
 /// <summary>A space's surface set and the trim role it takes from its floor's trim style. Spaces may override any surface.</summary>
 internal sealed record SpaceStyle(string Wall, string Floor, string Ceiling, string Trim, SeamDefinition? Seams = null);
+
+/// <summary>The surfaces a decor gives one space style; any left out keep the style's own.</summary>
+internal sealed record DecorSurfaces(string? Wall = null, string? Floor = null, string? Ceiling = null);
 
 /// <summary>Ceiling joints every <see cref="Spacing"/> metres along a space's long axis.</summary>
 internal sealed record SeamDefinition(float Spacing, float Width, float Depth, string Material);

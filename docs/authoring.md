@@ -56,7 +56,7 @@ its own folder. Geometry is kept apart from tuning.
 | `spirits/<id>.json` | One spirit: welcome charges, its call `action` (costing only summon charge), its moth's `look` (`body` and the left and right `wings` as GLB models, each wing's `hinge` in the body's frame, and `scale`), visit timing and placement offsets, its description (`{range}`, `{cost}`, `{seconds}` from its action) and its own wording; `HotelSpirit`, `SpiritView` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}`; `HotelSpirit` |
 | `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
-| `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim styles (bands, moulding profiles and architraves), door frames and space styles (surface sets); `KitBuilder` |
+| `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim styles (bands, moulding profiles and architraves), door frames, space styles (surface sets) and decors (per space style, the wallpaper, carpet and ceiling a floor is furnished in); `KitBuilder` |
 | `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, find displays, frames, pictures. Each is boxes and GLB models in its own frame, plus lights and named sockets; `KitBuilder` |
 | `excursions/<id>/plan.json` | The floor plan: spaces, the links between them, the fixtures placed in them, ambient light and GLB props; built by `KitBuilder` |
 | `excursions/<id>/route.json` | Its doors (hung in door links, with the locked-side prompt), readable notices at sockets, stairs (direction and the fixture socket they are used at), and the fallback location label; `HotelRoute` |
@@ -294,6 +294,13 @@ wall face at the band's foot round to the wall face at its head, swept along eve
 dress door frames by frame id with a `[out, across]` profile swept up both jambs and across the head on both wall
 faces. The west wing names its style in `plan.json`; a generated floor draws one of `floors/layout.json`'s
 `trimStyles` and keeps it through every shift, and the module catalog names the style a module is built in alone.
+
+**Decors.** A floor plan may name a `decor`, one of `scene/kit.json`'s `decors`; the west wing names one, and a
+generated floor draws one from `floors/layout.json`'s `decors` and keeps it through every shift. A decor gives, per
+space style (`corridor`, `guest-room`, `service`), the `wall`, `floor` and `ceiling` surfaces that replace the style's
+own; any it leaves out, and any a space overrides itself, stand. Decor surfaces are the material library in
+`content/materials/<id>/` (albedo and normal, adopted by `art/materials-01/adopt.py`); a surface's `tileWidth` and
+`tileHeight` are the material's real repeat, its height following the map's aspect for non-square periods.
 
 **Fixture models.** A fixture may show authored GLB `models` at an `offset` in its frame, turned with it; a model
 never collides and is not mirrored, so give a mirrored fixture a symmetric model. Where it must block, give it a

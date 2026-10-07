@@ -1,0 +1,33 @@
+{
+ "id": "cp-medallion-teal-rust",
+ "kind": "registered",
+ "repeat_m": [
+  0.9,
+  0.9
+ ],
+ "regions": [
+  {
+   "name": "wool-1",
+   "roughness": 0.97,
+   "height": 0.85,
+   "grain": 0.6
+  },
+  {
+   "name": "wool-2",
+   "roughness": 0.97,
+   "height": 0.9249999999999999,
+   "grain": 0.6
+  },
+  {
+   "name": "wool-3",
+   "roughness": 0.97,
+   "height": 1.0,
+   "grain": 0.6
+  }
+ ],
+ "edge_blur_px": 1.0,
+ "ao_strength": 0.5,
+ "subject": "Patterned hotel corridor carpet, cut-pile wool seen from directly above: an ornate repeating medallion and lattice pattern in deep teal, rust and cream, the soft carpet pile texture visible throughout.",
+ "size": 1024,
+ "seed": 1
+}

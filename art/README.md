@@ -4,7 +4,24 @@ Runtime assets live under `content/`. This directory retains editable sources,
 exact prompts and portable provenance. These authoring tools never run during
 `rusty dev` or `rusty build` and add no sibling checkout dependency.
 
-## Wallpaper and carpet
+## Material library
+
+`materials-01/` adopts tileable PBR sets made by asset-pipeline's `tools/materials` (GPT 2×2 swatches cut to one
+period for designed repeats; Z-Image with native seamless tiling on den-m5 for organic surfaces; DeepBump normals and
+region-spec roughness, height and AO). `requests/` keeps each set's exact request; `<id>/material.json` its manifest
+(prompt, seed, hosts, seams, hashes) and `<id>/orm.png` its packed occlusion, roughness and metalness, which the pinned
+Engine cannot sample yet. `sets.json` lists the adopted sets. Run, with the asset-pipeline output folder:
+
+```text
+python3 art/materials-01/adopt.py /home/agent/dev/asset-pipeline/live-evidence/materials
+```
+
+It writes the runtime albedo and normal as RGBA8 PNG into `content/materials/<id>/` and prints each surface entry
+(repeat from the manifest and the map's aspect, roughness as the ORM's mean). Thirteen wallpapers and carpets come
+from asset-pipeline's library `hotel-01`; the ceilings (stucco, acoustic tile), painted plaster and woods (walnut
+veneer on doors and trim, oak panelling) were made for the hotel with the same tool.
+
+## Wallpaper and carpet (first set)
 
 `hotel-kit-01/prompts.json` records the human direction and exact prompts for
 three built-in image-generation calls. The `*-source.png` files are the original

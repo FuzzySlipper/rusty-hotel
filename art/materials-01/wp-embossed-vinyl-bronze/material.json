@@ -1,0 +1,128 @@
+{
+ "id": "wp-embossed-vinyl-bronze",
+ "kind": "organic",
+ "repeat_m": [
+  0.6,
+  0.6
+ ],
+ "size_px": 1024,
+ "maps": {
+  "albedo": {
+   "file": "albedo.png",
+   "sha256": "bb8fa13bf9dad91f61e85d11e433c606ed1dc968357540cbee9a778ce654c904"
+  },
+  "normal": {
+   "file": "normal.png",
+   "sha256": "511194523707de45162bafe237fbcaeded8ad8bef2b922e259b90fe9d91bcbf2"
+  },
+  "height": {
+   "file": "height.png",
+   "sha256": "848a98b1a6b48474df8096b01f45f7815e0d37627452e0bd5248228083dee234"
+  },
+  "height-deepbump": {
+   "file": "height-deepbump.png",
+   "sha256": "226d7a22524c32ccc47fdc08080d86b525cea708b7d564055dff3efac8a16dc8"
+  },
+  "roughness": {
+   "file": "roughness.png",
+   "sha256": "6d54933dff9e85598c5f7a07d75c2c47d72f842513ae9e50647b5cf8274bcea0"
+  },
+  "ao": {
+   "file": "ao.png",
+   "sha256": "24a216c435ec5b87fde79eebaa0b11e09d53564cde75c9a23d7394bfd01f09d2"
+  },
+  "orm": {
+   "file": "orm.png",
+   "sha256": "7593bd8e1ae475c816533b5876015a92b22d612ec746b8ca1e9adb1f2c26f83b"
+  }
+ },
+ "orm_channels": "R occlusion, G roughness, B metalness",
+ "normal_convention": "DeepBump output (OpenGL, +Y up); verify against the target engine",
+ "seams": {
+  "albedo": 0.88,
+  "normal": 0.94,
+  "height": 0.91,
+  "height-deepbump": 0.99,
+  "roughness": 0.96,
+  "ao": 1.05,
+  "orm": 1.03
+ },
+ "seconds": 141.4,
+ "provenance": {
+  "request": {
+   "id": "wp-embossed-vinyl-bronze",
+   "kind": "organic",
+   "repeat_m": [
+    0.6,
+    0.6
+   ],
+   "edge_blur_px": 1.0,
+   "ao_strength": 0.6,
+   "seed": 3,
+   "regions": [
+    {
+     "name": "emboss-low",
+     "roughness": 0.5,
+     "height": 0.0,
+     "grain": 0.2
+    },
+    {
+     "name": "emboss-mid",
+     "roughness": 0.45,
+     "height": 0.5,
+     "grain": 0.2
+    },
+    {
+     "name": "emboss-high",
+     "roughness": 0.4,
+     "height": 1.0,
+     "grain": 0.15
+    }
+   ],
+   "subject": "1970s embossed vinyl wallcovering: an irregular leathery crackle and pebble emboss texture in dark bronze-brown with subtle lighter raised ridges, semi-gloss vinyl, no pattern or motif.",
+   "size": 1024
+  },
+  "steps": [
+   {
+    "step": "generate",
+    "tool": "z-image + Universal-Seamless-Tiles",
+    "host": "http://192.168.1.24:8188",
+    "seed": 3,
+    "prompt": "Flat orthographic texture swatch for a game material, photographed straight-on, the material fills the entire square frame edge to edge with no border, no perspective, no vignette, no cast shadows, soft perfectly even diffuse lighting with no highlights. The texture continues evenly off all four edges with no focal point. Period-correct for an eerie 1970s grand hotel. Muted, slightly aged colours. NO text, NO logos, NO objects, NO people. Square image.\n\nSubject: 1970s embossed vinyl wallcovering: an irregular leathery crackle and pebble emboss texture in dark bronze-brown with subtle lighter raised ridges, semi-gloss vinyl, no pattern or motif."
+   },
+   {
+    "step": "normal_height",
+    "tool": "DeepBump fad19ba",
+    "overlap": "LARGE"
+   },
+   {
+    "step": "region_maps",
+    "spec": {
+     "regions": [
+      {
+       "name": "emboss-low",
+       "roughness": 0.5,
+       "height": 0.0,
+       "grain": 0.2
+      },
+      {
+       "name": "emboss-mid",
+       "roughness": 0.45,
+       "height": 0.5,
+       "grain": 0.2
+      },
+      {
+       "name": "emboss-high",
+       "roughness": 0.4,
+       "height": 1.0,
+       "grain": 0.15
+      }
+     ],
+     "edge_blur_px": 1.0,
+     "ao_strength": 0.6,
+     "seed": 3
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,145 @@
+{
+ "id": "cp-hex-geometric-burgundy",
+ "kind": "registered",
+ "repeat_m": [
+  0.6,
+  0.6
+ ],
+ "size_px": 1024,
+ "maps": {
+  "albedo": {
+   "file": "albedo.png",
+   "sha256": "ed57a8b9760758871b9abc0a4b8ee4aefbb395c098c4cbaba9206e94bc78ab5c"
+  },
+  "normal": {
+   "file": "normal.png",
+   "sha256": "79ae7c2fb0aa54a52a9e5e86a1d19d8255cf41e300cd0cf7a6f80d6a1b2ebd29"
+  },
+  "height": {
+   "file": "height.png",
+   "sha256": "bff4366322e9b59102d6ae53159b62feb1596f95bf94c4fc27ae668c65ebbb7d"
+  },
+  "height-deepbump": {
+   "file": "height-deepbump.png",
+   "sha256": "869c8cf779f4aa383c1e04fad61910c484bb81d30568c69fefabe29260d0fb53"
+  },
+  "roughness": {
+   "file": "roughness.png",
+   "sha256": "7ab3a5bd3376ab0471cc6f8793674c6b703422c23c8cd99168d7ab6562c5ca1f"
+  },
+  "ao": {
+   "file": "ao.png",
+   "sha256": "7704aa544119a8fe8850ee8ab2ed235a85fcfbd09912e27b08c3685678a075ad"
+  },
+  "orm": {
+   "file": "orm.png",
+   "sha256": "6ff57d1688df6c2a621c8cd0e8b4682b38254741573bd25db01ab17b10bd0382"
+  }
+ },
+ "orm_channels": "R occlusion, G roughness, B metalness",
+ "normal_convention": "DeepBump output (OpenGL, +Y up); verify against the target engine",
+ "seams": {
+  "albedo": 1.2,
+  "normal": 0.9,
+  "height": 1.01,
+  "height-deepbump": 0.95,
+  "roughness": 1.03,
+  "ao": 1.03,
+  "orm": 1.03
+ },
+ "seconds": 59.7,
+ "provenance": {
+  "request": {
+   "id": "cp-hex-geometric-burgundy",
+   "kind": "registered",
+   "repeat_m": [
+    0.6,
+    0.6
+   ],
+   "regions": [
+    {
+     "name": "wool-1",
+     "roughness": 0.97,
+     "height": 0.85,
+     "grain": 0.6
+    },
+    {
+     "name": "wool-2",
+     "roughness": 0.97,
+     "height": 0.9249999999999999,
+     "grain": 0.6
+    },
+    {
+     "name": "wool-3",
+     "roughness": 0.97,
+     "height": 1.0,
+     "grain": 0.6
+    }
+   ],
+   "edge_blur_px": 1.0,
+   "ao_strength": 0.5,
+   "subject": "1970s hotel lobby carpet, cut-pile wool seen from directly above: a repeating interlocking hexagon and star geometric pattern in burgundy, old gold and charcoal, soft pile texture throughout.",
+   "size": 1024,
+   "seed": 1
+  },
+  "steps": [
+   {
+    "step": "generate",
+    "tool": "gpt-image via codex-image-gen",
+    "prompt": "Flat orthographic texture swatch for a game material, photographed straight-on, the material fills the entire square frame edge to edge with no border, no perspective, no vignette, no cast shadows, soft perfectly even diffuse lighting with no highlights. The pattern is a designed repeating wallpaper or carpet repeat shown exactly 2 times across and 2 times down, identical in every copy. Period-correct for an eerie 1970s grand hotel. Muted, slightly aged colours. NO text, NO logos, NO objects, NO people. Square image.\n\nSubject: 1970s hotel lobby carpet, cut-pile wool seen from directly above: a repeating interlocking hexagon and star geometric pattern in burgundy, old gold and charcoal, soft pile texture throughout."
+   },
+   {
+    "step": "period_crop",
+    "src": "/home/agent/dev/asset-pipeline/live-evidence/materials/hotel-01/cp-hex-geometric-burgundy/work/source.png",
+    "period_px": [
+     627,
+     627
+    ],
+    "origin": [
+     0,
+     172
+    ],
+    "seam_before": 1.03,
+    "seam_after": 1.09,
+    "aspect_w_over_h": 1.0,
+    "out_size": [
+     1024,
+     1024
+    ]
+   },
+   {
+    "step": "normal_height",
+    "tool": "DeepBump fad19ba",
+    "overlap": "LARGE"
+   },
+   {
+    "step": "region_maps",
+    "spec": {
+     "regions": [
+      {
+       "name": "wool-1",
+       "roughness": 0.97,
+       "height": 0.85,
+       "grain": 0.6
+      },
+      {
+       "name": "wool-2",
+       "roughness": 0.97,
+       "height": 0.9249999999999999,
+       "grain": 0.6
+      },
+      {
+       "name": "wool-3",
+       "roughness": 0.97,
+       "height": 1.0,
+       "grain": 0.6
+      }
+     ],
+     "edge_blur_px": 1.0,
+     "ao_strength": 0.5,
+     "seed": 1
+    }
+   }
+  ]
+ }
+}

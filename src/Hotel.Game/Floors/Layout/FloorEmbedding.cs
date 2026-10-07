@@ -83,8 +83,9 @@ internal static class FloorEmbedding
         internal FloorLayout Layout() => new(
             placed.Select(p => new LayoutPlacement(p.Id, p.Module.Id, Corner(p).X, Corner(p).Y, p.Transform.Turn, placedRegions[p.Id])).ToArray(),
             passage?.Spaces ?? [], passage?.Links ?? [], passage?.Fixtures ?? [], places, [.. locks], latch, beyond, kept?.Doors ?? [],
-            // A floor keeps its trim style through every shift; a new floor draws one.
-            kept?.TrimStyle ?? tuning.TrimStyles[draws.Index(FloorStage.Embedding, "trim.style", "floor", tuning.TrimStyles.Length)]);
+            // A floor keeps its trim style and decor through every shift; a new floor draws each.
+            kept?.TrimStyle ?? tuning.TrimStyles[draws.Index(FloorStage.Embedding, "trim.style", "floor", tuning.TrimStyles.Length)],
+            kept?.Decor ?? tuning.Decors[draws.Index(FloorStage.Embedding, "decor", "floor", tuning.Decors.Length)]);
 
         private static Vector2 Corner(PlacedModule p) => p.Transform.Corner;
 

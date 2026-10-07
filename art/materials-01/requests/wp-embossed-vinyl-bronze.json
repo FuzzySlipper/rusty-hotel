@@ -1,0 +1,33 @@
+{
+ "id": "wp-embossed-vinyl-bronze",
+ "kind": "organic",
+ "repeat_m": [
+  0.6,
+  0.6
+ ],
+ "edge_blur_px": 1.0,
+ "ao_strength": 0.6,
+ "seed": 3,
+ "regions": [
+  {
+   "name": "emboss-low",
+   "roughness": 0.5,
+   "height": 0.0,
+   "grain": 0.2
+  },
+  {
+   "name": "emboss-mid",
+   "roughness": 0.45,
+   "height": 0.5,
+   "grain": 0.2
+  },
+  {
+   "name": "emboss-high",
+   "roughness": 0.4,
+   "height": 1.0,
+   "grain": 0.15
+  }
+ ],
+ "subject": "1970s embossed vinyl wallcovering: an irregular leathery crackle and pebble emboss texture in dark bronze-brown with subtle lighter raised ridges, semi-gloss vinyl, no pattern or motif.",
+ "size": 1024
+}

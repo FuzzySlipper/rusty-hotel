@@ -1,0 +1,128 @@
+{
+ "id": "cp-shag-olive",
+ "kind": "organic",
+ "repeat_m": [
+  0.5,
+  0.5
+ ],
+ "size_px": 1024,
+ "maps": {
+  "albedo": {
+   "file": "albedo.png",
+   "sha256": "29d8e961dbd0f71ddfd7586133a0714aa8a64f61ff154c2682eec602a0ca1989"
+  },
+  "normal": {
+   "file": "normal.png",
+   "sha256": "baa289fcd0c349cdbb517dc5f29ef6d19c33df53cac8b98dc429f82366a30213"
+  },
+  "height": {
+   "file": "height.png",
+   "sha256": "ab7f844e939e6370bdb8ee318174ca8c656d9a16f60087bf30ba51a652a254d6"
+  },
+  "height-deepbump": {
+   "file": "height-deepbump.png",
+   "sha256": "7ae505263a05205940035d6443371beb16869ba84478631b6ee05cd0120d8488"
+  },
+  "roughness": {
+   "file": "roughness.png",
+   "sha256": "b0335900c3924c58d0d3cbd1130129b2e41b7fd167d15e496d3b612478bc803a"
+  },
+  "ao": {
+   "file": "ao.png",
+   "sha256": "bdb28583f3a02668380eca46ee369f9787da53d11d288ce1b87216ff995efc3d"
+  },
+  "orm": {
+   "file": "orm.png",
+   "sha256": "6fc8ce46f8685ee89b22fb0130af61639ad09f9e0597eb74eea9b36b86bab391"
+  }
+ },
+ "orm_channels": "R occlusion, G roughness, B metalness",
+ "normal_convention": "DeepBump output (OpenGL, +Y up); verify against the target engine",
+ "seams": {
+  "albedo": 0.92,
+  "normal": 0.93,
+  "height": 1.01,
+  "height-deepbump": 0.96,
+  "roughness": 1.02,
+  "ao": 1.06,
+  "orm": 1.05
+ },
+ "seconds": 143.0,
+ "provenance": {
+  "request": {
+   "id": "cp-shag-olive",
+   "kind": "organic",
+   "repeat_m": [
+    0.5,
+    0.5
+   ],
+   "edge_blur_px": 0.6,
+   "ao_strength": 0.8,
+   "seed": 4,
+   "regions": [
+    {
+     "name": "wool-1",
+     "roughness": 0.97,
+     "height": 0.85,
+     "grain": 0.9
+    },
+    {
+     "name": "wool-2",
+     "roughness": 0.97,
+     "height": 0.9249999999999999,
+     "grain": 0.9
+    },
+    {
+     "name": "wool-3",
+     "roughness": 0.97,
+     "height": 1.0,
+     "grain": 0.9
+    }
+   ],
+   "subject": "1970s olive green shag carpet seen from directly above: long tousled yarn tufts lying in random directions, darker olive in the shadows between tufts, no pattern.",
+   "size": 1024
+  },
+  "steps": [
+   {
+    "step": "generate",
+    "tool": "z-image + Universal-Seamless-Tiles",
+    "host": "http://192.168.1.24:8188",
+    "seed": 4,
+    "prompt": "Flat orthographic texture swatch for a game material, photographed straight-on, the material fills the entire square frame edge to edge with no border, no perspective, no vignette, no cast shadows, soft perfectly even diffuse lighting with no highlights. The texture continues evenly off all four edges with no focal point. Period-correct for an eerie 1970s grand hotel. Muted, slightly aged colours. NO text, NO logos, NO objects, NO people. Square image.\n\nSubject: 1970s olive green shag carpet seen from directly above: long tousled yarn tufts lying in random directions, darker olive in the shadows between tufts, no pattern."
+   },
+   {
+    "step": "normal_height",
+    "tool": "DeepBump fad19ba",
+    "overlap": "LARGE"
+   },
+   {
+    "step": "region_maps",
+    "spec": {
+     "regions": [
+      {
+       "name": "wool-1",
+       "roughness": 0.97,
+       "height": 0.85,
+       "grain": 0.9
+      },
+      {
+       "name": "wool-2",
+       "roughness": 0.97,
+       "height": 0.9249999999999999,
+       "grain": 0.9
+      },
+      {
+       "name": "wool-3",
+       "roughness": 0.97,
+       "height": 1.0,
+       "grain": 0.9
+      }
+     ],
+     "edge_blur_px": 0.6,
+     "ao_strength": 0.8,
+     "seed": 4
+    }
+   }
+  ]
+ }
+}

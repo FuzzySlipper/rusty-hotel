@@ -1,0 +1,128 @@
+{
+ "id": "wp-grasscloth-olive",
+ "kind": "organic",
+ "repeat_m": [
+  0.9,
+  0.9
+ ],
+ "size_px": 1024,
+ "maps": {
+  "albedo": {
+   "file": "albedo.png",
+   "sha256": "22c88e9d1ab92697b62223752555b997b3bfe0726fabf9e4dab8330dec63c318"
+  },
+  "normal": {
+   "file": "normal.png",
+   "sha256": "ed97f03c9eb1422aab88a1698dd37b6112486179790e876875e4af4eba8af859"
+  },
+  "height": {
+   "file": "height.png",
+   "sha256": "75d38fc95b957642f6c22d9ff99be2bda8f3ef9df09d991fc61fa9e1b14e283e"
+  },
+  "height-deepbump": {
+   "file": "height-deepbump.png",
+   "sha256": "250ef9cc47562f9fdabe8040197ed63b23cc61e317950f9bc896607d553a62d1"
+  },
+  "roughness": {
+   "file": "roughness.png",
+   "sha256": "8c645dc4a55951a314b68c1e1374b36ee21e3c2442545ad196c27c4588e73d3e"
+  },
+  "ao": {
+   "file": "ao.png",
+   "sha256": "883050582e274ba8cc6a0e96aed7a1914221482f37411f3f51235210a71ad5c1"
+  },
+  "orm": {
+   "file": "orm.png",
+   "sha256": "86ab7114275cb12621f60e4476b61d3f5eb9ec67b1a303b3e7b89aa0dbd76bbb"
+  }
+ },
+ "orm_channels": "R occlusion, G roughness, B metalness",
+ "normal_convention": "DeepBump output (OpenGL, +Y up); verify against the target engine",
+ "seams": {
+  "albedo": 1.04,
+  "normal": 1.17,
+  "height": 1.06,
+  "height-deepbump": 1.14,
+  "roughness": 1.03,
+  "ao": 1.38,
+  "orm": 1.25
+ },
+ "seconds": 13.6,
+ "provenance": {
+  "request": {
+   "id": "wp-grasscloth-olive",
+   "kind": "organic",
+   "repeat_m": [
+    0.9,
+    0.9
+   ],
+   "edge_blur_px": 0.8,
+   "ao_strength": 0.5,
+   "seed": 2,
+   "regions": [
+    {
+     "name": "fibre-shadow",
+     "roughness": 0.9,
+     "height": 0.2,
+     "grain": 0.5
+    },
+    {
+     "name": "fibre",
+     "roughness": 0.82,
+     "height": 0.7,
+     "grain": 0.5
+    },
+    {
+     "name": "fibre-highlight",
+     "roughness": 0.78,
+     "height": 1.0,
+     "grain": 0.4
+    }
+   ],
+   "subject": "Natural grasscloth wallpaper: fine horizontal woven grass and sisal fibres in warm olive-tan, with slight irregular variation in fibre thickness and colour, visible fine vertical warp threads, no motif.",
+   "size": 1024
+  },
+  "steps": [
+   {
+    "step": "generate",
+    "tool": "z-image + Universal-Seamless-Tiles",
+    "host": "http://192.168.1.24:8188",
+    "seed": 2,
+    "prompt": "Flat orthographic texture swatch for a game material, photographed straight-on, the material fills the entire square frame edge to edge with no border, no perspective, no vignette, no cast shadows, soft perfectly even diffuse lighting with no highlights. The texture continues evenly off all four edges with no focal point. Period-correct for an eerie 1970s grand hotel. Muted, slightly aged colours. NO text, NO logos, NO objects, NO people. Square image.\n\nSubject: Natural grasscloth wallpaper: fine horizontal woven grass and sisal fibres in warm olive-tan, with slight irregular variation in fibre thickness and colour, visible fine vertical warp threads, no motif."
+   },
+   {
+    "step": "normal_height",
+    "tool": "DeepBump fad19ba",
+    "overlap": "LARGE"
+   },
+   {
+    "step": "region_maps",
+    "spec": {
+     "regions": [
+      {
+       "name": "fibre-shadow",
+       "roughness": 0.9,
+       "height": 0.2,
+       "grain": 0.5
+      },
+      {
+       "name": "fibre",
+       "roughness": 0.82,
+       "height": 0.7,
+       "grain": 0.5
+      },
+      {
+       "name": "fibre-highlight",
+       "roughness": 0.78,
+       "height": 1.0,
+       "grain": 0.4
+      }
+     ],
+     "edge_blur_px": 0.8,
+     "ao_strength": 0.5,
+     "seed": 2
+    }
+   }
+  ]
+ }
+}

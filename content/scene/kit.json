@@ -484,5 +484,82 @@
       "ceiling": "ceiling",
       "trim": "plain"
     }
+  },
+  "decors": {
+    "grand": {
+      "corridor": {
+        "wall": "wp-damask-flock-oxblood",
+        "floor": "cp-axminster-floral-crimson",
+        "ceiling": "ce-stucco-cream"
+      },
+      "guest-room": {
+        "wall": "wp-medallion-teal",
+        "floor": "cp-medallion-teal-rust",
+        "ceiling": "ce-stucco-cream"
+      },
+      "service": {
+        "wall": "pl-painted-sage"
+      }
+    },
+    "seventies": {
+      "corridor": {
+        "wall": "wp-geometric-70s-orange",
+        "floor": "cp-hex-geometric-burgundy",
+        "ceiling": "ce-acoustic-tile"
+      },
+      "guest-room": {
+        "wall": "wp-op-art-avocado",
+        "floor": "cp-shag-olive",
+        "ceiling": "ce-acoustic-tile"
+      },
+      "service": {
+        "wall": "pl-painted-sage"
+      }
+    },
+    "regency": {
+      "corridor": {
+        "wall": "wp-regency-stripe-sage",
+        "floor": "cp-berber-fleck-brown",
+        "ceiling": "ce-stucco-cream"
+      },
+      "guest-room": {
+        "wall": "wp-ogee-trellis-mustard",
+        "floor": "cp-axminster-floral-crimson",
+        "ceiling": "ce-stucco-cream"
+      },
+      "service": {
+        "wall": "pl-painted-sage"
+      }
+    },
+    "lounge": {
+      "corridor": {
+        "wall": "wp-grasscloth-olive",
+        "floor": "cp-berber-fleck-brown",
+        "ceiling": "ce-acoustic-tile"
+      },
+      "guest-room": {
+        "wall": "wp-embossed-vinyl-bronze",
+        "floor": "cp-shag-olive",
+        "ceiling": "ce-acoustic-tile"
+      },
+      "service": {
+        "wall": "pl-painted-sage"
+      }
+    },
+    "panelled": {
+      "corridor": {
+        "wall": "wd-oak-panel",
+        "floor": "cp-hex-geometric-burgundy",
+        "ceiling": "ce-stucco-cream"
+      },
+      "guest-room": {
+        "wall": "wp-grasscloth-olive",
+        "floor": "cp-medallion-teal-rust",
+        "ceiling": "ce-stucco-cream"
+      },
+      "service": {
+        "wall": "pl-painted-sage"
+      }
+    }
   }
 }

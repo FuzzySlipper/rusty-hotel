@@ -1,0 +1,27 @@
+{
+ "id": "wp-damask-flock-oxblood",
+ "kind": "registered",
+ "repeat_m": [
+  0.53,
+  0.53
+ ],
+ "regions": [
+  {
+   "name": "flock",
+   "roughness": 0.95,
+   "height": 1.0,
+   "grain": 0.35
+  },
+  {
+   "name": "satin-ground",
+   "roughness": 0.42,
+   "height": 0.0,
+   "grain": 0.05
+  }
+ ],
+ "edge_blur_px": 1.5,
+ "ao_strength": 0.7,
+ "subject": "Victorian damask wallpaper with raised velvet flock: a large symmetrical damask motif, deep oxblood red flock pile on a dull antique-gold satin paper ground. The flock looks soft and matte, the ground has a faint satin sheen.",
+ "size": 1024,
+ "seed": 1
+}

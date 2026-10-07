@@ -1,0 +1,128 @@
+{
+ "id": "wd-walnut-veneer",
+ "kind": "organic",
+ "repeat_m": [
+  0.9,
+  0.9
+ ],
+ "size_px": 1024,
+ "maps": {
+  "albedo": {
+   "file": "albedo.png",
+   "sha256": "90f9499e44fd123b79d8a221a4e396ea030860c85d6a069c74d474c632c7bf80"
+  },
+  "normal": {
+   "file": "normal.png",
+   "sha256": "8ee4d6a4700b4dddfcf860786e2142fd559f6391dfdc6568e33de92b79607189"
+  },
+  "height": {
+   "file": "height.png",
+   "sha256": "e37fb721bb09c342890b5f023aa49e3929f3aa0c8c23618e398992954f542447"
+  },
+  "height-deepbump": {
+   "file": "height-deepbump.png",
+   "sha256": "c007b57600d2efb4bd44c39a2e05e75e1bd711eae719e6679196b486857f708f"
+  },
+  "roughness": {
+   "file": "roughness.png",
+   "sha256": "f989c2305d8881f4c763a58a2a9b072b7b0689ae22dcaf15a31ee6755e88bd98"
+  },
+  "ao": {
+   "file": "ao.png",
+   "sha256": "15f222f6c710155dc0c608aeedaa2d9c8d0800d0c71402af7e7be12622e71ff7"
+  },
+  "orm": {
+   "file": "orm.png",
+   "sha256": "2baf2516e00ca188eaa335aac256a3f7c51b83ed25233aa1eb18d17f9dcd3059"
+  }
+ },
+ "orm_channels": "R occlusion, G roughness, B metalness",
+ "normal_convention": "DeepBump output (OpenGL, +Y up); verify against the target engine",
+ "seams": {
+  "albedo": 1.0,
+  "normal": 0.86,
+  "height": 1.13,
+  "height-deepbump": 0.94,
+  "roughness": 1.13,
+  "ao": 1.36,
+  "orm": 1.25
+ },
+ "seconds": 142.8,
+ "provenance": {
+  "request": {
+   "id": "wd-walnut-veneer",
+   "kind": "organic",
+   "repeat_m": [
+    0.9,
+    0.9
+   ],
+   "edge_blur_px": 0.6,
+   "ao_strength": 0.25,
+   "seed": 1,
+   "size": 1024,
+   "regions": [
+    {
+     "name": "dark-grain",
+     "roughness": 0.55,
+     "height": 0.2,
+     "grain": 0.1
+    },
+    {
+     "name": "wood",
+     "roughness": 0.45,
+     "height": 0.5,
+     "grain": 0.1
+    },
+    {
+     "name": "figure",
+     "roughness": 0.4,
+     "height": 0.7,
+     "grain": 0.1
+    }
+   ],
+   "subject": "Dark walnut wood veneer with a satin varnish, long straight vertical grain with gentle cathedral figure, warm brown with darker streaks, no knots, no planks, no joints, uniform."
+  },
+  "steps": [
+   {
+    "step": "generate",
+    "tool": "z-image + Universal-Seamless-Tiles",
+    "host": "http://192.168.1.24:8188",
+    "seed": 1,
+    "prompt": "Flat orthographic texture swatch for a game material, photographed straight-on, the material fills the entire square frame edge to edge with no border, no perspective, no vignette, no cast shadows, soft perfectly even diffuse lighting with no highlights. The texture continues evenly off all four edges with no focal point. Period-correct for an eerie 1970s grand hotel. Muted, slightly aged colours. NO text, NO logos, NO objects, NO people. Square image.\n\nSubject: Dark walnut wood veneer with a satin varnish, long straight vertical grain with gentle cathedral figure, warm brown with darker streaks, no knots, no planks, no joints, uniform."
+   },
+   {
+    "step": "normal_height",
+    "tool": "DeepBump fad19ba",
+    "overlap": "LARGE"
+   },
+   {
+    "step": "region_maps",
+    "spec": {
+     "regions": [
+      {
+       "name": "dark-grain",
+       "roughness": 0.55,
+       "height": 0.2,
+       "grain": 0.1
+      },
+      {
+       "name": "wood",
+       "roughness": 0.45,
+       "height": 0.5,
+       "grain": 0.1
+      },
+      {
+       "name": "figure",
+       "roughness": 0.4,
+       "height": 0.7,
+       "grain": 0.1
+      }
+     ],
+     "edge_blur_px": 0.6,
+     "ao_strength": 0.25,
+     "seed": 1
+    }
+   }
+  ]
+ }
+}

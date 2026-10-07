@@ -76,20 +76,30 @@
     {
       "id": "trim",
       "color": [
-        0.1,
-        0.045,
-        0.022
+        0.55,
+        0.45,
+        0.4
       ],
-      "roughness": 0.75
+      "roughness": 0.55,
+      "texture": "materials/wd-walnut-veneer/albedo.png",
+      "tileWidth": 0.9,
+      "tileHeight": 0.9,
+      "normalMap": "materials/wd-walnut-veneer/normal.png",
+      "normalScale": 0.3
     },
     {
       "id": "door",
       "color": [
-        0.24,
-        0.12,
-        0.055
+        0.85,
+        0.8,
+        0.75
       ],
-      "roughness": 0.72
+      "roughness": 0.5,
+      "texture": "materials/wd-walnut-veneer/albedo.png",
+      "tileWidth": 0.9,
+      "tileHeight": 0.9,
+      "normalMap": "materials/wd-walnut-veneer/normal.png",
+      "normalScale": 0.4
     },
     {
       "id": "brass",
@@ -227,6 +237,258 @@
         0.012
       ],
       "roughness": 1
+    },
+    {
+      "id": "wp-damask-flock-oxblood",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-damask-flock-oxblood/albedo.png",
+      "tileWidth": 0.53,
+      "tileHeight": 0.53,
+      "roughness": 0.73,
+      "normalMap": "materials/wp-damask-flock-oxblood/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "wp-medallion-teal",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-medallion-teal/albedo.png",
+      "tileWidth": 0.53,
+      "tileHeight": 0.53,
+      "roughness": 0.6,
+      "normalMap": "materials/wp-medallion-teal/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "wp-geometric-70s-orange",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-geometric-70s-orange/albedo.png",
+      "tileWidth": 0.64,
+      "tileHeight": 0.64,
+      "roughness": 0.64,
+      "normalMap": "materials/wp-geometric-70s-orange/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "wp-ogee-trellis-mustard",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-ogee-trellis-mustard/albedo.png",
+      "tileWidth": 0.53,
+      "tileHeight": 0.464,
+      "roughness": 0.59,
+      "normalMap": "materials/wp-ogee-trellis-mustard/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "wp-regency-stripe-sage",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-regency-stripe-sage/albedo.png",
+      "tileWidth": 0.53,
+      "tileHeight": 0.212,
+      "roughness": 0.65,
+      "normalMap": "materials/wp-regency-stripe-sage/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "wp-op-art-avocado",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-op-art-avocado/albedo.png",
+      "tileWidth": 0.64,
+      "tileHeight": 0.64,
+      "roughness": 0.62,
+      "normalMap": "materials/wp-op-art-avocado/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "wp-grasscloth-olive",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-grasscloth-olive/albedo.png",
+      "tileWidth": 0.9,
+      "tileHeight": 0.9,
+      "roughness": 0.83,
+      "normalMap": "materials/wp-grasscloth-olive/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "wp-embossed-vinyl-bronze",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wp-embossed-vinyl-bronze/albedo.png",
+      "tileWidth": 0.6,
+      "tileHeight": 0.6,
+      "roughness": 0.49,
+      "normalMap": "materials/wp-embossed-vinyl-bronze/normal.png",
+      "normalScale": 0.4
+    },
+    {
+      "id": "cp-medallion-teal-rust",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/cp-medallion-teal-rust/albedo.png",
+      "tileWidth": 0.9,
+      "tileHeight": 0.9,
+      "roughness": 0.97,
+      "normalMap": "materials/cp-medallion-teal-rust/normal.png",
+      "normalScale": 1.0
+    },
+    {
+      "id": "cp-hex-geometric-burgundy",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/cp-hex-geometric-burgundy/albedo.png",
+      "tileWidth": 0.6,
+      "tileHeight": 0.6,
+      "roughness": 0.97,
+      "normalMap": "materials/cp-hex-geometric-burgundy/normal.png",
+      "normalScale": 1.0
+    },
+    {
+      "id": "cp-axminster-floral-crimson",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/cp-axminster-floral-crimson/albedo.png",
+      "tileWidth": 0.9,
+      "tileHeight": 0.9,
+      "roughness": 0.97,
+      "normalMap": "materials/cp-axminster-floral-crimson/normal.png",
+      "normalScale": 1.0
+    },
+    {
+      "id": "cp-shag-olive",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/cp-shag-olive/albedo.png",
+      "tileWidth": 0.5,
+      "tileHeight": 0.5,
+      "roughness": 0.96,
+      "normalMap": "materials/cp-shag-olive/normal.png",
+      "normalScale": 1.0
+    },
+    {
+      "id": "cp-berber-fleck-brown",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/cp-berber-fleck-brown/albedo.png",
+      "tileWidth": 0.4,
+      "tileHeight": 0.4,
+      "roughness": 0.97,
+      "normalMap": "materials/cp-berber-fleck-brown/normal.png",
+      "normalScale": 1.0
+    },
+    {
+      "id": "ce-stucco-cream",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/ce-stucco-cream/albedo.png",
+      "tileWidth": 0.8,
+      "tileHeight": 0.8,
+      "roughness": 0.91,
+      "normalMap": "materials/ce-stucco-cream/normal.png",
+      "normalScale": 0.6
+    },
+    {
+      "id": "ce-acoustic-tile",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/ce-acoustic-tile/albedo.png",
+      "tileWidth": 0.61,
+      "tileHeight": 0.61,
+      "roughness": 0.94,
+      "normalMap": "materials/ce-acoustic-tile/normal.png",
+      "normalScale": 0.6
+    },
+    {
+      "id": "pl-painted-sage",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/pl-painted-sage/albedo.png",
+      "tileWidth": 1.2,
+      "tileHeight": 1.2,
+      "roughness": 0.82,
+      "normalMap": "materials/pl-painted-sage/normal.png",
+      "normalScale": 0.6
+    },
+    {
+      "id": "wd-walnut-veneer",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wd-walnut-veneer/albedo.png",
+      "tileWidth": 0.9,
+      "tileHeight": 0.9,
+      "roughness": 0.47,
+      "normalMap": "materials/wd-walnut-veneer/normal.png",
+      "normalScale": 0.6
+    },
+    {
+      "id": "wd-oak-panel",
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "texture": "materials/wd-oak-panel/albedo.png",
+      "tileWidth": 1.2,
+      "tileHeight": 1.2,
+      "roughness": 0.54,
+      "normalMap": "materials/wd-oak-panel/normal.png",
+      "normalScale": 0.6
     }
   ]
 }

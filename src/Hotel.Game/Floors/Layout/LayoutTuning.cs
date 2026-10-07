@@ -29,8 +29,9 @@ internal sealed record PassageTuning(float Width, string Style, string Label, st
 /// <param name="BranchOneIn">While filling, one step in this many grows the corridor at an open end instead of adding a room.</param>
 /// <param name="HazardDistance">How far from the stair core a hazard's corridor must begin, so nothing waits at the landing.</param>
 /// <param name="TrimStyles">The kit trim styles a new floor is drawn in, one per floor.</param>
+/// <param name="Decors">The kit decors a new floor is drawn in, one per floor.</param>
 internal sealed record LayoutTuning(float Extent, DepthCurve Rooms, PlaceRole[] Roles, ModuleWeight[] Spine, ModuleWeight[] Fill,
-    PassageTuning Passage, int Tries, int BranchOneIn, float HazardDistance, string[] TrimStyles)
+    PassageTuning Passage, int Tries, int BranchOneIn, float HazardDistance, string[] TrimStyles, string[] Decors)
 {
     internal const string Path = "floors/layout.json";
 
@@ -45,6 +46,9 @@ internal sealed record LayoutTuning(float Extent, DepthCurve Rooms, PlaceRole[] 
         Authored.Require(tuning.TrimStyles.Length > 0, Path, "trimStyles", "name at least one trim style.");
         for (int i = 0; i < tuning.TrimStyles.Length; i++)
             Authored.Require(kit.TrimStyles.ContainsKey(tuning.TrimStyles[i]), Path, $"trimStyles[{i}]", $"unknown trim style '{tuning.TrimStyles[i]}'.");
+        Authored.Require(tuning.Decors.Length > 0, Path, "decors", "name at least one decor.");
+        for (int i = 0; i < tuning.Decors.Length; i++)
+            Authored.Require(kit.Decors.ContainsKey(tuning.Decors[i]), Path, $"decors[{i}]", $"unknown decor '{tuning.Decors[i]}'.");
         Authored.AtLeast(Path, "branchOneIn", tuning.BranchOneIn, 1);
         Authored.AtLeast(Path, "hazardDistance", tuning.HazardDistance, 0);
         void Weights(string field, ModuleWeight[] weights, Func<ModuleDefinition, string?> refuse)

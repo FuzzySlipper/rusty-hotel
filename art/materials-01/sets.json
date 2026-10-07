@@ -1,0 +1,76 @@
+{
+ "sets": {
+  "wp-damask-flock-oxblood": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "wp-medallion-teal": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "wp-geometric-70s-orange": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "wp-ogee-trellis-mustard": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "wp-regency-stripe-sage": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "wp-op-art-avocado": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "wp-grasscloth-olive": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "wp-embossed-vinyl-bronze": {
+   "run": "hotel-01",
+   "normalScale": 0.4
+  },
+  "cp-medallion-teal-rust": {
+   "run": "hotel-01",
+   "normalScale": 1.0
+  },
+  "cp-hex-geometric-burgundy": {
+   "run": "hotel-01",
+   "normalScale": 1.0
+  },
+  "cp-axminster-floral-crimson": {
+   "run": "hotel-01",
+   "normalScale": 1.0
+  },
+  "cp-shag-olive": {
+   "run": "hotel-01",
+   "normalScale": 1.0
+  },
+  "cp-berber-fleck-brown": {
+   "run": "hotel-01",
+   "normalScale": 1.0
+  },
+  "ce-stucco-cream": {
+   "run": "hotel-02",
+   "normalScale": 0.6
+  },
+  "ce-acoustic-tile": {
+   "run": "hotel-02",
+   "normalScale": 0.6
+  },
+  "pl-painted-sage": {
+   "run": "hotel-02",
+   "normalScale": 0.6
+  },
+  "wd-walnut-veneer": {
+   "run": "hotel-02",
+   "normalScale": 0.6
+  },
+  "wd-oak-panel": {
+   "run": "hotel-02",
+   "normalScale": 0.6
+  }
+ }
+}

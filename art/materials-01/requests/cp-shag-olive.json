@@ -1,0 +1,33 @@
+{
+ "id": "cp-shag-olive",
+ "kind": "organic",
+ "repeat_m": [
+  0.5,
+  0.5
+ ],
+ "edge_blur_px": 0.6,
+ "ao_strength": 0.8,
+ "seed": 4,
+ "regions": [
+  {
+   "name": "wool-1",
+   "roughness": 0.97,
+   "height": 0.85,
+   "grain": 0.9
+  },
+  {
+   "name": "wool-2",
+   "roughness": 0.97,
+   "height": 0.9249999999999999,
+   "grain": 0.9
+  },
+  {
+   "name": "wool-3",
+   "roughness": 0.97,
+   "height": 1.0,
+   "grain": 0.9
+  }
+ ],
+ "subject": "1970s olive green shag carpet seen from directly above: long tousled yarn tufts lying in random directions, darker olive in the shadows between tufts, no pattern.",
+ "size": 1024
+}

@@ -1,0 +1,39 @@
+{
+ "id": "wp-geometric-70s-orange",
+ "kind": "registered",
+ "repeat_m": [
+  0.64,
+  0.64
+ ],
+ "regions": [
+  {
+   "name": "ink-1",
+   "roughness": 0.55,
+   "height": 0.25,
+   "grain": 0.05
+  },
+  {
+   "name": "ink-2",
+   "roughness": 0.55,
+   "height": 0.25,
+   "grain": 0.05
+  },
+  {
+   "name": "ink-3",
+   "roughness": 0.55,
+   "height": 0.25,
+   "grain": 0.05
+  },
+  {
+   "name": "paper",
+   "roughness": 0.8,
+   "height": 0.0,
+   "grain": 0.2
+  }
+ ],
+ "edge_blur_px": 1.0,
+ "ao_strength": 0.3,
+ "subject": "1970s geometric wallpaper: bold interlocking rounded-corner rectangles and concentric circles in burnt orange, mustard yellow and chocolate brown on a cream ground, flat printed ink with slight paper grain.",
+ "size": 1024,
+ "seed": 1
+}

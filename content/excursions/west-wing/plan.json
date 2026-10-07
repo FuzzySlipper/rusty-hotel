@@ -671,5 +671,6 @@
       "yawDegrees": 0
     }
   ],
-  "trimStyle": "hotel"
+  "trimStyle": "hotel",
+  "decor": "grand"
 }

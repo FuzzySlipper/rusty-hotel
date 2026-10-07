@@ -97,6 +97,7 @@ internal static class KitBuilder
         internal void ValidateSpaces()
         {
             Authored.Require(kit.TrimStyles.ContainsKey(plan.TrimStyle), path, "trimStyle", $"unknown trim style '{plan.TrimStyle}'.");
+            Authored.Require(plan.Decor is null || kit.Decors.ContainsKey(plan.Decor), path, "decor", $"unknown decor '{plan.Decor}'.");
             for (int i = 0; i < plan.Spaces.Length; i++)
             {
                 SpaceDefinition s = plan.Spaces[i];
@@ -106,8 +107,8 @@ internal static class KitBuilder
                 Authored.Require(s.Max[0] - s.Min[0] > kit.WallThickness && s.Max[1] - s.Min[1] > kit.WallThickness, path, $"{at}.max",
                     "a space must be wider and deeper than one wall thickness.");
                 Authored.Positive(path, $"{at}.height", s.Height);
-                Authored.Require(kit.Styles.TryGetValue(s.Style, out SpaceStyle? style), path, $"{at}.style", $"unknown style '{s.Style}'.");
-                Space space = new(s, i, style!);
+                Authored.Require(kit.Styles.ContainsKey(s.Style), path, $"{at}.style", $"unknown style '{s.Style}'.");
+                Space space = new(s, i, kit.Style(s.Style, plan.Decor));
                 Spaces.Add(space);
                 foreach (var (post, point) in s.Posts ?? [])
                 {

@@ -1,0 +1,133 @@
+{
+ "id": "wp-damask-flock-oxblood",
+ "kind": "registered",
+ "repeat_m": [
+  0.53,
+  0.53
+ ],
+ "size_px": 1024,
+ "maps": {
+  "albedo": {
+   "file": "albedo.png",
+   "sha256": "54a6bffa63a0764ca56540daea3d4195c8960945b2e499b47e41a50e6eae3ece"
+  },
+  "normal": {
+   "file": "normal.png",
+   "sha256": "a50e1aa6b115f4cacb1d144d1b2c0fe245ad6aa6b988d2ee910d879992629056"
+  },
+  "height": {
+   "file": "height.png",
+   "sha256": "1770f7a08a51b77adf8650a8e932b180e088db8f32e06c30906fe3cbb04ca1dd"
+  },
+  "height-deepbump": {
+   "file": "height-deepbump.png",
+   "sha256": "fde203cd85213e6f4a5152ccd12949d932e44e0f4d141b62225ce81ce781fb39"
+  },
+  "roughness": {
+   "file": "roughness.png",
+   "sha256": "c9a6c2da708dba57667ab3f65ae2d0ce163cfcc9d0a25921e74fd0d9590bd03c"
+  },
+  "ao": {
+   "file": "ao.png",
+   "sha256": "82bbac7f02b1f9ed047b59549f24641603924c3006a2e64548e3399409cac035"
+  },
+  "orm": {
+   "file": "orm.png",
+   "sha256": "d1eb710a238f71d9f9de322ed27f1c2c9f6cfbb5c641d73b44fb19de42e4feee"
+  }
+ },
+ "orm_channels": "R occlusion, G roughness, B metalness",
+ "normal_convention": "DeepBump output (OpenGL, +Y up); verify against the target engine",
+ "seams": {
+  "albedo": 0.96,
+  "normal": 0.9,
+  "height": 0.77,
+  "height-deepbump": 1.0,
+  "roughness": 0.71,
+  "ao": 0.73,
+  "orm": 0.72
+ },
+ "seconds": 168.6,
+ "provenance": {
+  "request": {
+   "id": "wp-damask-flock-oxblood",
+   "kind": "registered",
+   "repeat_m": [
+    0.53,
+    0.53
+   ],
+   "regions": [
+    {
+     "name": "flock",
+     "roughness": 0.95,
+     "height": 1.0,
+     "grain": 0.35
+    },
+    {
+     "name": "satin-ground",
+     "roughness": 0.42,
+     "height": 0.0,
+     "grain": 0.05
+    }
+   ],
+   "edge_blur_px": 1.5,
+   "ao_strength": 0.7,
+   "subject": "Victorian damask wallpaper with raised velvet flock: a large symmetrical damask motif, deep oxblood red flock pile on a dull antique-gold satin paper ground. The flock looks soft and matte, the ground has a faint satin sheen.",
+   "size": 1024,
+   "seed": 1
+  },
+  "steps": [
+   {
+    "step": "generate",
+    "tool": "gpt-image via codex-image-gen",
+    "prompt": "Flat orthographic texture swatch for a game material, photographed straight-on, the material fills the entire square frame edge to edge with no border, no perspective, no vignette, no cast shadows, soft perfectly even diffuse lighting with no highlights. The pattern is a designed repeating wallpaper or carpet repeat shown exactly 2 times across and 2 times down, identical in every copy. Period-correct for an eerie 1970s grand hotel. Muted, slightly aged colours. NO text, NO logos, NO objects, NO people. Square image.\n\nSubject: Victorian damask wallpaper with raised velvet flock: a large symmetrical damask motif, deep oxblood red flock pile on a dull antique-gold satin paper ground. The flock looks soft and matte, the ground has a faint satin sheen."
+   },
+   {
+    "step": "period_crop",
+    "src": "/home/agent/dev/asset-pipeline/live-evidence/materials/hotel-01/wp-damask-flock-oxblood/work/source.png",
+    "period_px": [
+     627,
+     627
+    ],
+    "origin": [
+     124,
+     92
+    ],
+    "seam_before": 1.52,
+    "seam_after": 0.89,
+    "aspect_w_over_h": 1.0,
+    "out_size": [
+     1024,
+     1024
+    ]
+   },
+   {
+    "step": "normal_height",
+    "tool": "DeepBump fad19ba",
+    "overlap": "LARGE"
+   },
+   {
+    "step": "region_maps",
+    "spec": {
+     "regions": [
+      {
+       "name": "flock",
+       "roughness": 0.95,
+       "height": 1.0,
+       "grain": 0.35
+      },
+      {
+       "name": "satin-ground",
+       "roughness": 0.42,
+       "height": 0.0,
+       "grain": 0.05
+      }
+     ],
+     "edge_blur_px": 1.5,
+     "ao_strength": 0.7,
+     "seed": 1
+    }
+   }
+  ]
+ }
+}
