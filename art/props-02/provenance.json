@@ -1,0 +1,49 @@
+{
+ "runFamily": "hotel-props-02",
+ "sourcePrompt": "request.json (the props-01 style + the bag's subject)",
+ "imageProducer": "codex-image-gen skill (GPT image via codex exec)",
+ "meshProducer": "asset-pipeline legacy/experiments/comfy-native-image-to-3d/run_native.py, TRELLIS.2 bf16 on den-patch (6,000 faces); runs/dropped-bag/ keeps its prompt and settings",
+ "runs": {
+  "dropped-bag": {
+   "wallSeconds": 135.2,
+   "settings": {
+    "model": "trellis2",
+    "weights": "bf16",
+    "tex_res": 2048,
+    "remesh_res": 256
+   }
+  }
+ },
+ "conversion": "Local Blender; props-01's prepare.py unchanged: fitted inside 0.42 x 0.24 x 0.32 m, standing on the ground, 1024 JPEG, softened metal",
+ "use": "The one model every stack left on the floor is drawn as (content/supplies/dropping.json).",
+ "files": [
+  {
+   "path": "art/props-02/dropped-bag.blend",
+   "sha256": "d933c7d48235d6e2b18b921278b98973c41fc40dcbf612c42272cada3df76654"
+  },
+  {
+   "path": "art/props-02/native/dropped-bag.glb",
+   "sha256": "5ab984bec04138b1c176c50c4d46e611f17482468c1a48ae05f11da95339c116"
+  },
+  {
+   "path": "art/props-02/pieces.json",
+   "sha256": "dd95e053fa1b1dd6391dfcde1c145fa9b9c21d95286d00db97488f362fe65652"
+  },
+  {
+   "path": "art/props-02/prepare.py",
+   "sha256": "435c2b5f024986e02d6775c9e4445ff2f293fb38dca751aca1a328422ab3bb24"
+  },
+  {
+   "path": "art/props-02/request.json",
+   "sha256": "f364d34a533ac0688f8b2171925ef0372656c274962d46baab107b6114ea9802"
+  },
+  {
+   "path": "art/props-02/source-dropped-bag.png",
+   "sha256": "004907e992714771615b00b50f2073f1fc774c728b43d03cba8290fce62a3e39"
+  },
+  {
+   "path": "content/models/props/dropped-bag.glb",
+   "sha256": "6ba1748bd39287d50a5b83ba3b573b1e31fac7855acc8bbb9762dbb278fd18eb"
+  }
+ ]
+}

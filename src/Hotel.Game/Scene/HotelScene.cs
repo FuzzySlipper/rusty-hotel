@@ -28,6 +28,7 @@ internal sealed class HotelScene : IDisposable
     private AppearanceFact[] facts = [];
     private AppearanceFact[] combatFacts = [];
     private AppearanceFact[] spiritFacts = [];
+    private AppearanceFact[] droppedFacts = [];
     private readonly Dictionary<string, List<int>> findFacts = new(StringComparer.Ordinal);
     private readonly Dictionary<string, SurfaceDefinition> surfaceDefinitions = new(StringComparer.Ordinal);
     private Preview? preview;
@@ -319,9 +320,10 @@ internal sealed class HotelScene : IDisposable
     internal EntityId PlayerEntity { get; }
     internal SpatialSession Session { get; }
     internal Material Surface(string id) => surfaces[id];
-    internal void Publish() => engine.Graphics.PublishSnapshot([.. facts, .. preview?.Facts ?? [], .. combatFacts, .. spiritFacts]);
+    internal void Publish() => engine.Graphics.PublishSnapshot([.. facts, .. preview?.Facts ?? [], .. combatFacts, .. spiritFacts, .. droppedFacts]);
     internal void PublishSpirit(AppearanceFact[] appearances) { spiritFacts = appearances; Publish(); }
     internal void PublishCombat(AppearanceFact[] appearances) { combatFacts = appearances; Publish(); }
+    internal void PublishDropped(AppearanceFact[] appearances) { droppedFacts = appearances; Publish(); }
     internal void ShowFind(string id, bool visible)
     {
         if (findFacts.TryGetValue(id, out List<int>? indices))

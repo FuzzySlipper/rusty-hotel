@@ -28,11 +28,15 @@ internal sealed class HotelSupplies
     private readonly FieldCase fieldCase;
     private readonly Track health, ammo, summon;
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
+    private readonly List<DroppedStack> dropped = [];
+    private readonly Func<(System.Numerics.Vector3 Feet, float Yaw)> setDown;
+    private int nextDropped;
 
     internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner,
         Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats, Loot.LootCatalog loot, SearchDefinition[] searches,
-        Progression.GrowthDefinition growth)
+        Progression.GrowthDefinition growth, Func<(System.Numerics.Vector3 Feet, float Yaw)>? setDown = null)
     {
+        this.setDown = setDown ?? (() => (System.Numerics.Vector3.Zero, 0));
         this.loot = loot;
         this.searches = searches;
         Stats = new(mechanics, playerStats, owner);
@@ -121,6 +125,59 @@ internal sealed class HotelSupplies
         Revision++;
         Message = Template.Fill(text.Collected, ("item", Name(new ItemStack(find.Item, find.Count, find.Roll))), ("count", find.Count));
         return true;
+    }
+
+    /// <summary>The stacks left on this floor, in the order they were set down.</summary>
+    internal IReadOnlyList<DroppedStack> Dropped => dropped;
+
+    /// <summary>
+    /// Leaves a whole pocket on the floor where the investigator stands, a little ahead of their feet. Expedition finds
+    /// stay carried for the return, and a floor holds only so many dropped stacks.
+    /// </summary>
+    internal bool Drop(int index, ulong revision)
+    {
+        if (revision != Revision) return Refuse(text.CaseChanged);
+        if (Health == 0) return Refuse(text.Overwhelmed);
+        if (index < 0 || index >= Capacity || Slot(index) is not { } stack) return Refuse(text.EmptyPocket);
+        if (Item(stack.Item).Deposit) return Refuse(text.KeepForReturn);
+        if (dropped.Count >= definition.Dropping.Limit) return Refuse(text.DropFull);
+        var (feet, yaw) = setDown();
+        DroppingTuning tuning = definition.Dropping;
+        System.Numerics.Vector3 forward = new(MathF.Sin(yaw), 0, -MathF.Cos(yaw)), right = new(MathF.Cos(yaw), 0, MathF.Sin(yaw));
+        System.Numerics.Vector3 at = feet + forward * tuning.Ahead;
+        // A stack that would land on another steps out to the right, then the left, a spread further each time.
+        bool Taken(System.Numerics.Vector3 p) => dropped.Any(d => System.Numerics.Vector3.Distance(new(d.X, d.Y, d.Z), p) < tuning.Spread * .9f);
+        for (int n = 1; n <= dropped.Count && Taken(at); n++)
+            at = feet + forward * tuning.Ahead + right * tuning.Spread * ((n + 1) / 2) * (n % 2 == 1 ? 1 : -1);
+        ItemStack left = fieldCase.Remove(index);
+        dropped.Add(new($"dropped/{++nextDropped}", left, at.X, at.Y, at.Z, yaw));
+        Revision++;
+        Message = Template.Fill(text.Dropped, ("item", Name(left)), ("count", left.Count));
+        return true;
+    }
+
+    /// <summary>Takes a dropped stack back into the field case whole, or leaves it where it lies.</summary>
+    internal bool PickupDropped(string id)
+    {
+        if (dropped.FirstOrDefault(d => d.Id == id) is not { } lying) return Refuse(text.FindGone);
+        if (Health == 0) return Refuse(text.Overwhelmed);
+        if (!Add(lying.Stack.Item, lying.Stack.Count, lying.Stack.Roll)) return false;
+        dropped.Remove(lying);
+        Revision++;
+        Message = Template.Fill(text.Collected, ("item", Name(lying.Stack)), ("count", lying.Stack.Count));
+        return true;
+    }
+
+    /// <summary>Refuses saved dropped stacks the floor could not hold (see <see cref="SuppliesDefinition.ValidateDropped"/>).</summary>
+    internal void ValidateDropped(DroppedStack[]? stacks) => definition.ValidateDropped(stacks, loot);
+
+    /// <summary>Lays a validated floor's dropped stacks back where they were left.</summary>
+    internal void RestoreDropped(DroppedStack[] stacks)
+    {
+        dropped.Clear();
+        dropped.AddRange(stacks);
+        nextDropped = stacks.Select(d => int.TryParse(d.Id["dropped/".Length..], out int n) ? n : 0).DefaultIfEmpty(0).Max();
+        Revision++;
     }
 
     /// <summary>Whether a search has been made; searched things give nothing again.</summary>
@@ -273,6 +330,7 @@ internal sealed class HotelSupplies
                     case "wear": Wear(from, revision); break;
                     // For take-off, "from" is the slot in authored order.
                     case "takeOff": TakeOff(from, revision); break;
+                    case "drop": Drop(from, revision); break;
                     case "move" when Integer(root, "to", out int to): Move(from, to, revision); break;
                     default: Refuse(text.ChooseAction); break;
                 }
@@ -356,7 +414,12 @@ internal sealed class HotelSupplies
     /// <summary>Restores validated supplies: the case and what it wears first, so the stats restore under their maximums.</summary>
     internal void Restore(SuppliesState state)
     {
+        // What lies on the floor belongs to the floor, not to the carried supplies; RestoreDropped sets it.
+        DroppedStack[] lying = [.. dropped];
+        int next = nextDropped;
         Reset();
+        dropped.AddRange(lying);
+        nextDropped = next;
         fieldCase.Restore(state.Pockets, state.Worn);
         Stats.SetEquipmentSources(fieldCase.Sources);
         Growth.Restore(state.Growth);
@@ -368,6 +431,8 @@ internal sealed class HotelSupplies
     {
         fieldCase.Restore(new ItemStack?[Capacity], definition.Kit);
         collected.Clear();
+        dropped.Clear();
+        nextDropped = 0;
         Stats.SetEquipmentSources(fieldCase.Sources);
         Growth.Reset();
         Stats.Reset();

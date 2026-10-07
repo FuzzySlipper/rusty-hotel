@@ -149,7 +149,8 @@ internal sealed class HotelFloors
         memory.Remove(excursion.Id);
         string[] stillOpen = [.. kept.Open, .. kept.Latch is not null ? [$"{excursion.Id}/latch"] : Array.Empty<string>()];
         string[] stillHeld = (left?.Keys ?? []).Select(k => Layout.KeptSet.Carried(kept, floor, excursion.Id, k)).OfType<string>().Order(StringComparer.Ordinal).ToArray();
-        if (stillOpen.Length > 0 || stillHeld.Length > 0) memory[excursion.Id] = new(stillOpen, null, stillHeld);
+        // What was left on the floor goes with the rooms that re-rolled.
+        if (stillOpen.Length > 0 || stillHeld.Length > 0) memory[excursion.Id] = new(stillOpen, null, stillHeld, []);
         visited[depth] = (next, FloorExcursion.From(next, Tunings, Sources, content.Player));
     }
 
@@ -209,6 +210,7 @@ internal sealed class HotelFloors
             left.OpenDoors.Any(id => floor.Route.Doors.All(d => d.Id != id)) ||
             left.Keys.Distinct().Count() != left.Keys.Length || left.Keys.Any(k => floor.Route.Keys.All(d => d.Item != k) && floor.Route.Doors.All(d => d.Key != k)))
             throw new InvalidOperationException($"Checkpoint floor {depth}'s doors or keys do not belong to it.");
+        content.Supplies.ValidateDropped(left.Dropped, content.Loot);
         if (left.Residents is not { } residents) return;
         ResidentPlacement[] roster = floor.Placements.Residents;
         if (residents.Length != roster.Length || residents.Select(r => r?.Id).Distinct().Count() != roster.Length)

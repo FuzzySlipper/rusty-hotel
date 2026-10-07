@@ -47,6 +47,7 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(Hotel.Game.Loot.LootTableCatalog))]
 [JsonSerializable(typeof(Hotel.Game.Actions.ActionCatalog))]
 [JsonSerializable(typeof(SupplyMessages))]
+[JsonSerializable(typeof(DroppingTuning))]
 [JsonSerializable(typeof(Hotel.Game.Progression.GrowthCatalog))]
 [JsonSerializable(typeof(Hotel.Game.Progression.GrowthMessages))]
 [JsonSerializable(typeof(CombatTuning))]

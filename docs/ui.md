@@ -167,10 +167,19 @@ shows the worn item and its Take off action, which returns it to a pocket. Spiri
 empty state until a spirit is freed, then one card per pact made; the selected
 pact's details give Equip, or Let rest for the one in the pact slot, which Q calls. Real supply stacks populate the grid; selected details show their
 description, quantity and any use refusal reason. `field-case.js` owns presentation
-selection and tab navigation only. Use and Move stack are the selected supply's contextual actions. Move stack then
+selection and tab navigation only. Use, Move stack and Drop are the selected supply's contextual actions. Move stack then
 a destination supports keyboard activation; pointer dragging sends the same
-move claim. Matching stacks merge and different supplies swap. Both submit
-revisioned semantic actions through Engine paused delivery and redraw C# facts.
+move claim. Matching stacks merge and different supplies swap. Drop leaves the whole stack on the floor, and so does
+releasing a dragged stack outside the pocket grid; C# keeps expedition finds carried and holds a floor to its limit of
+dropped stacks. All of them submit revisioned semantic actions through Engine paused delivery and redraw C# facts.
+A dropped stack lies in the world as the one generic bag (`content/models/props/dropped-bag.glb`), offered as
+"Take <item>" to the ordinary use key; it stays on its floor through revisits and checkpoints, and goes with a
+generated floor's re-rolled rooms when it shifts.
+
+Every item shows its line icon (`src/ui/icons/<item id>.svg`, drawn through `item-icon.js`) in the pockets, the quick
+pockets, the item detail and the worn slots. Icons are restrained line drawings on a 24-unit grid in `currentColor`,
+one stroke weight, so they take the colour of the text around them; an item's `mark` glyph remains its short text
+form (effects keep marks). A new item needs its icon; smoke refuses an item without one or an icon without an item.
 The first three pockets also appear on the HUD; 3–5 use them during exploration.
 These are the same saved pockets, not a separate collection or assignment state.
 Closing the case or changing tabs cancels unfinished move gestures. Do not route

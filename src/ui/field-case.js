@@ -1,3 +1,4 @@
+import { itemIcon } from './item-icon.js';
 import { mountWornView } from './worn-view.js';
 import { mountPactView } from './pact-view.js';
 
@@ -17,7 +18,7 @@ export function mountFieldCase(host, intents) {
         <section class="case-quick"><h3>Quick access</h3><div class="quick-pockets" aria-label="Quick access pockets"></div><p class="muted" data-quick-note></p></section>
       </div>
       <aside class="item-detail" aria-live="polite"><span class="eyebrow" data-detail-number>Pocket 01</span>
-        <div class="empty-emblem" aria-hidden="true">—</div><h3 data-detail-title>Empty pocket</h3><p data-detail-body>No supplies carried.</p><div class="supply-actions"><button type="button" data-use-supply>Use supply</button><button type="button" data-move-supply>Move stack</button></div><p class="supply-result" data-supply-result role="status"></p>
+        <div class="empty-emblem" aria-hidden="true">—</div><h3 data-detail-title>Empty pocket</h3><p data-detail-body>No supplies carried.</p><div class="supply-actions"><button type="button" data-use-supply>Use supply</button><button type="button" data-move-supply>Move stack</button><button type="button" data-drop-supply>Drop</button></div><p class="supply-result" data-supply-result role="status"></p>
       </aside>
     </div>`;
   const tabs = [...host.querySelectorAll('[data-tab]')];
@@ -37,6 +38,7 @@ export function mountFieldCase(host, intents) {
   let dragging = null;
   const use = host.querySelector('[data-use-supply]');
   const move = host.querySelector('[data-move-supply]');
+  const drop = host.querySelector('[data-drop-supply]');
   const supplyResult = host.querySelector('[data-supply-result]');
   const claim = (action, from, to, revision = supplyFacts.revision) => {
     try { intents.claim('hotel.supplies', { kind: 'product-payload', contract: 'hotel.supplies.v1',
@@ -50,6 +52,11 @@ export function mountFieldCase(host, intents) {
     if (!intents || !item?.id) return;
     if (item.wearable) { if (!item.wearReason) claim('wear', selected); }
     else if (!item.useReason) claim('use', selected);
+  });
+  // Dropping leaves the whole stack on the floor as a bag; C# refuses expedition finds and a full floor.
+  drop.addEventListener('click', () => {
+    if (!intents || !items[selected]?.id || moving) return;
+    claim('drop', selected);
   });
   move.addEventListener('click', () => {
     if (moving) { cancel(); selectPocket(selected); return; }
@@ -76,9 +83,11 @@ export function mountFieldCase(host, intents) {
     use.disabled = !intents || !item?.id || !!(item.wearable ? item.wearReason : item.useReason);
     use.textContent = item?.id ? `${item.wearable ? 'Wear' : 'Use'} ${item.name}` : 'Use supply';
     move.disabled = !intents || !item?.id;
+    drop.disabled = !intents || !item?.id || !!moving;
+    drop.textContent = item?.id ? `Drop ${item.name}` : 'Drop';
     move.textContent = moving ? 'Cancel move' : 'Move stack';
     supplyResult.textContent = moving ? 'Choose a destination pocket. Matching stacks merge; different supplies swap.' : supplyFacts.message || '';
-    host.querySelector('.empty-emblem').textContent = item?.mark || '—';
+    host.querySelector('.empty-emblem').replaceChildren(item?.id ? itemIcon(document, item.id) : '—');
     host.querySelector('[data-detail-title]').textContent = item?.name || 'Empty pocket';
     host.querySelector('[data-detail-body]').textContent = item?.id
       ? `${item.description}${item.stackLimit > 1 ? `\n\n${item.count} / ${item.stackLimit} in this stack.` : ''}${!item.wearable && item.useReason ? ` ${item.useReason}` : ''}`
@@ -147,7 +156,7 @@ export function mountFieldCase(host, intents) {
             if (Math.hypot(event.clientX - dragging.x, event.clientY - dragging.y) >= 4) {
               dragging.moved = true;
               grid.classList.add('moving');
-              supplyResult.textContent = `Moving ${items[dragging.from]?.name || 'stack'} · release over another pocket.`;
+              supplyResult.textContent = `Moving ${items[dragging.from]?.name || 'stack'} · release over another pocket, or outside the pockets to drop it.`;
             }
           });
           button.addEventListener('pointerup', event => {
@@ -155,10 +164,15 @@ export function mountFieldCase(host, intents) {
             if (!request) return;
             cancel();
             if (!request.moved) return;
-            const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-pocket]');
+            const under = document.elementFromPoint(event.clientX, event.clientY);
+            const target = under?.closest('[data-pocket]');
             if (target && grid.contains(target) && Number(target.dataset.pocket) !== request.from) {
               claim('move', request.from, Number(target.dataset.pocket), request.revision);
               selectPocket(Number(target.dataset.pocket));
+            } else if (!grid.contains(under)) {
+              // Released outside the pockets: the stack is left on the floor.
+              claim('drop', request.from, undefined, request.revision);
+              selectPocket(request.from);
             } else selectPocket(selected);
           });
           button.addEventListener('pointercancel', () => { cancel(); selectPocket(selected); });
@@ -172,7 +186,7 @@ export function mountFieldCase(host, intents) {
         const item = items[Number(button.dataset.pocket)];
         button.classList.toggle('occupied', !!item?.id);
         button.setAttribute('aria-label', `Pocket ${Number(button.dataset.pocket) + 1}, ${item?.id ? `${item.name}, ${item.count}` : 'empty'}`);
-        button.querySelector('[aria-hidden]').textContent = item?.id ? `${item.mark} ×${item.count}` : '·';
+        button.querySelector('[aria-hidden]').replaceChildren(...(item?.id ? [itemIcon(document, item.id), `×${item.count}`] : ['·']));
       }
       showTab(active);
     },
@@ -192,7 +206,7 @@ export function quickPocketViews(document, supplies) {
     const key = document.createElement('small');
     key.textContent = label;
     const contents = document.createElement('span');
-    contents.textContent = item?.id ? `${item.mark} ×${item.count}` : '—';
+    contents.replaceChildren(...(item?.id ? [itemIcon(document, item.id), `×${item.count}`] : ['—']));
     pocket.append(key, contents);
     return pocket;
   });

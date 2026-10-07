@@ -124,6 +124,11 @@ role:
 | `wear` | `slots`, `exclusive`, `stats` | A single item worn in that many equipment slots that accept one of its classifications; `stats` add to stats or resistances (`resistance.<kind>`) as an Engine source while worn; no two worn items share an `exclusive` group |
 | `deposit` | `true` | An expedition find, carried back and deposited at the refuge |
 
+Every item also has a UI icon, `src/ui/icons/<id>.svg` (see [UI](ui.md)): a line drawing on a 24-unit grid in
+`currentColor` alone. Any item can be dropped from the field case except an expedition find; `supplies/dropping.json`
+sets how many dropped stacks one floor holds (`limit`), how far ahead of the feet a stack is set down (`ahead`) and to
+either side when the spot is taken (`spread`), and the one bag `model` and `scale` every dropped stack is drawn as.
+`route/interaction.json` `droppedFocusLift` is how far above a dropped stack its focus sits.
 Slots (`supplies/equipment.json`) are the hands, the worn slots and the rings; a slot `accepts` classifications,
 and exactly one slot is each `hand` (`Main`, `Off`). An item worn in a hand is held: its `wear.actions` give its
 primary and secondary actions (at most two) and `wear.look` how it is drawn: a look id in `combat/held.json`, by convention
@@ -421,7 +426,9 @@ and the canonical hash of its plan are checked; a floor made by another generato
 invalid data, so a generator change is a version bump in `FloorSeed`. Generated ids are `floor-<depth>/<placement>/<socket>`.
 Version 3 keeps the investigator's resources as Engine stats: every stat's base and every track's current points,
 restored bases first, then the derived sources they feed, then track points. Version 4 keeps each resident's stats the
-same way, on the floor it was left on and in the refuge, beside its pose. Version 10 saves the investigator's growth with the supplies: experience, uses by skill and the relics taken in. Version 9 saves a generated item's roll (quality and affixes) with its pocket or worn slot, and searches made among
+same way, on the floor it was left on and in the refuge, beside its pose. Version 11 saves the stacks left on the
+floor: the west wing's beside its opened doors, and each generated floor's with what that floor remembers (an item, count
+and roll, and where it lies). Version 10 saves the investigator's growth with the supplies: experience, uses by skill and the relics taken in. Version 9 saves a generated item's roll (quality and affixes) with its pocket or worn slot, and searches made among
 the collected ids. Version 8 saves the pacts as the spirits freed and the one in the pact slot. Version 7 drops the selected weapon: weapons are held items, saved with the worn items. Version 6 keeps the field case's worn items (the item and the slots it fills) beside the pockets, restored and
 equipped before the stats so track maximums include what is worn. Version 5 keeps each actor's effects with
 its stats: the effect, who applied it, its stacks, time left, time since its last tick and ward left, re-admitted in

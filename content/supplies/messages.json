@@ -29,5 +29,7 @@
   "foundSeparator": ", ",
   "foundNothing": "Nothing of use here.",
   "searchFull": "No room in your field case for what is here.",
-  "searched": "Already searched."
+  "searched": "Already searched.",
+  "dropped": "Left {item} ×{count} on the floor.",
+  "dropFull": "Nothing more can be left on this floor."
 }

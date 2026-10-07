@@ -207,6 +207,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     {
         world.SpiritView.Publish();
         world.CombatView.Publish();
+        world.DroppedView.Publish();
         world.Player.Publish(sampleTime);
         PublishInterface();
     }

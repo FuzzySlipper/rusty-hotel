@@ -192,6 +192,20 @@ master with its textures as JPEG files in `textures/`. The displays in
 blender -b --python art/props-01/prepare.py
 ```
 
+`props-02` adds the one dropped bag (a tied canvas laundry bag) every stack left on the floor is drawn as, made the same way
+with the same script; `provenance.json` records its run.
+
+```text
+blender -b --python art/props-02/prepare.py
+```
+
+## Item icons
+
+The item icons in `src/ui/icons/` are hand-authored SVG line drawings, not generated: a 24-unit grid, one 1.3-unit
+stroke with round caps and joins in `currentColor`, an occasional small solid detail. They are the items' glyph marks
+taken further into the object itself, restrained so they sit with the hotel's typography. Each file is its own
+editable source.
+
 ## Residents
 
 `residents-01/request.json` fixes the shared style (an uncanny hotel resident in a neutral A-pose, front view) and one

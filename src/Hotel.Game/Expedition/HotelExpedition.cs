@@ -158,7 +158,7 @@ internal sealed class HotelExpedition : IDisposable
         // Expedition finds move into the refuge ledger, retaining their collected identity.
         SuppliesState deposited = carried with { Pockets = carried.Pockets.Select(s => s is { } item && supplies.Item(item.Item).Deposit ? null : s).ToArray() };
         return new(CheckpointState.CurrentVersion, returns, refuge.Id, deposited, route.OpenDoors,
-            spirit.Capture(), combat.Capture(), secured, run);
+            spirit.Capture(), combat.Capture(), secured, run, [.. supplies.Dropped]);
     }
 
     internal void Validate(CheckpointState state)
@@ -168,6 +168,7 @@ internal sealed class HotelExpedition : IDisposable
             throw new InvalidOperationException("Checkpoint version or refuge is invalid.");
         if (state.Floors is { } run) floors.Validate(run);
         supplies.Validate(state.Supplies);
+        supplies.ValidateDropped(state.Dropped);
         route.Validate(state.OpenDoors);
         combat.Validate(state.Residents);
         spirit.Validate(state.Spirit);
@@ -185,6 +186,7 @@ internal sealed class HotelExpedition : IDisposable
         if (state.Floors is { } run) floors.Restore(run);
         else floors.BeginNew();
         supplies.Restore(state.Supplies);
+        supplies.RestoreDropped(state.Dropped!);
         combat.Restore(state.Residents);
         spirit.Restore(state.Spirit);
         player.Reset();

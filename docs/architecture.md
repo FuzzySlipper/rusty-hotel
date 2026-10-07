@@ -17,7 +17,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Floors/FloorExcursion.cs` | A generated floor as an `ExcursionDefinition`: display fixtures for finds, depth-namespaced ids, stairs, readings, residents and the bell |
 | `src/Hotel.Game/Route/HotelRoute.cs` | Door, latch and lock state, the keys held on the current floor, room identity, reading and stair facts, and the Engine world-interaction adapter |
 | `src/Hotel.Game/Mechanics/` | The stat vocabulary (`MechanicsDefinition`: attributes, derived stats, tracks, damage kinds, effects) and `ActorStats`, one actor's Engine `StatsComponent`: attribute-sourced derived stats, tracks, resistance-reduced damage, capture and restore. Each actor's `ActorEffects` keeps its Engine `EffectsComponent` and the product's time, ticks and wards in step, adds its stacks' stat sources, and advances only on the admitted seconds Supplies (the investigator) and Combat (residents) pass it |
-| `src/Hotel.Game/Supplies/HotelSupplies.cs` | Collected-find identities, use, wear and move rules over the field case, the investigator's stats (health, ammunition and summon tracks, worn sources) and inventory revision |
+| `src/Hotel.Game/Supplies/HotelSupplies.cs` | Collected-find identities, use, wear, move and drop rules over the field case, the floor's dropped stacks, the investigator's stats (health, ammunition and summon tracks, worn sources) and inventory revision |
+| `src/Hotel.Game/Supplies/DroppedStack.cs`, `DroppedView.cs` | A stack left on the floor (item, count, roll, where it lies), kept by `HotelSupplies` for the floor and saved with it; the view draws each as the one dropped bag |
 | `src/Hotel.Game/Supplies/FieldCase.cs` | The field case over one Engine `InventoryStore`: pocket layout of stacks and single items, equipment slots and worn items, Engine capacity limits (weight, space), the worn items' stat sources, capture and restore |
 | `src/Hotel.Game/Actions/` | The action catalog (`ActionDefinition`: delivery, cost, timing, scaled damage packets, effects), `ActionUser` (one actor's phase, committed aim and cooldowns on admitted seconds) and `ActionResolution` (Engine spatial queries per delivery, contributions, damage application, projectiles in flight) |
 | `src/Hotel.Game/Combat/HotelCombat.cs` | Encounter policy over the action pipeline: the investigator's primary/secondary actions through what the hands hold, swapping hands, residents attacking with their kind's action, approach, impacts' feedback, resident capture and restore |
@@ -55,7 +56,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/ui/main.js` | Composition, the single foreground-screen navigation, focus containment, lifecycle flow and Engine input-mode handoff |
 | `src/ui/hud.js` | Exploration HUD regions and their drawing from projected facts |
 | `src/ui/menu-screen.js`, `case-screen.js`, `controls-screen.js`, `reading-screen.js`, `console-screen.js` | One foreground screen each: its markup, drawing, and what happens on entering and leaving it; `screen.js` holds their shared helpers |
-| `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, pact selection/equip claims and quick-pocket presentation |
+| `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, use/move/drop claims (drag to a pocket or out of the grid), pact selection/equip claims and quick-pocket presentation |
+| `src/ui/item-icon.js`, `src/ui/icons/` | Each item's line icon, masked in the surrounding text colour |
 | `src/ui/developer.js` | Lazy packaged Engine console mount, disposal and stale-mount cleanup |
 | `src/ui/pause.js` | Foreground lifecycle request lifetime and error presentation; Engine port owns actual lifecycle state |
 | `src/ui/hotel.css` | Product-authored responsive screen/HUD styling |

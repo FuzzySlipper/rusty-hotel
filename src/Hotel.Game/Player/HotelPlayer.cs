@@ -44,6 +44,10 @@ internal sealed class HotelPlayer : IDisposable
     internal Vector3 Position => scene.Entities.Get(scene.PlayerEntity, EngineComponentTypes.Transform).Translation;
     internal CharacterMotion Motion => scene.Entities.Get(scene.PlayerEntity, EngineComponentTypes.CharacterMotion);
     internal Vector3 Eye => Position + Vector3.UnitY * (tuning.EyeHeight - tuning.Height / 2);
+    /// <summary>Where the investigator's feet meet the floor.</summary>
+    internal Vector3 Feet => Position - Vector3.UnitY * (tuning.Height / 2);
+    /// <summary>The way the investigator faces, radians: 0 looks along -z, a positive turn toward +x.</summary>
+    internal float Yaw => LookState.YawRadians;
     internal Vector3 Forward => Look.IntegrateClamped(new LookRequest(LookState, Vector2.Zero, Input.Config.PointerLookConfig)).Forward;
 
     internal FpsInputFrame ReadInput(ReadOnlySpan<ProductInputEvent> events, float admittedSeconds)

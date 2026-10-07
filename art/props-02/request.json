@@ -1,0 +1,9 @@
+{
+ "goal": "The one generic dropped-item model for Hotel Endless (#9680): any stack dropped from the field case lies in the world as this bag.",
+ "style": "Single isolated small object for image-to-3D reconstruction, a find in a 1970s hotel. Grounded, slightly stylized realism with worn tactile materials, muted amber, burgundy, olive and ivory palette. The object rests naturally as it would on a table or floor. Three-quarter view from slightly above (about 25 degrees elevation, 30 degrees yaw) so the top and two sides are visible. The entire object is fully in frame and centred with generous margin, nothing cropped. Plain flat light-grey seamless background, soft even studio lighting, no cast shadow, no ground plane, no table, no hands, no other objects. Solid opaque materials, no glow, no smoke, no transparency. NO text, NO letters, NO numbers, NO logos, NO people. Square image around 1024x1024.",
+ "pieces": {
+  "dropped-bag": "Subject: A small worn canvas hotel laundry bag lying on its side on the floor, tied shut at the neck with a frayed cord, lumpy with something inside, faded oatmeal canvas with a stencilled burgundy stripe band (no letters), scuffed and slightly grubby."
+ },
+ "imageProducer": "codex-image-gen (GPT image via codex exec)",
+ "meshProducer": "asset-pipeline run_native.py, TRELLIS.2 bf16"
+}

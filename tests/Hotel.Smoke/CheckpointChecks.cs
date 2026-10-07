@@ -51,6 +51,10 @@ internal static class CheckpointChecks
                 f.Supplies.Afflict("warded", "item.incense"); f.Supplies.Damage(new(4, "fire"));
                 f.Supplies.Give("porter-gloves", 1);
                 f.Supplies.Wear(Enumerable.Range(0, f.Supplies.Capacity).First(i => f.Supplies.Slot(i)?.Item == "porter-gloves"), f.Supplies.Revision);
+                // Matches left on the west wing's floor are kept with it.
+                f.Supplies.Give("matches", 1);
+                Check(f.Supplies.Drop(Enumerable.Range(0, f.Supplies.Capacity).First(i => f.Supplies.Slot(i)?.Item == "matches"), f.Supplies.Revision),
+                    "matches are left on the floor");
                 f.Route.Restore(["survey", "return"]);
                 f.At(0, -8, new(-2.33f, .93f, 2.85f));
                 f.Route.Use();
@@ -67,6 +71,7 @@ internal static class CheckpointChecks
                 saved = store.Load(HotelExpedition.Key).State!;
                 Check(saved.Supplies.Collected.Contains(remains) && saved.Supplies.Growth.Experience == f.Content.Growth.Levels.Experience[1],
                     "the checkpoint keeps the search made and the investigator's growth");
+                Check(saved.Dropped?.Single().Stack == new ItemStack("matches", 1), "the checkpoint keeps what lies on the floor");
                 var tracks = saved.Supplies.Stats.Tracks;
                 ActorStatsState lampSaved = saved.Residents.Single(r => r.Id == lamp.Id).Stats;
                 Check(lampSaved.Bases["might"] == 14 && lampSaved.Tracks["stamina"] == 20 && lampSaved.Tracks["health"] == 36,
@@ -106,7 +111,8 @@ internal static class CheckpointChecks
                     Stats(saved, bases: ("might", 500)), Stats(saved, bases: ("luck", 5)),
                     saved with { Spirit = saved.Spirit with { Acquired = ["hushwing"], Equipped = "lintmoth" } },
                     saved with { Spirit = saved.Spirit with { Acquired = ["hushwing", "ghostmoth"] } },
-                    saved with { Residents = [] }, Resident(saved, tracks: ("stamina", 500)), Resident(saved, bases: ("might", 0)), saved with { SecuredFinds = [] } })
+                    saved with { Residents = [] }, Resident(saved, tracks: ("stamina", 500)), Resident(saved, bases: ("might", 0)), saved with { SecuredFinds = [] },
+                    saved with { Dropped = [saved.Dropped![0] with { Stack = new("reel", 1) }] }, saved with { Dropped = null } })
                 {
                     store.Save(HotelExpedition.Key, invalid);
                     bool rejected = false;
@@ -134,6 +140,7 @@ internal static class CheckpointChecks
     {
         Check(f.Expedition.Returns == 1 && f.Expedition.SecuredFinds.SequenceEqual(["survey-reel"]) &&
             f.Supplies.Health == 57 && f.Supplies.Ammo == 4 && f.Supplies.Summon == 2 && f.Supplies.Slot(7)?.Count == 1 && f.Supplies.Occupied == 1 &&
+            f.Supplies.Dropped.Single().Stack == new ItemStack("matches", 1) &&
             f.Supplies.Collected("survey-reel") && !f.Supplies.Collected("portrait-dressing") && f.Spirit.Acquired("hushwing") && f.Spirit.Acquired("lintmoth") && f.Spirit.Equipped?.Id == "hushwing" && !f.Spirit.Active &&
             f.Route.OpenDoors.Order().SequenceEqual(new[] { "return", "survey" }) && f.Combat.Holding?.Item.Id == "survey-pistol" &&
             !f.Combat.Enemies[0].Alive && f.Combat.Enemies[1].Health.ValueInt == 36 &&

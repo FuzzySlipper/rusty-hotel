@@ -133,6 +133,21 @@ internal sealed class FieldCase
         if (last) pockets[index] = null;
     }
 
+    /// <summary>Takes a whole pocket out of the case: the stack's items are consumed, or the single item destroyed.</summary>
+    internal ItemStack Remove(int index)
+    {
+        ItemStack taken = Slot(index)!.Value;
+        Pocket pocket = pockets[index]!.Value;
+        if (pocket.Single is { } single)
+        {
+            store.DestroyUnique(single);
+            singles.Remove(single);
+        }
+        else store.Consume(owner, pocket.Stack!, (ulong)taken.Count);
+        pockets[index] = null;
+        return taken;
+    }
+
     /// <summary>Merges matching stacks as far as their limit allows, or swaps the two pockets. False when the target stack is full.</summary>
     internal bool Move(int from, int to)
     {

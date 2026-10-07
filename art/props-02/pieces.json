@@ -1,0 +1,14 @@
+{
+    "triangleBudget": 6500,
+    "textureSize": 1024,
+    "metallicScale": 0.35,
+    "pieces": {
+        "dropped-bag": {
+            "fit": [
+                0.42,
+                0.24,
+                0.32
+            ]
+        }
+    }
+}

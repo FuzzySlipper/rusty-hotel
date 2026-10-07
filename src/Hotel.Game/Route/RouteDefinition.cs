@@ -23,12 +23,14 @@ internal sealed record RouteDefinition(InteractionTuning Interaction, RouteMessa
         Authored.Within(InteractionTuning.Path, "focusDistance", interaction.FocusDistance, interaction.Reach, float.MaxValue);
         Authored.Within(InteractionTuning.Path, "acquireAngle", interaction.AcquireAngle, float.Epsilon, MathF.PI / 2);
         Authored.Within(InteractionTuning.Path, "releaseAngle", interaction.ReleaseAngle, interaction.AcquireAngle, MathF.PI / 2);
+        Authored.AtLeast(InteractionTuning.Path, "droppedFocusLift", interaction.DroppedFocusLift, 0);
         return new(interaction, text);
     }
 }
 
 /// <summary>Reach and focus tuning shared by every world interaction.</summary>
-internal sealed record InteractionTuning(float Reach, float FocusDistance, float AcquireAngle, float ReleaseAngle)
+/// <param name="DroppedFocusLift">How far above a dropped stack's resting point its focus is, metres.</param>
+internal sealed record InteractionTuning(float Reach, float FocusDistance, float AcquireAngle, float ReleaseAngle, float DroppedFocusLift)
 {
     internal const string Path = "route/interaction.json";
 }

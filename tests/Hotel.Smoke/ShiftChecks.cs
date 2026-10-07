@@ -30,7 +30,7 @@ internal static class ShiftChecks
             string? opened = lck is null || run % 3 == 0 ? null : KeptSet.LockDoor(first.Id, lck);
             string[] held = lck is not null && run % 3 != 2 ? [lck.Item] : [];
             string[] open = [$"{first.Id}/latch", .. opened is null ? Array.Empty<string>() : [opened]];
-            floors.Remember(first.Id, new(open, null, held));
+            floors.Remember(first.Id, new(open, null, held, []));
             KeptSet kept = KeptSet.From(original, first.Id, open, held);
             if (opened is not null) doorsKept++;
             if (held.Length > 0) keysKept++;

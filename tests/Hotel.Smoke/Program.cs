@@ -196,6 +196,8 @@ host.Call(CensusChecks.Run);
 host.Call(RouteChecks.Run);
 host.Call(KeyChecks.Run);
 host.Call(SuppliesChecks.Run);
+host.Call(DroppingChecks.Run);
+host.Call(ItemIconChecks.Run);
 host.Call(CombatChecks.Run);
 host.Call(SpiritChecks.Run);
 host.Call(PactChecks.Run);

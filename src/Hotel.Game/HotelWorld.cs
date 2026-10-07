@@ -18,7 +18,8 @@ internal sealed record WorldCarry(SuppliesState Supplies, SpiritState Spirit);
 
 /// <summary>What a floor keeps while the player is elsewhere in the session: its opened doors and its residents.</summary>
 /// <param name="Residents">The residents as left, or null for a floor whose residents start fresh.</param>
-internal sealed record WorldMemory(string[] OpenDoors, ResidentState[]? Residents, string[] Keys);
+/// <param name="Dropped">The stacks the player left on this floor.</param>
+internal sealed record WorldMemory(string[] OpenDoors, ResidentState[]? Residents, string[] Keys, DroppedStack[] Dropped);
 
 /// <summary>
 /// The owners of one excursion's world, built together for the floor the player stands on and disposed together when
@@ -37,8 +38,9 @@ internal sealed class HotelWorld : IDisposable
             Scene = Own(new HotelScene(engine, content.Surfaces, content.Aging, content.Look.Shadows, excursion.Geometry, excursion.Route.Doors));
             content.Look.Apply(engine.CameraView);
             Player = Own(new HotelPlayer(engine, Scene, content.Player, excursion.Placements.Arrival, content.Controls));
+            HotelPlayer player = Player;
             Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity,
-                content.Mechanics, content.PlayerStats, content.Loot, Searches(content, excursion), content.Growth);
+                content.Mechanics, content.PlayerStats, content.Loot, Searches(content, excursion), content.Growth, () => (player.Feet, player.Yaw));
             Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents);
             Spirit = new HotelSpirit(content.Spirits, content.SpiritText, excursion.Placements.SpiritBells, Supplies, Combat, Player,
                 content.Combat.Actions, content.Mechanics);
@@ -50,6 +52,7 @@ internal sealed class HotelWorld : IDisposable
             Ambience = Own(new HotelAmbience(engine, excursion.Ambience));
             CombatView = Own(new CombatView(engine, Scene, Player, Combat, content.Combat));
             SpiritView = Own(new SpiritView(engine, Scene, Spirit));
+            DroppedView = Own(new DroppedView(engine, Scene, Supplies));
             // The checkpoint always belongs to the authored refuge, whichever floor this world is.
             Expedition = Own(new HotelExpedition(engine, content.Excursion.Placements.Refuge!, content.ExpeditionText,
                 Player, Supplies, Combat, Spirit, Route, floors));
@@ -67,11 +70,12 @@ internal sealed class HotelWorld : IDisposable
     internal HotelAmbience Ambience { get; } = null!;
     internal CombatView CombatView { get; } = null!;
     internal SpiritView SpiritView { get; } = null!;
+    internal DroppedView DroppedView { get; } = null!;
     internal HotelExpedition Expedition { get; } = null!;
     internal bool HasRefuge => Excursion.Placements.Refuge is not null;
 
     internal WorldCarry Carry() => new(Supplies.Capture(), Spirit.Capture());
-    internal WorldMemory Remember() => new(Route.OpenDoors, Combat.Capture(), Route.Keys);
+    internal WorldMemory Remember() => new(Route.OpenDoors, Combat.Capture(), Route.Keys, [.. Supplies.Dropped]);
 
     /// <summary>
     /// Brings the player's carried values into this freshly built world, with what it remembered from an earlier visit
@@ -85,6 +89,8 @@ internal sealed class HotelWorld : IDisposable
         if (memory?.Residents is { } left) Combat.Validate(left);
         Combat.Restore(memory?.Residents ?? []);
         Route.Restore(memory?.OpenDoors ?? [], memory?.Keys);
+        if (memory?.Dropped is { } lying) Supplies.ValidateDropped(lying);
+        Supplies.RestoreDropped(memory?.Dropped ?? []);
     }
 
     /// <summary>What can be searched on this floor: each resident's remains, and the containers placed here.</summary>

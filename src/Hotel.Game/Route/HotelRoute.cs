@@ -59,7 +59,8 @@ internal sealed class HotelRoute : IWorldInteractionScene
         doors = layout.Doors.Select(d => new DoorState(d, scene.DoorEntity(d.Id))).ToArray();
         finds = supplies.Finds.Select(f => (f, scene.Entities.Create().Value)).ToArray();
 
-        // Candidate order is stable: doors, readings, finds, the spirit bell, the refuge notebook, then the stairs.
+        // Candidate order is stable: doors, readings, keys, finds, searches, dropped stacks, the spirit bell, the refuge
+        // notebook, then the stairs.
         foreach (DoorState door in doors)
             Add(new(door.Entity, () => !door.Open, () => door.Definition.Label, () => DoorFocus(door),
                 () => CanUnlatch(door), () => OpenDoor(door)));
@@ -86,6 +87,14 @@ internal sealed class HotelRoute : IWorldInteractionScene
         foreach (Searchable searchable in searchables ?? [])
             Add(new(scene.Entities.Create().Value, () => searchable.Open() && !supplies.Searched(searchable.Search.Id),
                 () => Template.Fill(text.Search, ("thing", searchable.Search.Name)), searchable.Point, () => true, () => Search(searchable.Search, roll!)));
+        // Stacks the player left on this floor: one slot each up to the floor's limit, offered while a stack lies in it.
+        for (int i = 0; i < supplies.Definition.Dropping.Limit; i++)
+        {
+            int slot = i;
+            Add(new(scene.Entities.Create().Value, () => slot < supplies.Dropped.Count,
+                () => slot < supplies.Dropped.Count ? Template.Fill(text.Take, ("item", supplies.Name(supplies.Dropped[slot].Stack))) : "",
+                () => slot < supplies.Dropped.Count ? DroppedFocus(supplies.Dropped[slot]) : Vector3.Zero, () => true, () => TakeDropped(slot)));
+        }
         for (int i = 0; i < spirit.Bells.Length; i++)
         {
             int bell = i;
@@ -264,6 +273,18 @@ internal sealed class HotelRoute : IWorldInteractionScene
         changed();
         return new(pickedUp, supplies.Message);
     }
+
+    private InteractionActionResult TakeDropped(int slot)
+    {
+        if (slot >= supplies.Dropped.Count) return new(false, "Nothing lies there now.");
+        bool taken = supplies.PickupDropped(supplies.Dropped[slot].Id);
+        if (taken) { revision++; Update(); }
+        changed();
+        return new(taken, supplies.Message);
+    }
+
+    // A dropped stack is aimed at a little above where it lies.
+    private Vector3 DroppedFocus(DroppedStack lying) => new(lying.X, lying.Y + interaction.DroppedFocusLift, lying.Z);
 
     // Aim just outside the visible face, on whichever side of the closed leaf the player stands.
     private Vector3 DoorFocus(DoorState door)

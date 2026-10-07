@@ -67,12 +67,17 @@ internal static class FloorSaveChecks
                 fallen.Health.SetCurrent(0);
                 remains = HotelWorld.Remains(fallen.Id);
                 Check(product.World.Supplies.Search(tin, []) && product.World.Supplies.Search(remains, []), "search the tin and the remains");
+                // Matches left on this floor's floor.
+                product.World.Supplies.Give("matches", 1);
+                Check(product.World.Supplies.Drop(Enumerable.Range(0, product.World.Supplies.Capacity)
+                    .First(i => product.World.Supplies.Slot(i)?.Item == "matches"), product.World.Supplies.Revision), "leave matches on the floor");
                 identity = product.Floors.Current!.Identity.PlanHash;
                 geometry = Geometry(floor);
                 product.Enter(product.Content.Excursion, 0, StairDirection.Down);
                 product.Enter(product.Floors.Floor(1)!, 1, StairDirection.Up);
                 Check(product.World.Supplies.Searched(tin) && product.World.Supplies.Searched(remains) &&
                     !product.World.Combat.Enemies.Single(e => e.Id == fallen.Id).Alive, "a revisited floor keeps its searches made and its fallen resident");
+                Check(product.World.Supplies.Dropped.Single().Stack.Item == "matches", "a revisited floor keeps what was left on it");
                 product.Enter(product.Content.Excursion, 0, StairDirection.Down);
                 Check(product.World.Expedition.Return(), "record the refuge checkpoint");
                 Check(product.World.Expedition.SecuredFinds.Contains(page) && product.World.Expedition.ReceiptText.Contains("Ledger page"),
@@ -94,6 +99,7 @@ internal static class FloorSaveChecks
                     "the floor is rebuilt from its plan, identical in identity and geometry, without generating");
                 WorldMemory left = product.Floors.Memory(FloorExcursion.Id(1))!;
                 Check(product.Floors.Collected.Contains(tin) && product.Floors.Collected.Contains(remains), "the checkpoint keeps the floor's searches made");
+                Check(left.Dropped.Single().Stack.Item == "matches", "the checkpoint keeps what was left on the floor");
                 Check(left.Keys.SequenceEqual([key]) && left.OpenDoors.Contains(door) && product.Floors.Collected.Contains(page) && product.Floors.ShiftDue(1),
                     "the key is still held, its door still open, the secured page still gone, and the floor due to shift on the next visit");
                 // Climbing to it after the refuge return, it has shifted around its kept stair core and landmark.
@@ -101,6 +107,7 @@ internal static class FloorSaveChecks
                 GeneratedFloor next = product.Floors.Stored(1)!.Value.Floor;
                 Check(next.Identity.Seed.Shift == 1 && next.Identity.PlanHash != identity && Geometry(shifted) != geometry, "the next visit finds the floor shifted");
                 Check(!product.Floors.Collected.Contains(remains), "its residents start fresh, their remains unsearched");
+                Check(product.Floors.Memory(FloorExcursion.Id(1)) is not { Dropped.Length: > 0 }, "what was left goes with the rooms that re-rolled");
                 string Core(GeneratedFloor g) => g.Layout.Placements.First(p => p.Id == g.Layout.Places["arrival"]) is var c ? $"{c.Id} {c.Module} {c.X} {c.Z} {c.Turn}" : "";
                 Check(Core(next) == Core(stored), "the stair core stays where it was");
                 // The held key's door is kept, open and locked to it, and the key is still held on the visit after the restore.

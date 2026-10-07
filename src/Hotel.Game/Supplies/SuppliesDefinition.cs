@@ -13,7 +13,7 @@ namespace Hotel.Game.Supplies;
 /// </summary>
 /// <param name="Kit">What the investigator wears and holds at the start of a run, and again after a reset.</param>
 internal sealed record SuppliesDefinition(ItemDefinition[] Items, ClassificationDefinition[] Classifications, SlotDefinition[] Slots,
-    CapacityMetric[] Capacity, SupplyMessages Text, WornState[] Kit)
+    CapacityMetric[] Capacity, SupplyMessages Text, WornState[] Kit, DroppingTuning Dropping)
 {
     /// <summary>The slot that is this hand.</summary>
     internal SlotDefinition HandSlot(Hand hand) => Slots.Single(s => s.Hand == hand);
@@ -26,7 +26,9 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, Classification
         SupplyMessages text = Authored.Read(engine, SupplyMessages.Path, ContentJson.Default.SupplyMessages);
         text.Validate();
         WornState[] kit = Authored.Read(engine, StartingKit.Path, ContentJson.Default.StartingKit).Worn;
-        SuppliesDefinition definition = new(items, equipment.Classifications, equipment.Slots, capacity, text, kit);
+        DroppingTuning dropping = Authored.Read(engine, DroppingTuning.Path, ContentJson.Default.DroppingTuning);
+        dropping.Validate();
+        SuppliesDefinition definition = new(items, equipment.Classifications, equipment.Slots, capacity, text, kit, dropping);
         definition.Validate(mechanics);
         for (int i = 0; i < kit.Length; i++)
         {
@@ -40,6 +42,16 @@ internal sealed record SuppliesDefinition(ItemDefinition[] Items, Classification
     }
 
     internal ItemDefinition? Item(string id) => Items.FirstOrDefault(i => i.Id == id);
+
+    /// <summary>Refuses saved dropped stacks that name unknown items, overfill a stack, repeat an id or pass a floor's limit.</summary>
+    internal void ValidateDropped(DroppedStack[]? stacks, Loot.LootCatalog loot)
+    {
+        if (stacks is null || stacks.Length > Dropping.Limit || stacks.Select(d => d?.Id).Distinct().Count() != stacks.Length ||
+            stacks.Any(d => d?.Id is null || !d.Id.StartsWith("dropped/", StringComparison.Ordinal) || !float.IsFinite(d.X + d.Y + d.Z + d.Yaw) ||
+                d.Stack.Count <= 0 || Item(d.Stack.Item) is not { } item || item.Deposit || d.Stack.Count > item.StackLimit ||
+                d.Stack.Roll is { } roll && (roll.Item != d.Stack.Item || !loot.Fits(roll, item))))
+            throw new InvalidOperationException("Saved dropped stacks are invalid.");
+    }
 
     /// <summary>Checks references to actions, once the action catalog is loaded.</summary>
     internal void ValidateActions(Actions.ActionCatalog actions, MechanicsDefinition mechanics)
@@ -219,12 +231,32 @@ internal sealed record CapacityCatalog(CapacityMetric[] Metrics)
     internal const string Path = "supplies/capacity.json";
 }
 
+/// <summary>
+/// Stacks left on the floor from the field case: at most <see cref="Limit"/> lie on one floor at once, each set down
+/// <see cref="Ahead"/> metres in front of the investigator's feet (a stack that would land on another is set
+/// <see cref="Spread"/> metres to one side or the other) and drawn as the one bag <see cref="Model"/> at
+/// <see cref="Scale"/>, whatever it holds.
+/// </summary>
+internal sealed record DroppingTuning(int Limit, float Ahead, float Spread, string Model, float Scale)
+{
+    internal const string Path = "supplies/dropping.json";
+
+    internal void Validate()
+    {
+        Authored.AtLeast(Path, "limit", Limit, 1);
+        Authored.AtLeast(Path, "ahead", Ahead, 0);
+        Authored.Positive(Path, "spread", Spread);
+        Authored.Require(Model.EndsWith(".glb", StringComparison.Ordinal), Path, "model", "must be a GLB content path.");
+        Authored.Positive(Path, "scale", Scale);
+    }
+}
+
 /// <summary>Supply notices and refusal reasons; <see cref="NoticeSeconds"/> is how long a notice stays on the HUD.</summary>
 internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, string CaseFull, string TooMuch, string Collected, string Overwhelmed,
     string EmptyPocket, string TrackFull, string KeepForReturn, string WornNotUsed, string CaseChanged, string Used, string ChooseStack,
     string StackFull, string Rearranged, string ChooseAgain, string ChooseAction, string Unreadable, string Load,
     string NotWorn, string Wearing, string Exclusive, string TookOff, string NoPocketFree, string EmptySlot, string Found, string FoundItem,
-    string FoundSeparator, string FoundNothing, string SearchFull, string Searched)
+    string FoundSeparator, string FoundNothing, string SearchFull, string Searched, string Dropped, string DropFull)
 {
     internal const string Path = "supplies/messages.json";
 
@@ -249,7 +281,8 @@ internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, stri
         Template.Check(Path, "noPocketFree", NoPocketFree, "item");
         Template.Check(Path, "found", Found, "items");
         Template.Check(Path, "foundItem", FoundItem, "item", "count");
-        Template.Plain(Path, ("foundNothing", FoundNothing), ("searchFull", SearchFull), ("searched", Searched));
+        Template.Plain(Path, ("foundNothing", FoundNothing), ("searchFull", SearchFull), ("searched", Searched), ("dropFull", DropFull));
+        Template.Check(Path, "dropped", Dropped, "item", "count");
     }
 }
 

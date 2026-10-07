@@ -8,10 +8,10 @@ namespace Hotel.Game.Expedition;
 // A checkpoint of another version is refused like any invalid save; it is never reinterpreted.
 internal sealed record CheckpointState(int Version, int Returns, string Refuge,
     SuppliesState Supplies, string[] OpenDoors, SpiritState Spirit, ResidentState[] Residents, string[] SecuredFinds,
-    Floors.FloorsState? Floors = null)
+    Floors.FloorsState? Floors = null, DroppedStack[]? Dropped = null)
 {
     /// <summary>Each version's additions are listed in docs/authoring.md; version 7 holds weapons as worn items, not a weapon id.</summary>
-    internal const int CurrentVersion = 10;
+    internal const int CurrentVersion = 11;
 }
 /// <param name="Growth">The investigator's growth, restored before the stats so their tracks restore under its maximums.</param>
 internal sealed record SuppliesState(Mechanics.ActorStatsState Stats, ItemStack?[] Pockets, WornState[] Worn, string[] Collected,
