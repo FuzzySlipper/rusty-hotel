@@ -16,12 +16,9 @@ internal sealed class HotelScene : IDisposable
     private readonly List<RenderResource> textures = [];
     private readonly List<RenderResource> models = [];
     private readonly List<Light> lights = [];
-    // The floor's point lights with their logical ids, and which of them cast shadows now.
+    // The floor's point lights with their logical ids, for the failing lamps.
     private readonly List<(Light Light, ulong Id, PointLightDefinition Definition)> points = [];
-    private readonly HashSet<ulong> casting = [];
-
-    /// <summary>The floor's point lights casting shadows now, as their positions.</summary>
-    internal Vector3[] CastingLights => points.Where(p => casting.Contains(p.Id)).Select(p => Authored.Vector(p.Definition.Position)).ToArray();
+    private readonly ShadowLook shadows;
     // Each light's intensity as last sent, and the scene's admitted time for flickering lamps.
     private readonly Dictionary<ulong, float> sent = [];
     private double elapsed;
@@ -35,9 +32,10 @@ internal sealed class HotelScene : IDisposable
     private readonly Dictionary<string, SurfaceDefinition> surfaceDefinitions = new(StringComparer.Ordinal);
     private Preview? preview;
 
-    internal HotelScene(IEngineContext engine, SurfaceDefinition[] surfaceDefinitions, AgingCatalog aging, ExcursionGeometry geometry, DoorDefinition[] doorDefinitions)
+    internal HotelScene(IEngineContext engine, SurfaceDefinition[] surfaceDefinitions, AgingCatalog aging, ShadowLook shadows, ExcursionGeometry geometry, DoorDefinition[] doorDefinitions)
     {
         this.engine = engine;
+        this.shadows = shadows;
         Entities = new EntityStore([EngineComponentTypes.Transform, EngineComponentTypes.CharacterMotion]);
         PlayerEntity = Entities.Create();
         try { Session = engine.Spatial.CreateSession(new SpatialSessionConfig(.25f, 16, VoxelSurfaceMode.GreedyCubes)); }
@@ -209,8 +207,7 @@ internal sealed class HotelScene : IDisposable
         ulong id = firstId;
         foreach (PointLightDefinition light in definitions)
         {
-            // Shadows start off; CastShadowsNear grants them to the nearest shadowed lights.
-            Light made = engine.Graphics.CreateLight(new(id, false, 0, PointLight(light, light.Intensity, kept is null && light.Shadow)));
+            Light made = engine.Graphics.CreateLight(new(id, false, 0, PointLight(light, light.Intensity)));
             if (kept is not null) sent[id] = light.Intensity;
             created.Add(made);
             kept?.Add((made, id, light));
@@ -219,35 +216,12 @@ internal sealed class HotelScene : IDisposable
         return created;
     }
 
-    private static LightDescriptor PointLight(PointLightDefinition light, float intensity, bool shadow) =>
-        new(LightKind.Point, Authored.Vector(light.Color), intensity, true, Authored.Vector(light.Position), -Vector3.UnitY,
-            true, light.Range, 2, 0, 0, shadow ? LightShadowIntent.Requested : LightShadowIntent.Disabled);
-
-    /// <summary>
-    /// Grants shadows to the shadowed lights best placed for <paramref name="eye"/>, within the focus's budget: lamps in
-    /// the eye's own room first, then by distance, keeping the lamps already casting unless another is clearly better.
-    /// </summary>
-    internal void CastShadowsNear(Vector3 eye, RoomDefinition[] rooms, ShadowFocus focus)
-    {
-        RoomDefinition? Room(Vector3 p) => rooms.FirstOrDefault(r => p.X >= r.Min[0] && p.X <= r.Max[0] && p.Z >= r.Min[2] && p.Z <= r.Max[2]);
-        RoomDefinition? here = Room(eye);
-        float Score((Light Light, ulong Id, PointLightDefinition Definition) p)
-        {
-            Vector3 at = Authored.Vector(p.Definition.Position);
-            float score = Vector3.Distance(at, eye);
-            if (Room(at) != here) score += focus.OtherRoomPenalty;
-            if (casting.Contains(p.Id)) score -= focus.Hysteresis;
-            return score;
-        }
-        HashSet<ulong> nearest = points.Where(p => p.Definition.Shadow).OrderBy(Score).ThenBy(p => p.Id)
-            .Take(focus.Budget).Select(p => p.Id).ToHashSet();
-        if (nearest.SetEquals(casting)) return;
-        foreach (var (light, id, definition) in points)
-            if (nearest.Contains(id) != casting.Contains(id))
-                engine.Graphics.UpdateLight(new(light, new(id, false, 0, PointLight(definition, sent[id], nearest.Contains(id)))));
-        casting.Clear();
-        casting.UnionWith(nearest);
-    }
+    // A lamp that casts always requests its shadow: the Engine renders each of its layers once and again only when a
+    // caster within its range moves, so a still room costs nothing more per frame.
+    private LightDescriptor PointLight(PointLightDefinition light, float intensity) =>
+        new LightDescriptor(LightKind.Point, Authored.Vector(light.Color), intensity, true, Authored.Vector(light.Position), -Vector3.UnitY,
+            true, light.Range, 2, 0, 0, light.Shadow ? LightShadowIntent.Requested : LightShadowIntent.Disabled)
+            { ShadowResolution = shadows.Resolution };
 
     // The light an effect has the investigator carry, present only while one is carried.
     private Light? carried;
@@ -275,7 +249,7 @@ internal sealed class HotelScene : IDisposable
             float intensity = definition.Intensity * (1 - flicker.Depth * Sag(elapsed / flicker.Seconds, id));
             if (MathF.Abs(intensity - sent[id]) < definition.Intensity * .01f) continue;
             sent[id] = intensity;
-            engine.Graphics.UpdateLight(new(light, new(id, false, 0, PointLight(definition, intensity, casting.Contains(id)))));
+            engine.Graphics.UpdateLight(new(light, new(id, false, 0, PointLight(definition, intensity))));
         }
     }
 

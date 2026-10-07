@@ -186,7 +186,6 @@ host.Call(EquipmentChecks.Run);
 host.Call(ActionChecks.Run);
 host.Call(ResidentChecks.Run);
 host.Call(KitChecks.Run);
-host.Call(LightingChecks.Run);
 host.Call(MissionChecks.Run);
 host.Call(ModuleChecks.Run);
 host.Call(LayoutChecks.Run);

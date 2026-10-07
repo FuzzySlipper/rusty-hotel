@@ -14,7 +14,7 @@ internal static class Owners
 {
     internal static HotelContent Content(IEngineContext engine) => HotelContent.Load(engine, HotelProduct.StartingExcursion);
     internal static HotelScene Scene(IEngineContext engine, HotelContent content) =>
-        new(engine, content.Surfaces, content.Aging, content.Excursion.Geometry, content.Excursion.Route.Doors);
+        new(engine, content.Surfaces, content.Aging, content.Look.Shadows, content.Excursion.Geometry, content.Excursion.Route.Doors);
     internal static HotelPlayer Player(IEngineContext engine, HotelScene scene, HotelContent content) =>
         new(engine, scene, content.Player, content.Excursion.Placements.Arrival, content.Controls);
     internal static HotelSupplies Supplies(HotelContent content, EntityId owner, int? capacity = null) =>

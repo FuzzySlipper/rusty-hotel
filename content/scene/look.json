@@ -15,8 +15,6 @@
     "density": 0
   },
   "shadows": {
-    "budget": 3,
-    "otherRoomPenalty": 6,
-    "hysteresis": 0.75
+    "resolution": 256
   }
 }

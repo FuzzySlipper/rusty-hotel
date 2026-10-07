@@ -20,8 +20,12 @@
     <RustyEngineProductFixedStepHz>60</RustyEngineProductFixedStepHz>
     <RustyEngineProductFixedStepMaxCatchUpSteps>4</RustyEngineProductFixedStepMaxCatchUpSteps>
     <RustyEngineProductInputCursorMode>pointer-lock</RustyEngineProductInputCursorMode>
-    <!-- Hotel authors every world light, and its lamps cast the shadows the rooms are read by. -->
+    <!-- Hotel authors every world light, and its lamps cast the shadows the rooms are read by. Every shadowed lamp
+         casts; the budget (in shadow layers, six per lamp) is a safety cap a floor's lamps stay well under. -->
     <RustyEngineProductSceneShadows>enabled</RustyEngineProductSceneShadows>
+    <RustyEngineProductShadowBudget>1024</RustyEngineProductShadowBudget>
+    <!-- A generated floor lights itself with 80 or more ranged lamps: bin them per screen cluster. -->
+    <RustyEngineProductClusteredLighting>enabled</RustyEngineProductClusteredLighting>
     <RustyEngineProductDefaultWorldLights>disabled</RustyEngineProductDefaultWorldLights>
     <RustyEngineWatchPaths>$(MSBuildProjectDirectory);$(RustyEngineProductUiRoot);$(RustyEngineProductContentRoot)</RustyEngineWatchPaths>
   </PropertyGroup>

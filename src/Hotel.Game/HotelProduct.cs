@@ -208,7 +208,6 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         world.SpiritView.Publish();
         world.CombatView.Publish();
         world.Player.Publish(sampleTime);
-        world.Scene.CastShadowsNear(world.Player.Eye, world.Excursion.Route.Rooms, content.Look.Shadows);
         PublishInterface();
     }
 

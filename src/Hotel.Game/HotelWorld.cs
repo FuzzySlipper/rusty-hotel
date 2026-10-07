@@ -34,7 +34,7 @@ internal sealed class HotelWorld : IDisposable
         Excursion = excursion;
         try
         {
-            Scene = Own(new HotelScene(engine, content.Surfaces, content.Aging, excursion.Geometry, excursion.Route.Doors));
+            Scene = Own(new HotelScene(engine, content.Surfaces, content.Aging, content.Look.Shadows, excursion.Geometry, excursion.Route.Doors));
             content.Look.Apply(engine.CameraView);
             Player = Own(new HotelPlayer(engine, Scene, content.Player, excursion.Placements.Arrival, content.Controls));
             Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity,

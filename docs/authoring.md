@@ -316,10 +316,13 @@ Inspect a built floor with the developer command `hotel.dev.goto <space>`.
 
 **Lighting.** Hotel lights itself: the Engine's default world light rig is off and shadows are on
 (`Hotel.Game.csproj`), so a floor is lit by its ambient (`lighting` in the plan) and its fixture lamps alone. A
-fixture light's `shadow` says whether it may cast. Each shadowed point light renders the scene six more times a
-frame, so `content/scene/look.json` `shadows` grants shadows to at most `budget` lamps at once: those in the eye's own
-room first (a lamp in another room counts `otherRoomPenalty` metres farther), then by distance, with lamps already
-casting held by `hysteresis` metres so the choice does not swap back and forth. The same file sets the camera's tone
+fixture light's `shadow` says whether it casts, and every such lamp always does. The Engine renders a lamp's six shadow
+layers once and again only when a caster within its range moves (a walking or idling resident, a creature at its
+bell, a door), so a still room costs nothing more per frame; residents and spirits cast too, and each re-renders the
+layers of the lamps that reach it. `content/scene/look.json` `shadows.resolution` sets every lamp's layer size in
+texels (256: lamps reach a few metres, and a generated floor's 80-odd lamps then fit a few atlas pages).
+`Hotel.Game.csproj` caps the shadow layers at a budget no floor approaches and bins lamps per screen cluster
+(clustered lighting), which keeps a lamp-dense floor's world pass cheap. The same file sets the camera's tone
 mapping and exposure and the linear haze that swallows distance. Check new lighting from eye height for the
 readability of doors, finds, resident tells and the spirit, and record its frame time.
 
