@@ -237,7 +237,8 @@ internal sealed record CapacityCatalog(CapacityMetric[] Metrics)
 /// <see cref="Spread"/> metres to one side or the other) and drawn as the one bag <see cref="Model"/> at
 /// <see cref="Scale"/>, whatever it holds.
 /// </summary>
-internal sealed record DroppingTuning(int Limit, float Ahead, float Spread, string Model, float Scale)
+/// <param name="Clearance">The height above the floor (metres) the way to a spot is checked at.</param>
+internal sealed record DroppingTuning(int Limit, float Ahead, float Spread, float Clearance, string Model, float Scale)
 {
     internal const string Path = "supplies/dropping.json";
 
@@ -246,6 +247,7 @@ internal sealed record DroppingTuning(int Limit, float Ahead, float Spread, stri
         Authored.AtLeast(Path, "limit", Limit, 1);
         Authored.AtLeast(Path, "ahead", Ahead, 0);
         Authored.Positive(Path, "spread", Spread);
+        Authored.Positive(Path, "clearance", Clearance);
         Authored.Require(Model.EndsWith(".glb", StringComparison.Ordinal), Path, "model", "must be a GLB content path.");
         Authored.Positive(Path, "scale", Scale);
     }

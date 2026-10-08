@@ -40,7 +40,9 @@ internal sealed class HotelWorld : IDisposable
             Player = Own(new HotelPlayer(engine, Scene, content.Player, excursion.Placements.Arrival, content.Controls));
             HotelPlayer player = Player;
             Supplies = new HotelSupplies(content.Supplies, excursion.Placements.Finds, content.Interface.SupplyPockets, Scene.PlayerEntity,
-                content.Mechanics, content.PlayerStats, content.Loot, Searches(content, excursion), content.Growth, () => (player.Feet, player.Yaw));
+                content.Mechanics, content.PlayerStats, content.Loot, Searches(content, excursion), content.Growth, () => (player.Feet, player.Yaw),
+                (from, to) => !engine.Spatial.CastSegment(new(Scene.Session, from, to, new(0, uint.MaxValue), ReadOnlyMemory<SpatialEntityCollider>.Empty,
+                    ReadOnlyMemory<ulong>.Empty, ReadOnlyMemory<SpatialEntityCollider>.Empty)).Present);
             Combat = new HotelCombat(engine, Scene, Player, Supplies, content.Combat, excursion.Placements.Residents);
             Spirit = new HotelSpirit(content.Spirits, content.SpiritText, excursion.Placements.SpiritBells, Supplies, Combat, Player,
                 content.Combat.Actions, content.Mechanics);

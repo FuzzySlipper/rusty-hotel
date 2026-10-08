@@ -26,7 +26,7 @@ export function mountWornView(document, claim) {
     for (const button of list.children) button.setAttribute('aria-pressed', String(Number(button.dataset.slot) === index));
     const slot = slots[index];
     element.querySelector('[data-worn-slot]').textContent = slot?.slot || '';
-    element.querySelector('[data-worn-title]').replaceChildren(...(slot?.id ? [itemIcon(document, slot.id), ` ${slot.name}`] : ['—']));
+    element.querySelector('[data-worn-title]').replaceChildren(...(slot?.id ? [itemIcon(document, slot.id, slot.mark), ` ${slot.name}`] : ['—']));
     element.querySelector('[data-worn-body]').textContent = slot?.id ? slot.description : '';
     takeOff.disabled = !slot?.id;
     takeOff.textContent = slot?.id ? `Take off ${slot.name}` : 'Take off';
@@ -49,7 +49,7 @@ export function mountWornView(document, claim) {
       slots = supplies.worn;
       for (const button of list.children) {
         const slot = slots[Number(button.dataset.slot)];
-        button.replaceChildren(`${slot.slot} · `, ...(slot.id ? [itemIcon(document, slot.id), ` ${slot.name}`] : ['—']));
+        button.replaceChildren(`${slot.slot} · `, ...(slot.id ? [itemIcon(document, slot.id, slot.mark), ` ${slot.name}`] : ['—']));
         button.classList.toggle('occupied', !!slot.id);
       }
       select(Math.min(selected, slots.length - 1));

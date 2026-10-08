@@ -30,13 +30,16 @@ internal sealed class HotelSupplies
     private readonly HashSet<string> collected = new(StringComparer.Ordinal);
     private readonly List<DroppedStack> dropped = [];
     private readonly Func<(System.Numerics.Vector3 Feet, float Yaw)> setDown;
+    private readonly Func<System.Numerics.Vector3, System.Numerics.Vector3, bool> clear;
     private int nextDropped;
 
     internal HotelSupplies(SuppliesDefinition definition, FindDefinition[] finds, int capacity, EntityId owner,
         Mechanics.MechanicsDefinition mechanics, Mechanics.ActorStatBlock playerStats, Loot.LootCatalog loot, SearchDefinition[] searches,
-        Progression.GrowthDefinition growth, Func<(System.Numerics.Vector3 Feet, float Yaw)>? setDown = null)
+        Progression.GrowthDefinition growth, Func<(System.Numerics.Vector3 Feet, float Yaw)>? setDown = null,
+        Func<System.Numerics.Vector3, System.Numerics.Vector3, bool>? clear = null)
     {
         this.setDown = setDown ?? (() => (System.Numerics.Vector3.Zero, 0));
+        this.clear = clear ?? ((_, _) => true);
         this.loot = loot;
         this.searches = searches;
         Stats = new(mechanics, playerStats, owner);
@@ -144,11 +147,16 @@ internal sealed class HotelSupplies
         var (feet, yaw) = setDown();
         DroppingTuning tuning = definition.Dropping;
         System.Numerics.Vector3 forward = new(MathF.Sin(yaw), 0, -MathF.Cos(yaw)), right = new(MathF.Cos(yaw), 0, MathF.Sin(yaw));
-        System.Numerics.Vector3 at = feet + forward * tuning.Ahead;
-        // A stack that would land on another steps out to the right, then the left, a spread further each time.
+        System.Numerics.Vector3 knee = System.Numerics.Vector3.UnitY * tuning.Clearance;
         bool Taken(System.Numerics.Vector3 p) => dropped.Any(d => System.Numerics.Vector3.Distance(new(d.X, d.Y, d.Z), p) < tuning.Spread * .9f);
-        for (int n = 1; n <= dropped.Count && Taken(at); n++)
-            at = feet + forward * tuning.Ahead + right * tuning.Spread * ((n + 1) / 2) * (n % 2 == 1 ? 1 : -1);
+        // A spot in reach: a clear line to it, and a bag's half-length past it, at knee height from the feet.
+        bool Reachable(System.Numerics.Vector3 p) => p == feet || clear(feet + knee,
+            p + knee + System.Numerics.Vector3.Normalize(p - feet) * tuning.Spread / 2);
+        // Ahead first, then a spread to the right, the left, and further out, taking the first free spot in reach; the
+        // feet themselves when no other is.
+        System.Numerics.Vector3 at = Enumerable.Range(0, dropped.Count + 1)
+            .Select(n => feet + forward * tuning.Ahead + right * tuning.Spread * ((n + 1) / 2) * (n % 2 == 1 ? 1 : -1))
+            .FirstOrDefault(p => !Taken(p) && Reachable(p), feet);
         ItemStack left = fieldCase.Remove(index);
         dropped.Add(new($"dropped/{++nextDropped}", left, at.X, at.Y, at.Z, yaw));
         Revision++;

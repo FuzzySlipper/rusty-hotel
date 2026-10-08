@@ -87,7 +87,7 @@ export function mountFieldCase(host, intents) {
     drop.textContent = item?.id ? `Drop ${item.name}` : 'Drop';
     move.textContent = moving ? 'Cancel move' : 'Move stack';
     supplyResult.textContent = moving ? 'Choose a destination pocket. Matching stacks merge; different supplies swap.' : supplyFacts.message || '';
-    host.querySelector('.empty-emblem').replaceChildren(item?.id ? itemIcon(document, item.id) : '—');
+    host.querySelector('.empty-emblem').replaceChildren(item?.id ? itemIcon(document, item.id, item.mark) : '—');
     host.querySelector('[data-detail-title]').textContent = item?.name || 'Empty pocket';
     host.querySelector('[data-detail-body]').textContent = item?.id
       ? `${item.description}${item.stackLimit > 1 ? `\n\n${item.count} / ${item.stackLimit} in this stack.` : ''}${!item.wearable && item.useReason ? ` ${item.useReason}` : ''}`
@@ -186,7 +186,7 @@ export function mountFieldCase(host, intents) {
         const item = items[Number(button.dataset.pocket)];
         button.classList.toggle('occupied', !!item?.id);
         button.setAttribute('aria-label', `Pocket ${Number(button.dataset.pocket) + 1}, ${item?.id ? `${item.name}, ${item.count}` : 'empty'}`);
-        button.querySelector('[aria-hidden]').replaceChildren(...(item?.id ? [itemIcon(document, item.id), `×${item.count}`] : ['·']));
+        button.querySelector('[aria-hidden]').replaceChildren(...(item?.id ? [itemIcon(document, item.id, item.mark), `×${item.count}`] : ['·']));
       }
       showTab(active);
     },
@@ -206,7 +206,7 @@ export function quickPocketViews(document, supplies) {
     const key = document.createElement('small');
     key.textContent = label;
     const contents = document.createElement('span');
-    contents.replaceChildren(...(item?.id ? [itemIcon(document, item.id), `×${item.count}`] : ['—']));
+    contents.replaceChildren(...(item?.id ? [itemIcon(document, item.id, item.mark), `×${item.count}`] : ['—']));
     pocket.append(key, contents);
     return pocket;
   });

@@ -74,6 +74,19 @@ internal static class PactChecks
         Steps(1.5f);
         Check(target.Position.Z > -8.6f && target.Awareness.Target is null, $"the lured resident walks toward the light: {target.Position}");
         Settle();
+        // Burn and stop: the Embermoth scatters embers where it is sent; the Stillwing stops what stands near it.
+        spirit.Equip("embermoth", spirit.Revision);
+        Stand(target.Position.Z + content.Combat.Actions.Action("embermoth-scatter")!.Delivery.Range);
+        int unburnt = target.Health.ValueInt;
+        Check(spirit.Call(), "the Embermoth answers"); Steps(.1f);
+        Check(Has(target, "burning") && target.Health.ValueInt < unburnt, $"burn: embers scorch the resident and leave it burning ({unburnt} to {target.Health.ValueInt})");
+        Settle();
+        spirit.Equip("stillwing", spirit.Revision);
+        Check(spirit.Call(), "the Stillwing answers"); Steps(.1f);
+        Check(Has(target, "stilled") && target.Stats.Effects.Held, "stop: the resident stands stopped");
+        Steps(content.Mechanics.Effect("stilled")!.Duration + .2f);
+        Check(!Has(target, "stilled") && !target.Stats.Effects.Held, "and moves again when the clocks start");
+        Settle();
 
         // A capture restores the pacts made and the one equipped; one not in the roster, or equipped unmade, is refused.
         SpiritState saved = spirit.Capture();
@@ -81,7 +94,7 @@ internal static class PactChecks
             content.Combat.Actions, content.Mechanics);
         restored.Validate(saved);
         restored.Restore(saved);
-        Check(restored.Capture().Acquired.SequenceEqual(saved.Acquired) && restored.Equipped?.Id == "wickling", "a capture restores pacts and the pact slot");
+        Check(restored.Capture().Acquired.SequenceEqual(saved.Acquired) && restored.Equipped?.Id == "stillwing", "a capture restores pacts and the pact slot");
         foreach (SpiritState invalid in new[] { saved with { Acquired = [.. saved.Acquired, "ghostmoth"] }, new SpiritState(["hushwing"], "doorman") })
         {
             bool refused = false;
@@ -89,6 +102,6 @@ internal static class PactChecks
             Check(refused, "an unknown pact, or one equipped but not made, is refused");
         }
         Console.WriteLine($"Pact checks passed: {content.Spirits.Length} spirits, {bells} west-wing bells; acquiring, equipping and switching, " +
-            "hold, ward, reveal, push and lure through each pact's call, and a round trip.");
+            "hold, ward, reveal, push, lure, burn and stop through each pact's call, and a round trip.");
     }
 }

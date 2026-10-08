@@ -146,8 +146,8 @@
 .hotel-ui .pact-detail p { color:var(--muted); white-space:pre-line; }
 @media (max-width: 720px) { .hotel-ui .pact-view { grid-template-columns:1fr; } }
 /* Item icons: line drawings masked in the colour of their text (item-icon.js). */
-.hotel-ui .item-icon { display:inline-block; width:1.5em; height:1.5em; vertical-align:-0.35em; margin-right:.2em; background:currentColor;
-  -webkit-mask:var(--icon) center/contain no-repeat; mask:var(--icon) center/contain no-repeat; }
-.hotel-ui .pocket-grid .pocket .item-icon { width:30px; height:30px; display:block; margin:0 auto 2px; }
-.hotel-ui .quick-pocket .item-icon { width:20px; height:20px; display:block; margin:0 auto; }
-.hotel-ui .empty-emblem .item-icon { width:72px; height:72px; margin:0; }
+.hotel-ui .item-icon { display:inline-grid; place-items:center; width:1.5em; height:1.5em; vertical-align:-0.35em; margin-right:.2em; line-height:1; }
+.hotel-ui .item-icon.drawn { background:currentColor; -webkit-mask:var(--icon) center/contain no-repeat; mask:var(--icon) center/contain no-repeat; }
+.hotel-ui .pocket-grid .pocket .item-icon { width:30px; height:30px; display:grid; margin:0 auto 2px; font-size:20px; }
+.hotel-ui .quick-pocket .item-icon { width:20px; height:20px; display:grid; margin:0 auto; }
+.hotel-ui .empty-emblem .item-icon { width:72px; height:72px; margin:0; font-size:40px; }

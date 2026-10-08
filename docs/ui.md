@@ -178,8 +178,8 @@ generated floor's re-rolled rooms when it shifts.
 
 Every item shows its line icon (`src/ui/icons/<item id>.svg`, drawn through `item-icon.js`) in the pockets, the quick
 pockets, the item detail and the worn slots. Icons are restrained line drawings on a 24-unit grid in `currentColor`,
-one stroke weight, so they take the colour of the text around them; an item's `mark` glyph remains its short text
-form (effects keep marks). A new item needs its icon; smoke refuses an item without one or an icon without an item.
+one stroke weight, so they take the colour of the text around them; until an icon has loaded, or if it cannot, the
+item's `mark` glyph stands in its place (effects keep marks). A new item needs its icon; smoke refuses an item without one or an icon without an item.
 The first three pockets also appear on the HUD; 3–5 use them during exploration.
 These are the same saved pockets, not a separate collection or assignment state.
 Closing the case or changing tabs cancels unfinished move gestures. Do not route

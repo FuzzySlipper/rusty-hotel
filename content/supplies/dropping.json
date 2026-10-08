@@ -2,6 +2,7 @@
   "limit": 12,
   "ahead": 0.45,
   "spread": 0.35,
+  "clearance": 0.3,
   "model": "models/props/dropped-bag.glb",
   "scale": 1.0
 }

@@ -14,7 +14,7 @@ internal static class DroppingChecks
         var content = Owners.Content(engine);
         using var scene = Owners.Scene(engine, content);
         using var player = Owners.Player(engine, scene, content);
-        HotelSupplies supplies = Owners.Supplies(content, scene.PlayerEntity, 4, player);
+        HotelSupplies supplies = Owners.Supplies(content, scene.PlayerEntity, 4, player, engine, scene);
         var combat = Owners.Combat(engine, scene, player, supplies, content);
         var spirit = Owners.Spirit(content, supplies, combat, player);
         var route = Owners.Route(engine, scene, player, supplies, spirit, content);
@@ -22,7 +22,7 @@ internal static class DroppingChecks
         string Claim(string action, int from) => $$"""{"action":"{{action}}","from":{{from}},"revision":{{supplies.Revision}}}""";
 
         // Standing in the corridor facing down it, a pocket of matches is dropped through the field case's own intent.
-        scene.Entities.Set(scene.PlayerEntity, EngineComponentTypes.Transform, new(new(0, .875f, -4), Quaternion.Identity, Vector3.One));
+        player.Place(new(0, .875f, -4), 0);
         supplies.Give("matches", 2);
         supplies.HandleIntents([SuppliesChecks.Claim(Claim("drop", 0))]);
         DroppedStack lying = supplies.Dropped.Single();
@@ -30,6 +30,13 @@ internal static class DroppingChecks
         Check(supplies.Slot(0) is null && lying.Stack == new ItemStack("matches", 2) && Vector3.Distance(new(lying.X, lying.Y, lying.Z), expected) < 1e-4f &&
             supplies.Message == Template.Fill(content.Supplies.Text.Dropped, ("item", supplies.Item("matches").Name), ("count", 2)),
             "the whole stack leaves the case and lies ahead of the investigator's feet");
+        // Facing a wall a step away, the stack stays on this side of it, in reach.
+        player.Place(new(0, .875f, 4.7f), 180);
+        supplies.Give("matches", 1);
+        Check(supplies.Drop(PocketOf(supplies, "matches"), supplies.Revision) && supplies.Dropped[^1].Z < 4.9f,
+            $"a stack dropped facing the refuge's wall stays inside the room: z {supplies.Dropped[^1].Z:F2}");
+        Check(supplies.PickupDropped(supplies.Dropped[^1].Id), "and is taken back");
+        player.Place(new(0, .875f, -4), 0);
         ulong stale = supplies.Revision - 1;
         supplies.Give("bandage", 1);
         Check(!supplies.Drop(0, stale) && supplies.Slot(0) is not null, "a stale drop is refused");
@@ -53,11 +60,11 @@ internal static class DroppingChecks
         // Taken back with the use key, aimed at the bag.
         Vector3 bag = new(supplies.Dropped[0].X, supplies.Dropped[0].Y + content.Route.Interaction.DroppedFocusLift, supplies.Dropped[0].Z);
         Vector3 delta = bag - player.Eye;
-        player.LookBy(Math.Atan2(delta.X, -delta.Z) * 180 / Math.PI - player.Yaw * 180 / Math.PI,
-            Math.Atan2(delta.Y, Math.Sqrt(delta.X * delta.X + delta.Z * delta.Z)) * 180 / Math.PI);
+        double turn = (Math.Atan2(delta.X, -delta.Z) - player.Yaw) * 180 / Math.PI;
+        player.LookBy((turn % 360 + 540) % 360 - 180, Math.Atan2(delta.Y, Math.Sqrt(delta.X * delta.X + delta.Z * delta.Z)) * 180 / Math.PI);
         route.Update();
         Check(route.Prompt == Template.Fill(content.Route.Text.Ready, ("label", Template.Fill(content.Route.Text.Take, ("item", rolledName)))),
-            $"the dropped stack is offered by name: {route.Prompt}");
+            $"the dropped stack is offered by name: '{route.Prompt}' (bag {bag}, feet {player.Feet}, yaw {player.Yaw:F2}, pitch {player.LookState.PitchRadians:F2})");
         route.Use();
         Check(supplies.Dropped.Count == 0 && supplies.Slot(0)?.Roll == roll, "the use key takes it back whole, roll and all");
 
