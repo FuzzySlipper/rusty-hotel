@@ -1,5 +1,6 @@
 /**
- * An item's icon: its line drawing (icons/<item id>.svg) as a mask, so it takes the colour of the text around it. Until
+ * An item's icon: its line drawing (content/supplies/icons/<item id>.svg, which the product opens to
+ * the page at product-content/) as a mask, so it takes the colour of the text around it. Until
  * the drawing has loaded, or if it cannot, the item's authored mark stands in its place. Decorative: the name and count
  * beside it are what assistive technology reads.
  */
@@ -9,7 +10,7 @@ export function itemIcon(document, id, mark) {
   const icon = document.createElement('span');
   icon.className = 'item-icon';
   icon.setAttribute('aria-hidden', 'true');
-  const url = new URL(`./icons/${id}.svg`, import.meta.url).href;
+  const url = new URL(`product-content/supplies/icons/${id}.svg`, document.baseURI).href;
   const draw = () => { icon.textContent = ''; icon.style.setProperty('--icon', `url("${url}")`); icon.classList.add('drawn'); };
   if (loaded.get(url) === true) { draw(); return icon; }
   icon.textContent = mark || '·';

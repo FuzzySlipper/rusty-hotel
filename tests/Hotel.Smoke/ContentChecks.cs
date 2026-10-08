@@ -221,7 +221,7 @@ internal static class ContentChecks
                     using JsonDocument json = JsonDocument.Parse(commands.Module!.Observe().Message);
                     return json.RootElement.GetProperty("supplyMessage").GetString()!;
                 }
-                ProductUpdate Step(ulong at, params ProductInputEvent[] input) => new(new ProductUpdateFacts(ProductUpdateMode.Realtime,
+                ProductUpdate Step(ulong at, params ProductInputEvent[] input) => new(new ProductUpdateFacts(
                     ProductLifecycleState.Running, 1, 1, 0, at, 60, 1, 0, 1d / 60), input);
                 product.Update(Step(0));
                 Check(Supply() == "", "no quick supply before the new key");

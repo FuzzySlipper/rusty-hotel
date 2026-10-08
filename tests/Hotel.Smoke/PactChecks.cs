@@ -16,6 +16,12 @@ internal static class PactChecks
 {
     internal static void Run(IEngineContext engine)
     {
+        Roster(engine);
+        EmbermothKills(engine);
+    }
+
+    private static void Roster(IEngineContext engine)
+    {
         void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
         var content = Owners.Content(engine);
         using HotelScene scene = Owners.Scene(engine, content);
@@ -103,5 +109,59 @@ internal static class PactChecks
         }
         Console.WriteLine($"Pact checks passed: {content.Spirits.Length} spirits, {bells} west-wing bells; acquiring, equipping and switching, " +
             "hold, ward, reveal, push, lure, burn and stop through each pact's call, and a round trip.");
+    }
+
+    // A damaging call fells like a blow: each resident the embers fell gives its experience once, whether the embers
+    // themselves or the burn they leave finish it, and the call is practised once.
+    private static void EmbermothKills(IEngineContext engine)
+    {
+        void Check(bool value, string reason) { if (!value) throw new InvalidOperationException(reason); }
+        var content = Owners.Content(engine);
+        using HotelScene scene = Owners.Scene(engine, content);
+        using HotelPlayer player = Owners.Player(engine, scene, content);
+        HotelSupplies supplies = Owners.Supplies(content, scene.PlayerEntity, 12);
+        ResidentKind still = content.Combat.Residents.Single(r => r.Id == "porter") with
+        {
+            Id = "still", Movement = new(0, 0, Post: new()), Perception = new(0.1f, 1, 0, 0)
+        };
+        HotelCombat combat = new(engine, scene, player, supplies, content.Combat with { Residents = [.. content.Combat.Residents, still] },
+            [new ResidentPlacement("left", "still", [-.4f, .9f, -9]), new ResidentPlacement("right", "still", [.4f, .9f, -9])]);
+        HotelSpirit spirit = new(content.Spirits, content.SpiritText, content.Excursion.Placements.SpiritBells, supplies, combat, player,
+            content.Combat.Actions, content.Mechanics);
+        spirit.Restore(new SpiritState(content.Spirits.Select(s => s.Id).ToArray(), "embermoth"));
+        var growth = supplies.Growth;
+        int Practice() => content.Growth.Skills.Sum(s => growth.Uses(s.Id));
+        void Steps(float seconds) { for (int i = 0; i < (int)Math.Round(seconds * 60); i++) { combat.Step(1f / 60); spirit.Step(1f / 60); } }
+        void Call(float settle)
+        {
+            player.Reset();
+            scene.Entities.Set(scene.PlayerEntity, EngineComponentTypes.Transform, new Transform(
+                new(0, .875f, -9 + content.Combat.Actions.Action("embermoth-scatter")!.Delivery.Range), Quaternion.Identity, Vector3.One));
+            supplies.RestoreSummon(9);
+            Check(spirit.Call(), "the Embermoth answers");
+            Steps(settle);
+        }
+
+        // Both residents a breath from falling: the embers fell both, and each gives its experience once.
+        foreach (HotelEnemy enemy in combat.Enemies) enemy.Stats.Track("health").SetCurrent(1, false);
+        int experience = growth.Experience, practice = Practice();
+        Call(.1f);
+        Check(combat.Enemies.All(e => !e.Alive) && growth.Experience == experience + 2 * still.Experience && Practice() == practice + 1,
+            $"embers that fell two residents give each one's experience once, and practise once: {growth.Experience - experience}, practice +{Practice() - practice}");
+        Steps(5);
+        Check(growth.Experience == experience + 2 * still.Experience, "and nothing more as time passes");
+
+        // Embers that leave a resident burning: the burn finishes it, and that gives its experience once.
+        foreach (HotelEnemy enemy in combat.Enemies) enemy.Reset();
+        HotelEnemy left = combat.Enemies.Single(e => e.Id == "left");
+        experience = growth.Experience;
+        Call(.1f);
+        Check(left.Alive && left.Stats.Effects.Active.Any(e => e.Definition.Id == "burning"), "the embers leave the resident burning");
+        left.Stats.Track("health").SetCurrent(1, false);
+        combat.Enemies.Single(e => e.Id == "right").Stats.Track("health").SetCurrent(1, false);
+        Steps(10);
+        Check(combat.Enemies.All(e => !e.Alive) && growth.Experience == experience + 2 * still.Experience,
+            $"a burn that finishes each resident gives its experience once: {growth.Experience - experience}");
+        Console.WriteLine("Pact kill checks passed: an Embermoth call that fells two residents, and the burns that finish them, give each one's experience once.");
     }
 }

@@ -176,7 +176,7 @@ A dropped stack lies in the world as the one generic bag (`content/models/props/
 "Take <item>" to the ordinary use key; it stays on its floor through revisits and checkpoints, and goes with a
 generated floor's re-rolled rooms when it shifts.
 
-Every item shows its line icon (`src/ui/icons/<item id>.svg`, drawn through `item-icon.js`) in the pockets, the quick
+Every item shows its line icon (`content/supplies/icons/<item id>.svg`, beside the items, drawn through `item-icon.js`; the product opens that one content directory to the page, read-only, at `product-content/supplies/icons/`) in the pockets, the quick
 pockets, the item detail and the worn slots. Icons are restrained line drawings on a 24-unit grid in `currentColor`,
 one stroke weight, so they take the colour of the text around them; until an icon has loaded, or if it cannot, the
 item's `mark` glyph stands in its place (effects keep marks). A new item needs its icon; smoke refuses an item without one or an icon without an item.

@@ -124,7 +124,7 @@ role:
 | `wear` | `slots`, `exclusive`, `stats` | A single item worn in that many equipment slots that accept one of its classifications; `stats` add to stats or resistances (`resistance.<kind>`) as an Engine source while worn; no two worn items share an `exclusive` group |
 | `deposit` | `true` | An expedition find, carried back and deposited at the refuge |
 
-Every item also has a UI icon, `src/ui/icons/<id>.svg` (see [UI](ui.md)): a line drawing on a 24-unit grid in
+Every item also has a UI icon, `supplies/icons/<id>.svg`, the one content directory the product opens to the UI (see [UI](ui.md)): a line drawing on a 24-unit grid in
 `currentColor` alone. Any item can be dropped from the field case except an expedition find; `supplies/dropping.json`
 sets how many dropped stacks one floor holds (`limit`), how far ahead of the feet a stack is set down (`ahead`) and to
 either side when the spot is taken (`spread`), and the one bag `model` and `scale` every dropped stack is drawn as.

@@ -201,7 +201,7 @@ blender -b --python art/props-02/prepare.py
 
 ## Item icons
 
-The item icons in `src/ui/icons/` are hand-authored SVG line drawings, not generated: a 24-unit grid, one 1.3-unit
+The item icons in `content/supplies/icons/` are hand-authored SVG line drawings, not generated: a 24-unit grid, one 1.3-unit
 stroke with round caps and joins in `currentColor`, an occasional small solid detail. They are the items' glyph marks
 taken further into the object itself, restrained so they sit with the hotel's typography. Each file is its own
 editable source.

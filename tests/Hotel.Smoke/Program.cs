@@ -28,7 +28,7 @@ host.Call(engine =>
 
     void Advance(uint count, params ProductInputEvent[] input)
     {
-        product.Update(new ProductUpdate(new ProductUpdateFacts(ProductUpdateMode.Realtime,
+        product.Update(new ProductUpdate(new ProductUpdateFacts(
             ProductLifecycleState.Running, 1, 1, 0, step, 60, count, 0, 1d / 60), input));
         step += count;
     }

@@ -57,7 +57,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/ui/hud.js` | Exploration HUD regions and their drawing from projected facts |
 | `src/ui/menu-screen.js`, `case-screen.js`, `controls-screen.js`, `reading-screen.js`, `console-screen.js` | One foreground screen each: its markup, drawing, and what happens on entering and leaving it; `screen.js` holds their shared helpers |
 | `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, use/move/drop claims (drag to a pocket or out of the grid), pact selection/equip claims and quick-pocket presentation |
-| `src/ui/item-icon.js`, `src/ui/icons/` | Each item's line icon, masked in the surrounding text colour |
+| `src/ui/item-icon.js`, `content/supplies/icons/` (opened to the UI) | Each item's line icon, masked in the surrounding text colour |
 | `src/ui/developer.js` | Lazy packaged Engine console mount, disposal and stale-mount cleanup |
 | `src/ui/pause.js` | Foreground lifecycle request lifetime and error presentation; Engine port owns actual lifecycle state |
 | `src/ui/hotel.css` | Product-authored responsive screen/HUD styling |

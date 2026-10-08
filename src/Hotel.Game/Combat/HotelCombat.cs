@@ -174,6 +174,9 @@ internal sealed class HotelCombat
             Action<HotelEnemy?, Vector3>? answer = pactLanded;
             pactLanded = null;
             supplies.Growth.Practise(call, impacts.Any(i => i.Damage > 0));
+            // A resident the call itself fells counts as felled by the investigator, once, like a blow's.
+            foreach (ActionImpact impact in impacts)
+                if (impact.Defeated && impact.Target is HotelEnemy felled) Fell(felled);
             // Where it landed: the resident reached, the area's centre, or the investigator for a call on themselves.
             answer?.Invoke(reached, call.Delivery.Kind == DeliveryKind.Area ? player.Eye + PactUser.Aim * call.Delivery.Range : impacts.FirstOrDefault()?.End ?? player.Eye);
         }
@@ -250,10 +253,9 @@ internal sealed class HotelCombat
                 LandedHits++;
                 // Skills grow by use: a landed hit practises its action and, if it took health, the kinds it dealt.
                 supplies.Growth.Practise(impact.Action, impact.Damage > 0);
-                if (!victim.Alive) supplies.Growth.Award(victim.Kind.Experience);
                 HitFlash = definition.Tuning.HitFlashSeconds;
-                Announce(Template.Fill(victim.Alive ? text.Hit : text.ResidentFalls, ("resident", victim.Kind.Name)));
-                if (!victim.Alive) { victim.User.Interrupt(); victim.BeamTime = 0; }
+                if (impact.Defeated) Fell(victim);
+                else Announce(Template.Fill(text.Hit, ("resident", victim.Kind.Name)));
             }
             else Announce(impact.Surface ? text.StruckSurroundings : text.Miss);
             return;
@@ -270,6 +272,15 @@ internal sealed class HotelCombat
         }
     }
 
+    // A resident falls: it stops what it was doing, and the investigator gains its experience. Called once, at the impact
+    // or tick that took its last health; a fallen resident is no longer a target and is no longer stepped.
+    private void Fell(HotelEnemy enemy)
+    {
+        enemy.User.Interrupt(); enemy.BeamTime = 0;
+        supplies.Growth.Award(enemy.Kind.Experience);
+        Announce(Template.Fill(text.ResidentFalls, ("resident", enemy.Kind.Name)));
+    }
+
     private void StepEnemy(HotelEnemy enemy, float delta)
     {
         enemy.BeamTime = Math.Max(0, enemy.BeamTime - delta);
@@ -277,13 +288,7 @@ internal sealed class HotelCombat
         enemy.Stats.Effects.Advance(delta);
         enemy.Stats.Regenerate(delta);
         // A tick that fells the resident (a burn, say) counts as felling it: once, at the step it falls.
-        if (!enemy.Alive)
-        {
-            enemy.User.Interrupt(); enemy.BeamTime = 0;
-            supplies.Growth.Award(enemy.Kind.Experience);
-            Announce(Template.Fill(text.ResidentFalls, ("resident", enemy.Kind.Name)));
-            return;
-        }
+        if (!enemy.Alive) { Fell(enemy); return; }
         if (enemy.Stats.Effects.Held) { enemy.User.Interrupt(); return; }
         // A push or a lure has the resident: it is moved, and does nothing else meanwhile.
         if (enemy.Stats.Effects.Moving is { } moving) { enemy.User.Interrupt(); conduct.Moved(enemy, moving, delta); return; }

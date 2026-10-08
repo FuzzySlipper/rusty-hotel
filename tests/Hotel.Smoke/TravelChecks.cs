@@ -30,7 +30,7 @@ internal static class TravelChecks
             ulong step = 0;
             void Advance(uint count, params ProductInputEvent[] input)
             {
-                product.Update(new ProductUpdate(new ProductUpdateFacts(ProductUpdateMode.Realtime, ProductLifecycleState.Running, 1, 1, 0, step, 60, count, 0, 1d / 60), input));
+                product.Update(new ProductUpdate(new ProductUpdateFacts(ProductLifecycleState.Running, 1, 1, 0, step, 60, count, 0, 1d / 60), input));
                 step += count;
             }
             ProductInputEvent use = default(ProductInputEvent) with { Kind = InputEventKind.Key, Edge = InputEdge.Pressed, Keyboard = KeyboardControl.KeyE, X = 1 };
