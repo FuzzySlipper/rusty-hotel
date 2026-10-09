@@ -66,19 +66,19 @@
  "files": [
   {
    "path": "art/residents-02/bellboy.blend",
-   "sha256": "a74e34a74cfd95699b6507a280be8f6142983e48fe4e26c141835719f399fc7e"
+   "sha256": "3cd0b969b9da0d449bf599d23db565172228bf82bbdadc088ad6726100584f4f"
   },
   {
    "path": "art/residents-02/bride.blend",
-   "sha256": "7195a1a778c708b8007d1dd5cf2e7461feafaf6e0df8ad3752e139139ab2b275"
+   "sha256": "128461dd8b41c862a744997e556db937ca5cbed2c6c874cd351c19a72f979bc6"
   },
   {
    "path": "art/residents-02/chef.blend",
-   "sha256": "8d378c015312863ec3befb6d7034761c24d11d5584fa647b0a2adbd6d710dbf0"
+   "sha256": "c00437097ec21bc802e90a7f53c462b2acbe06048d132b048f183cdc879fc688"
   },
   {
    "path": "art/residents-02/concierge.blend",
-   "sha256": "f4c687f41fbedca8674b3de38fb7beceaba5fc5250ba561bc5aa68c21e2248eb"
+   "sha256": "71e8bbb24f4166ffaede9c2538c5b27362cb8ebd2e1b385a628da67bff888c27"
   },
   {
    "path": "art/residents-02/native/bellboy-hit_to_body_01.glb",
@@ -166,7 +166,7 @@
   },
   {
    "path": "art/residents-02/prepare.py",
-   "sha256": "dac5f21ef33a58c337bb655563d0564f419cfe8fab2acb452b5688cfac9d53ea"
+   "sha256": "5aa69b630da3cec04d8c333039e1b20a51a22c16ef8be1da9f730f3cf90fc3bc"
   },
   {
    "path": "art/residents-02/request.json",
@@ -174,7 +174,7 @@
   },
   {
    "path": "art/residents-02/sleepwalker.blend",
-   "sha256": "d2b270c85ea970cddc7972bfd405d0a4710159e9a6767d1cfb144ad4d3169d4a"
+   "sha256": "5c9eb8ed98b476a7ac07451916a8138cfe8d6b8955f2b6fba39dcbe4a8c772de"
   },
   {
    "path": "art/residents-02/source-bellboy.png",
@@ -198,23 +198,23 @@
   },
   {
    "path": "content/models/residents/bellboy.glb",
-   "sha256": "fc178f747e9ca6bd6ca695432bb8411455ea16e6451ad6994ef5bf068781daaa"
+   "sha256": "6e998e015f5d5c69a6c9ab0be7fb87006b4fd1a9dde34a36160bb9b7224646ab"
   },
   {
    "path": "content/models/residents/bride.glb",
-   "sha256": "12c73deac23c77d1c31c67035c44deb043f261182446d567a0a90bf1843c65ac"
+   "sha256": "e20b07529052c3c391e99440c6fa38ba6f2af1eb7a1c6d091786289848a335a7"
   },
   {
    "path": "content/models/residents/chef.glb",
-   "sha256": "e74f84540c75adde625b090ea992d9c0be81c28d0a9dc9fb16264d700d082db7"
+   "sha256": "49b7121a7936c0424d70c5748a092f7e5b104b31e4a2811b5b6cd4a3c9b5bed5"
   },
   {
    "path": "content/models/residents/concierge.glb",
-   "sha256": "d9311fdd6bfd44d90c2dd8c73ddb39b875eceaf4ef0c0a0ccccbf7c4e8ef6d78"
+   "sha256": "1d7d759f37b449cd4d604bf7abb57f557f55b853dcf24e4a80bf5a18b387743e"
   },
   {
    "path": "content/models/residents/sleepwalker.glb",
-   "sha256": "7de26836b3f440a638df70c26ca1de7f901611f2b62ee65e98395996ab10b24f"
+   "sha256": "a026d609b2150bb25cddd7ab98413d6a24e3ae4211e9354c5eb5e2a4d1fc0cdc"
   }
  ]
 }

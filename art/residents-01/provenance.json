@@ -40,7 +40,7 @@
  "files": [
   {
    "path": "art/residents-01/lamplighter.blend",
-   "sha256": "19e3b97a7a5fed3d472bfdf52fe4c7db05df7610b0b2585a1708438eac1bb6db"
+   "sha256": "3a6cc01f9336cfdc21e924ec67a0d489d7edddd19be22b346d8bd221118acb20"
   },
   {
    "path": "art/residents-01/native/lamplighter-idle.glb",
@@ -68,7 +68,7 @@
   },
   {
    "path": "art/residents-01/night-maid.blend",
-   "sha256": "3fb302c8f62602d0e6147082ee76dfb8dfe0f4beb6b4594b6f1a0970c625ff0e"
+   "sha256": "30513d83477d85b1a35a7e621b455151aaf628d330433a7cbcdf0683c15a3d91"
   },
   {
    "path": "art/residents-01/pieces.json",
@@ -76,11 +76,11 @@
   },
   {
    "path": "art/residents-01/porter.blend",
-   "sha256": "8b35cdaa4d202253368e6f806676da7c7e3c26ccb09385b035e034486c80d138"
+   "sha256": "f78ab89ee0862fb15a4b1104eefa848344e2a0b657627ff5ce46e6f8bb834439"
   },
   {
    "path": "art/residents-01/prepare.py",
-   "sha256": "6cff2add406adaf1f17b32589577301699c3b8b58663dcaa1403c484abc0e168"
+   "sha256": "c20d24f603c0bcbd1dd07619fe701bccb15eafc5c2e0a22fbb1c8038010be456"
   },
   {
    "path": "art/residents-01/request.json",
@@ -184,15 +184,15 @@
   },
   {
    "path": "content/models/residents/lamplighter.glb",
-   "sha256": "f956041900b1af5f63f0095c1890a6716fed2b9db76cc9dd248bc461d8edf873"
+   "sha256": "a72bf88b123c30ee63f373eb8b129f910e23757f3f4432b12ede40f1ab6c9964"
   },
   {
    "path": "content/models/residents/night-maid.glb",
-   "sha256": "17e17f1a921e098486f1fca884003528950682992945cd3927e42a9dada97432"
+   "sha256": "440f6a3ed0d7f0fac8fe2d285746f4fd3b08bf841aaf7f1e64b46f72ddeb9d53"
   },
   {
    "path": "content/models/residents/porter.glb",
-   "sha256": "49478d74f38ff49ff0185d9f20023c7c9adda4d8ace3664665340f5a5824f00b"
+   "sha256": "08a6c2e1ec97c92a105dc515a6e77c36afea7052582256d9cd5f80eba9d09dd2"
   }
  ]
 }

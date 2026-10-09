@@ -233,6 +233,22 @@ the Concierge's cast and its strike. Her dress is skinned to the leg bones, so h
 blender -b --python art/residents-02/prepare.py
 ```
 
+## Model audit
+
+Every resident look is checked as combat places it, without loading the game:
+
+```text
+python3 art/model-audit/audit.py
+```
+
+It writes a manifest from content (each look's model, scale, yaw and idle clip from `combat/looks.json`; each kind's body
+`height` and `radius` from `combat/residents.json`) and runs the asset pipeline's model audit
+(`asset-pipeline/tools/model-audit`, Blender). A look passes when its idle pose stands with its feet at the origin,
+within 8% of its kind's height and with its footprint centred within 60% of its radius, and when every mesh is skinned.
+The report and the front and side lineups (every resident beside a 1.8 m reference bar on a half-metre grid) go to
+`.runtime/model-audit/`. Run it after preparing or replacing a resident; when it fails, fix the preparing script and
+rerun it, as for the residents' `prepare.py`, whose height measure once counted the glTF importer's bone-display shape.
+
 ## Wall art
 
 `wall-art-01/request.json` fixes one GPT image per piece (the landscape painting, the pinned photographs, the

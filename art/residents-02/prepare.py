@@ -4,7 +4,7 @@
 # each a whole rigged model carrying one clip), keeps one armature and mesh, and gathers every clip onto it under its
 # Hotel name. Clips Tripo did not supply are authored here as keyed actions built from the idle clip's first pose, with
 # bones turned and moved in armature space ("authored" in pieces.json: per key, a time in seconds, bone rotations as
-# axis and degrees, and bone moves in model units). The model is scaled to the resident's height with its feet at the origin, textures are written
+# axis and degrees, and bone moves in model units). The model's skinned body is scaled to the resident's height with its feet at the origin and its footprint centred, textures are written
 # as 1024 JPEG, and content/models/residents/<resident>.glb is exported with every clip. The prepared .blend master is
 # saved beside this script with its textures as JPEG files under textures/.
 import bpy, json, math, os, sys
@@ -45,13 +45,18 @@ def prepare(name, spec):
     # Scale to the resident's height with the feet at the origin, measured on the idle pose.
     arm.animation_data.action = actions["idle"]
     bpy.context.scene.frame_set(0)
-    meshes = [o for o in bpy.data.objects if o.type == "MESH"]
+    # Only the skinned body counts: the glTF importer adds a shape object to draw bones (an icosphere two metres
+    # across), which once doubled the measured height and lifted the feet off the floor.
+    meshes = [o for o in bpy.data.objects if o.type == "MESH" and any(m.type == "ARMATURE" for m in o.modifiers)]
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    zs = [ (o.evaluated_get(depsgraph).matrix_world @ v.co).z for o in meshes for v in o.evaluated_get(depsgraph).to_mesh().vertices]
-    low, high = min(zs), max(zs)
+    points = [o.evaluated_get(depsgraph).matrix_world @ v.co for o in meshes for v in o.evaluated_get(depsgraph).to_mesh().vertices]
+    low, high = min(p.z for p in points), max(p.z for p in points)
+    mid_x = (min(p.x for p in points) + max(p.x for p in points)) / 2
+    mid_y = (min(p.y for p in points) + max(p.y for p in points)) / 2
     scale = spec["height"] / (high - low)
+    # The armature's own transform scales and moves about the world origin, so the body's offsets scale with it.
     arm.scale = [s * scale for s in arm.scale]
-    arm.location.z -= low * scale
+    arm.location = (arm.location.x * scale - mid_x * scale, arm.location.y * scale - mid_y * scale, arm.location.z * scale - low * scale)
     for image in bpy.data.images:
         if image.size[0] > SET["textureSize"]: image.scale(SET["textureSize"], SET["textureSize"])
     out = os.path.join(ROOT, "content", "models", "residents", name + ".glb")
