@@ -13,7 +13,7 @@ internal readonly record struct Pocket(InventoryStackId? Stack, EntityId? Single
 internal sealed record WornItem(SlotDefinition[] Slots, ItemDefinition Item, EntityId Entity, ItemRoll? Roll);
 
 /// <summary>Why the field case refused an item or an equipment change.</summary>
-internal enum CaseRefusal { None, Pockets, Capacity, NotWorn, Exclusive, NoSlot, NoPocket, EmptySlot }
+internal enum CaseRefusal { None, Pockets, Capacity, NotWorn, NotThere, Exclusive, NoSlot, NoPocket, EmptySlot }
 
 /// <summary>
 /// The investigator's field case over one Engine <see cref="InventoryStore"/>: the stacks and single items carried, the
@@ -176,19 +176,26 @@ internal sealed class FieldCase
     }
 
     /// <summary>
-    /// Wears the single item in a pocket in the first free slots that accept it. When none is free and both it and the
-    /// item in its first slot fill one slot, the two trade places: the worn one goes back into the pocket.
+    /// Wears the single item in a pocket in the first free slots that accept it, or, when <paramref name="into"/> names a
+    /// slot, in that one first (refused if it does not accept the item). When the slot it goes to is taken and both it and
+    /// the item there fill one slot, the two trade places: the worn one goes back into the pocket.
     /// </summary>
-    internal CaseRefusal Wear(int index, out WornItem? other, out WornItem? worn)
+    internal CaseRefusal Wear(int index, out WornItem? other, out WornItem? worn, SlotDefinition? into = null)
     {
         other = worn = null;
         if (pockets[index] is not { Single: { } entity }) return CaseRefusal.NotWorn;
         ItemDefinition item = singles[entity].Item;
         if (item.Wear is not { } wear) return CaseRefusal.NotWorn;
         SlotDefinition[] fits = definition.Slots.Where(s => s.Accepts.Intersect(item.Classifications).Any()).ToArray();
+        if (into is not null)
+        {
+            if (!fits.Contains(into)) return CaseRefusal.NotThere;
+            fits = [into, .. fits.Where(s => s != into)];
+        }
         WornItem? displaced = WornIn(fits[0]);
         SlotDefinition[] free = fits.Where(s => WornIn(s) is null).Take(wear.Slots).ToArray();
-        bool swap = free.Length < wear.Slots;
+        // A chosen slot that is taken is traded, never passed over for another free one.
+        bool swap = free.Length < wear.Slots || (into is not null && displaced is not null);
         if (swap && (displaced is null || wear.Slots != 1 || displaced.Slots.Length != 1)) return CaseRefusal.NoSlot;
         other = Worn.FirstOrDefault(w => wear.Exclusive is { } group && w.Item.Wear!.Exclusive == group && (!swap || w != displaced));
         if (other is not null) return CaseRefusal.Exclusive;

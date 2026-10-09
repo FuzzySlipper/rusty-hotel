@@ -87,7 +87,9 @@ export function mountFieldCase(host, intents) {
         claim('move', request.from, Number(pocket.dataset.pocket), request.revision);
         show({ kind: 'pocket', index: Number(pocket.dataset.pocket) });
       } else if (onWorn) {
-        if (items[request.from]?.wearable) claim('wear', request.from, undefined, request.revision);
+        // Dropped on a slot, it is worn there (C# refuses a slot that does not take it); on the column, where it fits.
+        const slot = under.closest('[data-slot]');
+        if (items[request.from]?.wearable) claim('wear', request.from, slot ? Number(slot.dataset.slot) : undefined, request.revision);
         show({ kind: 'pocket', index: request.from });
       } else if (!inGrid && !host.querySelector('.case-collection').contains(under)) {
         // Released outside the case: the stack is left on the floor.

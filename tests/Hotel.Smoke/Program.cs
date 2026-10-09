@@ -75,6 +75,15 @@ host.Call(engine =>
     Check(peak - floor > body.JumpHeight * .8f && peak - floor < body.JumpHeight * 1.2f && MathF.Abs(Position().Y - floor) < .02f,
         $"a jump rises about its authored height and lands: {peak - floor:F2} m");
     Advance(0, default(ProductInputEvent) with { Kind = InputEventKind.Clear });
+    // A jump costs its whole stamina: short of it, the investigator stays on the floor and keeps what stamina they have.
+    product.World.Supplies.Stats.Track("stamina").SetCurrent(body.JumpStamina - 1);
+    Advance(1, Key(KeyboardControl.Space));
+    peak = floor;
+    for (int i = 0; i < 30; i++) { Advance(1); peak = MathF.Max(peak, Position().Y); }
+    Check(peak - floor < .02f && product.World.Supplies.Stamina >= body.JumpStamina - 1, $"a jump short of its stamina is refused: rose {peak - floor:F2} m");
+    Advance(0, default(ProductInputEvent) with { Kind = InputEventKind.Clear });
+    var hint = new Hotel.Game.Input.HotelControls(content.Controls).Hint;
+    Check(hint.Any(h => h.Contains(content.Controls.Run.Label)) && hint.Any(h => h.Contains(content.Controls.Jump.Label)), "the opening hint names run and jump");
 
     Advance(0, Key(KeyboardControl.KeyW));
     Vector3 beforePause = Position();

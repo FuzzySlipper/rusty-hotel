@@ -264,21 +264,34 @@ internal static class KitBuilder
         }
 
         // Where an open link ends and only one space's wall runs on past it, that wall turns an outer corner: its face meets
-        // the end of the other space's wall, half a thickness into the opening. A pilaster stands centred on that corner.
+        // the end of the other space's wall, half a thickness into the opening. A pilaster stands on that corner, wrapping
+        // both walls' trim ends: from just behind the ended wall's line to past the running face, and from behind the
+        // corner to past the ended wall's face, each by the trim's depth and the pilaster's own proud. Bands deeper than
+        // the column's half width (a cornice) meet it in a capital as deep as they are, from the lowest of them up.
         private void OuterCorners(LinkDefinition link, Space a, Space b, WallEdge edge, float from, float to, float height)
         {
             (float line, float aFrom, float aTo, bool alongX) = a.Edge(edge);
             (_, float bFrom, float bTo, _) = b.Edge(Space.Opposite(edge));
             Vector3 along = alongX ? Vector3.UnitX : Vector3.UnitZ, outward = Space.Outward(edge), across = Vector3.Abs(outward);
-            float w = kit.Pilaster.Width / 2;
+            float half = kit.Pilaster.Width / 2, proud = kit.Pilaster.Proud;
+            TrimBand[] bands = [.. Trim.Bands[a.Style.Trim], .. Trim.Bands[b.Style.Trim]];
+            TrimBand[] deep = bands.Where(t => t.Depth > half).ToArray();
+            float capital = deep.Length == 0 ? height : Math.Min(height, deep.Min(t => t.From));
+            float bodyDepth = bands.Where(t => t.Depth <= half).Select(t => t.Depth).DefaultIfEmpty(0).Max();
             foreach (var (end, into, aRuns, bRuns) in new[] { (from, 1f, aFrom < from - Tolerance, bFrom < from - Tolerance),
                 (to, -1f, aTo > to + Tolerance, bTo > to + Tolerance) })
             {
                 if (aRuns == bRuns) continue;
-                // On the face of the space whose wall runs on: a's face is toward a, against its outward normal.
-                Vector3 corner = along * (end + into * Half) + across * line + outward * (aRuns ? -Half : Half);
-                Vector3 reach = (along + across) * w;
-                pilasters.Add(($"{link.Id} pilaster", corner - reach, corner + reach + Vector3.UnitY * height));
+                // t points into the opening along the wall; n points into the space whose wall runs on.
+                Vector3 t = along * into, n = outward * (aRuns ? -1 : 1);
+                Vector3 corner = along * (end + into * Half) + across * line + n * Half;
+                void Piece(string part, float bottom, float top, float depth)
+                {
+                    Vector3 p = corner - t * half - n * (Half + proud), q = corner + t * (depth + proud) + n * (depth + proud);
+                    pilasters.Add(($"{link.Id} {part}", Vector3.Min(p, q) + Vector3.UnitY * bottom, Vector3.Max(p, q) with { Y = top }));
+                }
+                Piece("pilaster", 0, capital, bodyDepth);
+                if (capital < height) Piece("pilaster capital", capital, height, deep.Max(t => t.Depth));
             }
         }
 

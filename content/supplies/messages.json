@@ -19,6 +19,7 @@
   "wornNotUsed": "{item} is worn, not used. Wear it from the field case.",
   "load": "{metric} {used} / {limit}",
   "notWorn": "{item} has nowhere to be worn.",
+  "notWornThere": "{item} is not worn on the {slot}.",
   "wearing": "Wearing {item} · {slot}.",
   "exclusive": "{item} cannot be worn with {other}.",
   "tookOff": "Took off {item}.",

@@ -86,6 +86,22 @@ internal static class TitleChecks
                     Check(!product.Title.Active && store.Load(HotelExpedition.Key).State!.Version == CheckpointState.CurrentVersion, "and a new expedition begins");
                 }
 
+                // A current-version save whose shape reads but whose contents cannot (a null among the run's floors) is damaged.
+                string current;
+                using (HotelProduct product = Product())
+                {
+                    Begin(product);
+                    current = System.Text.Json.JsonSerializer.Serialize(product.World.Expedition.Checkpoint!, CheckpointJson.Default.CheckpointState);
+                }
+                var damaged = System.Text.Json.Nodes.JsonNode.Parse(current)!;
+                damaged["floors"]!["floors"] = new System.Text.Json.Nodes.JsonArray((System.Text.Json.Nodes.JsonNode?)null);
+                engine.Persistence.Save(new(raw, HotelExpedition.Key, PersistenceRevisionGuard.Any, 0, Encoding.UTF8.GetBytes(damaged.ToJsonString())));
+                using (HotelProduct product = Product())
+                {
+                    product.Start();
+                    Check(product.Title.Active && product.Title.Save.Condition == SaveCondition.Damaged, $"a null entry in a saved collection opens the menu as damaged: '{product.Title.Message}'");
+                }
+
                 // A save that cannot be read at all is described and left as it is.
                 engine.Persistence.Save(new(raw, HotelExpedition.Key, PersistenceRevisionGuard.Any, 0, Encoding.UTF8.GetBytes("{")));
                 using (HotelProduct product = Product())

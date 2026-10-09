@@ -257,7 +257,7 @@ internal sealed record DroppingTuning(int Limit, float Ahead, float Spread, floa
 internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, string CaseFull, string TooMuch, string Collected, string Overwhelmed,
     string EmptyPocket, string TrackFull, string KeepForReturn, string WornNotUsed, string CaseChanged, string Used, string ChooseStack,
     string StackFull, string Rearranged, string ChooseAgain, string ChooseAction, string Unreadable, string Load,
-    string NotWorn, string Wearing, string Exclusive, string TookOff, string NoPocketFree, string EmptySlot, string Found, string FoundItem,
+    string NotWorn, string NotWornThere, string Wearing, string Exclusive, string TookOff, string NoPocketFree, string EmptySlot, string Found, string FoundItem,
     string FoundSeparator, string FoundNothing, string SearchFull, string Searched, string Dropped, string DropFull)
 {
     internal const string Path = "supplies/messages.json";
@@ -277,6 +277,7 @@ internal sealed record SupplyMessages(float NoticeSeconds, string FindGone, stri
         Template.Check(Path, "used", Used, "item");
         Template.Check(Path, "load", Load, "metric", "used", "limit");
         Template.Check(Path, "notWorn", NotWorn, "item");
+        Template.Check(Path, "notWornThere", NotWornThere, "item", "slot");
         Template.Check(Path, "wearing", Wearing, "item", "slot");
         Template.Check(Path, "exclusive", Exclusive, "item", "other");
         Template.Check(Path, "tookOff", TookOff, "item");

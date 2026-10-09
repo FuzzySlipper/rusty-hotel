@@ -28,6 +28,9 @@ def manifest():
         look = looks[kind["look"]]
         models.append({"id": kind["id"], "path": os.path.join(CONTENT, look["model"]), "scale": look["scale"],
                        "yawDegrees": look["yawDegrees"], "clip": look["clips"]["idle"],
+                       # Tripo's humanoid rig, its left to its right at the collarbones: the steadiest pair, where the
+                       # rig set under a long dress places feet, thighs and upper arms askew.
+                       "sideBones": [["L_Clavicle", "R_Clavicle"]],
                        "expect": {"height": kind["height"], "heightTolerance": HEIGHT_TOLERANCE, "feetTolerance": 0.03,
                                   "centreTolerance": round(kind["radius"] * CENTRE_SHARE, 3)}})
     return {"reference": {"height": 1.8}, "groups": [{"name": "residents", "models": models}]}

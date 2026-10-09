@@ -107,18 +107,18 @@ internal sealed class HotelSupplies
     internal ItemStack? Slot(int index) => fieldCase.Slot(index);
 
     /// <summary>
-    /// Spends stamina on exertion (a stride at a run, a jump); false, spending nothing, when none is left. Stamina is
-    /// whole points, so a fraction is owed until it comes to a point, as regeneration accrues.
+    /// Spends stamina on exertion (a stride at a run, a jump); false, spending and owing nothing, when it cannot be paid
+    /// in full or none is left. Stamina is whole points, so a fraction is owed until it comes to a point, as regeneration
+    /// accrues.
     /// </summary>
     internal bool Exert(float amount)
     {
         Rusty.Engine.Mechanics.Track stamina = Stats.Track(StaminaTrack);
         if (Health == 0 || stamina.Value <= 0) return false;
-        exertionOwed += amount;
-        int whole = (int)exertionOwed;
-        if (whole == 0) return true;
-        if (!stamina.TrySpend(Math.Min(whole, stamina.Value))) return false;
-        exertionOwed -= whole;
+        float owed = exertionOwed + amount;
+        int whole = (int)owed;
+        if (whole > stamina.Value || (whole > 0 && !stamina.TrySpend(whole))) return false;
+        exertionOwed = owed - whole;
         return true;
     }
     private float exertionOwed;
@@ -272,14 +272,18 @@ internal sealed class HotelSupplies
     }
 
     /// <summary>Wears a pocket's item in the slots that take it, trading places with what its slot held if it must.</summary>
-    internal bool Wear(int index, ulong revision)
+    /// <summary>Wears a pocket's item: in the first slots that take it, or in the slot (by its authored order) the player chose.</summary>
+    internal bool Wear(int index, ulong revision, int? slot = null)
     {
         if (revision != Revision) return Refuse(text.CaseChanged);
         string reason = WearReason(index);
         if (reason.Length != 0) return Refuse(reason);
+        if (slot is { } chosen && (chosen < 0 || chosen >= definition.Slots.Length)) return Refuse(text.ChooseAgain);
         ItemDefinition item = Item(Slot(index)!.Value.Item);
-        switch (fieldCase.Wear(index, out WornItem? other, out WornItem? worn))
+        SlotDefinition? into = slot is { } at ? definition.Slots[at] : null;
+        switch (fieldCase.Wear(index, out WornItem? other, out WornItem? worn, into))
         {
+            case CaseRefusal.NotThere: return Refuse(Template.Fill(text.NotWornThere, ("item", item.Name), ("slot", into!.Name)));
             case CaseRefusal.Exclusive: return Refuse(Template.Fill(text.Exclusive, ("item", item.Name), ("other", other!.Item.Name)));
             case CaseRefusal.NoSlot: return Refuse(Template.Fill(text.NotWorn, ("item", item.Name)));
         }
@@ -352,7 +356,8 @@ internal sealed class HotelSupplies
                 switch (action.GetString())
                 {
                     case "use": Use(from, revision); break;
-                    case "wear": Wear(from, revision); break;
+                    // An optional "to" is the slot (in authored order) the stack was dropped on.
+                    case "wear": Wear(from, revision, Integer(root, "to", out int slot) ? slot : null); break;
                     // For take-off, "from" is the slot in authored order.
                     case "takeOff": TakeOff(from, revision); break;
                     case "drop": Drop(from, revision); break;

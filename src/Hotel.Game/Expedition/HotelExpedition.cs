@@ -75,7 +75,9 @@ internal sealed class HotelExpedition : IDisposable
             return new(SaveCondition.Ready, State: state);
         }
         catch (OlderSaveException older) { return new(SaveCondition.Older, older.Version, older.Message); }
-        catch (Exception error) when (error is InvalidOperationException or System.Text.Json.JsonException or PersistenceStorageException)
+        // Whatever else stops a stored value from reading back whole (a null where a collection holds entries, say) makes it
+        // damaged: described on the title menu and kept until the player deletes it, never a fault at startup.
+        catch (Exception error) when (error is not OutOfMemoryException)
         {
             return new(SaveCondition.Damaged, Error: error.Message);
         }

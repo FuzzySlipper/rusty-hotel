@@ -122,6 +122,8 @@
     "seconds": 20,
     "actions": [
       "walk",
+      "run",
+      "jump",
       "look",
       "use",
       "fieldCase",

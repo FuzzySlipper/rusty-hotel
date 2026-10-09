@@ -1,3 +1,4 @@
+using Hotel.Game.Content;
 using Hotel.Game.Expedition;
 using Hotel.Game.Mechanics;
 using Hotel.Game.Supplies;
@@ -56,6 +57,21 @@ internal static class EquipmentChecks
         Check(supplies.TakeOff(Array.IndexOf(definition.Slots, Slot("hands")), supplies.Revision) && supplies.Slot(0)?.Item == "porter-gloves" &&
             supplies.Stats.Stat("might").Value == 10 && supplies.MaximumHealth == 100, "taking off returns the gloves to a pocket and might to its base");
         Check(!supplies.Wear(Pocket("porter-gloves"), supplies.Revision - 1), "a stale wear is refused");
+        // Worn into a chosen slot: a held item dropped on the off hand goes there, a taken slot trades with what it held,
+        // and a slot that does not take the item refuses it.
+        int SlotIndex(string id) => Array.IndexOf(definition.Slots, Slot(id));
+        foreach (string hand in new[] { "main-hand", "off-hand" })
+            if (supplies.WornIn(Slot(hand)) is not null) supplies.TakeOff(SlotIndex(hand), supplies.Revision);
+        supplies.Give("letter-opener", 1);
+        Check(supplies.Wear(Pocket("letter-opener"), supplies.Revision, SlotIndex("off-hand")) && supplies.WornIn(Slot("off-hand"))?.Item.Id == "letter-opener" &&
+            supplies.WornIn(Slot("main-hand")) is null, "a held item worn on the off hand goes there, though the main hand is free");
+        supplies.Give("walking-cane", 1);
+        Check(supplies.Wear(Pocket("walking-cane"), supplies.Revision, SlotIndex("off-hand")) && supplies.WornIn(Slot("off-hand"))?.Item.Id == "walking-cane" &&
+            supplies.WornIn(Slot("main-hand")) is null && Enumerable.Range(0, supplies.Capacity).Any(i => supplies.Slot(i)?.Item == "letter-opener"),
+            "a taken slot trades with what it held, not with a free one");
+        Check(!supplies.Wear(Pocket("letter-opener"), supplies.Revision, SlotIndex("head")) &&
+            supplies.Message == Template.Fill(definition.Text.NotWornThere, ("item", definition.Item("letter-opener")!.Name), ("slot", Slot("head").Name)),
+            "a slot that does not take the item refuses it");
         Check(!supplies.Use(Pocket("porter-gloves"), supplies.Revision) && supplies.Slot(0)?.Item == "porter-gloves", "a worn item is not used up");
         supplies.Give("bandage", 1);
         Check(!supplies.Wear(Pocket("bandage"), supplies.Revision), "a remedy is not worn");

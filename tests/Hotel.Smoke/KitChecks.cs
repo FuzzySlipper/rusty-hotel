@@ -1,3 +1,4 @@
+using System.Numerics;
 using Hotel.Game.Scene;
 using Hotel.Game.Scene.Kit;
 using Rusty.Engine;
@@ -56,12 +57,19 @@ internal static class KitChecks
         float half = content.Kit.WallThickness / 2, w = content.Kit.Pilaster.Width / 2;
         RoomBox[] Pilasters(FloorPlan plan) => KitBuilder.Build(plan, "corner.json", content.Kit, content.Fixtures).Boxes
             .Where(b => b.Name.EndsWith(" pilaster") || b.Name.EndsWith(" casing")).ToArray();
-        RoomBox[] tee = Pilasters(new([new("hall", "Hall", [0, 0], [6, 3], 2.65f, "corridor"), new("alcove", "Alcove", [2, 3], [4, 6], 2.65f, "guest-room")],
-            [new("open", ["hall", "alcove"], LinkKind.Open)], [], new([1, 1, 1], 0.2f), [], "hotel"));
-        Check(tee.Length == 2 && tee.All(b => !b.Solid && b.Material == content.Kit.Pilaster.Material && b.Min[1] == 0 && Math.Abs(b.Max[1] - 2.65f) < .001f) &&
-            tee.Any(b => Math.Abs((b.Min[0] + b.Max[0]) / 2 - (2 + half)) < .001f && Math.Abs((b.Min[2] + b.Max[2]) / 2 - (3 - half)) < .001f && Math.Abs(b.Max[0] - b.Min[0] - 2 * w) < .001f) &&
-            tee.Any(b => Math.Abs((b.Min[0] + b.Max[0]) / 2 - (4 - half)) < .001f),
-            $"an alcove opening off a hall stands a pilaster on each outer corner: {string.Join("; ", tee.Select(b => $"[{string.Join(",", b.Min)}]..[{string.Join(",", b.Max)}]"))}");
+        BuiltFloor teeFloor = KitBuilder.Build(new([new("hall", "Hall", [0, 0], [6, 3], 2.65f, "corridor"), new("alcove", "Alcove", [2, 3], [4, 6], 2.65f, "guest-room")],
+            [new("open", ["hall", "alcove"], LinkKind.Open)], [], new([1, 1, 1], 0.2f), [], "hotel"), "corner.json", content.Kit, content.Fixtures);
+        RoomBox[] tee = teeFloor.Boxes.Where(b => b.Name.Contains(" pilaster")).ToArray();
+        bool Inside(Vector3 p) => tee.Any(b => p.X >= b.Min[0] - .001f && p.X <= b.Max[0] + .001f && p.Y >= b.Min[1] - .001f &&
+            p.Y <= b.Max[1] + .001f && p.Z >= b.Min[2] - .001f && p.Z <= b.Max[2] + .001f);
+        // Every trim run that ends at a corner ends inside the pilaster, its full depth included.
+        var ends = teeFloor.Mouldings.SelectMany(m => new[] { m.Start, m.End }.Select(e => (m, at: new Vector3(e[0], e[1], e[2]))))
+            .Where(e => tee.Any(b => e.at.X >= b.Min[0] - .3f && e.at.X <= b.Max[0] + .3f && e.at.Z >= b.Min[2] - .3f && e.at.Z <= b.Max[2] + .3f)).ToArray();
+        Vector3 Out((Moulding m, Vector3 at) e, float y) => e.at + new Vector3(e.m.Outward[0], 0, e.m.Outward[2]) * e.m.Profile.Max(q => q[0]) + Vector3.UnitY * y;
+        var bare = ends.Where(e => !Inside(e.at + Vector3.UnitY * .001f) || !Inside(Out(e, e.m.Profile.Max(q => q[1]) / 2))).Select(e => $"{e.m.Name} at {e.at}").ToArray();
+        Check(tee.Length == 4 && tee.All(b => !b.Solid && b.Material == content.Kit.Pilaster.Material) && ends.Length >= 8 && bare.Length == 0 &&
+            tee.Where(b => b.Name.EndsWith("capital")).All(b => Math.Abs(b.Max[1] - 2.65f) < .001f),
+            $"an alcove opening off a hall stands a pilaster, with a capital under its cornice, on each outer corner, covering every trim end there ({ends.Length}): {string.Join("; ", bare)}");
         Check(Pilasters(new([new("near", "Near", [0, 0], [6, 3], 2.65f, "corridor"), new("far", "Far", [6, 0], [12, 3], 2.65f, "corridor")],
             [new("open", ["near", "far"], LinkKind.Open)], [], new([1, 1, 1], 0.2f), [], "hotel")).Length == 0, "a straight run turns no corner");
         RoomBox[] cased = Pilasters(new([new("room", "Room", [0, 0], [4, 4], 2.65f, "guest-room"), new("hall", "Hall", [4, 0], [8, 4], 2.65f, "corridor")],

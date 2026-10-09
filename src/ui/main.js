@@ -124,8 +124,10 @@ export function mountProductUi(root, context) {
       : state === 'paused' ? 'Hotel paused.' : state === 'running' ? 'The hotel is running.' : 'Hotel unavailable.';
     for (const note of layer.querySelectorAll('[data-lifecycle-status]')) note.textContent = error ? `${error} ${message}` : message;
     menu.drawLifecycle({ state, pending });
-    // A title menu C# opened while a lifecycle request was settling is shown once it settles.
+    // The title menu follows C# once a lifecycle request settles: one opened meanwhile is shown, and one a choice closed
+    // meanwhile resumes play.
     if (!pending && titleActive && screen !== 'title' && returnScreen?.screen !== 'title') queueMicrotask(() => show('title'));
+    else if (!pending && !titleActive && screen === 'title') queueMicrotask(() => show(null));
     for (const button of layer.querySelectorAll('[data-open],[data-close],[data-return],[data-pause]')) button.disabled = !!pending;
   };
   const draw = envelope => {
