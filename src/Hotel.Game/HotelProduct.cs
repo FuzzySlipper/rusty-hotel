@@ -29,6 +29,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly CurrentRoute current = new();
     private readonly WorldInteraction interaction;
     private readonly HotelDeveloper developer;
+    private readonly HotelTitle title;
     private HotelWorld world;
     private (ExcursionDefinition Excursion, int Depth, StairDirection Way)? pendingTravel;
     private bool pendingJump, pendingUse, pendingPrimary, pendingSecondary, pendingSwap, pendingSummon;
@@ -45,6 +46,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             content = HotelContent.Load(engine, StartingExcursion);
             controls = new HotelControls(content.Controls);
             hud = new HotelHud(engine, content.Interface);
+            title = new HotelTitle(content.Title);
             floors = new HotelFloors(engine, content);
             interaction = new WorldInteraction(current);
             world = Build(content.Excursion);
@@ -54,14 +56,49 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     }
 
     internal HotelWorld World => world;
+    internal HotelTitle Title => title;
     internal HotelContent Content => content;
     internal HotelFloors Floors => floors;
     internal ulong Step => step;
 
-    public void Start() { world.Expedition.Start(); Publish(); world.Ambience.Start(); }
+    /// <summary>
+    /// Opens at the title menu, or, when content says to and the save can be continued (or nothing is saved), straight
+    /// into the expedition. A save that cannot be read always opens the menu, which says why.
+    /// </summary>
+    public void Start()
+    {
+        SaveProbe save = world.Expedition.Probe();
+        if (content.Title.Start == TitleStart.Continue && save.Condition == SaveCondition.Ready) world.Expedition.Continue();
+        else if (content.Title.Start == TitleStart.Continue && save.Condition == SaveCondition.None) world.Expedition.BeginNew();
+        else title.Open(save);
+        Publish();
+        world.Ambience.Start();
+    }
+
+    // A title choice, carried out across the world and the expedition. The menu shows over the refuge's floor.
+    private void Choose(TitleChoice choice)
+    {
+        ClearActions();
+        world.Player.ClearInput();
+        switch (choice)
+        {
+            case TitleChoice.Continue: world.Expedition.Continue(); title.Close(); break;
+            case TitleChoice.New: world.Expedition.BeginNew(); title.Close(); break;
+            case TitleChoice.Delete: world.Expedition.DeleteSave(); title.Open(world.Expedition.Probe(), content.Title.Text.Deleted); break;
+            case TitleChoice.Leave: ReturnToRefugeFloor(); title.Open(world.Expedition.Probe()); break;
+        }
+    }
 
     public ProductUpdateResult Update(ProductUpdate update)
     {
+        foreach (TitleChoice choice in title.Read(update.Input)) Choose(choice);
+        // Behind the title menu the world holds still.
+        if (title.Active)
+        {
+            step = checked(update.Facts.SimulationStep + update.Facts.AdmittedStepCount);
+            Publish();
+            return ProductUpdateResult.None;
+        }
         world.Supplies.HandleIntents(update.Input);
         world.Spirit.HandleIntents(update.Input);
         foreach (ProductInputEvent item in update.Input)
@@ -117,6 +154,8 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
 
     public void HandlePausedIntents(ReadOnlySpan<ProductInputEvent> intents)
     {
+        foreach (TitleChoice choice in title.Read(intents)) Choose(choice);
+        if (title.Active) { Publish(); return; }
         world.Supplies.HandleIntents(intents);
         world.Spirit.HandleIntents(intents);
         PublishInterface();
@@ -223,7 +262,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
 
     // Paused claims, route results and developer fixtures change only UI facts; the camera
     // sample and scene snapshot stay at the last admitted simulation step.
-    internal void PublishInterface() => hud.Publish(world.Route, world.Supplies, world.Combat, world.Spirit, world.Expedition, controls);
+    internal void PublishInterface() => hud.Publish(world.Route, world.Supplies, world.Combat, world.Spirit, world.Expedition, title, controls);
 
     public void RegisterDebugCommands(IDebugCommandModuleRegistrar registrar)
     {

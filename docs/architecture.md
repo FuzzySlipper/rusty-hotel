@@ -9,7 +9,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 
 | Path or service | Responsibility |
 | --- | --- |
-| `src/Hotel.Game/Expedition/HotelExpedition.cs` | Refuge return/deposit policy, one complete checkpoint over Engine persistence, validation before restore and coherent recovery |
+| `src/Hotel.Game/Expedition/HotelExpedition.cs` | Refuge return/deposit policy, one complete checkpoint over Engine persistence, validation before restore and coherent recovery; probing the save (absent, readable, another version, damaged), continuing it, beginning a new expedition and deleting it |
+| `src/Hotel.Game/Expedition/HotelTitle.cs`, `CheckpointCodec.cs` | The title menu's state and its `hotel.title` choices, which `HotelProduct` carries out; the checkpoint codec reads the save's version before its shape |
 | `src/Hotel.Game/Expedition/CheckpointState.cs`, `Floors/FloorRecord.cs` | Versioned product values (the run and its floors' resolved plans from version 2) and source-generated JSON metadata; no Engine handles, boxes or presentation state |
 | `src/Hotel.Game/HotelProduct.cs` | Explicit composition, Engine lifecycle callbacks, admitted updates, floor travel (carrying the player's values into the next world, remembering left floors for the session) and the one world interaction that reads the current route |
 | `src/Hotel.Game/HotelWorld.cs` | The owners of one excursion's world (scene, player, supplies, combat, spirit, route, expedition, ambience and views), built together for the floor the player stands on and disposed together when they take the stairs |
@@ -55,7 +56,7 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `content/` | Authored data by domain: player, route, interface, scene surfaces, supplies, combat, spirits, and one folder per excursion. See [authoring](authoring.md). |
 | `src/ui/main.js` | Composition, the single foreground-screen navigation, focus containment, lifecycle flow and Engine input-mode handoff |
 | `src/ui/hud.js` | Exploration HUD regions and their drawing from projected facts |
-| `src/ui/menu-screen.js`, `case-screen.js`, `controls-screen.js`, `reading-screen.js`, `console-screen.js` | One foreground screen each: its markup, drawing, and what happens on entering and leaving it; `screen.js` holds their shared helpers |
+| `src/ui/title-screen.js`, `menu-screen.js`, `case-screen.js`, `controls-screen.js`, `reading-screen.js`, `console-screen.js` | One foreground screen each: its markup, drawing, and what happens on entering and leaving it; `screen.js` holds their shared helpers |
 | `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, use/move/drop claims (drag to a pocket or out of the grid), pact selection/equip claims and quick-pocket presentation |
 | `src/ui/item-icon.js`, `content/supplies/icons/` (opened to the UI) | Each item's line icon, masked in the surrounding text colour |
 | `src/ui/developer.js` | Lazy packaged Engine console mount, disposal and stale-mount cleanup |
@@ -306,10 +307,14 @@ write does the live supplies owner settle that deposit and the checkpoint owner
 replace its restore point. No per-domain files, browser storage or shutdown save
 can create mixed checkpoints.
 
-Startup distinguishes missing from present. Missing creates the valid initial
-checkpoint; a present value is decoded and validated against the current content
-before any owner is restored. Incomplete/malformed or semantically invalid state
-fails startup with a checkpoint error and is not replaced. Save failures produce
+Startup probes the save without restoring anything: missing, readable (decoded and
+validated against the current content), made by another checkpoint version (the
+codec reads `version` before the shape), or damaged. A session opens at the title
+menu, which describes what it found; Continue restores a readable save, New writes
+the valid initial checkpoint, and a confirmed Delete removes the stored value. With
+`expedition/title.json` `start: "Continue"` a readable or missing save opens
+straight into play. An older or damaged save is never replaced or deleted except by
+the player's confirmed title choice. Save failures produce
 a failed refuge receipt, preserving carried finds and the previous checkpoint.
 There is no migration or silent fallback. The schema version is product policy. Content identities and validation limits
 affect compatibility; see [authoring.md](authoring.md).

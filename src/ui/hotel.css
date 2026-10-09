@@ -39,6 +39,13 @@
 .hotel-ui .menu-actions { display:grid; gap:8px; padding:24px 28px; }
 .hotel-ui .menu-actions button { display:flex; justify-content:space-between; align-items:center; text-align:left; }
 .hotel-ui .menu-screen .live-note { padding:0 28px 22px; }
+.hotel-ui .title-screen { width:min(440px,100%); text-align:center; }
+.hotel-ui .title-heading { padding:34px 28px 10px; }
+.hotel-ui .title-heading .eyebrow { letter-spacing:.35em; }
+.hotel-ui .title-heading h2 { font-size:44px; letter-spacing:.045em; }
+.hotel-ui .title-save { padding:4px 32px 0; color:var(--muted); font-size:13px; min-height:2.6em; }
+.hotel-ui .title-screen .menu-actions button { justify-content:center; text-align:center; }
+.hotel-ui .title-confirm>p { padding:18px 32px 0; }
 .hotel-ui .controls-screen { width:min(580px,100%); overflow:auto; }
 .hotel-ui .control-list { display:grid; grid-template-columns:1fr auto; gap:16px; margin:24px 28px; }
 .hotel-ui .control-list dd { margin:0; color:var(--accent); letter-spacing:.12em; }

@@ -215,7 +215,7 @@ internal static class ContentChecks
                     new ProductInputConfiguration(default, default, default, default, InputCursorMode.PointerLock), default!));
                 CaptureCommands commands = new();
                 product.RegisterDebugCommands(commands);
-                product.Start();
+                TitleChecks.Begin(product);
                 string Supply()
                 {
                     using JsonDocument json = JsonDocument.Parse(commands.Module!.Observe().Message);

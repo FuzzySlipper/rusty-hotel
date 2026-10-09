@@ -109,7 +109,7 @@ internal static class EffectChecks
         // a slowed investigator covers less ground for the same held key.
         using HotelProduct product = new(new ProductCreateContext(engine, new ProductContent(default),
             new ProductInputConfiguration(default, default, default, default, InputCursorMode.PointerLock), default!));
-        product.Start();
+        TitleChecks.Begin(product);
         ulong at = 0;
         void Admit(uint count, params ProductInputEvent[] input)
         {

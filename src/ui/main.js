@@ -4,6 +4,7 @@ import { mountCaseScreen } from './case-screen.js';
 import { mountControlsScreen } from './controls-screen.js';
 import { mountReadingScreen } from './reading-screen.js';
 import { mountConsoleScreen } from './console-screen.js';
+import { mountTitleScreen } from './title-screen.js';
 import { createPauseFlow } from './pause.js';
 
 /**
@@ -19,11 +20,12 @@ export function mountProductUi(root, context) {
   // Product opt-in controls access; the Engine host separately requires --live-debug.
   const developerEnabled = new URLSearchParams(document.defaultView.location.hash.slice(1)).get('developer') === '1';
   const hud = mountHud(document);
-  const menu = mountMenuScreen(document, { developerEnabled });
+  const menu = mountMenuScreen(document, { developerEnabled, intents: context.intents });
+  const title = mountTitleScreen(document, context.intents);
   const reading = mountReadingScreen(document, { name: 'reading', eyebrow: 'Found in the hotel', closeLabel: 'Put down' });
   const refuge = mountReadingScreen(document, { name: 'refuge', eyebrow: 'Refuge ledger', closeLabel: 'Return to hotel' });
   const fieldCase = mountCaseScreen(document, context.intents);
-  const screens = Object.fromEntries([menu, fieldCase, mountControlsScreen(document), reading, refuge, mountConsoleScreen(document)]
+  const screens = Object.fromEntries([title, menu, fieldCase, mountControlsScreen(document), reading, refuge, mountConsoleScreen(document)]
     .map(view => [view.name, view]));
   const foreground = document.createElement('div');
   foreground.className = 'foreground';
@@ -38,6 +40,7 @@ export function mountProductUi(root, context) {
   let refugeSequence = -1;
   let disposed = false;
   let pause;
+  let titleActive = false;
   // Screen shortcuts are browser key codes from the authored binding table; inert until the first facts arrive.
   let keys = { fieldCase: null, menu: null, console: null };
 
@@ -82,7 +85,7 @@ export function mountProductUi(root, context) {
     if (event.code === keys.menu) {
       event.preventDefault();
       event.stopPropagation();
-      if (event.repeat) return;
+      if (event.repeat || screen === 'title') return;
       if (screen !== null) close(); else show('menu');
       return;
     }
@@ -118,6 +121,8 @@ export function mountProductUi(root, context) {
       : state === 'paused' ? 'Hotel paused.' : state === 'running' ? 'The hotel is running.' : 'Hotel unavailable.';
     for (const note of layer.querySelectorAll('[data-lifecycle-status]')) note.textContent = error ? `${error} ${message}` : message;
     menu.drawLifecycle({ state, pending });
+    // A title menu C# opened while a lifecycle request was settling is shown once it settles.
+    if (!pending && titleActive && screen !== 'title' && returnScreen?.screen !== 'title') queueMicrotask(() => show('title'));
     for (const button of layer.querySelectorAll('[data-open],[data-close],[data-return],[data-pause]')) button.disabled = !!pending;
   };
   const draw = envelope => {
@@ -126,6 +131,10 @@ export function mountProductUi(root, context) {
     keys = Object.fromEntries(Object.entries(facts.controls.screens).map(([name, screen]) => [name, screen.code]));
     for (const view of Object.values(screens)) view.draw?.(facts);
     hud.draw(facts);
+    // The title menu shows while C# says so (Options opens from it and returns to it); a settled choice resumes play.
+    titleActive = facts.title.active;
+    if (facts.title.active && screen !== 'title' && returnScreen?.screen !== 'title') void show('title');
+    else if (!facts.title.active && screen === 'title') void show(null);
     // Every <kbd data-key> names a screen shortcut from the binding table.
     for (const kbd of layer.querySelectorAll('[data-key]')) kbd.textContent = facts.controls.screens[kbd.dataset.key].label;
     if (readingSequence !== facts.reading.sequence) {

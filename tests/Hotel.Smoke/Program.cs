@@ -23,7 +23,7 @@ host.Call(engine =>
     var content = Owners.Content(engine);
     CaptureCommands commands = new();
     product.RegisterDebugCommands(commands);
-    product.Start();
+    TitleChecks.Begin(product);
     ulong step = 0;
 
     void Advance(uint count, params ProductInputEvent[] input)
@@ -220,6 +220,7 @@ host.Call(SpiritChecks.Run);
 host.Call(PactChecks.Run);
 host.Call(LootChecks.Run);
 host.Call(ProgressionChecks.Run);
+TitleChecks.Run();
 CheckpointChecks.Run();
 ContentChecks.Run();
 FloorChecks.Run();

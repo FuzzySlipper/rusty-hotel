@@ -27,6 +27,8 @@ internal sealed class HotelExpedition : IDisposable
     // Captured at construction, while every owner still holds its authored starting values.
     private readonly CheckpointState initial;
     private CheckpointState? checkpoint;
+    // What the last probe read and validated, until it is continued or replaced.
+    private CheckpointState? found;
     /// <summary>The checkpoint last stored or loaded.</summary>
     internal CheckpointState? Checkpoint => checkpoint;
 
@@ -35,7 +37,7 @@ internal sealed class HotelExpedition : IDisposable
     {
         this.refuge = refuge; this.text = text; this.player = player; this.supplies = supplies;
         this.combat = combat; this.spirit = spirit; this.route = route; this.floors = floors;
-        store = new(engine, Scope, new JsonProductStateCodec<CheckpointState>(CheckpointJson.Default.CheckpointState));
+        store = new(engine, Scope, new CheckpointCodec());
         // The authored start has no run yet; a new game begins one when it first establishes its checkpoint.
         initial = Capture(0) with { Floors = null };
     }
@@ -47,29 +49,65 @@ internal sealed class HotelExpedition : IDisposable
     internal string ReceiptText { get; private set; } = "";
     internal string Status { get; private set; } = "";
 
+    /// <summary>
+    /// Opens the session's expedition without a title menu: the saved one, or a new one when nothing is saved. A save that
+    /// cannot be read fails here and is left as it is.
+    /// </summary>
     internal void Start()
     {
-        // Missing is a new excursion. Present-but-invalid fails before any owner is restored or saved.
+        SaveProbe save = Probe();
+        if (save.Condition is SaveCondition.Older or SaveCondition.Damaged)
+            throw new InvalidOperationException("Cannot load the Hotel refuge checkpoint. The existing save has not been replaced. " + save.Error);
+        if (save.Condition == SaveCondition.Ready) Continue(); else BeginNew();
+    }
+
+    /// <summary>Reads the stored checkpoint without applying it: absent, readable, from another version, or damaged.</summary>
+    internal SaveProbe Probe()
+    {
+        found = null;
         try
         {
             ProductStateLoad<CheckpointState> loaded = store.Load(Key);
-            CheckpointState state;
-            if (loaded.Present) state = loaded.State ?? throw new InvalidOperationException("Checkpoint has no state.");
-            else
-            {
-                floors.BeginNew();
-                state = initial with { Floors = floors.Capture() };
-            }
+            if (!loaded.Present) return new(SaveCondition.None);
+            CheckpointState state = loaded.State ?? throw new InvalidOperationException("Checkpoint has no state.");
             Validate(state);
-            if (!loaded.Present) Write(state);
-            checkpoint = state;
-            Apply(state);
-            Status = loaded.Present ? text.Continued : text.InitialReady;
+            found = state;
+            return new(SaveCondition.Ready, State: state);
         }
-        catch (Exception error)
+        catch (OlderSaveException older) { return new(SaveCondition.Older, older.Version, older.Message); }
+        catch (Exception error) when (error is InvalidOperationException or System.Text.Json.JsonException or PersistenceStorageException)
         {
-            throw new InvalidOperationException("Cannot load the Hotel refuge checkpoint. The existing save has not been replaced. " + error.Message, error);
+            return new(SaveCondition.Damaged, Error: error.Message);
         }
+    }
+
+    /// <summary>Continues the expedition the last <see cref="Probe"/> found readable.</summary>
+    internal void Continue()
+    {
+        CheckpointState state = found ?? throw new InvalidOperationException("No readable checkpoint to continue.");
+        checkpoint = state;
+        Apply(state);
+        Status = text.Continued;
+    }
+
+    /// <summary>Begins a new expedition and stores its starting checkpoint, replacing any save: the player's explicit choice.</summary>
+    internal void BeginNew()
+    {
+        floors.BeginNew();
+        CheckpointState state = initial with { Floors = floors.Capture() };
+        Validate(state);
+        Write(state);
+        checkpoint = state;
+        found = null;
+        Apply(state);
+        Status = text.InitialReady;
+    }
+
+    /// <summary>Deletes the stored checkpoint, readable or not: the player's explicit choice.</summary>
+    internal void DeleteSave()
+    {
+        store.Delete(Key);
+        found = null;
     }
 
     /// <summary>
@@ -199,3 +237,10 @@ internal sealed class HotelExpedition : IDisposable
     }
     public void Dispose() => store.Dispose();
 }
+
+/// <summary>What is saved: nothing, a readable checkpoint, one from another version, or one that cannot be read.</summary>
+internal enum SaveCondition { None, Ready, Older, Damaged }
+
+/// <param name="Version">For an older save, the checkpoint version it was made in.</param>
+internal sealed record SaveProbe(SaveCondition Condition, int Version = 0, string Error = "", CheckpointState? State = null);
+

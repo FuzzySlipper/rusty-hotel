@@ -26,7 +26,7 @@ internal static class TravelChecks
                 new ProductInputConfiguration(default, default, default, default, InputCursorMode.PointerLock), default!));
             CaptureCommands commands = new();
             product.RegisterDebugCommands(commands);
-            product.Start();
+            TitleChecks.Begin(product);
             ulong step = 0;
             void Advance(uint count, params ProductInputEvent[] input)
             {

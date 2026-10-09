@@ -34,6 +34,7 @@
     <RustyEngineProductUiContent Include="supplies/icons" />
     <RustyEngineProductInputIntent Include="hotel.supplies" Value="payload:hotel.supplies.v1" />
     <RustyEngineProductInputIntent Include="hotel.spirit.equip" Value="payload:hotel.spirit.equip.v2" />
+    <RustyEngineProductInputIntent Include="hotel.title" Value="payload:hotel.title.v1" />
     <PackageReference Include="Rusty.Engine" Version="[$(RustyEnginePackageVersion)]" />
   </ItemGroup>
 </Project>

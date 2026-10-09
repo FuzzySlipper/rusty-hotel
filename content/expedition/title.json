@@ -1,0 +1,14 @@
+{
+  "start": "Title",
+  "text": {
+    "noSave": "No expedition is saved.",
+    "savedNew": "An expedition under way, not yet returned to the refuge.",
+    "saved": "Saved at the refuge after {returns} returns, with {secured} finds secured.",
+    "older": "The saved expedition was made by an older version of the hotel (save version {found}; this version reads {current}). It cannot be continued; start a new expedition or delete it.",
+    "damaged": "The saved expedition cannot be read ({error}). It has not been changed; start a new expedition or delete it.",
+    "replaceWarning": "A new expedition replaces the saved one.",
+    "deleteWarning": "Delete the saved expedition? This cannot be undone.",
+    "deleted": "The saved expedition was deleted.",
+    "confirmFirst": "Confirm the choice first."
+  }
+}

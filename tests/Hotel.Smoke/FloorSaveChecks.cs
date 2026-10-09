@@ -43,7 +43,7 @@ internal static class FloorSaveChecks
                 using HotelProduct product = Product(engine);
                 CaptureCommands commands = new();
                 product.RegisterDebugCommands(commands);
-                product.Start();
+                TitleChecks.Begin(product);
                 // A floor with a lock: take its key, open its door, and pick up its ledger page.
                 ulong seed = 0;
                 for (ulong s = 1; s < 40 && seed == 0; s++)
@@ -92,7 +92,7 @@ internal static class FloorSaveChecks
             {
                 using (HotelProduct product = Product(engine))
                 {
-                product.Start();
+                TitleChecks.Begin(product);
                 Check(product.Floors.Capture().Floors.Length == 1, "the visited floor is restored before it is entered");
                 var (stored, storedFloor) = product.Floors.Stored(1)!.Value;
                 Check(product.Floors.LastMilliseconds == 0 && Geometry(storedFloor) == geometry && stored.Identity.PlanHash == identity,
@@ -140,9 +140,9 @@ internal static class FloorSaveChecks
                 {
                     store.Save(HotelExpedition.Key, invalid);
                     string stored = JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState);
-                    bool rejected = false;
-                    try { using HotelProduct again = Product(engine); again.Start(); }
-                    catch (InvalidOperationException e) { rejected = e.Message.Contains("Cannot load"); }
+                    using HotelProduct again = Product(engine);
+                    again.Start();
+                    bool rejected = again.Title.Active && again.Title.Save.Condition == SaveCondition.Damaged;
                     Check(rejected && JsonSerializer.Serialize(store.Load(HotelExpedition.Key).State, CheckpointJson.Default.CheckpointState) == stored,
                         "a tampered plan, another generator's floor, an unknown find, or memory that does not fit the floor is refused and the save is not replaced");
                 }

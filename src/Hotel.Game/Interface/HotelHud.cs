@@ -29,7 +29,7 @@ internal sealed class HotelHud : IDisposable
     }
 
     internal void Publish(HotelRoute route, HotelSupplies supplies, HotelCombat combat, HotelSpirit spirit, HotelExpedition expedition,
-        HotelControls controls)
+        HotelTitle title, HotelControls controls)
     {
         UiValueWriter w = new();
         UiValue value = w.Finish(
@@ -59,7 +59,11 @@ internal sealed class HotelHud : IDisposable
                 w.Number("sequence", route.ReadingSequence), w.Text("title", route.ReadingTitle), w.Text("text", route.ReadingText)),
             w.Object("refuge",
                 w.Number("sequence", expedition.ReceiptSequence), w.Text("title", expedition.ReceiptTitle),
-                w.Text("text", expedition.ReceiptText), w.Text("checkpointStatus", expedition.Status)));
+                w.Text("text", expedition.ReceiptText), w.Text("checkpointStatus", expedition.Status)),
+            w.Object("title",
+                w.Flag("active", title.Active), w.Number("revision", title.Revision), w.Text("message", title.Message),
+                w.Flag("canContinue", title.Save.Condition == SaveCondition.Ready), w.Flag("saved", title.Save.Condition != SaveCondition.None),
+                w.Text("replaceWarning", title.Definition.Text.ReplaceWarning), w.Text("deleteWarning", title.Definition.Text.DeleteWarning)));
         if (last is { } previous && UiValueWriter.Same(previous, value)) return;
         last = value;
         engine.Ui.PublishProjection(new(stream, ++sequence, value));

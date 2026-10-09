@@ -57,6 +57,7 @@ its own folder. Geometry is kept apart from tuning.
 | `spirits/<id>.json` | One spirit: welcome charges, its call `action` (costing only summon charge), its moth's `look` (`body` and the left and right `wings` as GLB models, each wing's `hinge` in the body's frame, and `scale`), visit timing and placement offsets, its description (`{range}`, `{cost}`, `{seconds}` from its action) and its own wording; `HotelSpirit`, `SpiritView` |
 | `spirits/messages.json` | Pact notices and refusals shared by every spirit, using `{spirit}`; `HotelSpirit` |
 | `expedition/messages.json` | Checkpoint receipts and status lines; `HotelExpedition` |
+| `expedition/title.json` | How a session opens (`start`: `Title` for the title menu, `Continue` to go straight into a readable save) and the title menu's lines about the save; `HotelTitle` |
 | `scene/kit.json` | The architectural kit: wall, floor and ceiling thickness, door-leaf tuning, trim styles (bands, moulding profiles and architraves), door frames, space styles (surface sets) and decors (per space style, the wallpaper, carpet and ceiling a floor is furnished in); `KitBuilder` |
 | `scene/fixtures.json` | Reusable fixtures: lamps, sconces, desks, tables, find displays, frames, pictures. Each is boxes and GLB models in its own frame, plus lights and named sockets; `KitBuilder` |
 | `excursions/<id>/plan.json` | The floor plan: spaces, the links between them, the fixtures placed in them, ambient light and GLB props; built by `KitBuilder` |
@@ -417,7 +418,8 @@ Checkpoint versioning lives in `Expedition/CheckpointState.cs` and
 door, weapon, spirit and resident identities. Keep those IDs stable when editing
 labels or art. Pocket count, stack/resource bounds, resident roster/health/leash
 and other validation rules also affect whether an existing save remains valid.
-There is no automatic migration or fallback to a new game for invalid data.
+There is no automatic migration or fallback to a new game for invalid data: the title menu says the save is from an
+older version (or damaged) and offers to delete it.
 
 Version 2 adds the run: its seed and every generated floor visited in it, kept as the floor's identity and resolved
 plan (mission graph, layout and content, never boxes), with what the player left it as (open doors, residents, keys)

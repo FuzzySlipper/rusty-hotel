@@ -23,7 +23,7 @@ namespace Hotel.Game.Content;
 internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Player, MechanicsDefinition Mechanics, ActorStatBlock PlayerStats,
     RouteDefinition Route, InterfaceTuning Interface,
     SurfaceDefinition[] Surfaces, AgingCatalog Aging, SceneLook Look, KitDefinition Kit, FixtureCatalog Fixtures, ModuleCatalog Modules, SuppliesDefinition Supplies, Hotel.Game.Loot.LootCatalog Loot, Hotel.Game.Progression.GrowthDefinition Growth, CombatDefinition Combat, SpiritDefinition[] Spirits,
-    SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion)
+    SpiritMessages SpiritText, ExpeditionMessages ExpeditionText, ExcursionDefinition Excursion, TitleDefinition Title)
 {
     internal static HotelContent Load(IEngineContext engine, string excursionId)
     {
@@ -46,7 +46,7 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
         HotelContent content = new(controls, player, mechanics, Hotel.Game.Player.PlayerStats.Load(engine, mechanics), route, InterfaceTuning.Load(engine),
             surfaces, AgingCatalog.Load(engine), SceneLook.Load(engine), kit, fixtures, modules, supplies, loot, growth, combat,
             SpiritRoster.Load(engine, keys, mechanics, actions, surfaces.Select(s => s.Id).ToArray()), SpiritMessages.Load(engine, keys),
-            ExpeditionMessages.Load(engine), excursion);
+            ExpeditionMessages.Load(engine), excursion, TitleDefinition.Load(engine));
         content.Validate();
         return content;
     }
