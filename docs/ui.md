@@ -16,7 +16,7 @@ combat slab. Final sizes and colors should be tuned against the rendered scene.
 | Surface | Deliberate contents | Entry and return |
 | --- | --- | --- |
 | Exploration HUD | Small reticle/focus prompt; health and stamina at lower left; what the hands hold and ammo at lower right; equipped spirit and summon resource nearby; brief pickup/result notice | Default during play. No persistent list of action buttons, transcript, developer values, or menu column. |
-| Field case | Focused Supplies, Worn and Spirits views; readable collection/slots, one selected entry's details, and only its relevant use/wear/equip action | Inventory control opens one bounded overlay; clear Back/Close returns to exploration. Show honest empty states as domains arrive. |
+| Field case | Case (worn slots, pockets and quick pockets, and the selected pocket's or slot's details on one screen) and Spirits; only the selected entry's relevant use/wear/take-off/equip action | Inventory control opens one bounded overlay; clear Back/Close returns to exploration. Show honest empty states as domains arrive. |
 | Reading/inspection | One note, tape transcript or found object's content, with contextual navigation only where needed | Ordinary world use opens it; closing returns to the same situation. Do not turn it into a general command palette. |
 | Refuge | The current return/checkpoint interaction and its result | Use the refuge fixture to open a small contextual surface. Inventory remains in the field case; no duplicate state editor. |
 | Title menu | Centred: Continue (when the save can be continued), New expedition, Delete saved expedition (when one is saved), Options; a line saying what is saved, or why it cannot be continued | A session opens here (or straight into the save, by `expedition/title.json` `start`); the pause menu's Title menu returns here. A choice closes it into play. Escape does nothing here. |
@@ -38,7 +38,9 @@ attack. Escape closes the active surface before opening another. Avoid stacked
 inventory, pause, and console panels competing for input.
 
 Provide visible keyboard focus, readable contrast, clear selection and disabled
-reasons, and scalable layout at the supported desktop sizes. Keep essential HUD
+reasons, and scalable layout at the supported desktop sizes. Interface sizes are rem, and `main.js` sets the Engine UI
+scale from the window height (1 up to a thousand CSS pixels tall, then in step with it), so a 4K window shows the HUD
+and every screen in the same proportions as 1080p. Keep essential HUD
 facts and Close/Back controls in view. Scroll or paginate bounded collections and
 long text when appropriate; do not make the game viewport an endlessly scrolling
 document. Resource feedback must not rely on color alone.
@@ -160,18 +162,18 @@ with the supplies owner's health, ammunition and summon reserves. Brief pickup
 feedback appears above the HUD and expires on admitted simulation time.
 
 I opens the field case; Escape opens the pause menu or closes the current surface.
-The menu offers Resume hotel, Field case and Controls. Supplies has a bounded
-pocket grid, quick pockets, the case's pocket count and capacity load, and
-selected-pocket details; a wearable item's action is Wear instead of Use. Worn
-(`worn-view.js`) lists every equipment slot with what it holds; a selected slot
-shows the worn item and its Take off action, which returns it to a pocket. Spirits (`pact-view.js`) has an honest
+The menu offers Resume hotel, Field case and Controls. The Case view is one screen: what is worn on the left
+(`worn-view.js`, every equipment slot with what it holds), the bounded pocket grid, quick pockets, the case's pocket
+count and capacity load in the middle, and one detail panel on the right for the selected pocket or slot. A pocket's
+action is Use, or Wear for a wearable item; a slot's is Take off, which returns it to a pocket. Spirits (`pact-view.js`) has an honest
 empty state until a spirit is freed, then one card per pact made; the selected
 pact's details give Equip, or Let rest for the one in the pact slot, which Q calls. Real supply stacks populate the grid; selected details show their
 description, quantity and any use refusal reason. `field-case.js` owns presentation
 selection and tab navigation only. Use, Move stack and Drop are the selected supply's contextual actions. Move stack then
 a destination supports keyboard activation; pointer dragging sends the same
-move claim. Matching stacks merge and different supplies swap. Drop leaves the whole stack on the floor, and so does
-releasing a dragged stack outside the pocket grid; C# keeps expedition finds carried and holds a floor to its limit of
+move claim. Matching stacks merge and different supplies swap. Dragging a wearable stack onto the worn column wears it,
+and dragging a worn item onto the pockets takes it off, through the same wear and take-off claims. Drop leaves the
+whole stack on the floor, and so does releasing a dragged stack outside the case; C# keeps expedition finds carried and holds a floor to its limit of
 dropped stacks. All of them submit revisioned semantic actions through Engine paused delivery and redraw C# facts.
 A dropped stack lies in the world as the one generic bag (`content/models/props/dropped-bag.glb`), offered as
 "Take <item>" to the ordinary use key; it stays on its floor through revisits and checkpoints, and goes with a

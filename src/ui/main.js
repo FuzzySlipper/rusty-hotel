@@ -7,6 +7,9 @@ import { mountConsoleScreen } from './console-screen.js';
 import { mountTitleScreen } from './title-screen.js';
 import { createPauseFlow } from './pause.js';
 
+/** The window height, in CSS pixels, the interface is laid out for at UI scale 1. */
+const UI_HEIGHT = 1000;
+
 /**
  * Composition, navigation and focus only. Each screen module owns its markup and drawing;
  * Engine owns gameplay input, lifecycle and console machinery.
@@ -148,6 +151,12 @@ export function mountProductUi(root, context) {
       if (facts.refuge.title) void show('refuge');
     }
   };
+  // Sizes are rem, so the Engine UI scale sizes the whole interface: 1 up to a thousand CSS pixels of height, then in
+  // step with the window, so a 4K window shows the same proportions as 1080p.
+  const window = document.defaultView;
+  const fit = () => context.ui?.setScale?.(Math.min(4, Math.max(1, window.innerHeight / UI_HEIGHT)));
+  fit();
+  window.addEventListener('resize', fit);
   pause = createPauseFlow(context.lifecycle, drawLifecycle);
   drawLifecycle(pause.snapshot());
   layer.addEventListener('click', onClick);
@@ -164,6 +173,7 @@ export function mountProductUi(root, context) {
     layer.removeEventListener('click', onClick);
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('pointerlockchange', syncPointer);
+    window.removeEventListener('resize', fit);
     layer.remove();
   } };
 }
