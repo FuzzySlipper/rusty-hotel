@@ -1,0 +1,468 @@
+{
+  "settleSeconds": 0.15,
+  "settleEase": "QuadOut",
+  "motions": {
+    "swing": {
+      "poses": {
+        "rest": {
+          "position": [
+            0.2,
+            -0.22,
+            -0.4
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "raised": {
+          "position": [
+            0.26,
+            -0.1,
+            -0.34
+          ],
+          "rotation": [
+            30,
+            -10,
+            -15
+          ]
+        },
+        "strike": {
+          "position": [
+            0.02,
+            -0.24,
+            -0.62
+          ],
+          "rotation": [
+            -50,
+            20,
+            25
+          ]
+        },
+        "follow": {
+          "position": [
+            -0.1,
+            -0.34,
+            -0.45
+          ],
+          "rotation": [
+            -70,
+            30,
+            35
+          ]
+        },
+        "drawn": {
+          "position": [
+            0.2,
+            -0.2,
+            -0.28
+          ],
+          "rotation": [
+            10,
+            0,
+            0
+          ]
+        },
+        "jab": {
+          "position": [
+            0.1,
+            -0.14,
+            -0.8
+          ],
+          "rotation": [
+            -8,
+            0,
+            0
+          ]
+        },
+        "hookBack": {
+          "position": [
+            0.34,
+            -0.12,
+            -0.4
+          ],
+          "rotation": [
+            0,
+            -40,
+            -20
+          ]
+        },
+        "hooked": {
+          "position": [
+            -0.06,
+            -0.18,
+            -0.55
+          ],
+          "rotation": [
+            0,
+            40,
+            20
+          ]
+        }
+      },
+      "tracks": {
+        "default": [
+          {
+            "pose": "raised",
+            "phase": "Windup",
+            "at": 0.8,
+            "ease": "CubicOut"
+          },
+          {
+            "pose": "strike",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "QuadIn"
+          },
+          {
+            "pose": "follow",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "QuadOut"
+          }
+        ],
+        "prybar-shove": [
+          {
+            "pose": "drawn",
+            "phase": "Windup",
+            "at": 0.85,
+            "ease": "QuadOut"
+          },
+          {
+            "pose": "jab",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "QuadIn"
+          },
+          {
+            "pose": "jab",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "Linear"
+          }
+        ],
+        "cane-hook": [
+          {
+            "pose": "hookBack",
+            "phase": "Windup",
+            "at": 0.8,
+            "ease": "CubicOut"
+          },
+          {
+            "pose": "hooked",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "QuadIn"
+          },
+          {
+            "pose": "hooked",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "Linear"
+          }
+        ]
+      }
+    },
+    "thrust": {
+      "poses": {
+        "rest": {
+          "position": [
+            0.2,
+            -0.22,
+            -0.4
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "drawn": {
+          "position": [
+            0.22,
+            -0.18,
+            -0.26
+          ],
+          "rotation": [
+            8,
+            0,
+            0
+          ]
+        },
+        "jab": {
+          "position": [
+            0.1,
+            -0.14,
+            -0.74
+          ],
+          "rotation": [
+            -6,
+            0,
+            0
+          ]
+        }
+      },
+      "tracks": {
+        "default": [
+          {
+            "pose": "drawn",
+            "phase": "Windup",
+            "at": 0.8,
+            "ease": "QuadOut"
+          },
+          {
+            "pose": "jab",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "QuadIn"
+          },
+          {
+            "pose": "jab",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "Linear"
+          }
+        ]
+      }
+    },
+    "shot": {
+      "poses": {
+        "rest": {
+          "position": [
+            0.2,
+            -0.22,
+            -0.4
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "aim": {
+          "position": [
+            0.12,
+            -0.16,
+            -0.5
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "kick": {
+          "position": [
+            0.12,
+            -0.12,
+            -0.42
+          ],
+          "rotation": [
+            18,
+            0,
+            0
+          ]
+        },
+        "lowered": {
+          "position": [
+            0.16,
+            -0.36,
+            -0.36
+          ],
+          "rotation": [
+            -35,
+            20,
+            40
+          ]
+        }
+      },
+      "tracks": {
+        "default": [
+          {
+            "pose": "aim",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "QuadOut"
+          },
+          {
+            "pose": "kick",
+            "phase": "Commit",
+            "at": 0.3,
+            "ease": "ExpoOut"
+          },
+          {
+            "pose": "aim",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "SineOut"
+          }
+        ],
+        "pistol-reload": [
+          {
+            "pose": "lowered",
+            "phase": "Windup",
+            "at": 0.3,
+            "ease": "QuadOut"
+          },
+          {
+            "pose": "lowered",
+            "phase": "Windup",
+            "at": 0.9,
+            "ease": "Linear"
+          }
+        ]
+      }
+    },
+    "raise": {
+      "poses": {
+        "rest": {
+          "position": [
+            0.2,
+            -0.22,
+            -0.4
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "raised": {
+          "position": [
+            0.12,
+            -0.08,
+            -0.45
+          ],
+          "rotation": [
+            -10,
+            0,
+            0
+          ]
+        },
+        "rung": {
+          "position": [
+            0.13,
+            -0.06,
+            -0.45
+          ],
+          "rotation": [
+            -10,
+            0,
+            22
+          ]
+        }
+      },
+      "tracks": {
+        "default": [
+          {
+            "pose": "raised",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "CubicOut"
+          },
+          {
+            "pose": "raised",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "Linear"
+          }
+        ],
+        "bell-ring": [
+          {
+            "pose": "raised",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "CubicOut"
+          },
+          {
+            "pose": "rung",
+            "phase": "Commit",
+            "at": 0.5,
+            "ease": "ElasticOut"
+          },
+          {
+            "pose": "raised",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "QuadOut"
+          }
+        ]
+      }
+    },
+    "throw": {
+      "poses": {
+        "rest": {
+          "position": [
+            0.2,
+            -0.22,
+            -0.4
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "drawn": {
+          "position": [
+            0.26,
+            -0.06,
+            -0.28
+          ],
+          "rotation": [
+            35,
+            0,
+            0
+          ]
+        },
+        "release": {
+          "position": [
+            0.06,
+            -0.14,
+            -0.7
+          ],
+          "rotation": [
+            -30,
+            0,
+            0
+          ]
+        },
+        "follow": {
+          "position": [
+            0.02,
+            -0.3,
+            -0.5
+          ],
+          "rotation": [
+            -50,
+            0,
+            0
+          ]
+        }
+      },
+      "tracks": {
+        "default": [
+          {
+            "pose": "drawn",
+            "phase": "Windup",
+            "at": 0.85,
+            "ease": "CubicOut"
+          },
+          {
+            "pose": "release",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "QuadIn"
+          },
+          {
+            "pose": "follow",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "QuadOut"
+          }
+        ]
+      }
+    }
+  }
+}

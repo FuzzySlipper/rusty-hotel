@@ -141,7 +141,19 @@ master, its textures kept beside it as JPEG files in `textures/` rather than pac
 blender -b --python art/held-01/prepare.py
 ```
 
-Where each model sits in the hand is presentation tuning in `content/combat/held.json`, not part of the mesh.
+Where each model sits in the hand is presentation tuning in `content/combat/held.json`, not part of the mesh, and how
+it moves through its actions is `content/combat/held-motion.json` (docs/authoring.md, "Held motion").
+
+### Held motion preview
+
+```text
+python3 art/held-motion/preview.py [--looks prybar,coach-gun] [--frames 8]
+```
+
+Starts a playtest session (crew-services, profile `rusty-hotel-ui-debug`; `--session` reuses one), holds each look with
+`hotel.dev.hold`, fills the investigator's tracks with `hotel.dev.fill-tracks`, and starts each of its item's actions
+with the ordinary controls in held time, capturing world frames at even moments from start to end. Strips per look
+and action, labelled with time and phase, and `contact.png` go to `.runtime/held-motion/`. Linux tooling.
 `provenance.json` records hashes, run times and use limits.
 
 `held-02` adds eight weapons the same way (fire axe, letter opener, walking cane, candelabra, coach gun, bar darts,

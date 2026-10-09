@@ -1,4 +1,5 @@
 using System.Numerics;
+using Hotel.Game.Actions;
 using Hotel.Game.Player;
 using Hotel.Game.Content;
 using Hotel.Game.Residents;
@@ -23,6 +24,9 @@ internal sealed class CombatView : IDisposable
     private readonly List<RenderResource> models = [];
     private readonly Dictionary<string, (ulong Entity, Appearance Appearance, HeldModel Model)> held = new(StringComparer.Ordinal);
     private readonly HeldCatalog heldLooks;
+    // The action whose motion is playing on a held look, and the last action start seen.
+    private (string Look, ulong Started, TweenHandle Tween)? moving;
+    private ulong startedSeen;
     private readonly Part muzzle;
     // Enough flare boxes for the shots one hand can have in flight at once.
     private const int ShownProjectiles = 6;
@@ -71,28 +75,55 @@ internal sealed class CombatView : IDisposable
                 new(origin + Vector3.Transform(offset ?? part.Offset, rotation), rotation, size ?? part.Size), part.Appearance, visible, RenderLayer.Scene));
         residents.Publish(facts);
         Quaternion camera = Facing(player.Forward);
-        HandPose pose = heldLooks.Hand;
-        Vector3 hand = Authored.Vector(pose.Rest);
-        if (combat.Phase == AttackPhase.Windup) hand += Authored.Vector(pose.Windup) * combat.PhaseProgress;
-        if (combat.Phase == AttackPhase.Commit) hand += Authored.Vector(pose.Commit);
-        if (combat.Phase is AttackPhase.Recovery) hand.Y -= pose.RecoveryDrop;
-        Vector3 handWorld = player.Eye + Vector3.Transform(hand, camera);
+        HeldMotionCatalog motion = heldLooks.Motion;
         string? look = combat.Holding?.Item.Wear!.Look;
         foreach (var (kind, (entity, appearance, model)) in held)
         {
-            Vector3 turn = Authored.Vector(model.Rotation) * (MathF.PI / 180);
-            // The viewmodel layer is drawn in camera space (right, up, back) under its own light rig.
-            facts.Add(new(entity, false, 0, new(hand + Authored.Vector(model.Offset), Quaternion.CreateFromYawPitchRoll(turn.Y, turn.X, turn.Z), new(model.Scale)),
-                appearance, !combat.Defeated && look == kind, RenderLayer.Viewmodel));
+            // Published at rest: an action's motion is the Engine tween over it. The viewmodel layer is drawn in camera
+            // space (right, up, back) under its own light rig.
+            (Vector3 at, Quaternion turn) = motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest].Place(model);
+            facts.Add(new(entity, false, 0, new(at, turn, new(model.Scale)), appearance, !combat.Defeated && look == kind, RenderLayer.Viewmodel));
         }
-        bool firing = combat.Phase == AttackPhase.Commit && combat.User.Current?.Delivery.Kind is Actions.DeliveryKind.Hitscan or Actions.DeliveryKind.Projectile;
-        float[]? flash = look is { } shown ? heldLooks.Model(shown).Muzzle : null;
-        Place(muzzle, handWorld, camera, !combat.Defeated && firing && flash is not null, flash is null ? Vector3.Zero : Authored.Vector(flash));
+        // A firearm's flash shows while it commits, where its muzzle is in the pose the action holds then.
+        ActionDefinition? current = combat.User.Current;
+        bool firing = combat.Phase == AttackPhase.Commit && current?.Delivery.Kind is DeliveryKind.Hitscan or DeliveryKind.Projectile;
+        Vector3 flash = Vector3.Zero;
+        if (firing && look is { } shown && heldLooks.Model(shown) is { Muzzle: { } muzzlePoint } firearm)
+        {
+            HeldPose pose = motion.PoseAt(firearm, current!, current!.Timing.Windup);
+            flash = Authored.Vector(pose.Position) + Vector3.Transform(Authored.Vector(muzzlePoint), pose.Turn);
+        }
+        else firing = false;
+        Place(muzzle, player.Eye, camera, !combat.Defeated && firing, flash);
         for (int i = 0; i < flares.Length; i++)
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         scene.PublishCombat(facts.ToArray());
+        Move(look);
         residents.Animate();
     }
+
+    // Starts the Engine tween that carries the held model through an action as the action starts, and eases it back to
+    // rest when the action is cut short (interrupted, held, overwhelmed) or the hands change what they hold.
+    private void Move(string? look)
+    {
+        HeldMotionCatalog motion = heldLooks.Motion;
+        ActionDefinition? current = combat.User.Current;
+        if (moving is { } playing && (current is null || playing.Look != look) && playing.Started == combat.User.Started && Running(playing.Tween))
+        {
+            engine.Tween.Start(new TweenStartRequest(held[playing.Look].Entity, motion.Settle()) with { Start = TweenStart.FromPresented });
+            moving = null;
+        }
+        if (combat.User.Started == startedSeen) return;
+        startedSeen = combat.User.Started;
+        if (current is null || look is null) return;
+        if (moving is { } previous && previous.Look != look) engine.Tween.Control(new TweenControlRequest(previous.Tween, TweenControl.Cancel));
+        // From the pose shown, so an action straight after another (or after a settle) carries on without a jump.
+        TweenHandle tween = engine.Tween.Start(new TweenStartRequest(held[look].Entity, motion.Timeline(heldLooks.Model(look), current))
+            with { Start = TweenStart.FromPresented }).Tween;
+        moving = (look, combat.User.Started, tween);
+    }
+
+    private bool Running(TweenHandle tween) => engine.Tween.Read(tween).State != TweenState.Ended;
 
     private static Quaternion Facing(Vector3 forward)
     {

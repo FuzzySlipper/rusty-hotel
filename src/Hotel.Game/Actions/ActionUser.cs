@@ -18,6 +18,8 @@ internal sealed class ActionUser
     private float remaining;
 
     internal ActionDefinition? Current { get; private set; }
+    /// <summary>Counts actions begun, so a presentation can tell a new action from the same one again.</summary>
+    internal ulong Started { get; private set; }
     internal ActionPhase Phase { get; private set; }
     /// <summary>The direction committed when the action started; strafing out of it evades it.</summary>
     internal Vector3 Aim { get; private set; }
@@ -37,6 +39,7 @@ internal sealed class ActionUser
     internal void Begin(ActionDefinition action, Vector3 aim)
     {
         Current = action;
+        Started++;
         Aim = aim;
         Phase = ActionPhase.Windup;
         remaining = action.Timing.Windup;

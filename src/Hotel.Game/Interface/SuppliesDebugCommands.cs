@@ -11,6 +11,24 @@ internal sealed class SuppliesDebugCommands(Func<HotelSupplies> current, Action 
     [DebugCommand("hotel.dev.give-supply", Description = "Developer fixture: add carried supplies through inventory capacity rules.")]
     public DebugCommandResult Give(string item, int count) => Result(supplies.Give(item, count));
 
+    [DebugCommand("hotel.dev.hold", Description = "Developer fixture: give one of a held item and wear it in the main hand through the ordinary wear rules (what was there goes to a pocket).")]
+    public DebugCommandResult Hold(string item)
+    {
+        if (!supplies.Give(item, 1)) return Result(false);
+        int pocket = Enumerable.Range(0, supplies.Capacity).Last(i => supplies.Slot(i)?.Item == item);
+        int main = Array.IndexOf(supplies.Definition.Slots, supplies.Definition.HandSlot(Hand.Main));
+        return Result(supplies.Wear(pocket, supplies.Revision, main));
+    }
+
+    [DebugCommand("hotel.dev.fill-tracks", Description = "Developer fixture: fill every investigator track (health, stamina, summon, ammunition) to its maximum.")]
+    public DebugCommandResult Fill()
+    {
+        foreach (var track in supplies.Stats.Mechanics.Tracks) supplies.Stats.Track(track.Id).SetCurrent(supplies.Stats.Track(track.Id).MaximumValue);
+        supplies.Changed();
+        publish();
+        return DebugCommandResult.Success("Filled every track.");
+    }
+
     [DebugCommand("hotel.dev.set-health", Description = "Developer fixture: set health within its authored bounds.")]
     public DebugCommandResult Health(int value) => Result(supplies.SetHealth(value));
 

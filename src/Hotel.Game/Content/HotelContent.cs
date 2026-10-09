@@ -68,6 +68,10 @@ internal sealed record HotelContent(ControlBindings Controls, PlayerTuning Playe
             if (Supplies.Items[i].Wear?.Look is string look)
                 Authored.Require(Combat.Held.Looks.Any(l => l.Look == look), ItemCatalog.Path, $"items[{i}].wear.look",
                     $"unknown look '{look}' in {Hotel.Game.Combat.HeldCatalog.Path}.");
+        // Every look moves by a motion that has keys, in time order, for every action its items grant.
+        Combat.Held.Motion.Validate(Hotel.Game.Combat.HeldCatalog.Path, Combat.Held.Looks, Supplies.Items
+            .Where(i => i.Wear?.Look is not null)
+            .SelectMany(i => i.Wear!.Actions.Select(a => (i.Wear.Look!, Combat.Actions.Action(a)!))));
         Unique(Combat.Residents.Select(r => r.Id), ResidentCatalog.Path, "residents");
 
         string plan = Excursion.PlanPath, route = Excursion.RoutePath, placements = Excursion.PlacementsPath;

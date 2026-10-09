@@ -44,7 +44,8 @@ its own folder. Geometry is kept apart from tuning.
 | `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
 | `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height, the loot table its remains give and the experience felling it gives; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
-| `combat/held.json` | First-person held items: the hand's rest and phase offsets, the muzzle flash size, and per held look (an id that held items name) its model, offset, rotation, scale and muzzle point, in camera space; `CombatView`, drawn on the Engine viewmodel layer |
+| `combat/held.json` | First-person held items: the muzzle flash size, and per held look (an id that held items name) its model, offset, rotation and scale in the hand, the `motion` it moves by, its `grips` (where hands hold it, in the model's own space: `main`, optional `off`) and muzzle point; `CombatView`, drawn on the Engine viewmodel layer |
+| `combat/held-motion.json` | How held looks move through their actions: per motion, named hand `poses` (camera-space `position`, `rotation` in degrees, with a `rest` pose) and `tracks` by action id (or `default`) of keys `{pose, phase, at, ease}`; `HeldMotionCatalog` builds each action's Engine tween timeline. See "Held motion" below |
 | `combat/looks.json` | Resident looks: the rigged model, its scale and turn, the clip for each state, the strike's moment in the attack clip and the tell light; `ResidentView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
@@ -144,6 +145,23 @@ names what is worn and held at the start, by item and slots.
 Wearing into a full slot trades places with what it held. The first `quickPockets` pockets are the belt the quick keys
 use: consumables are stacks, and Engine equipment holds single items only, so the belt is pocket layout rather than an
 equipment slot. A description names a restored amount by its track (`{health}`).
+
+## Held motion
+
+A held look moves through each action by its motion in `combat/held-motion.json`. A motion names hand poses in
+camera space (metres right, up, back; rotation in degrees about X, Y and Z), one of them `rest`, where the hand sits
+between actions. A track lists keys for an action, by action id or `default`: at `at` (0 to 1) through `phase`
+(`Windup`, `Commit` or `Recovery`), the hand reaches `pose`, easing in by `ease`, a named Engine curve (`Linear`, or
+`Quad`, `Cubic`, `Quart`, `Quint`, `Sine`, `Expo`, `Circ`, `Back`, `Elastic` or `Bounce` followed by `In`, `Out` or
+`InOut`). Keys are timed from the action's own timing, so the end of windup is the strike whatever the weapon's
+speed; a key at `Windup` 1 lands its pose with the hit. Two keys on one pose hold it. The motion always returns to
+`rest` by the end of recovery (easing by `settleEase`), and an action cut short eases back from wherever it was over
+`settleSeconds`. The Engine plays each action's keys as one tween over the held model, at the display's rate and on
+world time; a firearm's flash shows where its muzzle is in the pose held at the strike. Content checks the poses,
+curves, and that every action an item grants has keys in time order.
+
+To see a change, `python3 art/held-motion/preview.py [--looks prybar]` renders each look's actions as strips of
+first-person frames from start to end (see `art/README.md`).
 
 ## Loot and generated items
 
