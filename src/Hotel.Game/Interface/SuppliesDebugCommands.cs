@@ -29,6 +29,17 @@ internal sealed class SuppliesDebugCommands(Func<HotelSupplies> current, Action 
         return DebugCommandResult.Success("Filled every track.");
     }
 
+    [DebugCommand("hotel.dev.set-track", Description = "Developer fixture: set one investigator track (e.g. ammunition) within its bounds.")]
+    public DebugCommandResult SetTrack(string track, int value)
+    {
+        if (!supplies.Stats.Mechanics.Tracks.Any(t => t.Id == track))
+            return DebugCommandResult.Failure(DebugCommandStatus.InvalidArguments, $"Unknown track '{track}'.");
+        supplies.Stats.Track(track).SetCurrent(value, clamp: true);
+        supplies.Changed();
+        publish();
+        return DebugCommandResult.Success($"{track} is {supplies.Stats.Track(track).ValueInt}.");
+    }
+
     [DebugCommand("hotel.dev.set-health", Description = "Developer fixture: set health within its authored bounds.")]
     public DebugCommandResult Health(int value) => Result(supplies.SetHealth(value));
 

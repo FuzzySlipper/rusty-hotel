@@ -270,6 +270,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         registrar.Register(new InteractionDebugModule(interaction));
         registrar.Register(new HotelDebugCommands(developer));
         registrar.Register(new SuppliesDebugCommands(() => world.Supplies, PublishInterface));
+        registrar.Register(new HeldMotionDebugCommands(() => world.CombatView, content.Combat.Held, content.Combat.Actions));
     }
 
     /// <summary>The world interaction reads whichever floor's route is current.</summary>

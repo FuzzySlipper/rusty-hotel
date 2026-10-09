@@ -62,6 +62,8 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.inspect` | Observe current domain facts; does not change gameplay |
 | `interaction.inspect` / `interaction.use` | Engine world-interaction inspection/assisted use, retaining reach, visibility, revision and eligibility checks |
 | `hotel.dev.hold <item>` | Give one of a held item and wear it in the main hand through the ordinary wear rules |
+| `hotel.dev.set-track <track> <value>` | Set one investigator track (for example `ammunition`) within its bounds |
+| `hotel.dev.motion <look> <action>` and `.key`, `.next`, `.prev`, `.play`, `.pose`, `.off` | The held-motion viewer: step a look's action keys, play it at a speed, try pose changes (docs/authoring.md, "Held motion") |
 | `hotel.dev.fill-tracks` | Fill every investigator track (health, stamina, summon, ammunition) to its maximum |
 | `hotel.dev.return-to-entrance` | Reset live player, supplies, residents, pact and route to initial state; leave the existing checkpoint intact |
 | `hotel.dev.floor.module <id> <turn>` | Build one room module alone beside the hotel at a quarter turn, with porches outside its doorways, and stand on its first porch facing in; `hotel.dev.goto` returns. Changes no saved state |

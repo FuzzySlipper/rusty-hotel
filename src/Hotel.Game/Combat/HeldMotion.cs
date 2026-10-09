@@ -79,9 +79,12 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
     /// <summary>
     /// The tween timeline that moves a held model through an action: from rest, through each key's pose by its curve,
     /// back to rest by the end of recovery. Values are offsets from where the model is published at rest: a translation
-    /// in camera space and a rotation in the model's own frame, as the Engine applies them.
+    /// in camera space and a rotation in the model's own frame, as the Engine applies them. An action already
+    /// <paramref name="elapsed"/> seconds along starts there: what has passed is dropped and the key under way eases
+    /// toward its pose over the time it has left (from the pose shown, so started <c>FromPresented</c>), so every key
+    /// still lands at its moment of the action. <paramref name="speed"/> plays it faster or slower (a viewer's slow motion).
     /// </summary>
-    internal TweenSegment[] Timeline(HeldModel look, ActionDefinition action)
+    internal TweenSegment[] Timeline(HeldModel look, ActionDefinition action, float elapsed = 0, float speed = 1)
     {
         HeldMotion motion = Motions[look.Motion];
         HeldPose rest = motion.Poses[Rest];
@@ -97,10 +100,15 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
         float start = 0;
         void Ease((Vector3 Move, Quaternion Turn) to, float time, TweenEasingKind ease)
         {
-            float seconds = time - start;
-            if (seconds <= 0) return;
-            segments.Add(TweenSegment.Move(from.Move, to.Move, seconds, ease).At(start));
-            segments.Add(TweenSegment.Rotate(from.Turn, to.Turn, seconds, ease).At(start));
+            if (time - start <= 0) return;
+            // On the timeline as played: from the elapsed moment, at the chosen speed.
+            float begin = Math.Max(start, elapsed), end = time;
+            if (end > elapsed)
+            {
+                float at = (begin - elapsed) / speed, seconds = (end - begin) / speed;
+                segments.Add(TweenSegment.Move(from.Move, to.Move, seconds, ease).At(at));
+                segments.Add(TweenSegment.Rotate(from.Turn, to.Turn, seconds, ease).At(at));
+            }
             from = to;
             start = time;
         }

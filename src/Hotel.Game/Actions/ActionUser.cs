@@ -20,6 +20,8 @@ internal sealed class ActionUser
     internal ActionDefinition? Current { get; private set; }
     /// <summary>Counts actions begun, so a presentation can tell a new action from the same one again.</summary>
     internal ulong Started { get; private set; }
+    /// <summary>Seconds since the current action began.</summary>
+    internal float Elapsed { get; private set; }
     internal ActionPhase Phase { get; private set; }
     /// <summary>The direction committed when the action started; strafing out of it evades it.</summary>
     internal Vector3 Aim { get; private set; }
@@ -40,6 +42,7 @@ internal sealed class ActionUser
     {
         Current = action;
         Started++;
+        Elapsed = 0;
         Aim = aim;
         Phase = ActionPhase.Windup;
         remaining = action.Timing.Windup;
@@ -56,6 +59,7 @@ internal sealed class ActionUser
             if ((cooldowns[id] -= seconds) <= 0) cooldowns.Remove(id);
         if (Current is not { } action) return null;
         remaining -= seconds;
+        Elapsed += seconds;
         ActionDefinition? landed = null;
         while (remaining <= 0 && Current is not null)
             switch (Phase)

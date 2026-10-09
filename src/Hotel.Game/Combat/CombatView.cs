@@ -76,12 +76,14 @@ internal sealed class CombatView : IDisposable
         residents.Publish(facts);
         Quaternion camera = Facing(player.Forward);
         HeldMotionCatalog motion = heldLooks.Motion;
-        string? look = combat.Holding?.Item.Wear!.Look;
+        // The developer motion viewer shows its look in place of what the hands hold.
+        string? look = viewing?.Look ?? combat.Holding?.Item.Wear!.Look;
         foreach (var (kind, (entity, appearance, model)) in held)
         {
             // Published at rest: an action's motion is the Engine tween over it. The viewmodel layer is drawn in camera
-            // space (right, up, back) under its own light rig.
-            (Vector3 at, Quaternion turn) = motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest].Place(model);
+            // space (right, up, back) under its own light rig. The viewer may hold a key's pose instead.
+            HeldPose pose = viewing is { Pose: { } shownPose } && viewing.Value.Look == kind ? shownPose : motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest];
+            (Vector3 at, Quaternion turn) = pose.Place(model);
             facts.Add(new(entity, false, 0, new(at, turn, new(model.Scale)), appearance, !combat.Defeated && look == kind, RenderLayer.Viewmodel));
         }
         // A firearm's flash shows while it commits, where its muzzle is in the pose the action holds then.
@@ -98,7 +100,7 @@ internal sealed class CombatView : IDisposable
         for (int i = 0; i < flares.Length; i++)
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         scene.PublishCombat(facts.ToArray());
-        Move(look);
+        if (viewing is null) Move(look);
         residents.Animate();
     }
 
@@ -110,7 +112,7 @@ internal sealed class CombatView : IDisposable
         ActionDefinition? current = combat.User.Current;
         if (moving is { } playing && (current is null || playing.Look != look) && playing.Started == combat.User.Started && Running(playing.Tween))
         {
-            engine.Tween.Start(new TweenStartRequest(held[playing.Look].Entity, motion.Settle()) with { Start = TweenStart.FromPresented });
+            Motion = engine.Tween.Start(new TweenStartRequest(held[playing.Look].Entity, motion.Settle()) with { Start = TweenStart.FromPresented }).Tween;
             moving = null;
         }
         if (combat.User.Started == startedSeen) return;
@@ -118,10 +120,48 @@ internal sealed class CombatView : IDisposable
         if (current is null || look is null) return;
         if (moving is { } previous && previous.Look != look) engine.Tween.Control(new TweenControlRequest(previous.Tween, TweenControl.Cancel));
         // From the pose shown, so an action straight after another (or after a settle) carries on without a jump.
-        TweenHandle tween = engine.Tween.Start(new TweenStartRequest(held[look].Entity, motion.Timeline(heldLooks.Model(look), current))
+        // As far along as the action already is: one update can admit several steps after it began.
+        TweenHandle tween = engine.Tween.Start(new TweenStartRequest(held[look].Entity, motion.Timeline(heldLooks.Model(look), current, combat.User.Elapsed))
             with { Start = TweenStart.FromPresented }).Tween;
         moving = (look, combat.User.Started, tween);
+        Motion = tween;
     }
+
+    // The developer motion viewer: the look it shows, and the pose it holds (null while playing or at rest).
+    private (string Look, HeldPose? Pose)? viewing;
+
+    /// <summary>Developer motion viewer: shows a look in place of what the hands hold, at rest; null returns to play.</summary>
+    internal void View(string? look)
+    {
+        if (moving is { } playing) engine.Tween.Control(new TweenControlRequest(playing.Tween, TweenControl.Cancel));
+        if (Motion.Value != 0) engine.Tween.Control(new TweenControlRequest(Motion, TweenControl.Cancel));
+        moving = null;
+        startedSeen = combat.User.Started;
+        viewing = look is null ? null : (look, null);
+        Publish();
+    }
+
+    /// <summary>Developer motion viewer: holds the shown look in a pose exactly (no tween), or at rest for null.</summary>
+    internal void Hold(HeldPose? pose)
+    {
+        if (viewing is not { } view) return;
+        if (Motion.Value != 0) engine.Tween.Control(new TweenControlRequest(Motion, TweenControl.Cancel));
+        viewing = (view.Look, pose);
+        Publish();
+    }
+
+    /// <summary>Developer motion viewer: plays an action's motion on the shown look from rest, at a speed.</summary>
+    internal void Play(ActionDefinition action, float speed)
+    {
+        if (viewing is not { } view) return;
+        viewing = (view.Look, null);
+        Publish();
+        Motion = engine.Tween.Start(new TweenStartRequest(held[view.Look].Entity,
+            heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, 0, speed))).Tween;
+    }
+
+    /// <summary>The held model's latest motion tween: an action's timeline, or the settle after one was cut short.</summary>
+    internal TweenHandle Motion { get; private set; }
 
     private bool Running(TweenHandle tween) => engine.Tween.Read(tween).State != TweenState.Ended;
 

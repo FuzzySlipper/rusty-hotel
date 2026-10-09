@@ -160,8 +160,21 @@ speed; a key at `Windup` 1 lands its pose with the hit. Two keys on one pose hol
 world time; a firearm's flash shows where its muzzle is in the pose held at the strike. Content checks the poses,
 curves, and that every action an item grants has keys in time order.
 
-To see a change, `python3 art/held-motion/preview.py [--looks prybar]` renders each look's actions as strips of
-first-person frames from start to end (see `art/README.md`).
+An action already under way when the product publishes (an update can admit several steps) starts its timeline that
+far along, so the keys stay on their moments.
+
+To work on a motion live, open the developer console (F2 in a developer session) and use the motion viewer:
+
+| Command | Does |
+| --- | --- |
+| `hotel.dev.motion <look> <action>` | Shows that look in first person at rest in place of what the hands hold, and lists the action's keys with their times and curves |
+| `hotel.dev.motion.key <n>`, `.next`, `.prev` | Holds the look exactly in a key's pose (`-1` is rest) |
+| `hotel.dev.motion.play <speed>` | Plays the action's motion from rest; `1` is as in play, `0.25` a quarter speed. Tweens follow world time, so it plays once the console is closed and the hotel resumes |
+| `hotel.dev.motion.pose <name> <x> <y> <z> <rx> <ry> <rz>` | Changes a pose of the shown motion in the loaded content (play uses it too) and prints its JSON to paste into `held-motion.json`; nothing is written to disk |
+| `hotel.dev.motion.off` | Returns the hands to what they hold |
+
+For a record of every look at once, `python3 art/held-motion/preview.py [--looks prybar]` renders each look's actions
+as strips of first-person frames from start to end (see `art/README.md`).
 
 ## Loot and generated items
 
