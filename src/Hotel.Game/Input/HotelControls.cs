@@ -20,7 +20,8 @@ internal sealed class HotelControls(ControlBindings bindings)
     internal static FpsInputBindings Fps(ControlBindings bindings, FpsInputBindings standard) => standard with
     {
         ForwardKey = bindings.Walk.Forward, BackwardKey = bindings.Walk.Backward,
-        LeftKey = bindings.Walk.Left, RightKey = bindings.Walk.Right, UseKey = bindings.Use.Keys![0]
+        LeftKey = bindings.Walk.Left, RightKey = bindings.Walk.Right, UseKey = bindings.Use.Keys![0],
+        SprintKey = bindings.Run.Keys![0], JumpKey = bindings.Jump.Keys![0]
     };
 
     internal void Step(float admittedSeconds) => openingRemaining = Math.Max(0, openingRemaining - admittedSeconds);
@@ -34,7 +35,8 @@ internal sealed class HotelControls(ControlBindings bindings)
     /// <summary>Every row of the Controls screen, in reading order.</summary>
     internal (string Name, string Label)[] Rows =>
     [
-        (bindings.Walk.Name, bindings.Walk.Label), (bindings.Look.Name, bindings.Look.Label),
+        (bindings.Walk.Name, bindings.Walk.Label), (bindings.Run.Name, bindings.Run.Label), (bindings.Jump.Name, bindings.Jump.Label),
+        (bindings.Look.Name, bindings.Look.Label),
         (bindings.Primary.Name, bindings.Primary.Label), (bindings.Secondary.Name, bindings.Secondary.Label),
         (bindings.SwapHands.Name, bindings.SwapHands.Label),
         (Template.Fill(bindings.Text.QuickPocketsName, ("first", Pocket(0)), ("last", Pocket(bindings.QuickPockets.Length - 1))),

@@ -106,6 +106,23 @@ internal sealed class HotelSupplies
 
     internal ItemStack? Slot(int index) => fieldCase.Slot(index);
 
+    /// <summary>
+    /// Spends stamina on exertion (a stride at a run, a jump); false, spending nothing, when none is left. Stamina is
+    /// whole points, so a fraction is owed until it comes to a point, as regeneration accrues.
+    /// </summary>
+    internal bool Exert(float amount)
+    {
+        Rusty.Engine.Mechanics.Track stamina = Stats.Track(StaminaTrack);
+        if (Health == 0 || stamina.Value <= 0) return false;
+        exertionOwed += amount;
+        int whole = (int)exertionOwed;
+        if (whole == 0) return true;
+        if (!stamina.TrySpend(Math.Min(whole, stamina.Value))) return false;
+        exertionOwed -= whole;
+        return true;
+    }
+    private float exertionOwed;
+
     /// <summary>Marks the investigator changed by another owner (an action's cost, a hit landed by combat): a new revision.</summary>
     internal void Changed() => Revision++;
     internal ItemDefinition Item(string id) => definition.Item(id)!;

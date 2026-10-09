@@ -22,10 +22,12 @@ Click the hotel view to capture the mouse. Menu → Controls also lists bindings
 | Control | Action |
 | --- | --- |
 | WASD / mouse | Walk / look |
+| Shift (held) | Run, spending stamina |
+| Space | Jump |
 | E | Use the focused object, collect a find, read or open a door |
 | Left click / left Ctrl | Commit one attack per press |
-| 1 / 2 | Select pry bar / survey pistol |
-| R | Use carried cartridges while exploring; recover the checkpoint when downed |
+| X | Swap what the hands hold |
+| R / right click | The held item's second action; recover the checkpoint when downed |
 | Q | Call the equipped spirit toward a living resident in range |
 | 3 / 4 / 5 | Use the first three field-case pockets |
 | I | Open the field case |

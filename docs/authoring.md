@@ -25,7 +25,7 @@ its own folder. Geometry is kept apart from tuning.
 | File | Meaning and owner |
 | --- | --- |
 | `input/bindings.json` | Every control: Engine keys/pointer buttons for game actions, browser codes for screen shortcuts, labels, Controls-screen names, one binding per quick pocket, and the opening hint; `HotelControls` |
-| `player/tuning.json` | Body/camera dimensions, movement and look tuning; `HotelPlayer` |
+| `player/tuning.json` | Body/camera dimensions, movement (walk and run speed, the stamina a run spends a second and a jump spends, jump height) and look tuning; `HotelPlayer` |
 | `route/interaction.json` | Reach and focus distances/angles for every world interaction; `HotelRoute` |
 | `route/messages.json` | Focus prompt wording and the labels of the take/notebook interactions; `HotelRoute` |
 | `interface/tuning.json` | Field-case pocket count and how many appear as HUD quick pockets; `HotelHud`, `HotelSupplies` |

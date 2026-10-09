@@ -1,3 +1,5 @@
+using System.Numerics;
+using Hotel.Game.Player;
 using Hotel.Game.Content;
 using Hotel.Game.Floors;
 using Hotel.Game.Input;
@@ -29,7 +31,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     private readonly HotelDeveloper developer;
     private HotelWorld world;
     private (ExcursionDefinition Excursion, int Depth, StairDirection Way)? pendingTravel;
-    private bool pendingUse, pendingPrimary, pendingSecondary, pendingSwap, pendingSummon;
+    private bool pendingJump, pendingUse, pendingPrimary, pendingSecondary, pendingSwap, pendingSummon;
     private int pendingQuick = -1;
     private bool disposed;
     private ulong step;
@@ -69,6 +71,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         PhysicalInputState physical = world.Player.Input.Physical;
         ControlBindings bound = controls.Bindings;
         pendingUse |= input.UsePressed;
+        pendingJump |= input.JumpPressed;
         pendingSummon |= HotelControls.Pressed(physical, bound.Summon);
         pendingPrimary |= HotelControls.Pressed(physical, bound.Primary);
         pendingSecondary |= HotelControls.Pressed(physical, bound.Secondary);
@@ -86,7 +89,13 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             if (pendingSummon) { pendingSummon = false; w.Spirit.Call(); }
             // The investigator's pace scales their stride; a hold or defeat stops it.
             float pace = w.Combat.Defeated || w.Supplies.Stats.Effects.Held ? 0 : w.Supplies.Stats.Pace;
-            w.Player.Step(input with { Movement = input.Movement * pace }, (float)update.Facts.FixedDeltaSeconds, w.Combat.Obstacles);
+            float seconds = (float)update.Facts.FixedDeltaSeconds;
+            PlayerTuning body = w.Player.Tuning;
+            // Running and jumping spend stamina; without enough the investigator walks, or stays on the ground.
+            bool run = input.SprintHeld && pace > 0 && input.Movement != Vector2.Zero && w.Supplies.Exert(body.RunStaminaPerSecond * seconds);
+            bool jump = pendingJump && pace > 0 && w.Player.Grounded && w.Supplies.Exert(body.JumpStamina);
+            pendingJump = false;
+            w.Player.Step(input with { Movement = input.Movement * pace }, seconds, w.Combat.Obstacles, run, jump);
             w.Combat.Step((float)update.Facts.FixedDeltaSeconds);
             w.Spirit.Step((float)update.Facts.FixedDeltaSeconds);
             w.Supplies.Step((float)update.Facts.FixedDeltaSeconds);
@@ -104,7 +113,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         return ProductUpdateResult.None;
     }
 
-    internal void ClearActions() { pendingUse = pendingPrimary = pendingSecondary = pendingSwap = pendingSummon = false; pendingQuick = -1; }
+    internal void ClearActions() { pendingJump = pendingUse = pendingPrimary = pendingSecondary = pendingSwap = pendingSummon = false; pendingQuick = -1; }
 
     public void HandlePausedIntents(ReadOnlySpan<ProductInputEvent> intents)
     {

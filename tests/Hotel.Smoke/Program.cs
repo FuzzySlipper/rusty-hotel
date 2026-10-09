@@ -59,6 +59,23 @@ host.Call(engine =>
     Advance(0, default(ProductInputEvent) with { Kind = InputEventKind.Clear });
     Stationary("input clear releases held walk");
 
+    // Running: a faster stride that spends stamina; jumping lifts the feet off the floor and lands them again.
+    var body = content.Player;
+    int rested = product.World.Supplies.Stamina;
+    Vector3 start = Position();
+    Advance(60, Key(KeyboardControl.KeyW), Key(KeyboardControl.ShiftLeft));
+    float ran = start.Z - Position().Z;
+    Check(ran > body.Speed * 1.3f && ran < body.RunSpeed * 1.05f && product.World.Supplies.Stamina < rested,
+        $"running covers more ground than walking and spends stamina: {ran:F2} m, stamina {rested} to {product.World.Supplies.Stamina}");
+    Advance(0, default(ProductInputEvent) with { Kind = InputEventKind.Clear });
+    Stationary("input clear releases a run");
+    float floor = Position().Y, peak = floor;
+    Advance(1, Key(KeyboardControl.Space));
+    for (int i = 0; i < 90; i++) { Advance(1); peak = MathF.Max(peak, Position().Y); }
+    Check(peak - floor > body.JumpHeight * .8f && peak - floor < body.JumpHeight * 1.2f && MathF.Abs(Position().Y - floor) < .02f,
+        $"a jump rises about its authored height and lands: {peak - floor:F2} m");
+    Advance(0, default(ProductInputEvent) with { Kind = InputEventKind.Clear });
+
     Advance(0, Key(KeyboardControl.KeyW));
     Vector3 beforePause = Position();
     product.Pause();

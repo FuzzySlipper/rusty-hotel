@@ -8,6 +8,22 @@
     "left": "KeyA",
     "right": "KeyD"
   },
+  "run": {
+    "name": "Run (spends stamina)",
+    "shortName": "Run",
+    "label": "Shift",
+    "keys": [
+      "ShiftLeft"
+    ]
+  },
+  "jump": {
+    "name": "Jump",
+    "shortName": "Jump",
+    "label": "Space",
+    "keys": [
+      "Space"
+    ]
+  },
   "look": {
     "name": "Look around",
     "shortName": "Look",

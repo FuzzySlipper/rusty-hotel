@@ -14,7 +14,7 @@ internal sealed class HotelPlayer : IDisposable
     private readonly HotelScene scene;
     private readonly PlayerTuning tuning;
     private readonly ArrivalPlacement arrival;
-    private readonly CharacterControllerConfig config;
+    private readonly CharacterControllerConfig walking, running;
     private readonly Camera camera;
     private ulong commandSequence;
     private bool cut = true;
@@ -25,7 +25,8 @@ internal sealed class HotelPlayer : IDisposable
         this.scene = scene;
         this.tuning = tuning;
         this.arrival = arrival;
-        config = tuning.Controller(engine.Spatial);
+        walking = tuning.Body(engine.Spatial, running: false);
+        running = tuning.Body(engine.Spatial, running: true);
         Input = new FpsInput(FpsInputConfig.Standard with
         {
             Bindings = HotelControls.Fps(controls, FpsInputConfig.Standard.Bindings),
@@ -42,6 +43,8 @@ internal sealed class HotelPlayer : IDisposable
     internal FpsInput Input { get; }
     internal LookState LookState { get; private set; }
     internal Vector3 Position => scene.Entities.Get(scene.PlayerEntity, EngineComponentTypes.Transform).Translation;
+    /// <summary>Whether the body stands on ground (so a jump can start).</summary>
+    internal bool Grounded => Motion.Grounded;
     internal CharacterMotion Motion => scene.Entities.Get(scene.PlayerEntity, EngineComponentTypes.CharacterMotion);
     internal Vector3 Eye => Position + Vector3.UnitY * (tuning.EyeHeight - tuning.Height / 2);
     /// <summary>Where the investigator's feet meet the floor.</summary>
@@ -57,12 +60,13 @@ internal sealed class HotelPlayer : IDisposable
         return frame;
     }
 
-    internal void Step(FpsInputFrame input, float delta, ReadOnlyMemory<CharacterObstacle> obstacles = default)
+    /// <summary>One admitted step of the body: walking, or at a run, and a jump when <paramref name="jump"/> starts one.</summary>
+    internal void Step(FpsInputFrame input, float delta, ReadOnlyMemory<CharacterObstacle> obstacles = default, bool run = false, bool jump = false)
     {
         CharacterStepReceipt receipt = engine.Spatial.ProposeCharacterStep(new CharacterStepRequest(
             scene.Session, Position, Motion, default, obstacles,
-            ReadOnlyMemory<CharacterMeshInstance>.Empty, config,
-            new CharacterControllerCommand(input.Movement, LookState.YawRadians, false, false, false,
+            ReadOnlyMemory<CharacterMeshInstance>.Empty, run ? running : walking,
+            new CharacterControllerCommand(input.Movement, LookState.YawRadians, jump, jump, false,
                 Vector3.Zero, Vector3.Zero, delta, ++commandSequence)));
         scene.Entities.Set(scene.PlayerEntity, EngineComponentTypes.Transform, receipt.Transform);
         scene.Entities.Set(scene.PlayerEntity, EngineComponentTypes.CharacterMotion, receipt.Motion);
