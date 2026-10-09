@@ -30,6 +30,7 @@ internal static class KitBuilder
         builder.ResolveLinks();
         foreach (Space space in builder.Spaces) builder.BuildSpace(space);
         builder.BuildFrames();
+        builder.BuildPilasters();
         builder.PlaceFixtures();
         return builder.Result();
     }
@@ -87,6 +88,7 @@ internal static class KitBuilder
         private readonly Dictionary<string, BuiltOpening> openings = new(StringComparer.Ordinal);
         private readonly Dictionary<(int Space, WallEdge Edge), List<Cut>> cuts = [];
         private readonly List<(LinkDefinition Link, int Index, BuiltOpening Opening)> frames = [];
+        private readonly List<(string Name, Vector3 Min, Vector3 Max)> pilasters = [];
         private float Half => kit.WallThickness / 2;
 
         internal List<Space> Spaces { get; } = [];
@@ -147,6 +149,7 @@ internal static class KitBuilder
                     Authored.Require(plan.Links.Count(l => SamePair(l, link)) == 1, path, $"{at}.kind",
                         "an open link removes the whole shared wall, so it must be the pair's only link.");
                     cut = new(from, to, true, 0, height);
+                    OuterCorners(link, a, b, edge, from, to, height);
                 }
                 else
                 {
@@ -165,6 +168,7 @@ internal static class KitBuilder
                     BuiltOpening opening = new(link, start, end, Space.Outward(edge), link.Sill, openingHeight);
                     openings.Add(link.Id, opening);
                     if (link.Frame is not null) frames.Add((link, i, opening));
+                    else if (link.Kind == LinkKind.Passage) Casings(link, alongX, line, lo, hi, openingHeight);
                 }
                 foreach (var (space, side) in new[] { (a, edge), (b, Space.Opposite(edge)) })
                 {
@@ -257,6 +261,39 @@ internal static class KitBuilder
                 Vector3 max = alongZ ? new(space.MaxX - Half, space.Height, p + seams.Width) : new(p + seams.Width, space.Height, space.MaxZ - Half);
                 Add($"{space.Definition.Id} ceiling seam", min, max, seams.Material, false);
             }
+        }
+
+        // Where an open link ends and only one space's wall runs on past it, that wall turns an outer corner: its face meets
+        // the end of the other space's wall, half a thickness into the opening. A pilaster stands centred on that corner.
+        private void OuterCorners(LinkDefinition link, Space a, Space b, WallEdge edge, float from, float to, float height)
+        {
+            (float line, float aFrom, float aTo, bool alongX) = a.Edge(edge);
+            (_, float bFrom, float bTo, _) = b.Edge(Space.Opposite(edge));
+            Vector3 along = alongX ? Vector3.UnitX : Vector3.UnitZ, outward = Space.Outward(edge), across = Vector3.Abs(outward);
+            float w = kit.Pilaster.Width / 2;
+            foreach (var (end, into, aRuns, bRuns) in new[] { (from, 1f, aFrom < from - Tolerance, bFrom < from - Tolerance),
+                (to, -1f, aTo > to + Tolerance, bTo > to + Tolerance) })
+            {
+                if (aRuns == bRuns) continue;
+                // On the face of the space whose wall runs on: a's face is toward a, against its outward normal.
+                Vector3 corner = along * (end + into * Half) + across * line + outward * (aRuns ? -Half : Half);
+                Vector3 reach = (along + across) * w;
+                pilasters.Add(($"{link.Id} pilaster", corner - reach, corner + reach + Vector3.UnitY * height));
+            }
+        }
+
+        // An unframed passage's sides are cased: the wall's end wrapped from the floor to the opening's top.
+        private void Casings(LinkDefinition link, bool alongX, float line, float lo, float hi, float top)
+        {
+            float width = kit.Pilaster.Width, proud = kit.Pilaster.Proud, depth = Half + proud;
+            foreach (var (from, to) in new[] { (lo - width + proud, lo + proud), (hi - proud, hi + width - proud) })
+                pilasters.Add(($"{link.Id} casing", alongX ? new(from, 0, line - depth) : new(line - depth, 0, from),
+                    alongX ? new(to, top, line + depth) : new(line + depth, top, to)));
+        }
+
+        internal void BuildPilasters()
+        {
+            foreach (var (name, min, max) in pilasters) Add(name, min, max, kit.Pilaster.Material, false);
         }
 
         // Frames are built once per opening, straddling the whole wall and standing proud of both faces. A raised

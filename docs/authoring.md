@@ -273,8 +273,11 @@ named `[x, z]` floor points inside it, addressed as `"space.post"`; residents st
   sill.
 
 Openings on one wall never overlap and lie within the wall the two spaces share.
-Above an opening the wall continues as a lintel, and trim bands above the opening (picture rail, cornice) run
-across it. A shared wall without a link stays a solid partition. An outer wall is any edge with no neighbour.
+Above an opening the wall continues as a lintel, and trim bands above the opening (a cornice) run
+across it. Where an open link ends and only one space's wall runs on past it, that wall turns an outer corner, and the
+kit's `pilaster` (a square column `width` across, `material`) stands on the corner from floor to ceiling, so the two
+papers and the trim ends meet behind it. An unframed passage's sides are cased the same way, standing `proud` beyond
+both faces up to the opening's top. A shared wall without a link stays a solid partition. An outer wall is any edge with no neighbour.
 
 **Fixtures.** Each placement names a catalog `kind` and how it mounts:
 - Floor or ceiling fixtures stand in a `space` `at` `[x, z]`, with optional quarter `turn`s and `mirror`.

@@ -9,8 +9,8 @@ namespace Hotel.Game.Scene.Kit;
 /// in: per space style, the wallpaper, carpet and ceiling that replace the style's own.
 /// </summary>
 internal sealed record KitDefinition(float WallThickness, float FloorThickness, float CeilingThickness, DoorLeafTuning DoorLeaf,
-    Dictionary<string, TrimStyle> TrimStyles, Dictionary<string, FrameDefinition> Frames, Dictionary<string, SpaceStyle> Styles,
-    Dictionary<string, Dictionary<string, DecorSurfaces>> Decors)
+    Dictionary<string, TrimStyle> TrimStyles, Dictionary<string, FrameDefinition> Frames, PilasterDefinition Pilaster,
+    Dictionary<string, SpaceStyle> Styles, Dictionary<string, Dictionary<string, DecorSurfaces>> Decors)
 {
     /// <summary>A space style as a decor furnishes it: the decor's surfaces where it names them, the style's otherwise.</summary>
     internal SpaceStyle Style(string style, string? decor)
@@ -50,6 +50,8 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
             Authored.AtLeast(Path, $"frames.{id}.proud", frame.Proud, 0);
             Authored.Positive(Path, $"frames.{id}.headHeight", frame.HeadHeight);
         }
+        Authored.Positive(Path, "pilaster.width", kit.Pilaster.Width);
+        Authored.Within(Path, "pilaster.proud", kit.Pilaster.Proud, float.Epsilon, kit.Pilaster.Width / 2);
         foreach (var (decor, styles) in kit.Decors)
             foreach (var (style, _) in styles)
                 Authored.Require(kit.Styles.ContainsKey(style), Path, $"decors.{decor}.{style}", $"unknown space style '{style}'.");
@@ -100,6 +102,7 @@ internal sealed record KitDefinition(float WallThickness, float FloorThickness, 
                 yield return ($"trimStyles.{styleId}.architraves.{frame}.material", architrave.Material);
         }
         foreach (var (id, frame) in Frames) yield return ($"frames.{id}.material", frame.Material);
+        yield return ("pilaster.material", Pilaster.Material);
         foreach (var (decor, styles) in Decors)
             foreach (var (style, surfaces) in styles)
                 foreach (var (field, surface) in new[] { ("wall", surfaces.Wall), ("floor", surfaces.Floor), ("ceiling", surfaces.Ceiling) })
@@ -142,6 +145,14 @@ internal sealed record TrimBand(string Name, float From, float To, float Depth, 
 /// <see cref="Proud"/> beyond both wall faces, with a head <see cref="HeadHeight"/> above the opening.
 /// </summary>
 internal sealed record FrameDefinition(string Material, float JambWidth, float Inset, float Proud, float HeadHeight);
+
+/// <summary>
+/// The pilaster that dresses an outer wall corner (where an open link ends and only one space's wall runs on) as a
+/// square column <see cref="Width"/> across, centred on the corner; and the casing of an unframed passage's sides,
+/// <see cref="Width"/> wide and standing <see cref="Proud"/> beyond both wall faces. Both rise from the floor to the
+/// lower ceiling (a passage's, to its opening's top), so the papers and trim ends that meet there meet behind them.
+/// </summary>
+internal sealed record PilasterDefinition(string Material, float Width, float Proud);
 
 /// <summary>A space's surface set and the trim role it takes from its floor's trim style. Spaces may override any surface.</summary>
 internal sealed record SpaceStyle(string Wall, string Floor, string Ceiling, string Trim, SeamDefinition? Seams = null);

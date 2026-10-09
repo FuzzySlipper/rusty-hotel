@@ -22,8 +22,8 @@ internal static class KitChecks
         Check(At(-1.95f, 1.2f, -5).Length == 0 && At(-1.85f, 1.2f, -5).Length == 0, "the portrait-room door link cuts the partition");
         Check(At(-1.85f, 2.4f, -5).Any(b => b.Material == decor["corridor"].Wall), "a lintel closes the wall above the door");
         // Profiled trim is a moulding run along the wall face rather than a box.
-        Check(content.Excursion.Geometry.Mouldings.Any(m => m.Name.Contains("picture rail") && Math.Min(m.Start[2], m.End[2]) <= -5 &&
-            Math.Max(m.Start[2], m.End[2]) >= -5 && Math.Abs(m.Start[0] + 1.8f) < .01f && m.Outward[0] > 0), "the picture rail continues over the door");
+        Check(content.Excursion.Geometry.Mouldings.Any(m => m.Name.Contains("cornice") && Math.Min(m.Start[2], m.End[2]) <= -5 &&
+            Math.Max(m.Start[2], m.End[2]) >= -5 && Math.Abs(m.Start[0] + 1.8f) < .01f && m.Outward[0] > 0), "the cornice continues over the door");
         Check(At(0, 1.2f, 0.95f).Length == 0, "the open refuge link removes the shared wall");
         Check(content.Excursion.Route.Rooms.Any(r => r.Id == "corridor" && r.Label == "West wing corridor"), "spaces are the named rooms");
         Check(content.Excursion.Geometry.Lighting.Points.Length == 23, "fixture lights are the floor's point lights");
@@ -48,9 +48,26 @@ internal static class KitChecks
         string[] Mouldings(string style) => KitBuilder.Build(framed with { TrimStyle = style }, "framed.json", content.Kit, content.Fixtures)
             .Mouldings.Select(m => m.Name.Split(' ', 2)[1]).Distinct().Order().ToArray();
         string[] hotel = Mouldings("hotel"), deco = Mouldings("deco");
-        Check(!hotel.SequenceEqual(deco) && hotel.Any(n => n.EndsWith("picture rail")) && deco.Any(n => n.EndsWith("chair rail")),
+        Check(!hotel.SequenceEqual(deco) && hotel.Any(n => n.EndsWith("cornice")) && !hotel.Any(n => n.EndsWith("chair rail")) && deco.Any(n => n.EndsWith("chair rail")),
             $"two trim styles dress the same floor differently: {string.Join(", ", hotel)} / {string.Join(", ", deco)}");
         Check(hotel.Contains("architrave") && hotel.Contains("architrave head") && deco.Contains("architrave"), "a framed door takes its style's architrave on both faces");
+        // Outer corners: where an open link ends and one space's wall runs on, a pilaster stands on the corner; a straight
+        // run of two spaces of one width turns no corner; an unframed passage's sides are cased.
+        float half = content.Kit.WallThickness / 2, w = content.Kit.Pilaster.Width / 2;
+        RoomBox[] Pilasters(FloorPlan plan) => KitBuilder.Build(plan, "corner.json", content.Kit, content.Fixtures).Boxes
+            .Where(b => b.Name.EndsWith(" pilaster") || b.Name.EndsWith(" casing")).ToArray();
+        RoomBox[] tee = Pilasters(new([new("hall", "Hall", [0, 0], [6, 3], 2.65f, "corridor"), new("alcove", "Alcove", [2, 3], [4, 6], 2.65f, "guest-room")],
+            [new("open", ["hall", "alcove"], LinkKind.Open)], [], new([1, 1, 1], 0.2f), [], "hotel"));
+        Check(tee.Length == 2 && tee.All(b => !b.Solid && b.Material == content.Kit.Pilaster.Material && b.Min[1] == 0 && Math.Abs(b.Max[1] - 2.65f) < .001f) &&
+            tee.Any(b => Math.Abs((b.Min[0] + b.Max[0]) / 2 - (2 + half)) < .001f && Math.Abs((b.Min[2] + b.Max[2]) / 2 - (3 - half)) < .001f && Math.Abs(b.Max[0] - b.Min[0] - 2 * w) < .001f) &&
+            tee.Any(b => Math.Abs((b.Min[0] + b.Max[0]) / 2 - (4 - half)) < .001f),
+            $"an alcove opening off a hall stands a pilaster on each outer corner: {string.Join("; ", tee.Select(b => $"[{string.Join(",", b.Min)}]..[{string.Join(",", b.Max)}]"))}");
+        Check(Pilasters(new([new("near", "Near", [0, 0], [6, 3], 2.65f, "corridor"), new("far", "Far", [6, 0], [12, 3], 2.65f, "corridor")],
+            [new("open", ["near", "far"], LinkKind.Open)], [], new([1, 1, 1], 0.2f), [], "hotel")).Length == 0, "a straight run turns no corner");
+        RoomBox[] cased = Pilasters(new([new("room", "Room", [0, 0], [4, 4], 2.65f, "guest-room"), new("hall", "Hall", [4, 0], [8, 4], 2.65f, "corridor")],
+            [new("arch", ["room", "hall"], LinkKind.Passage, At: 2, Width: 1, Height: 2.2f)], [], new([1, 1, 1], 0.2f), [], "hotel"));
+        Check(cased.Length == 2 && cased.All(b => b.Name == "arch casing" && Math.Abs(b.Max[1] - 2.2f) < .001f &&
+            b.Max[0] - b.Min[0] > content.Kit.WallThickness) && Pilasters(framed).Length == 0, "an unframed passage is cased; a framed door is not");
         bool unknown = false;
         try { KitBuilder.Build(framed with { TrimStyle = "no-such-style" }, "framed.json", content.Kit, content.Fixtures); }
         catch (InvalidOperationException e) { unknown = e.Message.Contains("framed.json trimStyle"); }
