@@ -38,7 +38,9 @@ internal static class HeldMotionChecks
         Check(motion.Timeline(prybar, swing).Any(s => s.Channel == TweenChannel.Translation &&
             Math.Abs(s.StartSeconds + s.DurationSeconds - swing.Timing.Windup) < 1e-4f && Vector3.Distance(new(s.To.X, s.To.Y, s.To.Z), strike - rest) < 1e-4f),
             "the swing's strike key ends at the end of windup, where the action lands");
-        Check(motion.PoseAt(prybar, swing, swing.Timing.Windup) == swings.Poses["strike"], "the pose held at the strike is the strike pose");
+        // The Engine's own evaluation of the timeline shows the strike pose at the strike.
+        TweenSample atStrike = engine.Tween.Sample(new TweenStartRequest(1, motion.Timeline(prybar, swing)), swing.Timing.Windup);
+        Check(Vector3.Distance(atStrike.Translation, strike - rest) < 1e-3f, $"the timeline shows the strike pose at the strike: {atStrike.Translation} vs {strike - rest}");
         // Played: an update that admits several steps after the swing begins starts its motion that far along, so the
         // strike still lands with the hit; a hold that cuts the swing short eases the model back to rest.
         using (HotelProduct product = new(new ProductCreateContext(engine, new ProductContent(default),
@@ -58,8 +60,8 @@ internal static class HeldMotionChecks
             TweenReadout playing = engine.Tween.Read(product.World.CombatView.Motion);
             float total = swing.Timing.Windup + swing.Timing.Commit + swing.Timing.Recovery;
             Check(product.World.Combat.User.Current?.Id == swing.Id && along > 1.5f / 60 && playing.State != TweenState.Ended &&
-                Math.Abs(playing.TotalSeconds + along - total) < 1e-3f,
-                $"a swing begun in a four-step update starts its motion {along:F3} s along, ending with the action ({playing.TotalSeconds:F3} + {along:F3} of {total:F3} s; {product.World.Combat.User.Current?.Id}, {playing.State})");
+                Math.Abs(playing.TotalSeconds - total) < 1e-3f && Math.Abs(playing.ElapsedSeconds - along) < 1e-3f,
+                $"a swing begun in a four-step update starts its motion {along:F3} s along, its whole {playing.TotalSeconds:F3} s timeline at {playing.ElapsedSeconds:F3} s; {product.World.Combat.User.Current?.Id}, {playing.State})");
             product.World.Supplies.Afflict("stilled", "test");
             Admit(1);
             TweenReadout settling = engine.Tween.Read(product.World.CombatView.Motion);

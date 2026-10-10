@@ -157,11 +157,12 @@ between actions. A track lists keys for an action, by action id or `default`: at
 speed; a key at `Windup` 1 lands its pose with the hit. Two keys on one pose hold it. The motion always returns to
 `rest` by the end of recovery (easing by `settleEase`), and an action cut short eases back from wherever it was over
 `settleSeconds`. The Engine plays each action's keys as one tween over the held model, at the display's rate and on
-world time; a firearm's flash shows where its muzzle is in the pose held at the strike. Content checks the poses,
+world time. Content checks the poses,
 curves, and that every action an item grants has keys in time order.
 
 An action already under way when the product publishes (an update can admit several steps) starts its timeline that
-far along, so the keys stay on their moments.
+far along (the Engine's start offset), so the keys stay on their moments; a firearm's flash shows at the muzzle where
+the Engine's evaluation of the timeline puts it.
 
 To work on a motion live, open the developer console (F2 in a developer session) and use the motion viewer:
 
@@ -169,6 +170,7 @@ To work on a motion live, open the developer console (F2 in a developer session)
 | --- | --- |
 | `hotel.dev.motion <look> <action>` | Shows that look in first person at rest in place of what the hands hold, and lists the action's keys with their times and curves |
 | `hotel.dev.motion.key <n>`, `.next`, `.prev` | Holds the look exactly in a key's pose (`-1` is rest) |
+| `hotel.dev.motion.at <seconds>` | Shows the motion paused at any moment of the action, curves and all, as the Engine plays it (a seek); step it by repeating with other times |
 | `hotel.dev.motion.play <speed>` | Plays the action's motion from rest; `1` is as in play, `0.25` a quarter speed. Tweens follow world time, so it plays once the console is closed and the hotel resumes |
 | `hotel.dev.motion.pose <name> <x> <y> <z> <rx> <ry> <rz>` | Changes a pose of the shown motion in the loaded content (play uses it too) and prints its JSON to paste into `held-motion.json`; nothing is written to disk |
 | `hotel.dev.motion.off` | Returns the hands to what they hold |

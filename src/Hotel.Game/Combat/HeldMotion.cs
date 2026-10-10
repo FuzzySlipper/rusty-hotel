@@ -79,12 +79,11 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
     /// <summary>
     /// The tween timeline that moves a held model through an action: from rest, through each key's pose by its curve,
     /// back to rest by the end of recovery. Values are offsets from where the model is published at rest: a translation
-    /// in camera space and a rotation in the model's own frame, as the Engine applies them. An action already
-    /// <paramref name="elapsed"/> seconds along starts there: what has passed is dropped and the key under way eases
-    /// toward its pose over the time it has left (from the pose shown, so started <c>FromPresented</c>), so every key
-    /// still lands at its moment of the action. <paramref name="speed"/> plays it faster or slower (a viewer's slow motion).
+    /// in camera space and a rotation in the model's own frame, as the Engine applies them. <paramref name="speed"/>
+    /// plays it faster or slower (a viewer's slow motion). An action already part way along is started that far in
+    /// (<see cref="TweenStartRequest"/>'s elapsed seconds), so every key lands at its moment of the action.
     /// </summary>
-    internal TweenSegment[] Timeline(HeldModel look, ActionDefinition action, float elapsed = 0, float speed = 1)
+    internal TweenSegment[] Timeline(HeldModel look, ActionDefinition action, float speed = 1)
     {
         HeldMotion motion = Motions[look.Motion];
         HeldPose rest = motion.Poses[Rest];
@@ -101,14 +100,9 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
         void Ease((Vector3 Move, Quaternion Turn) to, float time, TweenEasingKind ease)
         {
             if (time - start <= 0) return;
-            // On the timeline as played: from the elapsed moment, at the chosen speed.
-            float begin = Math.Max(start, elapsed), end = time;
-            if (end > elapsed)
-            {
-                float at = (begin - elapsed) / speed, seconds = (end - begin) / speed;
-                segments.Add(TweenSegment.Move(from.Move, to.Move, seconds, ease).At(at));
-                segments.Add(TweenSegment.Rotate(from.Turn, to.Turn, seconds, ease).At(at));
-            }
+            float at = start / speed, seconds = (time - start) / speed;
+            segments.Add(TweenSegment.Move(from.Move, to.Move, seconds, ease).At(at));
+            segments.Add(TweenSegment.Rotate(from.Turn, to.Turn, seconds, ease).At(at));
             from = to;
             start = time;
         }
@@ -124,19 +118,6 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
         TweenSegment.Move(Vector3.Zero, Vector3.Zero, SettleSeconds, SettleEase),
         TweenSegment.Rotate(Quaternion.Identity, Quaternion.Identity, SettleSeconds, SettleEase)
     ];
-
-    /// <summary>
-    /// The pose an action shows at a moment, holding each key's pose from its time until the next (no curve): where a
-    /// muzzle flash goes while a firearm commits.
-    /// </summary>
-    internal HeldPose PoseAt(HeldModel look, ActionDefinition action, float time)
-    {
-        HeldMotion motion = Motions[look.Motion];
-        HeldPose pose = motion.Poses[Rest];
-        foreach (MotionKey key in motion.Track(action.Id)!)
-            if (key.Time(action.Timing) <= time + 1e-4f) pose = motion.Poses[key.Pose];
-        return pose;
-    }
 }
 
 /// <summary>One family of held motion: its poses and its tracks by action id (with a default for the rest).</summary>

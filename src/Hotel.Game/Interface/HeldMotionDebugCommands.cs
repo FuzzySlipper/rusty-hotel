@@ -62,6 +62,19 @@ internal sealed class HeldMotionDebugCommands(Func<CombatView> view, HeldCatalog
         return DebugCommandResult.Success($"Playing {action.Id} on {look} over {total / speed:0.##} s.");
     }
 
+    [DebugCommand("hotel.dev.motion.at", Description = "Developer motion viewer: show the action's motion paused at a moment, in seconds from its start (curves and all, as the Engine plays them).")]
+    public DebugCommandResult At(float seconds)
+    {
+        if (look is null) return Failure("Choose a look first: hotel.dev.motion <look> <action>.");
+        ActionTiming t = action!.Timing;
+        float total = t.Windup + t.Commit + t.Recovery;
+        if (!(seconds >= 0 && seconds <= total)) return Failure($"The action runs from 0 to {total:0.###} s.");
+        key = -1;
+        view().At(action, seconds);
+        string phase = seconds < t.Windup ? "windup" : seconds < t.Windup + t.Commit ? "commit" : "recovery";
+        return DebugCommandResult.Success($"{action.Id} at {seconds:0.###} s ({phase}; the strike is at {t.Windup:0.###} s).");
+    }
+
     [DebugCommand("hotel.dev.motion.pose", Description = "Developer motion viewer: set a pose of the shown look's motion (position x y z in metres, rotation x y z in degrees) in the loaded content, hold it, and print its JSON.")]
     public DebugCommandResult Pose(string name, float x, float y, float z, float rx, float ry, float rz)
     {

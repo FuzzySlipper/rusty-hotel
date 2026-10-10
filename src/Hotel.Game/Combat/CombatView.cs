@@ -92,8 +92,12 @@ internal sealed class CombatView : IDisposable
         Vector3 flash = Vector3.Zero;
         if (firing && look is { } shown && heldLooks.Model(shown) is { Muzzle: { } muzzlePoint } firearm)
         {
-            HeldPose pose = motion.PoseAt(firearm, current!, current!.Timing.Windup);
-            flash = Authored.Vector(pose.Position) + Vector3.Transform(Authored.Vector(muzzlePoint), pose.Turn);
+            // The muzzle point is in hand space: carried from the model's rest placement to where the motion shows it now.
+            (Vector3 restAt, Quaternion restTurn) = motion.Motions[firearm.Motion].Poses[HeldMotionCatalog.Rest].Place(firearm);
+            HeldPose rest = motion.Motions[firearm.Motion].Poses[HeldMotionCatalog.Rest];
+            Vector3 muzzleRest = Authored.Vector(rest.Position) + Vector3.Transform(Authored.Vector(muzzlePoint), rest.Turn);
+            (Vector3 at, Quaternion turn) = Shown(shown, current!, combat.User.Elapsed);
+            flash = at + Vector3.Transform(muzzleRest - restAt, turn * Quaternion.Inverse(restTurn));
         }
         else firing = false;
         Place(muzzle, player.Eye, camera, !combat.Defeated && firing, flash);
@@ -121,8 +125,7 @@ internal sealed class CombatView : IDisposable
         if (moving is { } previous && previous.Look != look) engine.Tween.Control(new TweenControlRequest(previous.Tween, TweenControl.Cancel));
         // From the pose shown, so an action straight after another (or after a settle) carries on without a jump.
         // As far along as the action already is: one update can admit several steps after it began.
-        TweenHandle tween = engine.Tween.Start(new TweenStartRequest(held[look].Entity, motion.Timeline(heldLooks.Model(look), current, combat.User.Elapsed))
-            with { Start = TweenStart.FromPresented }).Tween;
+        TweenHandle tween = engine.Tween.Start(Request(look, current) with { ElapsedSeconds = combat.User.Elapsed }).Tween;
         moving = (look, combat.User.Started, tween);
         Motion = tween;
     }
@@ -157,7 +160,18 @@ internal sealed class CombatView : IDisposable
         viewing = (view.Look, null);
         Publish();
         Motion = engine.Tween.Start(new TweenStartRequest(held[view.Look].Entity,
-            heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, 0, speed))).Tween;
+            heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, speed))).Tween;
+    }
+
+    /// <summary>Developer motion viewer: shows the shown look's action motion paused at a moment (seconds from its start).</summary>
+    internal void At(ActionDefinition action, float seconds)
+    {
+        if (viewing is not { } view) return;
+        viewing = (view.Look, null);
+        Publish();
+        Motion = engine.Tween.Start(new TweenStartRequest(held[view.Look].Entity, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action))).Tween;
+        engine.Tween.Control(new TweenControlRequest(Motion, TweenControl.Pause));
+        engine.Tween.Control(TweenControlRequest.Seek(Motion, seconds));
     }
 
     /// <summary>The held model's latest motion tween: an action's timeline, or the settle after one was cut short.</summary>
@@ -165,6 +179,23 @@ internal sealed class CombatView : IDisposable
 
     /// <summary>Steps what falls (the residents' ragdolls) by one admitted step.</summary>
     internal void Step(float seconds) => residents.Step(seconds);
+
+    // An action's motion on a look, as a start request: what is started, and what is sampled for where the model is.
+    private TweenStartRequest Request(string look, ActionDefinition action) =>
+        new TweenStartRequest(held[look].Entity, heldLooks.Motion.Timeline(heldLooks.Model(look), action)) with { Start = TweenStart.FromPresented };
+
+    /// <summary>
+    /// Where a look's model is shown at a moment of an action (camera space): its rest placement under the motion's
+    /// offset at that moment, as the Engine evaluates the timeline.
+    /// </summary>
+    internal (Vector3 At, Quaternion Turn) Shown(string look, ActionDefinition? action, float elapsed)
+    {
+        HeldModel model = heldLooks.Model(look);
+        (Vector3 at, Quaternion turn) = heldLooks.Motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest].Place(model);
+        if (action is null) return (at, turn);
+        TweenSample offset = engine.Tween.Sample(Request(look, action), elapsed);
+        return (at + offset.Translation, Quaternion.Normalize(turn * offset.Rotation));
+    }
 
     private bool Running(TweenHandle tween) => engine.Tween.Read(tween).State != TweenState.Ended;
 
