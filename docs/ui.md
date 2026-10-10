@@ -19,7 +19,7 @@ combat slab. Final sizes and colors should be tuned against the rendered scene.
 | Field case | Case (worn slots, pockets and quick pockets, and the selected pocket's or slot's details on one screen) and Spirits; only the selected entry's relevant use/wear/take-off/equip action | Inventory control opens one bounded overlay; clear Back/Close returns to exploration. Show honest empty states as domains arrive. |
 | Reading/inspection | One note, tape transcript or found object's content, with contextual navigation only where needed | Ordinary world use opens it; closing returns to the same situation. Do not turn it into a general command palette. |
 | Refuge | The current return/checkpoint interaction and its result | Use the refuge fixture to open a small contextual surface. Inventory remains in the field case; no duplicate state editor. |
-| Title menu | Centred: Continue (when the save can be continued), New expedition, Delete saved expedition (when one is saved), Options; a line saying what is saved, or why it cannot be continued | A session opens here (or straight into the save, by `expedition/title.json` `start`); the pause menu's Title menu returns here. A choice closes it into play. Escape does nothing here. |
+| Title menu | Centred: Continue (when the save can be continued), New expedition, Delete saved expedition (when one is saved), Options, Quit (in a desktop window); a line saying what is saved, or why it cannot be continued | A session opens here (or straight into the save, by `expedition/title.json` `start`); the pause menu's Title menu returns here. A choice closes it into play. Escape does nothing here. |
 | Pause | Resume, controls/settings that actually work, and appropriate session actions | Pause control opens it; resume uses Engine lifecycle. In a debug-enabled session, one labeled Developer console entry may lead to the Engine console. |
 
 These are a small set of product surfaces, not a generic screen framework.
@@ -319,5 +319,6 @@ what is saved: nothing, the saved expedition (returns and secured finds), a save
 can be continued. New expedition over a save, and Delete saved expedition, ask first in place (the warning text comes
 from content) and C# refuses an unconfirmed claim. An unreadable save is never replaced or deleted except by that
 confirmed choice. Options opens the Controls screen, which returns to the title menu. The pause menu's Title menu
-leaves play without saving: Continue then restores the last refuge checkpoint. A Quit choice waits on an Engine
-product-exit request; until then the window's own close quits.
+leaves play without saving: Continue then restores the last refuge checkpoint. Quit shows only where the host can end
+the product (window output, `Host.Read().ExitAvailable`); it closes the window as closing it does, keeping nothing
+unsaved, and `rusty dev` stops rather than restarting. A streamed page has no Quit.

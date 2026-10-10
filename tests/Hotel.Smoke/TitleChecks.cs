@@ -63,6 +63,9 @@ internal static class TitleChecks
                     Check(product.Title.Active && product.Title.Save.Condition == SaveCondition.Ready, "play leaves for the title menu, which offers the save");
                     product.HandlePausedIntents([Claim("new")]);
                     Check(product.Title.Active && product.Title.Message == text.ConfirmFirst, "a new expedition over a save needs confirmation");
+                    // The test host has no window, so the menu offers no Quit and refuses one claimed anyway.
+                    product.HandlePausedIntents([Claim("quit")]);
+                    Check(!product.Title.CanQuit && product.Title.Active, "with no window to close, Quit is not offered or admitted");
                     product.HandlePausedIntents([Claim("continue")]);
                     Check(!product.Title.Active && product.World.Supplies.Health == healthy,
                         $"continuing restores the saved expedition, not what was left unsaved: {product.World.Supplies.Health}");

@@ -46,7 +46,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             content = HotelContent.Load(engine, StartingExcursion);
             controls = new HotelControls(content.Controls);
             hud = new HotelHud(engine, content.Interface);
-            title = new HotelTitle(content.Title);
+            title = new HotelTitle(content.Title, engine.Host.Read().ExitAvailable);
             floors = new HotelFloors(engine, content);
             interaction = new WorldInteraction(current);
             world = Build(content.Excursion);
@@ -86,6 +86,8 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             case TitleChoice.New: world.Expedition.BeginNew(); title.Close(); break;
             case TitleChoice.Delete: world.Expedition.DeleteSave(); title.Open(world.Expedition.Probe(), content.Title.Text.Deleted); break;
             case TitleChoice.Leave: ReturnToRefugeFloor(); title.Open(world.Expedition.Probe()); break;
+            // The host closes the window and stops once this callback returns; nothing unsaved is kept, as when it is closed.
+            case TitleChoice.Quit: engine.Host.RequestExit(); break;
         }
     }
 

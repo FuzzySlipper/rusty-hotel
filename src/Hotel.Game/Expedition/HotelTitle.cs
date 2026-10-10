@@ -4,16 +4,18 @@ using Rusty.Engine;
 
 namespace Hotel.Game.Expedition;
 
-/// <summary>A title-menu choice: continue the save, begin a new expedition, delete the save, or leave play for the menu.</summary>
-internal enum TitleChoice { Continue, New, Delete, Leave }
+/// <summary>A title-menu choice: continue the save, begin a new expedition, delete the save, leave play for the menu, or quit.</summary>
+internal enum TitleChoice { Continue, New, Delete, Leave, Quit }
 
 /// <summary>
 /// The title menu's state: whether it is showing, what is saved and what it says about it, and the choices the DOM
 /// companion claims through the paused <c>hotel.title</c> intent. The product carries a choice out across the world and
 /// the expedition; replacing or deleting a save needs the claim's confirmation.
 /// </summary>
-internal sealed class HotelTitle(TitleDefinition definition)
+/// <param name="canQuit">Whether the host can end the product (window output); the menu offers Quit only then.</param>
+internal sealed class HotelTitle(TitleDefinition definition, bool canQuit)
 {
+    internal bool CanQuit => canQuit;
 
     internal TitleDefinition Definition => definition;
     internal bool Active { get; private set; }
@@ -43,7 +45,7 @@ internal sealed class HotelTitle(TitleDefinition definition)
                 || !input.PayloadContract.Span.SequenceEqual("hotel.title.v1"u8)) continue;
             if (Parse(input.PayloadData) is not var (choice, confirmed)) continue;
             if (Admit(choice, confirmed)) chosen.Add(choice);
-            else { Message = definition.Text.ConfirmFirst; Revision++; }
+            else if (choice != TitleChoice.Quit) { Message = definition.Text.ConfirmFirst; Revision++; }
         }
         return chosen;
     }
@@ -53,6 +55,7 @@ internal sealed class HotelTitle(TitleDefinition definition)
         TitleChoice.Continue => Active && Save.Condition == SaveCondition.Ready,
         TitleChoice.New => Active && (Save.Condition == SaveCondition.None || confirmed),
         TitleChoice.Delete => Active && Save.Condition != SaveCondition.None && confirmed,
+        TitleChoice.Quit => Active && canQuit,
         _ => !Active
     };
 

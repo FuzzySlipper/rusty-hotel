@@ -1,7 +1,8 @@
 import { focusFirstButton, screenElement } from './screen.js';
 
 /**
- * Title menu: continue the saved expedition, begin a new one, delete an unreadable or unwanted save, options, quit.
+ * Title menu: continue the saved expedition, begin a new one, delete an unreadable or unwanted save, options, and quit
+ * where the host can close.
  * Each choice is claimed through the paused hotel.title intent; C# decides and the facts say what happened. Replacing or
  * deleting a save asks first.
  */
@@ -15,6 +16,7 @@ export function mountTitleScreen(document, intents) {
         <button type="button" data-choice="new">New expedition</button>
         <button type="button" data-choice="delete">Delete saved expedition</button>
         <button type="button" data-open="controls">Options</button>
+        <button type="button" data-choice="quit" hidden>Quit</button>
       </div>
       <div class="title-confirm" data-confirm hidden>
         <p data-confirm-text></p>
@@ -58,6 +60,8 @@ export function mountTitleScreen(document, intents) {
       message.textContent = facts.message;
       element.querySelector('[data-choice="continue"]').hidden = !facts.canContinue;
       element.querySelector('[data-choice="delete"]').hidden = !facts.saved;
+      // Only where the host can close (a desktop window); a streamed page has nothing to quit.
+      element.querySelector('[data-choice="quit"]').hidden = !facts.canQuit;
       if (!element.hidden && !element.contains(document.activeElement)) focusFirstButton(actions);
     }
   };
