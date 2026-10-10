@@ -94,7 +94,9 @@ internal sealed record FactionDefinition(string Id, string Name);
 /// clip that is the strike (<see cref="StrikeAt"/>, normalized), and its tell: the light it flares with while it winds up
 /// and commits.
 /// </summary>
-internal sealed record ResidentLook(string Id, string Model, float Scale, float YawDegrees, ResidentClips Clips, float StrikeAt, TellGlow Tell);
+/// <param name="Ragdoll">The ragdoll rig (content/combat/ragdolls.json) it falls as when felled; without one it plays its fall clip.</param>
+internal sealed record ResidentLook(string Id, string Model, float Scale, float YawDegrees, ResidentClips Clips, float StrikeAt, TellGlow Tell,
+    string? Ragdoll = null);
 
 /// <summary>
 /// A resident's clips by state: standing, walking, its attack (windup runs up to the strike, commit and recovery after

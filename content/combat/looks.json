@@ -22,7 +22,8 @@
         "intensity": 1.6,
         "range": 2.0,
         "lift": 0.0
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     },
     {
       "id": "lamplighter",
@@ -46,7 +47,8 @@
         "intensity": 2.4,
         "range": 2.6,
         "lift": 0.05
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     },
     {
       "id": "night-maid",
@@ -70,7 +72,8 @@
         "intensity": 1.6,
         "range": 2.0,
         "lift": 0.0
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     },
     {
       "id": "bellboy",
@@ -94,7 +97,8 @@
         "intensity": 1.6,
         "range": 2.0,
         "lift": 0.0
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     },
     {
       "id": "chef",
@@ -118,7 +122,8 @@
         "intensity": 1.6,
         "range": 2.0,
         "lift": 0.0
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     },
     {
       "id": "concierge",
@@ -142,7 +147,8 @@
         "intensity": 1.6,
         "range": 2.0,
         "lift": 0.0
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     },
     {
       "id": "sleepwalker",
@@ -166,7 +172,8 @@
         "intensity": 1.6,
         "range": 2.0,
         "lift": 0.0
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     },
     {
       "id": "bride",
@@ -190,7 +197,8 @@
         "intensity": 1.6,
         "range": 2.0,
         "lift": 0.0
-      }
+      },
+      "ragdoll": "tripo-humanoid"
     }
   ]
 }

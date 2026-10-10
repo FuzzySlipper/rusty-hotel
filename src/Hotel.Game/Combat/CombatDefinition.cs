@@ -13,7 +13,7 @@ namespace Hotel.Game.Combat;
 /// a resident's block and a hit's damage kind are written in.
 /// </summary>
 internal sealed record CombatDefinition(CombatTuning Tuning, ResidentKind[] Residents, CombatMessages Text,
-    MechanicsDefinition Mechanics, ActionCatalog Actions, FactionCatalog Factions, ResidentLook[] Looks, HeldCatalog Held)
+    MechanicsDefinition Mechanics, ActionCatalog Actions, FactionCatalog Factions, ResidentLook[] Looks, HeldCatalog Held, RagdollCatalog Ragdolls)
 {
     /// <summary>The health a resident of this kind starts and is bounded at, from its stat block.</summary>
     internal int MaximumHealth(ResidentKind kind) => (int)new ActorStats(Mechanics, kind.Stats, null).Track(HotelSupplies.HealthTrack).MaximumValue;
@@ -41,7 +41,11 @@ internal sealed record CombatDefinition(CombatTuning Tuning, ResidentKind[] Resi
                 $"unknown loot table '{residents[i].Loot}'; see content/{Loot.LootCatalog.TablesPath}.");
             residents[i] = residents[i] with { AttackReach = residents[i].Actions.Max(a => HotelCombat.Reach(actions.Action(a.Action)!)) };
         }
-        CombatDefinition definition = new(tuning, residents, text, mechanics, actions, factions, looks.Looks, HeldCatalog.Load(engine));
+        RagdollCatalog ragdolls = RagdollCatalog.Load(engine);
+        for (int i = 0; i < looks.Looks.Length; i++)
+            if (looks.Looks[i].Ragdoll is { } rig)
+                Authored.Require(ragdolls.Rigs.ContainsKey(rig), LookCatalog.Path, $"looks[{i}].ragdoll", $"unknown rig '{rig}' in content/{RagdollCatalog.Path}.");
+        CombatDefinition definition = new(tuning, residents, text, mechanics, actions, factions, looks.Looks, HeldCatalog.Load(engine), ragdolls);
         for (int i = 0; i < residents.Length; i++)
             Authored.Require(definition.MaximumHealth(residents[i]) >= 1, ResidentCatalog.Path, $"residents[{i}].stats", "gives no health.");
         return definition;

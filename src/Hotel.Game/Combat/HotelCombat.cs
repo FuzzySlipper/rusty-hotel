@@ -176,7 +176,7 @@ internal sealed class HotelCombat
             supplies.Growth.Practise(call, impacts.Any(i => i.Damage > 0));
             // A resident the call itself fells counts as felled by the investigator, once, like a blow's.
             foreach (ActionImpact impact in impacts)
-                if (impact.Defeated && impact.Target is HotelEnemy felled) Fell(felled);
+                if (impact.Defeated && impact.Target is HotelEnemy felled) Fell(felled, impact);
             // Where it landed: the resident reached, the area's centre, or the investigator for a call on themselves.
             answer?.Invoke(reached, call.Delivery.Kind == DeliveryKind.Area ? player.Eye + PactUser.Aim * call.Delivery.Range : impacts.FirstOrDefault()?.End ?? player.Eye);
         }
@@ -254,7 +254,7 @@ internal sealed class HotelCombat
                 // Skills grow by use: a landed hit practises its action and, if it took health, the kinds it dealt.
                 supplies.Growth.Practise(impact.Action, impact.Damage > 0);
                 HitFlash = definition.Tuning.HitFlashSeconds;
-                if (impact.Defeated) Fell(victim);
+                if (impact.Defeated) Fell(victim, impact);
                 else Announce(Template.Fill(text.Hit, ("resident", victim.Kind.Name)));
             }
             else Announce(impact.Surface ? text.StruckSurroundings : text.Miss);
@@ -274,8 +274,10 @@ internal sealed class HotelCombat
 
     // A resident falls: it stops what it was doing, and the investigator gains its experience. Called once, at the impact
     // or tick that took its last health; a fallen resident is no longer a target and is no longer stepped.
-    private void Fell(HotelEnemy enemy)
+    private void Fell(HotelEnemy enemy, ActionImpact? blow = null)
     {
+        enemy.FelledBy = blow is { } hit && Vector3.DistanceSquared(hit.End, hit.User.Eye) > 1e-6f
+            ? (hit.End, Vector3.Normalize(hit.End - hit.User.Eye), hit.Damage) : null;
         enemy.User.Interrupt(); enemy.BeamTime = 0;
         supplies.Growth.Award(enemy.Kind.Experience);
         Announce(Template.Fill(text.ResidentFalls, ("resident", enemy.Kind.Name)));

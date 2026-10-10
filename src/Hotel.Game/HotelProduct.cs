@@ -136,6 +136,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             pendingJump = false;
             w.Player.Step(input with { Movement = input.Movement * pace }, seconds, w.Combat.Obstacles, run, jump);
             w.Combat.Step((float)update.Facts.FixedDeltaSeconds);
+            w.CombatView.Step((float)update.Facts.FixedDeltaSeconds);
             w.Spirit.Step((float)update.Facts.FixedDeltaSeconds);
             w.Supplies.Step((float)update.Facts.FixedDeltaSeconds);
             w.Scene.Animate((float)update.Facts.FixedDeltaSeconds);

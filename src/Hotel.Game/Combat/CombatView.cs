@@ -163,6 +163,9 @@ internal sealed class CombatView : IDisposable
     /// <summary>The held model's latest motion tween: an action's timeline, or the settle after one was cut short.</summary>
     internal TweenHandle Motion { get; private set; }
 
+    /// <summary>Steps what falls (the residents' ragdolls) by one admitted step.</summary>
+    internal void Step(float seconds) => residents.Step(seconds);
+
     private bool Running(TweenHandle tween) => engine.Tween.Read(tween).State != TweenState.Ended;
 
     private static Quaternion Facing(Vector3 forward)

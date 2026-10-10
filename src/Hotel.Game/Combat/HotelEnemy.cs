@@ -62,14 +62,20 @@ internal sealed class HotelEnemy : IActionActor
         ActionPhase.Recovery => AttackPhase.Recovery, _ => AttackPhase.Ready
     };
     internal float Yaw, BeamTime;
+    /// <summary>The blow that felled it, for its fall: where it struck, along which way, and its damage; null for a fall by no blow.</summary>
+    internal (Vector3 Point, Vector3 Direction, int Damage)? FelledBy;
     internal Vector3 BeamEnd;
     internal ulong Sequence;
     private Vector3 Half => new(Kind.Radius, Kind.Height / 2, Kind.Radius);
     public SpatialEntityCollider Hitbox => new(Entity, Position - Half, Position + Half, 2, uint.MaxValue, true, false, false);
     internal CharacterObstacle Obstacle => new(Entity, new(Position, Quaternion.Identity, Vector3.One), -Half, Half, true, default, default);
+    /// <summary>Moves a fallen resident's body (and so its remains) to where it came to lie, on the floor it stood on.</summary>
+    internal void Lie(Vector3 at) =>
+        scene.Entities.Set(EntityId, EngineComponentTypes.Transform, new(new(at.X, Position.Y, at.Z), Quaternion.Identity, Vector3.One));
+
     internal void Reset()
     {
-        Stats.Reset(); User.Reset(); Awareness.Reset(); BeamTime = Yaw = PatrolPause = PatrolBlocked = 0; PatrolIndex = 0;
+        Stats.Reset(); User.Reset(); Awareness.Reset(); BeamTime = Yaw = PatrolPause = PatrolBlocked = 0; PatrolIndex = 0; FelledBy = null;
         scene.Entities.Set(EntityId, EngineComponentTypes.Transform, new(Spawn, Quaternion.Identity, Vector3.One));
         scene.Entities.Set(EntityId, EngineComponentTypes.CharacterMotion, new(Vector3.Zero, Vector3.Zero,
             false, CharacterStance.Standing, 0, 0, 0, false, 0, Vector3.Zero, Vector3.Zero, Quaternion.Identity,

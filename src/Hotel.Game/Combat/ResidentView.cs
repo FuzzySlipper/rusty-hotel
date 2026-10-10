@@ -11,7 +11,10 @@ namespace Hotel.Game.Combat;
 /// walking, recoiling, fallen), and its attack clip is sampled at the action's progress, so the windup runs up to the
 /// strike as the action commits. Its tell light flares at its eye during windup and commit, and a hitscan's beam shows
 /// while it lasts.
-/// Animation runs on the Engine's world time, so it holds with the world.
+/// Animation runs on the Engine's world time, so it holds with the world. A resident whose look names a ragdoll rig
+/// falls as a ragdoll when felled (an Engine Dynamics world over the floor's collision, pushed along the felling blow),
+/// and its remains move to where it comes to rest; one already fallen when the view is built (a restored floor) lies in
+/// its fall clip's last frame.
 /// </summary>
 internal sealed class ResidentView : IDisposable
 {
@@ -29,10 +32,16 @@ internal sealed class ResidentView : IDisposable
     private readonly List<MeshResource> meshes = [];
     private readonly List<Appearance> appearances = [];
     private readonly Dictionary<string, Body> bodies = [];
+    private readonly RagdollCatalog ragdolls;
+    // Each model's ragdoll description against its joints, by model path.
+    private readonly Dictionary<string, (DynamicsRagdollBone[] Bones, DynamicsRagdollLink[] Links, int Hit)> rigs = new(StringComparer.Ordinal);
+    // Made at the first fall, over the floor's collision; ragdolls are presentation, so nothing else steps or reads it.
+    private DynamicsWorld? world;
 
     internal ResidentView(IEngineContext engine, HotelScene scene, HotelCombat combat, CombatDefinition definition)
     {
         this.engine = engine; this.scene = scene; this.combat = combat;
+        ragdolls = definition.Ragdolls;
         try
         {
             foreach (HotelEnemy enemy in combat.Enemies)
@@ -48,6 +57,12 @@ internal sealed class ResidentView : IDisposable
                         if (!clips.Contains(clip))
                             throw new InvalidDataException($"Resident model '{look.Model}' has no clip '{clip}' (content/{LookCatalog.Path} " +
                                 $"'{look.Id}'). Its clips: {string.Join(", ", clips)}.");
+                    if (look.Ragdoll is { } rigId)
+                    {
+                        RagdollRig rig = ragdolls.Rigs[rigId];
+                        var (rigBones, rigLinks) = rig.Build(rigId, engine.Animation.ReadJoints(model).Span, look.Model);
+                        rigs[look.Model] = (rigBones, rigLinks, rig.BoneOf(ragdolls.Hit.Bone));
+                    }
                 }
                 Appearance appearance = engine.Animation.CreateAnimatedMeshAppearance(new(model));
                 appearances.Add(appearance);
@@ -98,7 +113,20 @@ internal sealed class ResidentView : IDisposable
         foreach (HotelEnemy enemy in combat.Enemies)
         {
             Body body = bodies[enemy.Id];
-            body.Instance ??= engine.Animation.CreateInstance(new(body.Appearance, body.Entity));
+            if (body.Instance is null)
+            {
+                body.Instance = engine.Animation.CreateInstance(new(body.Appearance, body.Entity));
+                // A resident that can fall as a ragdoll reports its joints, so the ragdoll spawns in the pose it was drawn in.
+                if (body.Look.Ragdoll is not null && enemy.Alive) engine.Animation.SetPose(AnimationPoseRequest.ReportOnly(body.Instance));
+            }
+            // A resident restored to life (a recovered checkpoint) leaves its ragdoll for its clips.
+            if (enemy.Alive && body.Ragdoll is not null) { body.Ragdoll.Dispose(); body.Ragdoll = null; body.Clip = null; }
+            // Felled while this view watched: it falls as a ragdoll; one restored fallen plays its fall clip below.
+            if (!enemy.Alive && body.Ragdoll is null && body.Clip is not null && body.Clip != body.Look.Clips.Fall && Fall(enemy, body))
+            {
+                body.Clip = body.Look.Clips.Fall;
+                continue;
+            }
             Tell(enemy, body);
             ResidentClips clips = body.Look.Clips;
             float strike = body.Look.StrikeAt, progress = enemy.User.PhaseProgress;
@@ -133,6 +161,53 @@ internal sealed class ResidentView : IDisposable
         }
     }
 
+    // Spawns a felled resident's ragdoll where it was drawn and pushes it along the blow (or slumps it); false leaves it to
+    // its fall clip.
+    private bool Fall(HotelEnemy enemy, Body body)
+    {
+        if (!rigs.TryGetValue(body.Look.Model, out var rig)) return false;
+        if (world is null)
+        {
+            world = engine.Dynamics.CreateWorld(new DynamicsWorldConfig(new Vector3(0, -ragdolls.Gravity, 0)));
+            engine.Dynamics.BindWorldCollision(new DynamicsWorldCollisionBindingRequest(world, scene.Session));
+        }
+        try
+        {
+            body.Ragdoll = engine.Dynamics.CreateRagdoll(new(world, body.Instance!, rig.Bones, rig.Links, RagdollGroup, ~RagdollGroup,
+                ragdolls.Friction, 0, ragdolls.LinearDamping, ragdolls.AngularDamping, 1));
+        }
+        catch (EngineCallException) { return false; }
+        Transform struck = engine.Dynamics.ReadRagdoll(body.Ragdoll).Bones.Span[rig.Hit];
+        (Vector3 at, Vector3 push) = enemy.FelledBy is { } blow
+            ? (blow.Point, ragdolls.Hit.Push(blow.Direction, blow.Damage))
+            : (struck.Translation, -Vector3.UnitY * ragdolls.Slump);
+        engine.Dynamics.ApplyRagdollImpulse(new(body.Ragdoll, (uint)rig.Hit, at, push));
+        return true;
+    }
+
+    /// <summary>
+    /// Steps the falling bodies by admitted time; a body that has come to rest moves its resident's remains to where its
+    /// hips lie (kept within reach of where it stood, so its saved position stays one it could have walked to).
+    /// </summary>
+    internal void Step(float seconds)
+    {
+        if (world is null || !bodies.Values.Any(b => b.Ragdoll is not null && !b.Rested)) return;
+        engine.Dynamics.Step(new(world, seconds, 1, ReadOnlyMemory<DynamicsAction>.Empty));
+        foreach (HotelEnemy enemy in combat.Enemies)
+        {
+            Body body = bodies[enemy.Id];
+            if (body.Ragdoll is null || body.Rested) continue;
+            DynamicsRagdollResult lying = engine.Dynamics.ReadRagdoll(body.Ragdoll);
+            if (!lying.Resting) continue;
+            body.Rested = true;
+            Vector3 hips = lying.Bones.Span[0].Translation;
+            if (Vector2.Distance(new(hips.X, hips.Z), new(enemy.Spawn.X, enemy.Spawn.Z)) < enemy.Kind.Movement.Range + .9f) enemy.Lie(hips);
+        }
+    }
+
+    // Ragdolls collide with the floor and other bodies, not with each other.
+    private const uint RagdollGroup = 1u << 7;
+
     // The rotation that turns -z to look along a direction.
     private static Quaternion Facing(Vector3 forward)
     {
@@ -157,7 +232,9 @@ internal sealed class ResidentView : IDisposable
     public void Dispose()
     {
         foreach (Body body in bodies.Values) body.Light?.Dispose();
+        foreach (Body body in bodies.Values) body.Ragdoll?.Dispose();
         foreach (Body body in bodies.Values) body.Instance?.Dispose();
+        world?.Dispose();
         foreach (Appearance appearance in appearances) appearance.Dispose();
         foreach (MeshResource mesh in meshes) mesh.Dispose();
         foreach (RenderResource model in models.Values) model.Dispose();
@@ -174,6 +251,8 @@ internal sealed class ResidentView : IDisposable
         internal AnimationInstance? Instance { get; set; }
         internal string? Clip { get; set; }
         internal ulong LightId { get; } = lightId;
+        internal DynamicsRagdoll? Ragdoll { get; set; }
+        internal bool Rested { get; set; }
         internal Light? Light { get; set; }
     }
 }

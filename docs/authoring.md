@@ -233,6 +233,20 @@ A resident kind (`combat/residents.json`) is composed from parts; adding a kind 
 A resident placed by an excursion or a generated floor is restored within its movement's range (its leash or its
 patrol's farthest point) of its post.
 
+## Ragdolls
+
+A resident look's `ragdoll` names a rig in `combat/ragdolls.json`; felled while the player watches, the resident falls
+as an Engine ragdoll instead of playing its `fall` clip. A rig lists `bones` (a body on a named joint, spanning to its
+`end` joint or `length` metres along +Y: a `Capsule` of `radius`, or a `Box` `radius` half wide and `halfDepth` half
+deep, of `mass` kilograms; the first is the root every other descends from, `Hip` on Tripo's humanoid rig) and
+`links` between them (a `cone` with `swing`, `twistMin` and `twistMax`, or a `hinge` with `min` and `max`, in radians
+from the rest pose, about `axis` in the child joint's rest frame; Tripo's knees bend about -X and elbows about +X),
+with `jointDamping`. The felling blow pushes the `hit.bone` along its direction, tipped up by `hit.lift`, with
+`hit.impulse` plus `hit.perDamage` per point of damage (newton seconds); a resident felled by no blow (a burn) slumps
+with `slump`. When the body comes to rest, its remains (the search) move to where its hips lie, within reach of where
+it stood, and that is the position a checkpoint keeps; a restored fallen resident lies in its fall clip's last frame.
+A joint a rig names that a look's model lacks fails when the floor's residents are built.
+
 ## Actions
 
 An action (`actions/actions.json`) is used by a hand or by a resident (a kind names its `attack`). `delivery.kind`
