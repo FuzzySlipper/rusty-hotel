@@ -65,6 +65,7 @@ namespace Hotel.Game.Content;
 [JsonSerializable(typeof(Hotel.Game.Combat.HeldMotionCatalog))]
 [JsonSerializable(typeof(Hotel.Game.Combat.HeldPose))]
 [JsonSerializable(typeof(Hotel.Game.Combat.RagdollCatalog))]
+[JsonSerializable(typeof(Hotel.Game.Combat.ArmsDefinition))]
 [JsonSerializable(typeof(KitDefinition))]
 [JsonSerializable(typeof(FixtureCatalog))]
 [JsonSerializable(typeof(FloorPlan))]

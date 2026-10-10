@@ -24,6 +24,7 @@ internal sealed class CombatView : IDisposable
     private readonly List<RenderResource> models = [];
     private readonly Dictionary<string, (ulong Entity, Appearance Appearance, HeldModel Model)> held = new(StringComparer.Ordinal);
     private readonly HeldCatalog heldLooks;
+    private readonly ArmsView arms = null!;
     // The action whose motion is playing on a held look, and the last action start seen.
     private (string Look, ulong Started, TweenHandle Tween)? moving;
     private ulong startedSeen;
@@ -39,6 +40,7 @@ internal sealed class CombatView : IDisposable
         {
             residents = new ResidentView(engine, scene, combat, definition);
             heldLooks = definition.Held;
+            arms = new ArmsView(engine, heldLooks.Arms, scene.Entities.Create().Value);
             foreach (HeldModel look in heldLooks.Looks)
             {
                 using ContentReference content = engine.Content.OpenReference(new(look.Model));
@@ -103,8 +105,10 @@ internal sealed class CombatView : IDisposable
         Place(muzzle, player.Eye, camera, !combat.Defeated && firing, flash);
         for (int i = 0; i < flares.Length; i++)
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
+        facts.Add(arms.Fact(!combat.Defeated && look is not null));
         scene.PublishCombat(facts.ToArray());
         if (viewing is null) Move(look);
+        if (!combat.Defeated && look is not null) Reach(look, viewing is null ? current : null);
         residents.Animate();
     }
 
@@ -163,6 +167,9 @@ internal sealed class CombatView : IDisposable
             heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, speed))).Tween;
     }
 
+    /// <summary>Developer arms tuning: the main hand's turn from the held item and its palm offset, in the loaded content.</summary>
+    internal ArmsDefinition Arms => heldLooks.Arms;
+
     /// <summary>Developer motion viewer: shows the shown look's action motion paused at a moment (seconds from its start).</summary>
     internal void At(ActionDefinition action, float seconds)
     {
@@ -179,6 +186,15 @@ internal sealed class CombatView : IDisposable
 
     /// <summary>Steps what falls (the residents' ragdolls) by one admitted step.</summary>
     internal void Step(float seconds) => residents.Step(seconds);
+
+    // The hands reach the shown look's grips, where the Engine's evaluation of its motion puts the model now.
+    private void Reach(string look, ActionDefinition? action)
+    {
+        HeldModel model = heldLooks.Model(look);
+        (Vector3 at, Quaternion turn) = viewing is { Pose: { } held } ? held.Place(model) : Shown(look, action, combat.User.Elapsed);
+        Vector3 Grip(float[] point) => at + Vector3.Transform(Authored.Vector(point) * model.Scale, turn);
+        arms.Reach(Grip(model.Grips.Main), model.Grips.Off is { } off ? Grip(off) : null, turn);
+    }
 
     // An action's motion on a look, as a start request: what is started, and what is sampled for where the model is.
     private TweenStartRequest Request(string look, ActionDefinition action) =>
@@ -209,6 +225,7 @@ internal sealed class CombatView : IDisposable
     public void Dispose()
     {
         scene.PublishCombat([]);
+        arms?.Dispose();
         residents?.Dispose();
         foreach (Appearance appearance in appearances) appearance.Dispose();
         foreach (MeshResource mesh in meshes) mesh.Dispose();

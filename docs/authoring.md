@@ -164,6 +164,16 @@ An action already under way when the product publishes (an update can admit seve
 far along (the Engine's start offset), so the keys stay on their moments; a firearm's flash shows at the muzzle where
 the Engine's evaluation of the timeline puts it.
 
+The investigator's arms hold what the hands hold: `combat/arms.json` names the arms `model` (facing -Z, its right
+shoulder at the origin), where that `shoulder` sits in camera space, each arm's joint chain (`main` and `off`:
+`upper`, `lower`, `hand`) and elbow pole (`pole`, `offPole`, camera space: each elbow bends toward its pole), where a
+free off hand hangs (`offRest`), and how each hand holds (`mainHand`, `offHand`: `rotation` in degrees from the held
+item's turn, and the `palm` offset from the wrist in that turned frame). Every update the Engine's two-bone IK puts
+each hand's palm on its grip (a look's `grips.main`, and `grips.off` for a two-handed look; without one the off hand
+hangs at `offRest`), where the Engine's evaluation of the held motion shows the item, and turns the hand with the item;
+only the item moves by authored motion. `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` tries a main-hand hold
+live and prints its JSON.
+
 To work on a motion live, open the developer console (F2 in a developer session) and use the motion viewer:
 
 | Command | Does |

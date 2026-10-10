@@ -86,6 +86,16 @@ internal sealed class HeldMotionDebugCommands(Func<CombatView> view, HeldCatalog
         return DebugCommandResult.Success($"\"{name}\": {JsonSerializer.Serialize(pose, ContentJson.Default.HeldPose)}  (in motions.{held.Model(look).Motion}.poses)");
     }
 
+    [DebugCommand("hotel.dev.arms.hand", Description = "Developer arms tuning: set the main hand's turn from the held item (degrees x y z) and its palm offset from the wrist (metres x y z) in the loaded content, and print its JSON.")]
+    public DebugCommandResult Hand(float rx, float ry, float rz, float px, float py, float pz)
+    {
+        ArmHand hand = view().Arms.MainHand;
+        (hand.Rotation[0], hand.Rotation[1], hand.Rotation[2]) = (rx, ry, rz);
+        (hand.Palm[0], hand.Palm[1], hand.Palm[2]) = (px, py, pz);
+        view().Publish();
+        return DebugCommandResult.Success($"\"mainHand\": {{\"rotation\": [{rx}, {ry}, {rz}], \"palm\": [{px}, {py}, {pz}]}}  (in {ArmsDefinition.Path})");
+    }
+
     [DebugCommand("hotel.dev.motion.off", Description = "Developer motion viewer: return the hands to what they hold.")]
     public DebugCommandResult Off()
     {

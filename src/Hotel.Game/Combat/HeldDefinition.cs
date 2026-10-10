@@ -12,12 +12,14 @@ namespace Hotel.Game.Combat;
 internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
 {
     [System.Text.Json.Serialization.JsonIgnore] internal HeldMotionCatalog Motion { get; init; } = null!;
+    /// <summary>The first-person arms that hold what the hands hold (<see cref="ArmsDefinition.Path"/>).</summary>
+    [System.Text.Json.Serialization.JsonIgnore] internal ArmsDefinition Arms { get; init; } = null!;
 
     internal const string Path = "combat/held.json";
 
     internal static HeldCatalog Load(IEngineContext engine)
     {
-        HeldCatalog catalog = Authored.Read(engine, Path, ContentJson.Default.HeldCatalog) with { Motion = HeldMotionCatalog.Load(engine) };
+        HeldCatalog catalog = Authored.Read(engine, Path, ContentJson.Default.HeldCatalog) with { Motion = HeldMotionCatalog.Load(engine), Arms = ArmsDefinition.Load(engine) };
         catalog.Validate();
         return catalog;
     }

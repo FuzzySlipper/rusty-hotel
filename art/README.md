@@ -144,6 +144,17 @@ blender -b --python art/held-01/prepare.py
 Where each model sits in the hand is presentation tuning in `content/combat/held.json`, not part of the mesh, and how
 it moves through its actions is `content/combat/held-motion.json` (docs/authoring.md, "Held motion").
 
+### First-person arms
+
+`content/models/held/arms.glb` is cut from the Concierge's prepared master by `art/arms-01/prepare.py` (no new
+source): the arm vertices and the whole Tripo skeleton, facing -Z with the right shoulder at the origin, with the idle
+clip alone. `rig.json` records the arm joints' rest positions; `provenance.json` the method and limits (no finger bones,
+so the gloves stay open).
+
+```text
+blender -b art/residents-02/concierge.blend --python art/arms-01/prepare.py
+```
+
 ### Held motion preview
 
 ```text
