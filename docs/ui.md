@@ -197,8 +197,11 @@ Nested navigation retains pause; closing the final surface requests resume befor
 the Engine reports it. Pending transitions suppress duplicate navigation. A
 failed request keeps its error visible; a running menu offers Pause hotel to retry.
 
-Add `#developer=1` to the hosted page URL to opt into the menu's Developer console
-entry and F2 shortcut. The host independently requires `--live-debug`. The
+The menu's Developer console entry and F2 shortcut exist only when the Engine
+host runs its debug service (`rusty dev --live-debug`), streamed or in a window.
+The UI asks through the Engine's own debug client at startup, and again when the
+menu opens or F2 is pressed until the service answers (it may not while the
+product loads). The
 `developer.js` adapter lazily imports and mounts the packaged Engine dock inside
 the bounded console screen, disposes it on close, and disposes stale async mounts.
 It owns no parser, transport, polling or command state. The generated C# catalog

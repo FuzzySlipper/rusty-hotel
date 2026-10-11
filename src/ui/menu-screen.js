@@ -1,7 +1,7 @@
 import { focusFirstButton, screenElement } from './screen.js';
 
 /** Pause menu: resume, the other screens, leaving for the title menu, and checkpoint/lifecycle status. */
-export function mountMenuScreen(document, { developerEnabled, intents }) {
+export function mountMenuScreen(document, intents) {
   const element = screenElement(document, `
     <section class="hotel-screen menu-screen" data-screen="menu" hidden role="dialog" aria-modal="true" aria-labelledby="menu-title">
       <header class="screen-heading"><div><span class="eyebrow">Hotel Endless</span><h2 id="menu-title">Menu</h2></div></header>
@@ -9,7 +9,6 @@ export function mountMenuScreen(document, { developerEnabled, intents }) {
       <p class="live-note" data-checkpoint-status></p>
       <p class="live-note" data-lifecycle-status role="status"></p>
     </section>`);
-  element.querySelector('[data-developer]').hidden = !developerEnabled;
   // Leaving for the title menu keeps nothing since the last refuge checkpoint; C# opens the menu and main.js shows it.
   element.querySelector('[data-leave-title]').addEventListener('click', () => {
     try { intents.claim('hotel.title', { kind: 'product-payload', contract: 'hotel.title.v1', data: { choice: 'leave' } }); } catch { }

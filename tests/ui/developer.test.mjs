@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDeveloperConsole } from '../../src/ui/developer.js';
+import { createDeveloperConsole, developerAvailable } from '../../src/ui/developer.js';
 
 function deferred() {
   let resolve;
@@ -74,4 +74,12 @@ test('failed import reports an honest error and can be closed', async () => {
   assert.match(root.children[0].textContent, /unavailable: offline/);
   console.close();
   assert.equal(root.children.length, 0);
+});
+
+test('the console is available only when the Engine debug catalog says so', async () => {
+  const panel = catalog => async () => ({ createLiveDebugHttpTransport: () => ({ catalog }) });
+  assert.equal(await developerAvailable(panel(async () => ({ available: true, commands: [] }))), true);
+  assert.equal(await developerAvailable(panel(async () => ({ available: false, commands: [] }))), false);
+  assert.equal(await developerAvailable(panel(async () => { throw new Error('offline'); })), false);
+  assert.equal(await developerAvailable(async () => { throw new Error('no panel'); }), false);
 });

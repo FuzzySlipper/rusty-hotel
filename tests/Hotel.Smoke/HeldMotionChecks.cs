@@ -62,11 +62,24 @@ internal static class HeldMotionChecks
             Check(product.World.Combat.User.Current?.Id == swing.Id && along > 1.5f / 60 && playing.State != TweenState.Ended &&
                 Math.Abs(playing.TotalSeconds - total) < 1e-3f && Math.Abs(playing.ElapsedSeconds - along) < 1e-3f,
                 $"a swing begun in a four-step update starts its motion {along:F3} s along, its whole {playing.TotalSeconds:F3} s timeline at {playing.ElapsedSeconds:F3} s; {product.World.Combat.User.Current?.Id}, {playing.State})");
+            CombatView view = product.World.CombatView;
+            Admit(6);
+            (Vector3 swung, _) = view.Shown("prybar");
             product.World.Supplies.Afflict("stilled", "test");
             Admit(1);
-            TweenReadout settling = engine.Tween.Read(product.World.CombatView.Motion);
+            TweenReadout settling = engine.Tween.Read(view.Motion);
             Check(product.World.Combat.User.Current is null && Math.Abs(settling.TotalSeconds - motion.SettleSeconds) < 1e-3f,
                 "a hold that cuts the swing short eases the model back to rest");
+            // Where the hands reach is where the settle shows the model: still near where the swing left it, not at rest.
+            (Vector3 settled, _) = view.Shown("prybar");
+            Check(Vector3.Distance(settled, swung) < Vector3.Distance(swung, rest) && Vector3.Distance(settled, rest) > 1e-3f,
+                $"a settling model is shown (and reached for) on its way back: {settled} after {swung}, rest {rest}");
+            // The motion viewer's seek shows (and the hands reach) the pose at that moment, not rest.
+            view.View("prybar");
+            view.At(swing, swing.Timing.Windup);
+            (Vector3 sought, _) = view.Shown("prybar");
+            Check(Vector3.Distance(sought, strike) < 1e-3f, $"the viewer sought to the strike shows the strike pose: {sought} vs {strike}");
+            view.View(null);
         }
         Console.WriteLine($"Held motion checks passed: {motion.Motions.Count} motions, {timelines} item actions timed from rest to rest, the strike at the strike.");
     }

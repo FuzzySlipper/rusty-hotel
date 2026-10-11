@@ -6,6 +6,7 @@ import { mountReadingScreen } from './reading-screen.js';
 import { mountConsoleScreen } from './console-screen.js';
 import { mountTitleScreen } from './title-screen.js';
 import { createPauseFlow } from './pause.js';
+import { developerAvailable } from './developer.js';
 
 /** The window height, in CSS pixels, the interface is laid out for at UI scale 1. */
 const UI_HEIGHT = 1000;
@@ -20,10 +21,19 @@ export function mountProductUi(root, context) {
   layer.className = 'hotel-ui';
   layer.setAttribute('aria-label', 'Hotel Endless');
   layer.innerHTML = `<link rel="stylesheet" href="${new URL('./hotel.css', import.meta.url)}">`;
-  // Product opt-in controls access; the Engine host separately requires --live-debug.
-  const developerEnabled = new URLSearchParams(document.defaultView.location.hash.slice(1)).get('developer') === '1';
+  // The console is offered only where the Engine host runs its debug service (rusty dev --live-debug). The service may
+  // not answer while the product loads, so the menu and F2 ask again until it does.
+  let developerEnabled = false;
+  const askDeveloper = async () => {
+    if (developerEnabled) return true;
+    const available = await developerAvailable();
+    if (disposed) return false;
+    developerEnabled = available;
+    menu.element.querySelector('[data-developer]').hidden = !available;
+    return available;
+  };
   const hud = mountHud(document);
-  const menu = mountMenuScreen(document, { developerEnabled, intents: context.intents });
+  const menu = mountMenuScreen(document, context.intents);
   const title = mountTitleScreen(document, context.intents);
   const reading = mountReadingScreen(document, { name: 'reading', eyebrow: 'Found in the hotel', closeLabel: 'Put down' });
   const refuge = mountReadingScreen(document, { name: 'refuge', eyebrow: 'Refuge ledger', closeLabel: 'Return to hotel' });
@@ -60,6 +70,7 @@ export function mountProductUi(root, context) {
     syncPointer();
     if (next === null) context.ui.focusGameplay();
     else screens[next].enter();
+    if (next === 'menu') void askDeveloper();
   };
   const show = async (next, parent = null) => {
     if (disposed || pause.snapshot().pending || (next === 'console' && !developerEnabled)) return;
@@ -98,10 +109,13 @@ export function mountProductUi(root, context) {
         event.preventDefault();
         event.stopPropagation();
         if (!event.repeat) { if (screen === 'case') close(); else show('case', screen === null ? null : { screen, back: returnScreen }); }
-      } else if (event.code === keys.console && developerEnabled) {
+      } else if (event.code === keys.console && screen === 'console') {
         event.preventDefault();
         event.stopPropagation();
-        if (!event.repeat) { if (screen === 'console') close(); else show('console', screen === null ? null : { screen, back: returnScreen }); }
+        if (!event.repeat) close();
+      } else if (event.code === keys.console && !event.repeat) {
+        const parent = screen === null ? null : { screen, back: returnScreen };
+        void askDeveloper().then(available => { if (available) show('console', parent); });
       }
     }
     if (event.key === 'Tab' && screen !== null) {
@@ -167,6 +181,7 @@ export function mountProductUi(root, context) {
   const unsubscribe = context.projection?.subscribe(draw);
   draw(context.projection?.current());
   syncPointer();
+  void askDeveloper();
   return { dispose() {
     disposed = true;
     unsubscribe?.();

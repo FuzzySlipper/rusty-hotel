@@ -119,8 +119,15 @@ internal sealed class ResidentView : IDisposable
                 // A resident that can fall as a ragdoll reports its joints, so the ragdoll spawns in the pose it was drawn in.
                 if (body.Look.Ragdoll is not null && enemy.Alive) engine.Animation.SetPose(AnimationPoseRequest.ReportOnly(body.Instance));
             }
-            // A resident restored to life (a recovered checkpoint) leaves its ragdoll for its clips.
-            if (enemy.Alive && body.Ragdoll is not null) { body.Ragdoll.Dispose(); body.Ragdoll = null; body.Clip = null; }
+            // A resident restored to life (a recovered checkpoint) leaves its ragdoll for its clips, ready to fall again.
+            if (enemy.Alive && body.Ragdoll is not null)
+            {
+                body.Ragdoll.Dispose();
+                body.Ragdoll = null;
+                body.Rested = false;
+                body.Clip = null;
+                engine.Animation.SetPose(AnimationPoseRequest.ReportOnly(body.Instance));
+            }
             // Felled while this view watched: it falls as a ragdoll; one restored fallen plays its fall clip below.
             if (!enemy.Alive && body.Ragdoll is null && body.Clip is not null && body.Clip != body.Look.Clips.Fall && Fall(enemy, body))
             {
@@ -177,6 +184,7 @@ internal sealed class ResidentView : IDisposable
                 ragdolls.Friction, 0, ragdolls.LinearDamping, ragdolls.AngularDamping, 1));
         }
         catch (EngineCallException) { return false; }
+        body.Rested = false;
         Transform struck = engine.Dynamics.ReadRagdoll(body.Ragdoll).Bones.Span[rig.Hit];
         (Vector3 at, Vector3 push) = enemy.FelledBy is { } blow
             ? (blow.Point, ragdolls.Hit.Push(blow.Direction, blow.Damage))

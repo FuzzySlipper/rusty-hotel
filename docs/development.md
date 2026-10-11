@@ -49,9 +49,9 @@ in evidence rather than making a green test stand for an entire player feature.
 
 ## Developer console
 
-Run `rusty dev --live-debug`, add `#developer=1` to the printed product URL,
-then use F2 or Menu → Developer console. Both opt-ins matter: the hash exposes
-the entry, while Engine controls whether the debug service is available.
+Run `rusty dev --live-debug` (add `--output window` for a window), then use F2
+or Menu → Developer console. Without `--live-debug` the host has no debug
+service and the UI offers no console.
 Closing the console disposes the packaged panel; the normal HUD has no debug
 panel traffic. Hotel owns its lifetime adapter, not its transport or parser.
 

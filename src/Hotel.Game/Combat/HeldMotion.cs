@@ -81,9 +81,10 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
     /// back to rest by the end of recovery. Values are offsets from where the model is published at rest: a translation
     /// in camera space and a rotation in the model's own frame, as the Engine applies them. <paramref name="speed"/>
     /// plays it faster or slower (a viewer's slow motion). An action already part way along is started that far in
-    /// (<see cref="TweenStartRequest"/>'s elapsed seconds), so every key lands at its moment of the action.
+    /// (<see cref="TweenStartRequest"/>'s elapsed seconds), so every key lands at its moment of the action. It begins at
+    /// <paramref name="from"/>, the offset shown when it starts (none, at rest), so it carries on without a jump.
     /// </summary>
-    internal TweenSegment[] Timeline(HeldModel look, ActionDefinition action, float speed = 1)
+    internal TweenSegment[] Timeline(HeldModel look, ActionDefinition action, float speed = 1, (Vector3 Move, Quaternion Turn)? from = null)
     {
         HeldMotion motion = Motions[look.Motion];
         HeldPose rest = motion.Poses[Rest];
@@ -95,15 +96,15 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
         }
         float total = action.Timing.Windup + action.Timing.Commit + action.Timing.Recovery;
         List<TweenSegment> segments = [];
-        (Vector3 Move, Quaternion Turn) from = (Vector3.Zero, Quaternion.Identity);
+        (Vector3 Move, Quaternion Turn) last = from ?? (Vector3.Zero, Quaternion.Identity);
         float start = 0;
         void Ease((Vector3 Move, Quaternion Turn) to, float time, TweenEasingKind ease)
         {
             if (time - start <= 0) return;
             float at = start / speed, seconds = (time - start) / speed;
-            segments.Add(TweenSegment.Move(from.Move, to.Move, seconds, ease).At(at));
-            segments.Add(TweenSegment.Rotate(from.Turn, to.Turn, seconds, ease).At(at));
-            from = to;
+            segments.Add(TweenSegment.Move(last.Move, to.Move, seconds, ease).At(at));
+            segments.Add(TweenSegment.Rotate(last.Turn, to.Turn, seconds, ease).At(at));
+            last = to;
             start = time;
         }
         foreach (MotionKey key in motion.Track(action.Id)!) Ease(Offset(motion.Poses[key.Pose]), key.Time(action.Timing), key.Ease);
@@ -112,11 +113,11 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
         return segments.ToArray();
     }
 
-    /// <summary>The settle back to rest from wherever a cut-short action left the model.</summary>
-    internal TweenSegment[] Settle() =>
+    /// <summary>The settle back to rest from <paramref name="from"/>, the offset a cut-short action left the model at.</summary>
+    internal TweenSegment[] Settle((Vector3 Move, Quaternion Turn) from) =>
     [
-        TweenSegment.Move(Vector3.Zero, Vector3.Zero, SettleSeconds, SettleEase),
-        TweenSegment.Rotate(Quaternion.Identity, Quaternion.Identity, SettleSeconds, SettleEase)
+        TweenSegment.Move(from.Move, Vector3.Zero, SettleSeconds, SettleEase),
+        TweenSegment.Rotate(from.Turn, Quaternion.Identity, SettleSeconds, SettleEase)
     ];
 }
 

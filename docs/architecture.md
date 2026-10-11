@@ -332,9 +332,11 @@ do not save unsaved expedition changes. Dispose releases the Engine store.
 
 ## Developer access
 
-The developer console requires a product URL opt-in (`#developer=1`) and the
-Engine host's separate `--live-debug` opt-in. Closed UI does not import or mount
-the debug panel or create its transport. Opening imports the Engine-owned
+The developer console is offered only when the Engine host runs with
+`--live-debug`, in a streamed page or a window: the UI asks, through the
+Engine's own debug client, whether the catalog is available (at startup, then
+on opening the menu or pressing F2 until it is). Closed
+UI does not mount the debug panel. Opening imports the Engine-owned
 `@rusty-engine/live-debug` entry through the runtime's import map and mounts
 its dock presentation in a bounded dropdown. Closing disposes its requests and
 DOM. A mount that resolves after closing is immediately disposed. Hotel owns

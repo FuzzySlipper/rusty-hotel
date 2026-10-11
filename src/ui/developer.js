@@ -1,3 +1,16 @@
+/**
+ * Whether the Engine's debug service runs (a host started with --live-debug), asked once through the Engine's own
+ * client. Works the same in a streamed page and a window, which has no address to add an opt-in to.
+ */
+export async function developerAvailable(loadPanel = () => import('@rusty-engine/live-debug')) {
+  try {
+    const { createLiveDebugHttpTransport } = await loadPanel();
+    return (await createLiveDebugHttpTransport().catalog()).available === true;
+  } catch {
+    return false;
+  }
+}
+
 /** One opt-in Engine panel. No transport, catalog or diagnostics exists while closed. */
 export function createDeveloperConsole(host, loadPanel = () => import('@rusty-engine/live-debug')) {
   let current = null;
