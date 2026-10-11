@@ -34,6 +34,9 @@ internal sealed class CombatView : IDisposable
     // Enough flare boxes for the shots one hand can have in flight at once.
     private const int ShownProjectiles = 6;
     private readonly Part[] flares;
+    // The developer stance guide: the target grip, length and up side, then the shown look's own.
+    private readonly Part[] guide;
+    private bool guiding;
 
     internal CombatView(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelCombat combat, CombatDefinition definition)
     {
@@ -55,6 +58,8 @@ internal sealed class CombatView : IDisposable
             }
             muzzle = Box("tell-amber", default, Authored.Vector(heldLooks.FlashSize));
             flares = Enumerable.Range(0, ShownProjectiles).Select(_ => Box("tell-amber", default, new(.16f))).ToArray();
+            guide = [.. Enumerable.Range(0, 3).Select(_ => Box("dev-guide-target", default, Vector3.One)),
+                .. Enumerable.Range(0, 3).Select(_ => Box("dev-guide-actual", default, Vector3.One))];
         }
         catch { Dispose(); throw; }
     }
@@ -96,18 +101,16 @@ internal sealed class CombatView : IDisposable
         Vector3 flash = Vector3.Zero;
         if (firing && look is { } gun && heldLooks.Model(gun) is { Muzzle: { } muzzlePoint } firearm)
         {
-            // The muzzle point is in hand space: carried from the model's rest placement to where the motion shows it now.
-            (Vector3 restAt, Quaternion restTurn) = motion.Motions[firearm.Motion].Poses[HeldMotionCatalog.Rest].Place(firearm);
-            HeldPose rest = motion.Motions[firearm.Motion].Poses[HeldMotionCatalog.Rest];
-            Vector3 muzzleRest = Authored.Vector(rest.Position) + Vector3.Transform(Authored.Vector(muzzlePoint), rest.Turn);
+            // The muzzle is a point on the model, where the motion shows the model now.
             (Vector3 at, Quaternion turn) = Shown(gun);
-            flash = at + Vector3.Transform(muzzleRest - restAt, turn * Quaternion.Inverse(restTurn));
+            flash = at + Vector3.Transform(Authored.Vector(muzzlePoint) * firearm.Scale, turn);
         }
         else firing = false;
         Place(muzzle, player.Eye, camera, !combat.Defeated && firing, flash);
         for (int i = 0; i < flares.Length; i++)
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         facts.Add(arms.Fact(!combat.Defeated && look is not null));
+        Guide(facts, combat.Defeated ? null : look);
         scene.PublishCombat(facts.ToArray());
         if (viewing is null) Move(look);
         if (!combat.Defeated && look is not null) Reach(look);
@@ -211,6 +214,56 @@ internal sealed class CombatView : IDisposable
         previous.Dispose();
     }
 
+    /// <summary>Developer stance guide: draws where the shown look's stance puts it beside where it is.</summary>
+    internal void ShowGuide(bool on)
+    {
+        guiding = on;
+        Publish();
+    }
+
+    /// <summary>How far the drawn arms' wrists fell short of their grips (see <see cref="ArmsView.Shortfall"/>).</summary>
+    internal (float Main, float Off) ArmsShortfall => arms.Shortfall;
+
+    /// <summary>The look the hands show now: the motion viewer's, or what they hold.</summary>
+    internal string? ShownLook => viewing?.Look ?? combat.Holding?.Item.Wear!.Look;
+
+    // The stance's grip, length and up side (amber), and the shown look's (blue): a marker at each grip, a line along each
+    // length and a short one along each up side.
+    private void Guide(List<AppearanceFact> facts, string? look)
+    {
+        const float Marker = .016f, Width = .003f, Length = .25f, Across = .07f;
+        bool shown = guiding && look is not null;
+        Vector3 grip = default, along = Vector3.UnitZ, up = Vector3.UnitY, gripNow = default, alongNow = Vector3.UnitZ, upNow = Vector3.UnitY;
+        if (shown)
+        {
+            HeldModel model = heldLooks.Model(look!);
+            HeldStance stance = heldLooks.Stances.Stances[model.Stance];
+            grip = Authored.Vector(stance.Grip);
+            Quaternion target = stance.Turn(model.Along);
+            (along, up) = (Vector3.Transform(model.Along.TipVector, target), Vector3.Transform(model.Along.UpVector, target));
+            (Vector3 at, Quaternion turn) = Shown(look!);
+            gripNow = at + Vector3.Transform(Authored.Vector(model.Grips.Main) * model.Scale, turn);
+            (alongNow, upNow) = (Vector3.Transform(model.Along.TipVector, turn), Vector3.Transform(model.Along.UpVector, turn));
+        }
+        facts.Add(Segment(guide[0], grip, grip, Marker, shown));
+        facts.Add(Segment(guide[1], grip, grip + along * Length, Width, shown));
+        facts.Add(Segment(guide[2], grip, grip + up * Across, Width, shown));
+        facts.Add(Segment(guide[3], gripNow, gripNow, Marker * .8f, shown));
+        facts.Add(Segment(guide[4], gripNow, gripNow + alongNow * Length, Width, shown));
+        facts.Add(Segment(guide[5], gripNow, gripNow + upNow * Across, Width, shown));
+    }
+
+    // A box from one camera-space point to another, a cube of the width when they meet, on the viewmodel layer.
+    private static AppearanceFact Segment(Part part, Vector3 from, Vector3 to, float width, bool visible)
+    {
+        Vector3 d = to - from;
+        float length = d.Length();
+        Quaternion turn = length < 1e-5f ? Quaternion.Identity
+            : Frames.Between(Vector3.UnitZ, Vector3.UnitY, d / length, MathF.Abs(d.Y) > .9f * length ? Vector3.UnitZ : Vector3.UnitY);
+        return new(part.Entity, false, 0, new((from + to) / 2, turn, new(width, width, MathF.Max(length, width))), part.Appearance, visible,
+            RenderLayer.Viewmodel);
+    }
+
     /// <summary>Developer arms tuning: the main hand's turn from the held item and its palm offset, in the loaded content.</summary>
     internal ArmsDefinition Arms => heldLooks.Arms;
 
@@ -238,7 +291,12 @@ internal sealed class CombatView : IDisposable
         HeldModel model = heldLooks.Model(look);
         (Vector3 at, Quaternion turn) = Shown(look);
         Vector3 Grip(float[] point) => at + Vector3.Transform(Authored.Vector(point) * model.Scale, turn);
-        arms.Reach(Grip(model.Grips.Main), model.Grips.Off is { } off ? Grip(off) : null, turn);
+        // Hands hold a look along its own length and up side, so one hold suits every look: the hand turns with the
+        // look's axis frame, not its model's.
+        Quaternion along = Frames.Between(HeldAxis.Default.TipVector, HeldAxis.Default.UpVector, model.Along.TipVector, model.Along.UpVector);
+        arms.Reach(Grip(model.Grips.Main), model.Grips.Off is { } off ? Grip(off) : null, Quaternion.Normalize(turn * along),
+            model.Grips.Hand ?? heldLooks.Stances.Stances[model.Stance].Hand,
+            viewing is null && combat.Phase is AttackPhase.Windup or AttackPhase.Commit);
     }
 
     /// <summary>

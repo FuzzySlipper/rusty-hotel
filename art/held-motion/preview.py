@@ -9,7 +9,9 @@ command, fills the investigator's tracks, starts each of the item's actions with
 world frames (no page UI) at even moments from the action's start to its end. One strip per look and action goes to
 DIR (default .runtime/held-motion/), labelled with the time and phase and, at each key's moment, the key's pose, plus
 contact.png with every strip. An action that needs a carried item (a reload's cartridges) gets one, with room for what
-it gives. An action that does not start is reported and the command exits 1 rather than publishing an idle strip.
+it gives. An action that does not start is reported and the command exits 1 rather than publishing an idle strip. A frame
+whose drawn wrist sits more than a centimetre from its grip (hotel.inspect's armsShortfall) is labelled OUT OF REACH in
+red and listed: that pose puts the item beyond the arm.
 What it shows is the Engine's own tween, as the game plays it. Linux art tooling; not part of the build. For stepping
 keys and playing slowly in a live session, use the hotel.dev.motion console commands instead.
 """
@@ -28,6 +30,8 @@ PROFILE = "rusty-hotel-ui-debug"
 # The part of the frame the right hand's items move through.
 CROP = (420, 140, 1280, 720)
 CONTROLS = ("primary", "secondary")
+# How far (metres) a drawn wrist may sit from its grip before the frame is flagged out of reach.
+REACH_TOLERANCE = 0.01
 
 
 def run(*args):
@@ -78,6 +82,7 @@ def main():
     os.makedirs(args.out, exist_ok=True)
     items, actions, every, motions, held = content()
     failures = []
+    unreachable = []
     looks = [l for l in args.looks.split(",") if l] or list(items)
 
     session, owned = args.session, False
@@ -131,9 +136,15 @@ def main():
                     if moment > elapsed:
                         elapsed += assist(session, {"op": "advance", "ms": (moment - elapsed) * 1000}).get("advancedMs", 0) / 1000
                     shot = assist(session, {"op": "world-frame"})
+                    short = max(json.loads(debug("hotel.inspect") or "{}").get("armsShortfall", [0, -1]))
                     phase = ("windup" if elapsed < timing["windup"] else "commit" if elapsed < timing["windup"] + timing["commit"] else "recovery")
                     pose = next((p for t, p in keys if abs(t - moment) < 1e-3), None)
-                    frames.append((Image.open(shot["path"]).crop(CROP), f"{elapsed:.2f} s {phase}" + (f" · {pose}" if pose else "")))
+                    label = f"{elapsed:.2f} s {phase}" + (f" · {pose}" if pose else "")
+                    # A wrist drawn short of its grip: the pose puts the item out of the arm's reach.
+                    if short > REACH_TOLERANCE:
+                        label += f" · OUT OF REACH {short * 100:.0f} cm"
+                        unreachable.append(f"{look} · {action_id} at {elapsed:.2f} s ({pose or phase}): wrist {short * 100:.1f} cm short")
+                    frames.append((Image.open(shot["path"]).crop(CROP), label))
                 assist(session, {"op": "advance", "ms": (timing["cooldown"] + 0.3) * 1000})
                 strips.append((f"{look} · {action_id}", frames))
                 strip_image(f"{look} · {action_id}", frames).save(os.path.join(args.out, f"{look}-{action_id}.png"))
@@ -144,6 +155,8 @@ def main():
             contact.paste(strip_image(title, frames, half=True), (0, row * (frames[0][0].height // 2 + 24)))
         contact.save(os.path.join(args.out, "contact.png"))
         print(f"{len(strips)} strips in {args.out} (contact.png has them all).")
+        if unreachable:
+            print("Out of the arms' reach:\n" + "\n".join(unreachable))
         if failures:
             print("Not shown:\n" + "\n".join(failures))
             sys.exit(1)
@@ -161,7 +174,7 @@ def strip_image(title, frames, half=False):
     draw.text((6, 4), title, fill=(235, 225, 200))
     for i, (image, label) in enumerate(frames):
         strip.paste(image.resize((width, height)), (i * width, 24))
-        draw.text((i * width + 6, 28), label, fill=(255, 230, 160))
+        draw.text((i * width + 6, 28), label, fill=(255, 90, 80) if "OUT OF REACH" in label else (255, 230, 160))
     return strip
 
 

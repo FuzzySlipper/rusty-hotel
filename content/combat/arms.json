@@ -1,15 +1,19 @@
 {
   "model": "models/held/arms.glb",
-  "clip": "grip",
+  "clips": {
+    "rest": "grip",
+    "action": "squeeze",
+    "fade": 0.12
+  },
   "shoulder": [
     0.2,
-    -0.24,
-    0.06
+    -0.3,
+    0.05
   ],
   "pole": [
-    0.6,
-    -0.7,
-    0.2
+    1.2,
+    -0.4,
+    -0.1
   ],
   "offPole": [
     -0.85,
@@ -34,8 +38,8 @@
   "mainHand": {
     "rotation": [
       0,
-      180,
-      180
+      -90,
+      0
     ],
     "palm": [
       0,
@@ -46,7 +50,7 @@
   "offHand": {
     "rotation": [
       0,
-      180,
+      90,
       180
     ],
     "palm": [

@@ -31,6 +31,8 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
         {
             string at = $"motions.{id}";
             Authored.Require(motion.Poses.ContainsKey(Rest), Path, $"{at}.poses", $"needs a '{Rest}' pose.");
+            Authored.Require(motion.Poses.TryGetValue(Rest, out HeldPose? rest) && rest.Position.All(v => v == 0) && rest.Rotation.All(v => v == 0),
+                Path, $"{at}.poses.{Rest}", "must be no change ([0, 0, 0] both): a look rests where its stance seats it.");
             foreach (var (name, pose) in motion.Poses)
             {
                 Authored.Point(Path, $"{at}.poses.{name}.position", pose.Position);
@@ -129,8 +131,9 @@ internal sealed record HeldMotion(Dictionary<string, HeldPose> Poses, Dictionary
 }
 
 /// <summary>
-/// Where the hand is, in camera space (metres right, up, back), turned by <see cref="Rotation"/> (degrees about X, Y,
-/// Z). The held model sits in the hand by its look's offset and rotation.
+/// A pose of a held look, from where its stance seats it: its main grip moved by <see cref="Position"/> (camera space,
+/// metres right, up, back) and the item turned further by <see cref="Rotation"/> (degrees about camera X, Y, Z) about
+/// that grip. The rest pose is no change: the look as its stance holds it.
 /// </summary>
 internal sealed record HeldPose(float[] Position, float[] Rotation)
 {
@@ -143,11 +146,12 @@ internal sealed record HeldPose(float[] Position, float[] Rotation)
         }
     }
 
-    /// <summary>Where a look's model is and how it is turned with the hand in this pose.</summary>
+    /// <summary>Where a look's model is and how it is turned in this pose (camera space).</summary>
     internal (Vector3 At, Quaternion Model) Place(HeldModel look)
     {
-        Quaternion hand = Turn;
-        return (Authored.Vector(Position) + Vector3.Transform(Authored.Vector(look.Offset), hand), Quaternion.Normalize(hand * look.Turn));
+        Quaternion turn = Quaternion.Normalize(Turn * look.Seated.Turn);
+        Vector3 grip = look.Seated.Grip + Authored.Vector(Position);
+        return (grip - Vector3.Transform(Authored.Vector(look.Grips.Main) * look.Scale, turn), turn);
     }
 }
 
@@ -167,5 +171,9 @@ internal sealed record MotionKey(string Pose, MotionPhase Phase, float At, Tween
 [JsonConverter(typeof(JsonStringEnumConverter<MotionPhase>))]
 internal enum MotionPhase { Windup, Commit, Recovery }
 
-/// <summary>Where hands hold a look's model, in the model's own space: the main hand's grip and, for two hands, the other's.</summary>
-internal sealed record HeldGrips(float[] Main, float[]? Off = null);
+/// <summary>
+/// Where hands hold a look's model, in the model's own space: the main hand's grip and, for two hands, the other's; and
+/// how the hands turn on it (<see cref="Hand"/>, degrees about X, Y, Z from the item's turn), when this look is not held as
+/// the arms' default hand holds (<see cref="ArmsDefinition.MainHand"/>).
+/// </summary>
+internal sealed record HeldGrips(float[] Main, float[]? Off = null, float[]? Hand = null);

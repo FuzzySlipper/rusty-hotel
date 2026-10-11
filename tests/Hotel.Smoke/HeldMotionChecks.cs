@@ -29,6 +29,20 @@ internal static class HeldMotionChecks
                     $"{item.Id} {id}: the motion runs from the action's start to rest at its end ({total} s)");
                 timelines++;
             }
+        // Every look is seated on its stance: at rest its main grip is on the stance's grip, its length heads toward the
+        // stance's point and its up side faces the stance's up.
+        foreach (HeldModel look in held.Looks)
+        {
+            HeldStance stance = held.Stances.Stances[look.Stance];
+            (Vector3 at, Quaternion turn) = motion.Motions[look.Motion].Poses[HeldMotionCatalog.Rest].Place(look);
+            Vector3 grip = at + Vector3.Transform(new Vector3(look.Grips.Main[0], look.Grips.Main[1], look.Grips.Main[2]) * look.Scale, turn);
+            Vector3 target = new(stance.Grip[0], stance.Grip[1], stance.Grip[2]);
+            Vector3 along = Vector3.Normalize(new Vector3(stance.Toward[0], stance.Toward[1], stance.Toward[2]) - target);
+            Vector3 up = new(stance.Up[0], stance.Up[1], stance.Up[2]);
+            Vector3 tip = Vector3.Transform(look.Along.TipVector, turn), side = Vector3.Transform(look.Along.UpVector, turn);
+            Check(Vector3.Distance(grip, target) < 2e-3f && Vector3.Dot(tip, along) > 0.999f && Vector3.Dot(side, Vector3.Normalize(up - along * Vector3.Dot(up, along))) > 0.999f,
+                $"{look.Look} sits on stance '{look.Stance}' at rest: grip {grip} vs {target}, length {tip} vs {along}");
+        }
         // The pry bar's swing reaches its strike pose exactly as the swing lands.
         ActionDefinition swing = content.Combat.Actions.Action("prybar-swing")!;
         HeldModel prybar = held.Model("prybar");

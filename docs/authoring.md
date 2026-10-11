@@ -44,8 +44,9 @@ its own folder. Geometry is kept apart from tuning.
 | `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
 | `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height, the loot table its remains give and the experience felling it gives; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
-| `combat/held.json` | First-person held items: the muzzle flash size, and per held look (an id that held items name) its model, offset, rotation and scale in the hand, the `motion` it moves by, its `grips` (where hands hold it, in the model's own space: `main`, optional `off`) and muzzle point; `CombatView`, drawn on the Engine viewmodel layer |
-| `combat/held-motion.json` | How held looks move through their actions: per motion, named hand `poses` (camera-space `position`, `rotation` in degrees, with a `rest` pose) and `tracks` by action id (or `default`) of keys `{pose, phase, at, ease}`; `HeldMotionCatalog` builds each action's Engine tween timeline. See "Held motion" below |
+| `combat/held.json` | First-person held items: the muzzle flash size, and per held look (an id that held items name) its model and scale, the `motion` it moves by, its `stance` and optional `axis` and `nudge`, its `grips` and a firearm's `muzzle`; `HeldCatalog`. See "Held stances" below |
+| `combat/stances.json` | Where each kind of held thing sits at rest in first person: per stance a camera-space `grip`, a point its length heads `toward`, its `up` side and optional `hand` hold; `StanceCatalog` |
+| `combat/held-motion.json` | How held looks move through their actions: per motion, named `poses` moving the look from its stance (`position` of its grip in camera space, `rotation` in degrees about the grip; `rest` is no change) and `tracks` by action id (or `default`) of keys `{pose, phase, at, ease}`; `HeldMotionCatalog` builds each action's Engine tween timeline. See "Held motion" below |
 | `combat/looks.json` | Resident looks: the rigged model, its scale and turn, the clip for each state, the strike's moment in the attack clip and the tell light; `ResidentView` |
 | `combat/factions.json` | Factions, which pairs are hostile, and the investigator's faction; `HotelCombat`, `ResidentSenses` |
 | `combat/messages.json` | Combat notices and HUD action states; `HotelCombat` |
@@ -148,10 +149,11 @@ equipment slot. A description names a restored amount by its track (`{health}`).
 
 ## Held motion
 
-A held look moves through each action by its motion in `combat/held-motion.json`. A motion names hand poses in
-camera space (metres right, up, back; rotation in degrees about X, Y and Z), one of them `rest`, where the hand sits
-between actions. A track lists keys for an action, by action id or `default`: at `at` (0 to 1) through `phase`
-(`Windup`, `Commit` or `Recovery`), the hand reaches `pose`, easing in by `ease`, a named Engine curve (`Linear`, or
+A held look moves through each action by its motion in `combat/held-motion.json`. A motion names poses that move the
+look from where its stance seats it ("Held stances" below): its main grip moved by `position` (metres right, up, back
+in camera space) and the item turned about that grip by `rotation` (degrees about camera X, Y and Z). `rest` is no
+change, where the look sits between actions. A track lists keys for an action, by action id or `default`: at `at` (0
+to 1) through `phase` (`Windup`, `Commit` or `Recovery`), the look reaches `pose`, easing in by `ease`, a named Engine curve (`Linear`, or
 `Quad`, `Cubic`, `Quart`, `Quint`, `Sine`, `Expo`, `Circ`, `Back`, `Elastic` or `Bounce` followed by `In`, `Out` or
 `InOut`). Keys are timed from the action's own timing, so the end of windup is the strike whatever the weapon's
 speed; a key at `Windup` 1 lands its pose with the hit. Two keys on one pose hold it. The motion always returns to
@@ -165,17 +167,49 @@ far along (the Engine's start offset), so the keys stay on their moments; a fire
 the Engine's evaluation of the timeline puts it.
 
 The investigator's arms hold what the hands hold: `combat/arms.json` names the arms `model` (facing -Z, its right
-shoulder at the origin), the `clip` that poses the hands (how the fingers close; `grip`), where that `shoulder` sits in
+shoulder at the origin), the `clips` that pose the hands (`rest`, how the fingers close on what they hold, `grip`; `action`, tighter while an action winds up and commits, `squeeze`; eased between over `fade` seconds), where that `shoulder` sits in
 camera space, each arm's joint chain (`main` and `off`:
 `upper`, `lower`, `hand`) and elbow pole (`pole`, `offPole`, camera space: each elbow bends toward its pole), where a
 free off hand hangs (`offRest`), and how each hand holds (`mainHand`, `offHand`: `rotation` in degrees from the held
 item's turn, and the `palm` offset from the wrist in that turned frame, which puts the grip in the curl of the
 fingers). The hand joint's own axes run +Y along the fingers, +Z out of the back of the hand and +X toward the little
-finger, and every held model lies along its own Z, so the one hold applies to every look. Every update the Engine's two-bone IK puts
+finger. A hold is a turn in the item's axis frame (its length and up side, below), so one hold suits every look of a
+kind: a stance may give its own `hand` (a firearm is held round its pistol grip), and a look's `grips.hand` overrides
+both. Every update the Engine's two-bone IK puts
 each hand's palm on its grip (a look's `grips.main`, and `grips.off` for a two-handed look; without one the off hand
 hangs at `offRest`), where the Engine's evaluation of the held motion shows the item, and turns the hand with the item;
 only the item moves by authored motion. `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` tries a main-hand hold
-live and prints its JSON.
+live and `hotel.dev.arms.reach <shoulder xyz> <pole xyz>` the shoulder and elbow pole; each prints its JSON.
+
+### Held stances
+
+Held things of one kind sit alike at rest. `combat/stances.json` gives each kind's stance in camera space, following
+common first-person framing:
+- `melee`: the grip low at the right edge, the hand barely in view, the length rising and leaning in;
+- `firearm`: the grip lower right of centre, the barrel converging a few metres ahead, below the crosshair;
+- `heavy`: a two-handed axe held low across the body, the off hand up the haft;
+- `longarm`: a two-handed gun nearer the centre, where the off hand reaches its fore-end;
+- `blade`, `raised`, `thrown`: variants of those.
+
+Motion poses (`combat/held-motion.json`) move a look from where its stance seats it: a pose's `position` moves the
+main grip (camera space) and its `rotation` turns the item about that grip, so a motion reads alike for every look in
+it, and `rest` is no change. A firearm's `muzzle` is a point on its model.
+
+A stance has a `grip` point, a point its length heads `toward`, the way its `up` side faces, and optionally a `hand`
+hold. Each look names its `stance`. Its `axis` gives the model's own length (`tip`, from the grip toward its business
+end) and `up` side; the default is -Z with +Y up, and a candelabra or extinguisher stands along +Y. Content loading
+seats every look on its stance: the offset and turn from its motion's `rest` hand that put its main grip on the
+stance's grip and its length and up side along the stance. A look's `nudge` (`grip`, metres in camera space, and
+`turn`, degrees about camera X, Y, Z) corrects it by eye. Changing a stance moves every look in it.
+
+Work on stances in the developer console, with a look shown (held, or through `hotel.dev.motion`):
+
+| Command | Does |
+| --- | --- |
+| `hotel.dev.stance <true/false>` | Draws the shown look's stance (amber: grip marker, a line along its length, a short line along its up side) beside where the look is (blue) |
+| `hotel.dev.stance.set <stance> <grip xyz> <toward xyz> <up xyz>` | Changes a stance in the loaded content, re-seats every look in it and prints its JSON for `stances.json` |
+| `hotel.dev.stance.hand <stance> <rx> <ry> <rz>` | Changes a stance's hand hold and prints its JSON |
+| `hotel.dev.held.nudge <grip xyz> <turn xyz>` | Nudges the shown look from its stance and prints the `nudge` for `held.json` |
 
 To work on a motion live, open the developer console (F2 in a developer session) and use the motion viewer:
 

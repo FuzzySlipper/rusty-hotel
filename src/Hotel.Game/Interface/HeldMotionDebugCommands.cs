@@ -76,7 +76,7 @@ internal sealed class HeldMotionDebugCommands(Func<CombatView> view, HeldCatalog
         return DebugCommandResult.Success($"{action.Id} at {seconds:0.###} s ({phase}; the strike is at {t.Windup:0.###} s).");
     }
 
-    [DebugCommand("hotel.dev.motion.pose", Description = "Developer motion viewer: set a pose of the shown look's motion (position x y z in metres, rotation x y z in degrees) in the loaded content, hold it, and print its JSON.")]
+    [DebugCommand("hotel.dev.motion.pose", Description = "Developer motion viewer: set a pose of the shown look's motion (its grip moved from the stance by x y z metres, the item turned about it by x y z degrees) in the loaded content, hold it, and print its JSON.")]
     public DebugCommandResult Pose(string name, float x, float y, float z, float rx, float ry, float rz)
     {
         if (look is null) return Failure("Choose a look first: hotel.dev.motion <look> <action>.");
@@ -95,6 +95,26 @@ internal sealed class HeldMotionDebugCommands(Func<CombatView> view, HeldCatalog
         (hand.Palm[0], hand.Palm[1], hand.Palm[2]) = (px, py, pz);
         view().Publish();
         return DebugCommandResult.Success($"\"mainHand\": {{\"rotation\": [{rx}, {ry}, {rz}], \"palm\": [{px}, {py}, {pz}]}}  (in {ArmsDefinition.Path})");
+    }
+
+    [DebugCommand("hotel.dev.arms.offhand", Description = "Developer arms tuning: set the off hand's turn from the held item (degrees x y z) and its palm offset from the wrist (metres x y z) for two-handed looks, in the loaded content, and print its JSON.")]
+    public DebugCommandResult OffHand(float rx, float ry, float rz, float px, float py, float pz)
+    {
+        ArmHand hand = view().Arms.OffHand;
+        (hand.Rotation[0], hand.Rotation[1], hand.Rotation[2]) = (rx, ry, rz);
+        (hand.Palm[0], hand.Palm[1], hand.Palm[2]) = (px, py, pz);
+        view().Publish();
+        return DebugCommandResult.Success($"\"offHand\": {{\"rotation\": [{rx}, {ry}, {rz}], \"palm\": [{px}, {py}, {pz}]}}  (in {ArmsDefinition.Path})");
+    }
+
+    [DebugCommand("hotel.dev.arms.reach", Description = "Developer arms tuning: set where the right shoulder sits (the left sits beside it in the arms model) and the point the right elbow bends toward (camera space, metres x y z each) in the loaded content, and print their JSON.")]
+    public DebugCommandResult Reach(float sx, float sy, float sz, float px, float py, float pz)
+    {
+        ArmsDefinition arms = view().Arms;
+        (arms.Shoulder[0], arms.Shoulder[1], arms.Shoulder[2]) = (sx, sy, sz);
+        (arms.Pole[0], arms.Pole[1], arms.Pole[2]) = (px, py, pz);
+        view().Publish();
+        return DebugCommandResult.Success($"\"shoulder\": [{sx}, {sy}, {sz}], \"pole\": [{px}, {py}, {pz}]  (in {ArmsDefinition.Path})");
     }
 
     [DebugCommand("hotel.dev.arms.model", Description = "Developer arms comparison: show another arms model (a content path such as models/held/arms-knit.glb) with the same hold, until the floor is rebuilt.")]

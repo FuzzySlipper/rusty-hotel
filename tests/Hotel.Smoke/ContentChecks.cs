@@ -184,6 +184,7 @@ internal static class ContentChecks
             ("combat/ragdolls.json", root => root["rigs"]!["tripo-humanoid"]!["links"]![3]!["cone"] = JsonNode.Parse("{\"swing\": 1, \"twistMin\": 0, \"twistMax\": 0}"), "content/combat/ragdolls.json rigs.tripo-humanoid.links[3]: needs exactly one of cone or hinge"),
             ("combat/ragdolls.json", root => root["rigs"]!["tripo-humanoid"]!["links"]![0]!["child"] = "Tail", "content/combat/ragdolls.json rigs.tripo-humanoid.links[0].child"),
             ("combat/held.json", root => root["looks"]![0]!["motion"] = "twirl", "content/combat/held.json looks[0].motion: unknown motion 'twirl'"),
+            ("combat/held.json", root => root["looks"]![0]!["stance"] = "lounging", "content/combat/held.json looks[0].stance: unknown stance 'lounging'"),
             ("combat/held.json", root => root["looks"]![0]!["grips"]!["main"] = JsonNode.Parse("[0, 0]"), "content/combat/held.json looks[0].grips.main"),
             ("combat/held-motion.json", root => root["motions"]!["swing"]!["tracks"]!["default"]![0]!["pose"] = "pirouette", "content/combat/held-motion.json motions.swing.tracks.default[0].pose"),
             ("combat/held-motion.json", root => root["motions"]!["swing"]!["tracks"]!["default"]![0]!["ease"] = "Spring", "content/combat/held-motion.json motions.swing.tracks.default[0].ease"),

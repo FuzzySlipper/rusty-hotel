@@ -153,7 +153,7 @@ it moves through its actions is `content/combat/held-motion.json` (docs/authorin
 - dark heathered knit gloves with ribbed cuffs;
 - three-jointed fingers and thumbs on a finger rig;
 - generated colour, roughness and normal maps;
-- pose clips `idle`, `open`, `fist` and `grip`.
+- pose clips `idle`, `open`, `fist`, `grip` and `squeeze` (the grip closed tighter).
 
 `provenance.json` records the generator commit, the command and the hashes.
 
@@ -174,7 +174,8 @@ python3 art/held-motion/preview.py [--looks prybar,coach-gun] [--frames 8]
 Starts a playtest session (crew-services, profile `rusty-hotel-ui-debug`; `--session` reuses one), holds each look with
 `hotel.dev.hold`, fills the investigator's tracks with `hotel.dev.fill-tracks`, and starts each of its item's actions
 with the ordinary controls in held time, capturing world frames at even moments from start to end. Strips per look
-and action, labelled with time and phase, and `contact.png` go to `.runtime/held-motion/`. Linux tooling.
+and action, labelled with time and phase, and `contact.png` go to `.runtime/held-motion/`. A frame where an arm cannot
+reach its grip (a wrist drawn more than a centimetre short) is labelled OUT OF REACH in red and listed. Linux tooling.
 `provenance.json` records hashes, run times and use limits.
 
 `held-02` adds eight weapons the same way (fire axe, letter opener, walking cane, candelabra, coach gun, bar darts,
