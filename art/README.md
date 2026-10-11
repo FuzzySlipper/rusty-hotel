@@ -146,26 +146,24 @@ it moves through its actions is `content/combat/held-motion.json` (docs/authorin
 
 ### First-person arms
 
-`content/models/held/arms-02.glb` is built procedurally, with no source art, by the asset-pipeline generator
-(`tools/fps-arms`, see its README) from `art/arms-02/params.json`. It holds sleeves, shirt cuffs and gloved hands with
-three-jointed fingers and thumbs, rigged with finger bones. Its pose clips are `idle`, `open`, `fist` and `grip`.
+`content/models/held/arms.glb` is built procedurally, with no source art, by the asset-pipeline generator
+(`tools/fps-arms`, see its README):
+- `art/arms/knit.json` extends `art/arms/base.json`;
+- navy wool twill sleeves and off-white shirt cuffs;
+- dark heathered knit gloves with ribbed cuffs;
+- three-jointed fingers and thumbs on a finger rig;
+- generated colour, roughness and normal maps;
+- pose clips `idle`, `open`, `fist` and `grip`.
+
 `provenance.json` records the generator commit, the command and the hashes.
 
 ```text
-blender -b --factory-startup --python <asset-pipeline>/tools/fps-arms/generate.py -- --params art/arms-02/params.json --out content/models/held/arms-02.glb --renders .runtime/arms-02
+blender -b --factory-startup --python <asset-pipeline>/tools/fps-arms/generate.py -- --params art/arms/knit.json --out content/models/held/arms.glb --renders .runtime/arms
 ```
 
-Check a rebuild with the pinned pair's `rusty asset check`, the generator's renders and `art/held-motion/preview.py`.
-
-`art/arms-03/` holds glove variants over one base (`base.json`: wool twill sleeve, slimmer fingers):
-- `leather.json`: brown driving gloves with a pebbled grain;
-- `knit.json`: grey stockinette with a ribbed cuff.
-
-They build `content/models/held/arms-leather.glb` and `arms-knit.glb`, with the same command and `--params
-art/arms-03/<variant>.json`. `hotel.dev.arms.model <path>` shows either in place of the authored arms, with the same hold.
-
-`content/models/held/arms.glb` is the earlier cut-out from the Concierge's prepared master (`art/arms-01/prepare.py`,
-no finger bones); content does not use it.
+To check a rebuild, use the pinned pair's `rusty asset check`, the generator's renders and
+`art/held-motion/preview.py`. A variant (another file extending `base.json`, built to its own path) can be tried in game
+with `hotel.dev.arms.model <path>` before it replaces the authored arms.
 
 ### Held motion preview
 

@@ -28,41 +28,63 @@
   "materials": {
     "glove": {
       "colour": [
-        0.13,
-        0.115,
-        0.105
+        0.06,
+        0.055,
+        0.052
       ],
-      "roughness": 0.92,
+      "roughness": 0.95,
       "surface": {
         "kind": "knit",
-        "tile": 0.02,
+        "tile": 0.016,
         "size": 512,
         "stitches": [
           4,
           5
         ],
-        "relief": 1.6,
-        "variation": 0.1,
+        "relief": 0.9,
+        "variation": 0.12,
         "hollows": 0.5,
-        "seed": 11
+        "seed": 11,
+        "jitter": 0.03,
+        "fuzz": 0.14,
+        "heather": 0.22,
+        "roughnessVariation": 0.02,
+        "fleck": {
+          "colour": [
+            0.13,
+            0.125,
+            0.12
+          ],
+          "threshold": 2.3
+        }
       }
     },
     "cuff": {
       "colour": [
-        0.13,
-        0.115,
-        0.105
+        0.06,
+        0.055,
+        0.052
       ],
-      "roughness": 0.92,
+      "roughness": 0.95,
       "surface": {
         "kind": "rib",
-        "tile": 0.02,
+        "tile": 0.016,
         "size": 256,
-        "ribs": 6,
-        "relief": 1.4,
+        "ribs": 5,
+        "relief": 0.9,
         "variation": 0.08,
         "hollows": 0.5,
-        "seed": 12
+        "seed": 12,
+        "heather": 0.22,
+        "roughnessVariation": 0.02,
+        "fleck": {
+          "colour": [
+            0.13,
+            0.125,
+            0.12
+          ],
+          "threshold": 2.3
+        }
       }
     }
   }

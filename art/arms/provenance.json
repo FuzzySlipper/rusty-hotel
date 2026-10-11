@@ -1,0 +1,21 @@
+{
+ "asset": "first-person arms (procedural, knit gloves)",
+ "source": "none: built from art/arms/knit.json (extending base.json) by the asset-pipeline generator",
+ "method": "asset-pipeline tools/fps-arms/generate.py and surfaces.py at commit ac5a7b2793a2db34e50d3b1a162c797f57f1ee5a, headless Blender 5.2",
+ "command": "blender -b --factory-startup --python <asset-pipeline>/tools/fps-arms/generate.py -- --params art/arms/knit.json --out content/models/held/arms.glb",
+ "checks": "rusty asset check (pinned pair) admitted",
+ "files": [
+  {
+   "path": "content/models/held/arms.glb",
+   "sha256": "519a868bd4ddb703defa4e9a5b070bd3416d43abeefee2941e21e42023bfa4ba"
+  },
+  {
+   "path": "art/arms/base.json",
+   "sha256": "735f57b6540a6d2e65e9f483fe69b8e8ae55b66bdc110382c77396571c010087"
+  },
+  {
+   "path": "art/arms/knit.json",
+   "sha256": "c7ce467cc9ad8991a6ea906207445e60c10b3f88f81ec48e034c0915f7c8df4d"
+  }
+ ]
+}

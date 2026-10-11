@@ -23,8 +23,8 @@
     "finger": 12
   },
   "sleeve": {
-    "shoulderRadius": 0.066,
-    "cuffRadius": 0.054,
+    "shoulderRadius": 0.06,
+    "cuffRadius": 0.05,
     "flatten": 0.92,
     "behindShoulder": 0.06,
     "cuffShort": 0.035,
@@ -36,7 +36,7 @@
     "liningDepth": 0.05
   },
   "shirtCuff": {
-    "radius": 0.047,
+    "radius": 0.044,
     "flatten": 0.9,
     "inside": 0.04,
     "short": 0.012,
@@ -139,6 +139,11 @@
       "rootRadius": 0.016,
       "taper": 0.8,
       "root": 0.006
+    },
+    "knuckles": {
+      "height": 0.004,
+      "width": 0.0075,
+      "from": 0.72
     }
   },
   "materials": {
@@ -169,9 +174,9 @@
     },
     "shirt": {
       "colour": [
-        0.78,
-        0.76,
-        0.72
+        0.5,
+        0.48,
+        0.44
       ],
       "roughness": 0.65
     },

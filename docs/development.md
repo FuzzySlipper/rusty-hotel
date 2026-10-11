@@ -64,7 +64,7 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.dev.hold <item>` | Give one of a held item and wear it in the main hand through the ordinary wear rules |
 | `hotel.dev.set-track <track> <value>` | Set one investigator track (for example `ammunition`) within its bounds |
 | `hotel.dev.motion <look> <action>` and `.key`, `.next`, `.prev`, `.at`, `.play`, `.pose`, `.off` | The held-motion viewer: step a look's action keys, play it at a speed, try pose changes (docs/authoring.md, "Held motion") |
-| `hotel.dev.arms.model <path>` | Show another arms model (e.g. `models/held/arms-knit.glb`) with the same hold until the floor is rebuilt; `combat/arms.json` is unchanged |
+| `hotel.dev.arms.model <path>` | Show another arms model (a variant built from `art/arms`) with the same hold until the floor is rebuilt; `combat/arms.json` is unchanged |
 | `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` | Try the main hand's hold (turn from the held item, palm offset) live; prints its JSON for `combat/arms.json` |
 | `hotel.dev.fill-tracks` | Fill every investigator track (health, stamina, summon, ammunition) to its maximum |
 | `hotel.dev.return-to-entrance` | Reset live player, supplies, residents, pact and route to initial state; leave the existing checkpoint intact |

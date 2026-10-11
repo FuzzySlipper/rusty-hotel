@@ -1,5 +1,5 @@
 {
-  "model": "models/held/arms-02.glb",
+  "model": "models/held/arms.glb",
   "clip": "grip",
   "shoulder": [
     0.2,
