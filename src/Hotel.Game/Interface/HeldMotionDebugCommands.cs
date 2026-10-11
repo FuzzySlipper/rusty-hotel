@@ -2,6 +2,7 @@ using System.Text.Json;
 using Hotel.Game.Actions;
 using Hotel.Game.Combat;
 using Hotel.Game.Content;
+using Rusty.Engine;
 using Rusty.Engine.Debugging;
 
 namespace Hotel.Game.Interface;
@@ -94,6 +95,17 @@ internal sealed class HeldMotionDebugCommands(Func<CombatView> view, HeldCatalog
         (hand.Palm[0], hand.Palm[1], hand.Palm[2]) = (px, py, pz);
         view().Publish();
         return DebugCommandResult.Success($"\"mainHand\": {{\"rotation\": [{rx}, {ry}, {rz}], \"palm\": [{px}, {py}, {pz}]}}  (in {ArmsDefinition.Path})");
+    }
+
+    [DebugCommand("hotel.dev.arms.model", Description = "Developer arms comparison: show another arms model (a content path such as models/held/arms-knit.glb) with the same hold, until the floor is rebuilt.")]
+    public DebugCommandResult ArmsModel(string model)
+    {
+        try { view().ShowArms(model); }
+        catch (Exception error) when (error is EngineCallException or InvalidDataException)
+        {
+            return Failure($"Could not show '{model}': {error.Message}");
+        }
+        return DebugCommandResult.Success($"Showing arms '{model}'. content/{ArmsDefinition.Path} still names '{held.Arms.Model}'.");
     }
 
     [DebugCommand("hotel.dev.motion.off", Description = "Developer motion viewer: return the hands to what they hold.")]

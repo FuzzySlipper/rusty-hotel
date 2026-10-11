@@ -1,0 +1,29 @@
+{
+ "asset": "first-person arms, glove variants (leather, knit)",
+ "source": "none: built from art/arms-03/*.json by the asset-pipeline generator",
+ "method": "asset-pipeline tools/fps-arms/generate.py and surfaces.py at commit 53c20caf4064a31fa3d6f4ee29af8729bd3d3546, headless Blender 5.2; leather.json and knit.json extend base.json",
+ "command": "blender -b --factory-startup --python <asset-pipeline>/tools/fps-arms/generate.py -- --params art/arms-03/<variant>.json --out content/models/held/arms-<variant>.glb",
+ "checks": "rusty asset check (pinned pair) admitted both",
+ "files": [
+  {
+   "path": "content/models/held/arms-leather.glb",
+   "sha256": "199cbcc630872d2d4602b0842bcb77ecaade11a9109ff4289f30283e9a57a641"
+  },
+  {
+   "path": "content/models/held/arms-knit.glb",
+   "sha256": "d2f7b9a7638ebe951145b01c2a576f51b383da380de01b7c80936bde5d414380"
+  },
+  {
+   "path": "art/arms-03/base.json",
+   "sha256": "723a98633034de29c3c70127f30094f21fd1cc5b84401583d7ef4507301866a5"
+  },
+  {
+   "path": "art/arms-03/leather.json",
+   "sha256": "cbaf100074387cde36d92c2cd0853ad05f7bd54eeabb4ce0f9d432a7d98933eb"
+  },
+  {
+   "path": "art/arms-03/knit.json",
+   "sha256": "e1e3a72e4a2fe072174a893a9654186cd15169679e4f74487d23bc8a2ac9aff7"
+  }
+ ]
+}

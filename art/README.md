@@ -157,6 +157,13 @@ blender -b --factory-startup --python <asset-pipeline>/tools/fps-arms/generate.p
 
 Check a rebuild with the pinned pair's `rusty asset check`, the generator's renders and `art/held-motion/preview.py`.
 
+`art/arms-03/` holds glove variants over one base (`base.json`: wool twill sleeve, slimmer fingers):
+- `leather.json`: brown driving gloves with a pebbled grain;
+- `knit.json`: grey stockinette with a ribbed cuff.
+
+They build `content/models/held/arms-leather.glb` and `arms-knit.glb`, with the same command and `--params
+art/arms-03/<variant>.json`. `hotel.dev.arms.model <path>` shows either in place of the authored arms, with the same hold.
+
 `content/models/held/arms.glb` is the earlier cut-out from the Concierge's prepared master (`art/arms-01/prepare.py`,
 no finger bones); content does not use it.
 

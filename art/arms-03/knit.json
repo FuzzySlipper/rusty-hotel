@@ -1,0 +1,69 @@
+{
+  "extends": "base.json",
+  "glove": {
+    "gauntletLength": 0.075,
+    "gauntletRadius": 0.042,
+    "wristRadius": 0.034
+  },
+  "hand": {
+    "fingers": {
+      "Index": {
+        "radius": 0.0103,
+        "taper": 0.86
+      },
+      "Middle": {
+        "radius": 0.0105,
+        "taper": 0.86
+      },
+      "Ring": {
+        "radius": 0.01,
+        "taper": 0.86
+      },
+      "Pinky": {
+        "radius": 0.009,
+        "taper": 0.86
+      }
+    }
+  },
+  "materials": {
+    "glove": {
+      "colour": [
+        0.13,
+        0.115,
+        0.105
+      ],
+      "roughness": 0.92,
+      "surface": {
+        "kind": "knit",
+        "tile": 0.02,
+        "size": 512,
+        "stitches": [
+          4,
+          5
+        ],
+        "relief": 1.6,
+        "variation": 0.1,
+        "hollows": 0.5,
+        "seed": 11
+      }
+    },
+    "cuff": {
+      "colour": [
+        0.13,
+        0.115,
+        0.105
+      ],
+      "roughness": 0.92,
+      "surface": {
+        "kind": "rib",
+        "tile": 0.02,
+        "size": 256,
+        "ribs": 6,
+        "relief": 1.4,
+        "variation": 0.08,
+        "hollows": 0.5,
+        "seed": 12
+      }
+    }
+  }
+}

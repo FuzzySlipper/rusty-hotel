@@ -24,7 +24,7 @@ internal sealed class CombatView : IDisposable
     private readonly List<RenderResource> models = [];
     private readonly Dictionary<string, (ulong Entity, Appearance Appearance, HeldModel Model)> held = new(StringComparer.Ordinal);
     private readonly HeldCatalog heldLooks;
-    private readonly ArmsView arms = null!;
+    private ArmsView arms = null!;
     // The action whose motion is playing on a held look (no start for the viewer's), and the last action start seen.
     private (string Look, ulong Started, TweenHandle Tween)? moving;
     // The tween last started on a held look and the timeline it plays, so where it shows the model can be told.
@@ -194,6 +194,21 @@ internal sealed class CombatView : IDisposable
         Publish();
         Begin(view.Look, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, speed));
         Publish();
+    }
+
+    /// <summary>
+    /// Developer arms comparison: shows another arms model (a content path, rigged as the authored one is) in place of
+    /// the authored one, with the same hold; the authored model returns when the floor is rebuilt.
+    /// </summary>
+    internal void ShowArms(string model)
+    {
+        // On an object of its own (an object keeps one animation instance), so the old arms leave the published scene
+        // before they are released.
+        ArmsView next = new(engine, heldLooks.Arms with { Model = model }, scene.Entities.Create().Value);
+        ArmsView previous = arms;
+        arms = next;
+        Publish();
+        previous.Dispose();
     }
 
     /// <summary>Developer arms tuning: the main hand's turn from the held item and its palm offset, in the loaded content.</summary>
