@@ -7,11 +7,11 @@
  "files": [
   {
    "path": "content/models/held/arms.glb",
-   "sha256": "519a868bd4ddb703defa4e9a5b070bd3416d43abeefee2941e21e42023bfa4ba"
+   "sha256": "2cadf9cea95210430182a66a74593aca0246593a6b05166cbeb358e4e1d0e6a3"
   },
   {
    "path": "art/arms/base.json",
-   "sha256": "735f57b6540a6d2e65e9f483fe69b8e8ae55b66bdc110382c77396571c010087"
+   "sha256": "bc9809d68eb1a8ec86e2b14bd1f5783781457dc39a50927c71df90657ce84f82"
   },
   {
    "path": "art/arms/knit.json",
