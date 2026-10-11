@@ -1,5 +1,6 @@
 {
-  "model": "models/held/arms.glb",
+  "model": "models/held/arms-02.glb",
+  "clip": "grip",
   "shoulder": [
     0.2,
     -0.24,
@@ -32,26 +33,26 @@
   ],
   "mainHand": {
     "rotation": [
-      -90,
       0,
-      0
+      180,
+      180
     ],
     "palm": [
       0,
-      -0.06,
-      0
+      0.085,
+      -0.035
     ]
   },
   "offHand": {
     "rotation": [
-      -90,
       0,
-      0
+      180,
+      180
     ],
     "palm": [
       0,
-      -0.06,
-      0
+      0.085,
+      -0.035
     ]
   }
 }

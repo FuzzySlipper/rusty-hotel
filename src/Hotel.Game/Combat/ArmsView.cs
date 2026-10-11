@@ -28,6 +28,9 @@ internal sealed class ArmsView : IDisposable
         try
         {
             ReadOnlySpan<AnimationJointInfo> joints = engine.Animation.ReadJoints(model).Span;
+            string[] clips = engine.Animation.ReadClips(model).ToArray().Select(c => c.Id).ToArray();
+            if (!clips.Contains(arms.Clip))
+                throw new InvalidDataException($"content/{ArmsDefinition.Path} clip: the arms model '{arms.Model}' has no clip '{arms.Clip}'. Its clips: {string.Join(", ", clips)}.");
             main = Chain(joints, arms.Main, "main");
             off = Chain(joints, arms.Off, "off");
             appearance = engine.Animation.CreateAnimatedMeshAppearance(new(model));
@@ -55,7 +58,12 @@ internal sealed class ArmsView : IDisposable
     /// </summary>
     internal void Reach(Vector3 mainGrip, Vector3? offGrip, Quaternion item)
     {
-        instance ??= engine.Animation.CreateInstance(new(appearance, entity));
+        if (instance is null)
+        {
+            instance = engine.Animation.CreateInstance(new(appearance, entity));
+            // The hands' pose (how the fingers close) is the clip; IK places the arms over it.
+            engine.Animation.SetPlayback(new(instance, AnimationPlaybackKind.Play, arms.Clip, AnimationLoopMode.Repeat, 1, 1, true, 0, true, 0));
+        }
         Vector3 shoulder = Authored.Vector(arms.Shoulder);
         // Each holding hand turns with the item, and its wrist sits so the palm, not the wrist, is on the grip.
         (Vector3 Wrist, Quaternion Turn) Hold(Vector3 grip, ArmHand hand)
@@ -90,10 +98,10 @@ internal sealed class ArmsView : IDisposable
 
 /// <summary>
 /// The first-person arms: their model (facing -Z with the right shoulder at its origin), where that shoulder sits in
-/// camera space, each arm's joint chain and elbow pole (camera space: the elbow bends toward it), and where a free off
-/// hand hangs.
+/// camera space, the clip that poses the hands, each arm's joint chain and elbow pole (camera space: the elbow bends
+/// toward it), and where a free off hand hangs.
 /// </summary>
-internal sealed record ArmsDefinition(string Model, float[] Shoulder, float[] Pole, float[] OffPole, ArmChain Main, ArmChain Off, float[] OffRest,
+internal sealed record ArmsDefinition(string Model, string Clip, float[] Shoulder, float[] Pole, float[] OffPole, ArmChain Main, ArmChain Off, float[] OffRest,
     ArmHand MainHand, ArmHand OffHand)
 {
     internal const string Path = "combat/arms.json";
@@ -102,6 +110,7 @@ internal sealed record ArmsDefinition(string Model, float[] Shoulder, float[] Po
     {
         ArmsDefinition arms = Authored.Read(engine, Path, ContentJson.Default.ArmsDefinition);
         Authored.Require(arms.Model.EndsWith(".glb", StringComparison.Ordinal), Path, "model", "must be a GLB content path.");
+        Authored.Require(!string.IsNullOrWhiteSpace(arms.Clip), Path, "clip", "names the clip that poses the hands.");
         Authored.Point(Path, "shoulder", arms.Shoulder);
         Authored.Point(Path, "pole", arms.Pole);
         Authored.Point(Path, "offPole", arms.OffPole);

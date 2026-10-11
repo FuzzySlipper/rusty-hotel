@@ -165,10 +165,13 @@ far along (the Engine's start offset), so the keys stay on their moments; a fire
 the Engine's evaluation of the timeline puts it.
 
 The investigator's arms hold what the hands hold: `combat/arms.json` names the arms `model` (facing -Z, its right
-shoulder at the origin), where that `shoulder` sits in camera space, each arm's joint chain (`main` and `off`:
+shoulder at the origin), the `clip` that poses the hands (how the fingers close; `grip`), where that `shoulder` sits in
+camera space, each arm's joint chain (`main` and `off`:
 `upper`, `lower`, `hand`) and elbow pole (`pole`, `offPole`, camera space: each elbow bends toward its pole), where a
 free off hand hangs (`offRest`), and how each hand holds (`mainHand`, `offHand`: `rotation` in degrees from the held
-item's turn, and the `palm` offset from the wrist in that turned frame). Every update the Engine's two-bone IK puts
+item's turn, and the `palm` offset from the wrist in that turned frame, which puts the grip in the curl of the
+fingers). The hand joint's own axes run +Y along the fingers, +Z out of the back of the hand and +X toward the little
+finger, and every held model lies along its own Z, so the one hold applies to every look. Every update the Engine's two-bone IK puts
 each hand's palm on its grip (a look's `grips.main`, and `grips.off` for a two-handed look; without one the off hand
 hangs at `offRest`), where the Engine's evaluation of the held motion shows the item, and turns the hand with the item;
 only the item moves by authored motion. `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` tries a main-hand hold

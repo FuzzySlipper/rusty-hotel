@@ -146,14 +146,19 @@ it moves through its actions is `content/combat/held-motion.json` (docs/authorin
 
 ### First-person arms
 
-`content/models/held/arms.glb` is cut from the Concierge's prepared master by `art/arms-01/prepare.py` (no new
-source): the arm vertices and the whole Tripo skeleton, facing -Z with the right shoulder at the origin, with the idle
-clip alone. `rig.json` records the arm joints' rest positions; `provenance.json` the method and limits (no finger bones,
-so the gloves stay open).
+`content/models/held/arms-02.glb` is built procedurally, with no source art, by the asset-pipeline generator
+(`tools/fps-arms`, see its README) from `art/arms-02/params.json`. It holds sleeves, shirt cuffs and gloved hands with
+three-jointed fingers and thumbs, rigged with finger bones. Its pose clips are `idle`, `open`, `fist` and `grip`.
+`provenance.json` records the generator commit, the command and the hashes.
 
 ```text
-blender -b art/residents-02/concierge.blend --python art/arms-01/prepare.py
+blender -b --factory-startup --python <asset-pipeline>/tools/fps-arms/generate.py -- --params art/arms-02/params.json --out content/models/held/arms-02.glb --renders .runtime/arms-02
 ```
+
+Check a rebuild with the pinned pair's `rusty asset check`, the generator's renders and `art/held-motion/preview.py`.
+
+`content/models/held/arms.glb` is the earlier cut-out from the Concierge's prepared master (`art/arms-01/prepare.py`,
+no finger bones); content does not use it.
 
 ### Held motion preview
 
