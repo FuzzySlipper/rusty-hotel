@@ -7,6 +7,7 @@ import { mountConsoleScreen } from './console-screen.js';
 import { mountTitleScreen } from './title-screen.js';
 import { createPauseFlow } from './pause.js';
 import { developerAvailable } from './developer.js';
+import { createWorkbench } from './workbench.js';
 
 /** The window height, in CSS pixels, the interface is laid out for at UI scale 1. */
 const UI_HEIGHT = 1000;
@@ -45,7 +46,12 @@ export function mountProductUi(root, context) {
   foreground.hidden = true;
   foreground.setAttribute('data-rusty-ui-interactive', '');
   foreground.append(...Object.values(screens).map(view => view.element));
-  layer.append(hud.element, foreground);
+  // The developer workbench docks beside play without pausing it, so motion plays while values are tuned.
+  const workbenchHost = document.createElement('div');
+  workbenchHost.className = 'workbench-host';
+  workbenchHost.setAttribute('data-rusty-ui-interactive', '');
+  const workbench = createWorkbench(workbenchHost);
+  layer.append(hud.element, foreground, workbenchHost);
   root.append(layer);
   let screen = null;
   let returnScreen = null;
@@ -55,9 +61,20 @@ export function mountProductUi(root, context) {
   let pause;
   let titleActive = false;
   // Screen shortcuts are browser key codes from the authored binding table; inert until the first facts arrive.
-  let keys = { fieldCase: null, menu: null, console: null };
+  let keys = { fieldCase: null, menu: null, console: null, workbench: null };
+  const toggleWorkbench = async () => {
+    if (workbench.isOpen) {
+      workbench.close();
+      context.ui.setInteractionMode('gameplay');
+      context.ui.focusGameplay();
+    } else if (screen === null && await askDeveloper()) {
+      context.ui.setInteractionMode('interface');
+      await workbench.open();
+    }
+    syncPointer();
+  };
 
-  const syncPointer = () => hud.setNavigationHidden(screen !== null || document.pointerLockElement !== null);
+  const syncPointer = () => hud.setNavigationHidden(screen !== null || workbench.isOpen || document.pointerLockElement !== null);
   const present = (next, parent = null) => {
     if (next === 'console' && !developerEnabled) return;
     for (const view of Object.values(screens)) view.leave();
@@ -87,7 +104,8 @@ export function mountProductUi(root, context) {
   const onClick = event => {
     const button = event.target.closest('button');
     if (!button || !layer.contains(button)) return;
-    if (button.hasAttribute('data-return')) show(null);
+    if (button.hasAttribute('data-workbench-close')) void toggleWorkbench();
+    else if (button.hasAttribute('data-return')) show(null);
     else if (button.hasAttribute('data-pause')) void pause.pause();
     else if (button.hasAttribute('data-close')) close();
     else if (button.dataset.open) show(button.dataset.open, screen === null ? null : { screen, back: returnScreen });
@@ -100,7 +118,8 @@ export function mountProductUi(root, context) {
       event.preventDefault();
       event.stopPropagation();
       if (event.repeat || screen === 'title') return;
-      if (screen !== null) close(); else show('menu');
+      if (workbench.isOpen) void toggleWorkbench();
+      else if (screen !== null) close(); else show('menu');
       return;
     }
     const editing = event.target instanceof Element && event.target.closest('input,textarea,select,[contenteditable="true"]');
@@ -109,6 +128,10 @@ export function mountProductUi(root, context) {
         event.preventDefault();
         event.stopPropagation();
         if (!event.repeat) { if (screen === 'case') close(); else show('case', screen === null ? null : { screen, back: returnScreen }); }
+      } else if (event.code === keys.workbench && !event.repeat && (screen === null || workbench.isOpen)) {
+        event.preventDefault();
+        event.stopPropagation();
+        void toggleWorkbench();
       } else if (event.code === keys.console && screen === 'console') {
         event.preventDefault();
         event.stopPropagation();
@@ -187,6 +210,7 @@ export function mountProductUi(root, context) {
     unsubscribe?.();
     pause.dispose();
     for (const view of Object.values(screens)) view.dispose?.();
+    workbench.dispose();
     layer.removeEventListener('click', onClick);
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('pointerlockchange', syncPointer);

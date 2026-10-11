@@ -19,6 +19,9 @@ internal sealed class HeldMotionDebugCommands(Func<CombatView> view, HeldCatalog
     private ActionDefinition? action;
     private int key = -1;
 
+    /// <summary>The look the viewer shows, the action whose keys it steps, and the key it holds (-1: none).</summary>
+    internal (string? Look, ActionDefinition? Action, int Key) Viewing => (look, action, key);
+
     private HeldMotion Motion => held.Motion.Motions[held.Model(look!).Motion];
     private MotionKey[] Keys => Motion.Track(action!.Id)!;
 

@@ -113,6 +113,12 @@
     "label": "F2",
     "code": "F2"
   },
+  "workbench": {
+    "name": "First-person workbench (developer)",
+    "shortName": "Workbench",
+    "label": "F3",
+    "code": "F3"
+  },
   "text": {
     "hint": "{key} · {action}",
     "quickPocketsName": "Use pockets {first}–{last}",

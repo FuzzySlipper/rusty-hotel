@@ -202,7 +202,9 @@ seats every look on its stance: the offset and turn from its motion's `rest` han
 stance's grip and its length and up side along the stance. A look's `nudge` (`grip`, metres in camera space, and
 `turn`, degrees about camera X, Y, Z) corrects it by eye. Changing a stance moves every look in it.
 
-Work on stances in the developer console, with a look shown (held, or through `hotel.dev.motion`):
+The first-person workbench (F3 in a developer session, docs/development.md) tunes all of these with sliders while
+the motion plays, and lists the changes to paste. The same work in the developer console, with a look shown (held,
+or through `hotel.dev.motion`):
 
 | Command | Does |
 | --- | --- |

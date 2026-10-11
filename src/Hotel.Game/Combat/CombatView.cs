@@ -215,6 +215,8 @@ internal sealed class CombatView : IDisposable
     }
 
     /// <summary>Developer stance guide: draws where the shown look's stance puts it beside where it is.</summary>
+    internal bool Guiding => guiding;
+
     internal void ShowGuide(bool on)
     {
         guiding = on;

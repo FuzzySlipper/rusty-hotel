@@ -55,6 +55,17 @@ service and the UI offers no console.
 Closing the console disposes the packaged panel; the normal HUD has no debug
 panel traffic. Hotel owns its lifetime adapter, not its transport or parser.
 
+In a developer session, F3 opens the first-person workbench: a panel docked at the left, beside play (which keeps
+running). Pick a look and action, hold a key's pose, scrub to any moment or play at a speed, and drag sliders for the
+look's stance (every look in it moves), its nudge, the held key's pose and the arms, with the stance guide as a
+toggle. "Changed values" lists what differs from the loaded content as JSON per content file, to copy and paste;
+nothing is written to disk. F3 or Escape closes it.
+
+The panel (`src/ui/workbench.js`) is generic. It draws whatever the product describes in the `tunables.v1` contract:
+choosers, a key timeline, groups of sliders and toggles, and the command templates it sends through the Engine's
+live-debug client. Hotel describes its values in `Interface/Workbench/ViewmodelTunables.cs` (each with the owner
+call that applies it) and serves them through `hotel.dev.workbench.describe`, `.select`, `.set` and `.changes`.
+
 Use the generated catalog for argument help and current command availability.
 
 | Command | Effect and boundary |
@@ -65,6 +76,7 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.dev.set-track <track> <value>` | Set one investigator track (for example `ammunition`) within its bounds |
 | `hotel.dev.motion <look> <action>` and `.key`, `.next`, `.prev`, `.at`, `.play`, `.pose`, `.off` | The held-motion viewer: step a look's action keys, play it at a speed, try pose changes (docs/authoring.md, "Held motion") |
 | `hotel.dev.arms.model <path>` | Show another arms model (a variant built from `art/arms`) with the same hold until the floor is rebuilt; `combat/arms.json` is unchanged |
+| `hotel.dev.workbench.describe` / `.select <look> <action>` / `.set <id> <value>` / `.changes` | The first-person workbench's product side (F3 opens its panel): describe the shown look's controls (`tunables.v1`), select a look and action (`-` for its first), set one control, and list what changed as JSON per file |
 | `hotel.dev.stance`, `.set`, `.hand`, `hotel.dev.held.nudge` | The held stance guide: draw a look's stance beside it, change stances and nudge looks live (docs/authoring.md, "Held stances") |
 | `hotel.dev.arms.offhand <rx> <ry> <rz> <px> <py> <pz>` | Try the off hand's hold on two-handed looks live; prints its JSON for `combat/arms.json` |
 | `hotel.dev.arms.reach <sx> <sy> <sz> <px> <py> <pz>` | Try the right shoulder's camera-space place and the elbow pole live; prints their JSON for `combat/arms.json` |

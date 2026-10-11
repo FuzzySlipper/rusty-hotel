@@ -81,7 +81,8 @@ internal sealed class HotelHud : IDisposable
             w.Object("screens",
                 w.Object("fieldCase", w.Text("code", bound.FieldCase.Code), w.Text("label", bound.FieldCase.Label)),
                 w.Object("menu", w.Text("code", bound.Menu.Code), w.Text("label", bound.Menu.Label)),
-                w.Object("console", w.Text("code", bound.Console.Code), w.Text("label", bound.Console.Label))));
+                w.Object("console", w.Text("code", bound.Console.Code), w.Text("label", bound.Console.Label)),
+                w.Object("workbench", w.Text("code", bound.Workbench.Code), w.Text("label", bound.Workbench.Label))));
     }
 
     private uint Supplies(UiValueWriter w, HotelSupplies supplies, HotelControls controls)

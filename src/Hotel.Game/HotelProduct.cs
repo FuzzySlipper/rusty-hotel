@@ -273,7 +273,11 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         registrar.Register(new InteractionDebugModule(interaction));
         registrar.Register(new HotelDebugCommands(developer));
         registrar.Register(new SuppliesDebugCommands(() => world.Supplies, PublishInterface));
-        registrar.Register(new HeldMotionDebugCommands(() => world.CombatView, content.Combat.Held, content.Combat.Actions));
+        HeldMotionDebugCommands motionViewer = new(() => world.CombatView, content.Combat.Held, content.Combat.Actions);
+        registrar.Register(motionViewer);
+        registrar.Register(new Interface.Workbench.WorkbenchDebugCommands(() => world.CombatView, content.Combat.Held, motionViewer,
+            content.Supplies.Items.Where(i => i.Wear?.Look is not null).GroupBy(i => i.Wear!.Look!)
+                .ToDictionary(g => g.Key, g => g.SelectMany(i => i.Wear!.Actions).Distinct().ToArray())));
         registrar.Register(new HeldStanceDebugCommands(() => world.CombatView, content.Combat.Held));
     }
 

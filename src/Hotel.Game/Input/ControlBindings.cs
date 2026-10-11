@@ -13,7 +13,7 @@ namespace Hotel.Game.Input;
 /// <param name="SwapHands">Trades what the two hands hold: the one slot-cycle control, in place of a key per weapon.</param>
 internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Run, ControlBinding Jump, ControlBinding Look, ControlBinding Primary, ControlBinding SwapHands,
     ControlBinding Secondary, ControlBinding[] QuickPockets, ControlBinding Summon, ControlBinding Use,
-    ScreenBinding FieldCase, ScreenBinding Menu, ScreenBinding Console, ControlText Text, OpeningHint OpeningHint)
+    ScreenBinding FieldCase, ScreenBinding Menu, ScreenBinding Console, ScreenBinding Workbench, ControlText Text, OpeningHint OpeningHint)
 {
     internal const string Path = "input/bindings.json";
 
@@ -30,7 +30,7 @@ internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Run, Con
             ("swapHands", bindings.SwapHands),
             ("summon", bindings.Summon), ("use", bindings.Use) })
             Template.Plain(Path, ($"{field}.name", control.Name), ($"{field}.shortName", control.ShortName), ($"{field}.label", control.Label));
-        foreach (var (field, screen) in new[] { ("fieldCase", bindings.FieldCase), ("menu", bindings.Menu), ("console", bindings.Console) })
+        foreach (var (field, screen) in new[] { ("fieldCase", bindings.FieldCase), ("menu", bindings.Menu), ("console", bindings.Console), ("workbench", bindings.Workbench) })
             Template.Plain(Path, ($"{field}.name", screen.Name), ($"{field}.shortName", screen.ShortName), ($"{field}.label", screen.Label));
         for (int i = 0; i < bindings.QuickPockets.Length; i++) Template.Plain(Path, ($"quickPockets[{i}].label", bindings.QuickPockets[i].Label));
         Template.Check(Path, "text.quickPocketsName", bindings.Text.QuickPocketsName, "first", "last");
@@ -45,7 +45,7 @@ internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Run, Con
     {
         ["walk"] = Walk.Label, ["run"] = Run.Label, ["jump"] = Jump.Label, ["look"] = Look.Label, ["primary"] = Primary.Label, ["secondary"] = Secondary.Label, ["swapHands"] = SwapHands.Label,
         ["summon"] = Summon.Label, ["use"] = Use.Label, ["fieldCase"] = FieldCase.Label, ["menu"] = Menu.Label,
-        ["console"] = Console.Label
+        ["console"] = Console.Label, ["workbench"] = Workbench.Label
     };
 
     internal string ShortName(string action) => action switch
@@ -53,6 +53,7 @@ internal sealed record ControlBindings(WalkBinding Walk, ControlBinding Run, Con
         "walk" => Walk.ShortName, "run" => Run.ShortName, "jump" => Jump.ShortName, "look" => Look.ShortName, "primary" => Primary.ShortName, "secondary" => Secondary.ShortName,
         "swapHands" => SwapHands.ShortName,
         "summon" => Summon.ShortName, "use" => Use.ShortName, "fieldCase" => FieldCase.ShortName, "menu" => Menu.ShortName,
+        "workbench" => Workbench.ShortName,
         _ => Console.ShortName
     };
 }
