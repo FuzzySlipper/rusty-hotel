@@ -58,11 +58,13 @@ panel traffic. Hotel owns its lifetime adapter, not its transport or parser.
 In a developer session, F3 opens the first-person workbench: a panel docked at the left, beside play (which keeps
 running). Pick a look and action, hold a key's pose, scrub to any moment or play at a speed, and drag sliders for the
 look's stance (every look in it moves), its nudge, the held key's pose and the arms, with the stance guide as a
-toggle. "Changed values" lists what differs from the loaded content as JSON per content file, to copy and paste;
+toggle. The keys group sets each key's phase, its moment through that phase and the curve it eases in by (for every
+look sharing the motion); the timeline follows, and a key moved out of time order is reported (content refuses it).
+Residents keep acting while it is open: tune in a quiet room, or alone with `hotel.dev.floor.module`. "Changed values" lists what differs from the loaded content as JSON per content file, to copy and paste;
 nothing is written to disk. F3 or Escape closes it.
 
 The panel (`src/ui/workbench.js`) is generic. It draws whatever the product describes in the `tunables.v1` contract:
-choosers, a key timeline, groups of sliders and toggles, and the command templates it sends through the Engine's
+choosers, a key timeline, groups of sliders, toggles and choices, a notice, and the command templates it sends through the Engine's
 live-debug client. Hotel describes its values in `Interface/Workbench/ViewmodelTunables.cs` (each with the owner
 call that applies it) and serves them through `hotel.dev.workbench.describe`, `.select`, `.set` and `.changes`.
 

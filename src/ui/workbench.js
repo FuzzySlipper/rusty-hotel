@@ -1,7 +1,7 @@
 /**
  * A developer workbench panel, generic over the product (contract `tunables.v1`): it asks the product, through the
  * Engine live-debug client, to describe its controls, then draws choosers, a key timeline with playback, and groups of
- * sliders, sending each change back as the console command the description names. Nothing here knows what the values
+ * sliders, toggles and choices, sending each change back as the console command the description names. Nothing here knows what the values
  * mean; the product's owners apply them. Closed, it holds no client and sends nothing.
  */
 export function createWorkbench(host, loadClient = () => import('@rusty-engine/live-debug')) {
@@ -49,6 +49,9 @@ export function createWorkbench(host, loadClient = () => import('@rusty-engine/l
   function render(current, view) {
     current.view = view;
     const { element } = current;
+    // Drawing again keeps where the panel was scrolled and which groups were folded.
+    const scrolled = element.scrollTop;
+    current.folded ??= new Set();
     element.textContent = '';
     element.removeAttribute('role');
     const status = document.createElement('p');
@@ -64,6 +67,7 @@ export function createWorkbench(host, loadClient = () => import('@rusty-engine/l
       }
     };
     const redescribe = message => render(current, JSON.parse(message));
+    const describeAgain = () => void run(view.commands.describe, redescribe);
 
     const header = document.createElement('header');
     header.innerHTML = `<h2></h2><button type="button" data-workbench-close>Close</button>`;
@@ -132,12 +136,13 @@ export function createWorkbench(host, loadClient = () => import('@rusty-engine/l
     // Groups of controls; each change is sent as the set command and shows the value the product kept.
     for (const group of view.groups) {
       const details = document.createElement('details');
-      details.open = true;
+      details.open = !current.folded.has(group.id);
+      details.addEventListener('toggle', () => { if (details.open) current.folded.delete(group.id); else current.folded.add(group.id); });
       details.className = 'workbench-group';
       const summary = document.createElement('summary');
       summary.textContent = group.title;
       details.append(summary);
-      for (const control of group.controls) details.append(controlRow(control, view, run, report));
+      for (const control of group.controls) details.append(controlRow(control, view, run, describeAgain));
       element.append(details);
     }
 
@@ -169,14 +174,26 @@ export function createWorkbench(host, loadClient = () => import('@rusty-engine/l
     }));
     changes.append(show, list);
     element.append(changes, status);
+    // The product's notice (keys out of time order, say) stays up until it clears.
+    if (view.notice) report(view.notice, true);
+    element.scrollTop = scrolled;
   }
 
-  function controlRow(control, view, run, report) {
+  function controlRow(control, view, run, describeAgain) {
     const row = document.createElement('label');
     row.className = 'workbench-control';
     const name = document.createElement('span');
     name.textContent = control.label;
     row.append(name);
+    // A control that reshapes the description (a key's moment) is described again once the product has kept it.
+    const after = control.reshapes ? describeAgain : undefined;
+    if (control.kind === 'choice') {
+      const select = document.createElement('select');
+      control.options.forEach((option, index) => select.append(new Option(option, String(index), false, index === control.value)));
+      select.addEventListener('change', () => void run(fill(view.commands.set, { id: control.id, value: select.value }), after));
+      row.append(select);
+      return row;
+    }
     if (control.kind === 'toggle') {
       const box = document.createElement('input');
       box.type = 'checkbox';
@@ -199,8 +216,10 @@ export function createWorkbench(host, loadClient = () => import('@rusty-engine/l
       slider.value = kept;
       number.value = kept;
     });
+    // Sliders that reshape the description are described again when the drag ends, not on every step.
+    if (after) slider.addEventListener('change', after);
     slider.addEventListener('input', throttle(() => { number.value = slider.value; return send(slider.value); }));
-    number.addEventListener('change', () => { slider.value = number.value; void send(number.value); });
+    number.addEventListener('change', () => { slider.value = number.value; void send(number.value).then(after); });
     row.append(slider, number);
     return row;
   }

@@ -179,6 +179,7 @@
 .hotel-ui .workbench-group summary { cursor:pointer; color:var(--accent); margin-bottom:0.25rem; }
 .hotel-ui .workbench-control { display:grid; grid-template-columns:6.5rem 1fr 4.25rem; align-items:center; gap:0.375rem; }
 .hotel-ui .workbench-control input[type=range] { width:100%; }
+.hotel-ui .workbench-control select { grid-column:2 / 4; }
 .hotel-ui .workbench-changes pre { white-space:pre-wrap; word-break:break-all; background:#11120f; padding:0.375rem; margin:0.25rem 0; font-size:0.6875rem; }
 .hotel-ui .workbench-status { color:var(--muted); min-height:1.2em; }
 .hotel-ui .workbench-status[data-failed=true] { color:#e08a74; }

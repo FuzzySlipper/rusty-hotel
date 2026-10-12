@@ -50,6 +50,27 @@ internal static class ViewmodelTunables
             .. Vector("nudge.turn", "turn", model.Adjust.Turn, -60, 60, .5f, () => { held.Seat(model); Redraw(); })
         ]));
 
+        // The keys' timing and curves, for the action's track (its own, or the motion's default): each key's phase,
+        // its moment through that phase, and the curve it eases in by; and the settle back to rest.
+        if (motion.Track(action.Id) is { } track)
+        {
+            string trackId = motion.Tracks.ContainsKey(action.Id) ? action.Id : HeldMotionCatalog.DefaultTrack;
+            List<Tunable> timing = [];
+            for (int i = 0; i < track.Length; i++)
+            {
+                int index = i;
+                MotionKey k = track[i];
+                string at = $"key.{i}";
+                timing.Add(new(new($"{at}.phase", $"{i} {k.Pose} phase", "choice", 0, Phases.Length - 1, 1, Array.IndexOf(Phases, k.Phase),
+                    [.. Phases.Select(p => p.ToString())], true), v => { track[index] = track[index] with { Phase = Phases[(int)v] }; Redraw(); }));
+                timing.Add(new(new($"{at}.at", $"{i} {k.Pose} at", "slider", 0, 1, .01f, k.At, null, true),
+                    v => { track[index] = track[index] with { At = v }; Redraw(); }));
+                timing.Add(new(new($"{at}.ease", $"{i} {k.Pose} ease", "choice", 0, Eases.Length - 1, 1, Array.IndexOf(Eases, k.Ease),
+                    [.. Eases.Select(e => e.ToString())]), v => { track[index] = track[index] with { Ease = Eases[(int)v] }; Redraw(); }));
+            }
+            groups.Add(($"track.{model.Motion}.{trackId}", $"Keys · {model.Motion} · {trackId} (every look in it)", [.. timing]));
+        }
+
         if (key >= 0 && motion.Track(action.Id) is { } keys && key < keys.Length)
         {
             string name = keys[key].Pose;
@@ -73,6 +94,22 @@ internal static class ViewmodelTunables
             .. Vector("arms.offPole", "off elbow toward", arms.OffPole, -2, 2, .01f, Redraw)
         ]));
         return groups;
+    }
+
+    private static readonly MotionPhase[] Phases = Enum.GetValues<MotionPhase>();
+    // The named curves keys may use: those needing parameters (bezier, steps, spring) are not authored in held motion.
+    private static readonly Rusty.Engine.TweenEasingKind[] Eases = [.. Enum.GetValues<Rusty.Engine.TweenEasingKind>()
+        .Where(e => e is not (Rusty.Engine.TweenEasingKind.CubicBezier or Rusty.Engine.TweenEasingKind.Steps or Rusty.Engine.TweenEasingKind.Spring))];
+
+    /// <summary>Where the keys of an action fall out of time order (empty when they are in order), as content checks them.</summary>
+    internal static string Order(HeldMotion motion, ActionDefinition action)
+    {
+        if (motion.Track(action.Id) is not { } keys) return "";
+        float[] times = [.. keys.Select(k => k.Time(action.Timing))];
+        for (int i = 1; i < times.Length; i++)
+            if (times[i] <= times[i - 1])
+                return $"Key {i} ({keys[i].Pose}, {times[i]:0.###} s) does not follow key {i - 1} ({times[i - 1]:0.###} s): content refuses keys out of time order.";
+        return "";
     }
 
     // Three sliders over one authored point, applied in place.

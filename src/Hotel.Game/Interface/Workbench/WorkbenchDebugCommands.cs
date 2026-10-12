@@ -95,7 +95,8 @@ internal sealed class WorkbenchDebugCommands : IDebugCommandModule
                 ["at"] = "hotel.dev.motion.at {seconds}",
                 ["play"] = "hotel.dev.motion.play {speed}",
                 ["close"] = "hotel.dev.motion.off"
-            });
+            },
+            ViewmodelTunables.Order(motion, action));
     }
 
     // The actions the items showing a look grant (a look no item shows has none to play).
@@ -112,6 +113,9 @@ internal sealed class WorkbenchDebugCommands : IDebugCommandModule
         foreach (var (id, motion) in held.Motion.Motions)
             foreach (var (name, pose) in motion.Poses)
                 values[$"{HeldMotionCatalog.Path}|motions.{id}.poses.{name}"] = JsonSerializer.Serialize(pose, ContentJson.Default.HeldPose);
+        foreach (var (id, motion) in held.Motion.Motions)
+            foreach (var (track, keys) in motion.Tracks)
+                values[$"{HeldMotionCatalog.Path}|motions.{id}.tracks.{track}"] = JsonSerializer.Serialize(keys, ContentJson.Default.MotionKeyArray);
         ArmsDefinition arms = held.Arms;
         values[$"{ArmsDefinition.Path}|shoulder"] = JsonSerializer.Serialize(arms.Shoulder, ContentJson.Default.SingleArray);
         values[$"{ArmsDefinition.Path}|pole"] = JsonSerializer.Serialize(arms.Pole, ContentJson.Default.SingleArray);
