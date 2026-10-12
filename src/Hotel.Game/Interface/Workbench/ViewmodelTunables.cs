@@ -1,23 +1,24 @@
 using Hotel.Game.Actions;
 using Hotel.Game.Combat;
+using Rusty.Engine;
+using Rusty.Engine.Debugging;
 
 namespace Hotel.Game.Interface.Workbench;
 
-/// <summary>A workbench control and how setting it applies, through the owner of what it changes.</summary>
-internal sealed record Tunable(WorkbenchControl Control, Action<float> Set);
-
 /// <summary>
-/// The first-person values the workbench tunes for a shown look and action: the guide, the look's stance and nudge,
-/// the held key's pose, and the arms. Each setter changes the loaded content, then seats or redraws through
-/// <see cref="HeldCatalog"/> and <see cref="CombatView"/>, as the console commands do.
+/// The first-person values the Engine tunables panel shows for the look and action the motion viewer shows: the
+/// guide, the look's stance and nudge, the action's key timing and curves, the held key's pose, and the arms. Each
+/// control applies its value through <see cref="HeldCatalog"/> and <see cref="CombatView"/> as the console commands
+/// do, and names where it is saved (its content file and JSON pointer), so the panel's Save writes it there.
 /// </summary>
 internal static class ViewmodelTunables
 {
-    internal static List<(string Id, string Title, Tunable[] Controls)> For(CombatView view, HeldCatalog held, string look, ActionDefinition action, int key)
+    internal static List<TunableGroup> For(CombatView view, HeldCatalog held, string look, ActionDefinition action, int key)
     {
         HeldModel model = held.Model(look);
         HeldMotion motion = held.Motion.Motions[model.Motion];
-        List<(string, string, Tunable[])> groups = [];
+        int lookIndex = Array.FindIndex(held.Looks, l => l.Look == look);
+        List<TunableGroup> groups = [];
         void Redraw() => view.Publish();
         void Reseat(string stance)
         {
@@ -25,33 +26,34 @@ internal static class ViewmodelTunables
             Redraw();
         }
 
-        groups.Add(("view", "View",
+        groups.Add(new("view", "View",
         [
-            new(new("view.guide", "stance guide", "toggle", 0, 1, 1, view.Guiding ? 1 : 0), v => view.ShowGuide(v >= .5f))
+            new(new("view.guide", "stance guide", TunableKind.Toggle, 0, 1, 1, view.Guiding ? 1 : 0), v => view.ShowGuide(v >= .5f))
         ]));
 
         HeldStance stance = held.Stances.Stances[model.Stance];
-        float[] hand = stance.Hand ?? [.. held.Arms.MainHand.Rotation];
-        groups.Add(($"stance.{model.Stance}", $"Stance · {model.Stance} (every look in it)",
+        string stancePointer = $"/stances/{Escape(model.Stance)}";
+        groups.Add(new($"stance.{model.Stance}", $"Stance · {model.Stance} (every look in it)",
         [
-            .. Vector("stance.grip", "grip", stance.Grip, -0.8f, 0.8f, .005f, () => Reseat(model.Stance)),
-            .. Vector("stance.toward", "toward", stance.Toward, -12, 12, .01f, () => Reseat(model.Stance)),
-            .. Vector("stance.up", "up", stance.Up, -1, 1, .01f, () => Reseat(model.Stance)),
-            .. Vector("stance.hand", "hand", hand, -180, 180, 1, () =>
-            {
-                held.Stances.Stances[model.Stance] = held.Stances.Stances[model.Stance] with { Hand = hand };
-                Redraw();
-            })
-        ]));
+            .. Vector("stance.grip", "grip", stance.Grip, -0.8f, 0.8f, .005f, StanceCatalog.Path, $"{stancePointer}/grip", () => Reseat(model.Stance)),
+            .. Vector("stance.toward", "toward", stance.Toward, -12, 12, .01f, StanceCatalog.Path, $"{stancePointer}/toward", () => Reseat(model.Stance)),
+            .. Vector("stance.up", "up", stance.Up, -1, 1, .01f, StanceCatalog.Path, $"{stancePointer}/up", () => Reseat(model.Stance)),
+            // A stance without its own hand holds as the arms' main hand does; the sliders then tune and save that.
+            .. (stance.Hand is { } hand
+                ? Vector("stance.hand", "hand", hand, -180, 180, 1, StanceCatalog.Path, $"{stancePointer}/hand", Redraw)
+                : Vector("stance.hand", "hand (arms' main hand)", held.Arms.MainHand.Rotation, -180, 180, 1, ArmsDefinition.Path, "/mainHand/rotation", Redraw))
+        ]) { File = StanceCatalog.Path });
 
-        groups.Add(($"nudge.{look}", $"Nudge · {look}",
+        string nudge = $"/looks/{lookIndex}/nudge";
+        groups.Add(new($"nudge.{look}", $"Nudge · {look}",
         [
-            .. Vector("nudge.grip", "grip", model.Adjust.Grip, -0.2f, 0.2f, .002f, () => { held.Seat(model); Redraw(); }),
-            .. Vector("nudge.turn", "turn", model.Adjust.Turn, -60, 60, .5f, () => { held.Seat(model); Redraw(); })
-        ]));
+            .. Vector("nudge.grip", "grip", model.Adjust.Grip, -0.2f, 0.2f, .002f, HeldCatalog.Path, $"{nudge}/grip", () => { held.Seat(model); Redraw(); }),
+            .. Vector("nudge.turn", "turn", model.Adjust.Turn, -60, 60, .5f, HeldCatalog.Path, $"{nudge}/turn", () => { held.Seat(model); Redraw(); })
+        ]) { File = HeldCatalog.Path });
 
         // The keys' timing and curves, for the action's track (its own, or the motion's default): each key's phase,
-        // its moment through that phase, and the curve it eases in by; and the settle back to rest.
+        // its moment through that phase, and the curve it eases in by. Moving a key moves the timeline.
+        string motionPointer = $"/motions/{Escape(model.Motion)}";
         if (motion.Track(action.Id) is { } track)
         {
             string trackId = motion.Tracks.ContainsKey(action.Id) ? action.Id : HeldMotionCatalog.DefaultTrack;
@@ -60,46 +62,51 @@ internal static class ViewmodelTunables
             {
                 int index = i;
                 MotionKey k = track[i];
-                string at = $"key.{i}";
-                timing.Add(new(new($"{at}.phase", $"{i} {k.Pose} phase", "choice", 0, Phases.Length - 1, 1, Array.IndexOf(Phases, k.Phase),
-                    [.. Phases.Select(p => p.ToString())], true), v => { track[index] = track[index] with { Phase = Phases[(int)v] }; Redraw(); }));
-                timing.Add(new(new($"{at}.at", $"{i} {k.Pose} at", "slider", 0, 1, .01f, k.At, null, true),
+                string at = $"{motionPointer}/tracks/{Escape(trackId)}/{i}";
+                timing.Add(new(new($"key.{i}.phase", $"{i} {k.Pose} phase", TunableKind.Choice, 0, Phases.Length - 1, 1, Array.IndexOf(Phases, k.Phase))
+                    { Options = [.. Phases.Select(p => p.ToString())], Reshapes = true, Source = new(HeldMotionCatalog.Path, $"{at}/phase") },
+                    v => { track[index] = track[index] with { Phase = Phases[(int)MathF.Round(v)] }; Redraw(); }));
+                timing.Add(new(new($"key.{i}.at", $"{i} {k.Pose} at", TunableKind.Slider, 0, 1, .01f, k.At)
+                    { Reshapes = true, Source = new(HeldMotionCatalog.Path, $"{at}/at") },
                     v => { track[index] = track[index] with { At = v }; Redraw(); }));
-                timing.Add(new(new($"{at}.ease", $"{i} {k.Pose} ease", "choice", 0, Eases.Length - 1, 1, Array.IndexOf(Eases, k.Ease),
-                    [.. Eases.Select(e => e.ToString())]), v => { track[index] = track[index] with { Ease = Eases[(int)v] }; Redraw(); }));
+                timing.Add(new(new($"key.{i}.ease", $"{i} {k.Pose} ease", TunableKind.Choice, 0, Eases.Length - 1, 1, Array.IndexOf(Eases, k.Ease))
+                    { Options = [.. Eases.Select(e => e.ToString())], Source = new(HeldMotionCatalog.Path, $"{at}/ease") },
+                    v => { track[index] = track[index] with { Ease = Eases[(int)MathF.Round(v)] }; Redraw(); }));
             }
-            groups.Add(($"track.{model.Motion}.{trackId}", $"Keys · {model.Motion} · {trackId} (every look in it)", [.. timing]));
+            groups.Add(new($"track.{model.Motion}.{trackId}", $"Keys · {model.Motion} · {trackId} (every look in it)", timing) { File = HeldMotionCatalog.Path });
         }
 
         if (key >= 0 && motion.Track(action.Id) is { } keys && key < keys.Length)
         {
             string name = keys[key].Pose;
             HeldPose pose = motion.Poses[name];
+            string posePointer = $"{motionPointer}/poses/{Escape(name)}";
             void Show() => view.Hold(pose);
-            groups.Add(($"pose.{model.Motion}.{name}", $"Pose · {name} ({model.Motion}, every look in it)",
+            groups.Add(new($"pose.{model.Motion}.{name}", $"Pose · {name} ({model.Motion}, every look in it)",
             [
-                .. Vector("pose.position", "move", pose.Position, -0.5f, 0.5f, .005f, Show),
-                .. Vector("pose.rotation", "turn", pose.Rotation, -180, 180, 1, Show)
-            ]));
+                .. Vector("pose.position", "move", pose.Position, -0.5f, 0.5f, .005f, HeldMotionCatalog.Path, $"{posePointer}/position", Show),
+                .. Vector("pose.rotation", "turn", pose.Rotation, -180, 180, 1, HeldMotionCatalog.Path, $"{posePointer}/rotation", Show)
+            ]) { File = HeldMotionCatalog.Path });
         }
 
         ArmsDefinition arms = held.Arms;
-        groups.Add(("arms", "Arms",
+        string path = ArmsDefinition.Path;
+        groups.Add(new("arms", "Arms",
         [
-            .. Vector("arms.shoulder", "shoulder", arms.Shoulder, -0.6f, 0.6f, .005f, Redraw),
-            .. Vector("arms.pole", "elbow toward", arms.Pole, -2, 2, .01f, Redraw),
-            .. Vector("arms.main.palm", "main palm", arms.MainHand.Palm, -0.15f, 0.15f, .002f, Redraw),
-            .. Vector("arms.off.rotation", "off hand", arms.OffHand.Rotation, -180, 180, 1, Redraw),
-            .. Vector("arms.off.palm", "off palm", arms.OffHand.Palm, -0.15f, 0.15f, .002f, Redraw),
-            .. Vector("arms.offPole", "off elbow toward", arms.OffPole, -2, 2, .01f, Redraw)
-        ]));
+            .. Vector("arms.shoulder", "shoulder", arms.Shoulder, -0.6f, 0.6f, .005f, path, "/shoulder", Redraw),
+            .. Vector("arms.pole", "elbow toward", arms.Pole, -2, 2, .01f, path, "/pole", Redraw),
+            .. Vector("arms.main.palm", "main palm", arms.MainHand.Palm, -0.15f, 0.15f, .002f, path, "/mainHand/palm", Redraw),
+            .. Vector("arms.off.rotation", "off hand", arms.OffHand.Rotation, -180, 180, 1, path, "/offHand/rotation", Redraw),
+            .. Vector("arms.off.palm", "off palm", arms.OffHand.Palm, -0.15f, 0.15f, .002f, path, "/offHand/palm", Redraw),
+            .. Vector("arms.offPole", "off elbow toward", arms.OffPole, -2, 2, .01f, path, "/offPole", Redraw)
+        ]) { File = path });
         return groups;
     }
 
     private static readonly MotionPhase[] Phases = Enum.GetValues<MotionPhase>();
     // The named curves keys may use: those needing parameters (bezier, steps, spring) are not authored in held motion.
-    private static readonly Rusty.Engine.TweenEasingKind[] Eases = [.. Enum.GetValues<Rusty.Engine.TweenEasingKind>()
-        .Where(e => e is not (Rusty.Engine.TweenEasingKind.CubicBezier or Rusty.Engine.TweenEasingKind.Steps or Rusty.Engine.TweenEasingKind.Spring))];
+    private static readonly TweenEasingKind[] Eases = [.. Enum.GetValues<TweenEasingKind>()
+        .Where(e => e is not (TweenEasingKind.CubicBezier or TweenEasingKind.Steps or TweenEasingKind.Spring))];
 
     /// <summary>Where the keys of an action fall out of time order (empty when they are in order), as content checks them.</summary>
     internal static string Order(HeldMotion motion, ActionDefinition action)
@@ -112,18 +119,24 @@ internal static class ViewmodelTunables
         return "";
     }
 
-    // Three sliders over one authored point, applied in place.
-    private static IEnumerable<Tunable> Vector(string id, string label, float[] values, float min, float max, float step, Action applied)
+    // Three sliders over one authored point, applied in place and saved to its elements.
+    private static IEnumerable<Tunable> Vector(string id, string label, float[] values, float min, float max, float step, string file, string pointer,
+        Action applied)
     {
         string[] axes = ["x", "y", "z"];
         for (int i = 0; i < 3; i++)
         {
             int axis = i;
-            yield return new(new($"{id}.{axes[i]}", $"{label} {axes[i]}", "slider", min, max, step, values[i]), v =>
-            {
-                values[axis] = v;
-                applied();
-            });
+            yield return new(new($"{id}.{axes[i]}", $"{label} {axes[i]}", TunableKind.Slider, min, max, step, values[i])
+                { Source = new(file, $"{pointer}/{i}") },
+                v =>
+                {
+                    values[axis] = v;
+                    applied();
+                });
         }
     }
+
+    // A JSON pointer reference token (RFC 6901).
+    private static string Escape(string token) => token.Replace("~", "~0").Replace("/", "~1");
 }

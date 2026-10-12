@@ -203,7 +203,7 @@ stance's grip and its length and up side along the stance. A look's `nudge` (`gr
 `turn`, degrees about camera X, Y, Z) corrects it by eye. Changing a stance moves every look in it.
 
 The first-person workbench (F3 in a developer session, docs/development.md) tunes all of these with sliders while
-the motion plays, and lists the changes to paste. The same work in the developer console, with a look shown (held,
+the motion plays, and saves them into these files under `rusty dev`. The same work in the developer console, with a look shown (held,
 or through `hotel.dev.motion`):
 
 | Command | Does |

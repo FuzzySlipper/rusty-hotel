@@ -55,18 +55,32 @@ service and the UI offers no console.
 Closing the console disposes the packaged panel; the normal HUD has no debug
 panel traffic. Hotel owns its lifetime adapter, not its transport or parser.
 
-In a developer session, F3 opens the first-person workbench: a panel docked at the left, beside play (which keeps
-running). Pick a look and action, hold a key's pose, scrub to any moment or play at a speed, and drag sliders for the
-look's stance (every look in it moves), its nudge, the held key's pose and the arms, with the stance guide as a
-toggle. The keys group sets each key's phase, its moment through that phase and the curve it eases in by (for every
-look sharing the motion); the timeline follows, and a key moved out of time order is reported (content refuses it).
-Residents keep acting while it is open: tune in a quiet room, or alone with `hotel.dev.floor.module`. "Changed values" lists what differs from the loaded content as JSON per content file, to copy and paste;
-nothing is written to disk. F3 or Escape closes it.
+In a developer session, F3 opens the first-person workbench: the Engine tunables panel, docked at the left beside play
+(which keeps running).
+- **Pick and play:** choose a look and action, hold a key's pose, scrub to any moment or play at a speed.
+- **Sliders:** the look's stance (every look in it moves), its nudge, the held key's pose and the arms, with the stance
+  guide as a toggle.
+- **Keys:** each key's phase, its moment through that phase and the curve it eases in by (for every look sharing the
+  motion). The timeline follows, and a key moved out of time order is reported, since content refuses it.
 
-The panel (`src/ui/workbench.js`) is generic. It draws whatever the product describes in the `tunables.v1` contract:
-choosers, a key timeline, groups of sliders, toggles and choices, a notice, and the command templates it sends through the Engine's
-live-debug client. Hotel describes its values in `Interface/Workbench/ViewmodelTunables.cs` (each with the owner
-call that applies it) and serves them through `hotel.dev.workbench.describe`, `.select`, `.set` and `.changes`.
+Every control is bound to where it is saved (a content file and a JSON pointer). The panel marks what differs from
+the file and gives each file **Save** and **Reset**. Save writes only the changed values into the checkout's content
+file, one line per value (the Engine content source); the running game keeps going. Saving works only under `rusty
+dev`; elsewhere the panel tunes live without Save.
+
+Residents keep acting while it is open: tune in a quiet room, or alone with `hotel.dev.floor.module`. F3 or Escape
+closes it.
+
+The held-presentation files (`combat/held.json`, `stances.json`, `held-motion.json`, `arms.json`) are declared live
+content (`RustyEngineLiveContent`): an edit made in an editor under `rusty dev` reloads into the running game
+(`HotelProduct.ReloadHeld`) instead of restarting it. A change to what exists (a look, model, motion, stance or the
+arms' rig) is reported as needing a restart.
+
+Hotel describes the page in `Interface/Workbench/HotelWorkbench.cs` (choosers, the motion viewer's timeline) and
+`ViewmodelTunables.cs` (each control, the owner call that applies it, and its source). The Engine's
+`TunablesDebugModule` serves it (`tunables.describe`, `tunables.select`, `tunables.set`), and its
+`mountTunablesPanel` draws it (`src/ui/developer.js`). The same commands, with `engine.content.source.read` and
+`engine.content.source.edit`, tune and save without a page.
 
 Use the generated catalog for argument help and current command availability.
 
@@ -78,7 +92,7 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.dev.set-track <track> <value>` | Set one investigator track (for example `ammunition`) within its bounds |
 | `hotel.dev.motion <look> <action>` and `.key`, `.next`, `.prev`, `.at`, `.play`, `.pose`, `.off` | The held-motion viewer: step a look's action keys, play it at a speed, try pose changes (docs/authoring.md, "Held motion") |
 | `hotel.dev.arms.model <path>` | Show another arms model (a variant built from `art/arms`) with the same hold until the floor is rebuilt; `combat/arms.json` is unchanged |
-| `hotel.dev.workbench.describe` / `.select <look> <action>` / `.set <id> <value>` / `.changes` | The first-person workbench's product side (F3 opens its panel): describe the shown look's controls (`tunables.v1`), select a look and action (`-` for its first), set one control, and list what changed as JSON per file |
+| `tunables.describe` / `tunables.select <chooser> <value>` / `tunables.set <id> <value>` | The first-person workbench's page (Engine `TunablesDebugModule`; F3 opens its panel). `engine.content.source.read <path>` and `engine.content.source.edit <path> <sha256> <edits>` save into source content under `rusty dev` |
 | `hotel.dev.stance`, `.set`, `.hand`, `hotel.dev.held.nudge` | The held stance guide: draw a look's stance beside it, change stances and nudge looks live (docs/authoring.md, "Held stances") |
 | `hotel.dev.arms.offhand <rx> <ry> <rz> <px> <py> <pz>` | Try the off hand's hold on two-handed looks live; prints its JSON for `combat/arms.json` |
 | `hotel.dev.arms.reach <sx> <sy> <sz> <px> <py> <pz>` | Try the right shoulder's camera-space place and the elbow pole live; prints their JSON for `combat/arms.json` |

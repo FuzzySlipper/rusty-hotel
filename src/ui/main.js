@@ -6,8 +6,7 @@ import { mountReadingScreen } from './reading-screen.js';
 import { mountConsoleScreen } from './console-screen.js';
 import { mountTitleScreen } from './title-screen.js';
 import { createPauseFlow } from './pause.js';
-import { developerAvailable } from './developer.js';
-import { createWorkbench } from './workbench.js';
+import { createWorkbench, developerAvailable } from './developer.js';
 
 /** The window height, in CSS pixels, the interface is laid out for at UI scale 1. */
 const UI_HEIGHT = 1000;

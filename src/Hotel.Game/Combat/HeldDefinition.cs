@@ -46,6 +46,53 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
 
     internal HeldModel Model(string look) => Looks.Single(l => l.Look == look);
 
+    /// <summary>The content files the held presentation reads, reloaded in place under <c>rusty dev</c> (RustyEngineLiveContent).</summary>
+    internal static readonly string[] Files = [Path, StanceCatalog.Path, HeldMotionCatalog.Path, ArmsDefinition.Path];
+
+    /// <summary>
+    /// Takes the tuned values of <paramref name="fresh"/> (stances, nudges, poses, keys, arm placement and holds) into
+    /// this catalog in place, so the views holding it show them, and seats every look again. Returns what it could not
+    /// take: changes to what exists (a look, model, motion, stance or the arms' rig), which need the product restarted.
+    /// </summary>
+    internal string[] Refresh(HeldCatalog fresh)
+    {
+        List<string> needRestart = [];
+        void Same(bool same, string what) { if (!same) needRestart.Add(what); }
+        Same(Looks.Select(l => (l.Look, l.Model, l.Scale, l.Motion, l.Stance)).SequenceEqual(fresh.Looks.Select(l => (l.Look, l.Model, l.Scale, l.Motion, l.Stance))),
+            $"{Path} looks (ids, models, scales, motions or stances)");
+        Same(Stances.Stances.Keys.Order().SequenceEqual(fresh.Stances.Stances.Keys.Order()), $"{StanceCatalog.Path} stance ids");
+        Same(Motion.Motions.Keys.Order().SequenceEqual(fresh.Motion.Motions.Keys.Order()), $"{HeldMotionCatalog.Path} motion ids");
+        Same(Arms.Model == fresh.Arms.Model && Arms.Clips == fresh.Arms.Clips && Arms.Main == fresh.Arms.Main && Arms.Off == fresh.Arms.Off,
+            $"{ArmsDefinition.Path} model, clips or joint chains");
+        if (needRestart.Count > 0) return [.. needRestart];
+
+        foreach (var (id, stance) in fresh.Stances.Stances) Stances.Stances[id] = stance;
+        foreach (HeldModel look in Looks)
+        {
+            HeldModel now = fresh.Model(look.Look);
+            now.Adjust.Grip.CopyTo(look.Adjust.Grip, 0);
+            now.Adjust.Turn.CopyTo(look.Adjust.Turn, 0);
+        }
+        foreach (var (id, motion) in fresh.Motion.Motions)
+        {
+            HeldMotion held = Motion.Motions[id];
+            foreach (var (name, pose) in motion.Poses) held.Poses[name] = pose;
+            foreach (var (track, keys) in motion.Tracks) held.Tracks[track] = keys;
+        }
+        ArmsDefinition arms = fresh.Arms;
+        arms.Shoulder.CopyTo(Arms.Shoulder, 0);
+        arms.Pole.CopyTo(Arms.Pole, 0);
+        arms.OffPole.CopyTo(Arms.OffPole, 0);
+        arms.OffRest.CopyTo(Arms.OffRest, 0);
+        foreach (var (into, from) in new[] { (Arms.MainHand, arms.MainHand), (Arms.OffHand, arms.OffHand) })
+        {
+            from.Rotation.CopyTo(into.Rotation, 0);
+            from.Palm.CopyTo(into.Palm, 0);
+        }
+        foreach (HeldModel look in Looks) Seat(look);
+        return [];
+    }
+
     private void Validate()
     {
         Authored.Point(Path, "flashSize", FlashSize);

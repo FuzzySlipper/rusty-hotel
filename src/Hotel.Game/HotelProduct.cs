@@ -93,6 +93,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
 
     public ProductUpdateResult Update(ProductUpdate update)
     {
+        ReloadHeld(update.ContentChanges);
         foreach (TitleChoice choice in title.Read(update.Input)) Choose(choice);
         // Behind the title menu the world holds still.
         if (title.Active)
@@ -162,6 +163,30 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         world.Supplies.HandleIntents(intents);
         world.Spirit.HandleIntents(intents);
         PublishInterface();
+    }
+
+    // Under rusty dev an edited held-presentation file (declared live content) arrives here instead of a restart: read
+    // it again with the others, validated as at load, and take its values into the catalog the views hold.
+    private void ReloadHeld(ReadOnlySpan<ContentReferenceInfo> changes)
+    {
+        bool changed = false;
+        foreach (ContentReferenceInfo change in changes) changed |= HeldCatalog.Files.Contains(change.Path);
+        if (!changed) return;
+        HeldCatalog held = content.Combat.Held;
+        try
+        {
+            HeldCatalog fresh = HeldCatalog.Load(engine);
+            fresh.Motion.Validate(HeldCatalog.Path, fresh.Looks, content.Supplies.Items.Where(i => i.Wear?.Look is not null)
+                .SelectMany(i => i.Wear!.Actions.Select(a => (i.Wear.Look!, content.Combat.Actions.Action(a)!))));
+            string[] needRestart = held.Refresh(fresh);
+            if (needRestart.Length > 0)
+                Console.Error.WriteLine($"Held presentation not reloaded; restart to apply changes to {string.Join("; ", needRestart)}.");
+        }
+        catch (InvalidDataException error)
+        {
+            Console.Error.WriteLine($"Held presentation not reloaded: {error.Message}");
+        }
+        world.CombatView.Publish();
     }
 
     public void Pause() { ClearActions(); world.Player.ClearInput(); }
@@ -275,9 +300,9 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         registrar.Register(new SuppliesDebugCommands(() => world.Supplies, PublishInterface));
         HeldMotionDebugCommands motionViewer = new(() => world.CombatView, content.Combat.Held, content.Combat.Actions);
         registrar.Register(motionViewer);
-        registrar.Register(new Interface.Workbench.WorkbenchDebugCommands(() => world.CombatView, content.Combat.Held, motionViewer,
+        registrar.Register(new Interface.Workbench.HotelWorkbench(() => world.CombatView, content.Combat.Held, motionViewer,
             content.Supplies.Items.Where(i => i.Wear?.Look is not null).GroupBy(i => i.Wear!.Look!)
-                .ToDictionary(g => g.Key, g => g.SelectMany(i => i.Wear!.Actions).Distinct().ToArray())));
+                .ToDictionary(g => g.Key, g => g.SelectMany(i => i.Wear!.Actions).Distinct().ToArray())).Module());
         registrar.Register(new HeldStanceDebugCommands(() => world.CombatView, content.Combat.Held));
     }
 

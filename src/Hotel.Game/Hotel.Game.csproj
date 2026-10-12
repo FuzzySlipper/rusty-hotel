@@ -11,9 +11,10 @@
     <RustyEngineProductEntryType>Hotel.Game.HotelProduct</RustyEngineProductEntryType>
     <RustyEngineProductId>rusty-hotel</RustyEngineProductId>
     <RustyEngineProductTitle>Hotel Endless</RustyEngineProductTitle>
-    <RustyEngineProductUiRoot>$(MSBuildProjectDirectory)/../ui</RustyEngineProductUiRoot>
+    <!-- Full paths: rusty dev matches changed files against these roots, and a path through '..' does not match. -->
+    <RustyEngineProductUiRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../ui'))</RustyEngineProductUiRoot>
     <RustyEngineProductUiEntry>main.js</RustyEngineProductUiEntry>
-    <RustyEngineProductContentRoot>$(MSBuildProjectDirectory)/../../content</RustyEngineProductContentRoot>
+    <RustyEngineProductContentRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../content'))</RustyEngineProductContentRoot>
     <RustyEngineProductUiProjectionStream>rusty-hotel</RustyEngineProductUiProjectionStream>
     <RustyEngineProductUiProjectionContract>rusty.hotel.hud</RustyEngineProductUiProjectionContract>
     <RustyEngineProductLifecycleMode>realtime</RustyEngineProductLifecycleMode>
@@ -29,6 +30,14 @@
     <RustyEngineProductDefaultWorldLights>disabled</RustyEngineProductDefaultWorldLights>
     <RustyEngineWatchPaths>$(MSBuildProjectDirectory);$(RustyEngineProductUiRoot);$(RustyEngineProductContentRoot)</RustyEngineWatchPaths>
   </PropertyGroup>
+
+  <!-- Under rusty dev an edit to these reloads in place (HotelProduct.ReloadHeld) instead of replacing the runtime. -->
+  <ItemGroup>
+    <RustyEngineLiveContent Include="combat/held.json" />
+    <RustyEngineLiveContent Include="combat/stances.json" />
+    <RustyEngineLiveContent Include="combat/held-motion.json" />
+    <RustyEngineLiveContent Include="combat/arms.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <RustyEngineProductUiContent Include="supplies/icons" />
