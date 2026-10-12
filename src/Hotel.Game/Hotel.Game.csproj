@@ -11,10 +11,9 @@
     <RustyEngineProductEntryType>Hotel.Game.HotelProduct</RustyEngineProductEntryType>
     <RustyEngineProductId>rusty-hotel</RustyEngineProductId>
     <RustyEngineProductTitle>Hotel Endless</RustyEngineProductTitle>
-    <!-- Full paths: rusty dev matches changed files against these roots, and a path through '..' does not match. -->
-    <RustyEngineProductUiRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../ui'))</RustyEngineProductUiRoot>
+    <RustyEngineProductUiRoot>$(MSBuildProjectDirectory)/../ui</RustyEngineProductUiRoot>
     <RustyEngineProductUiEntry>main.js</RustyEngineProductUiEntry>
-    <RustyEngineProductContentRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../content'))</RustyEngineProductContentRoot>
+    <RustyEngineProductContentRoot>$(MSBuildProjectDirectory)/../../content</RustyEngineProductContentRoot>
     <RustyEngineProductUiProjectionStream>rusty-hotel</RustyEngineProductUiProjectionStream>
     <RustyEngineProductUiProjectionContract>rusty.hotel.hud</RustyEngineProductUiProjectionContract>
     <RustyEngineProductLifecycleMode>realtime</RustyEngineProductLifecycleMode>
