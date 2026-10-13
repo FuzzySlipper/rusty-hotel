@@ -122,6 +122,7 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
                 arms.Hands.Close.Thumb[i].CopyTo(Arms.Hands.Close.Thumb[i], 0);
                 arms.Hands.Open.Thumb[i].CopyTo(Arms.Hands.Open.Thumb[i], 0);
             }
+            Arms.Hands.Fit.Take(arms.Hands.Fit);
             arms.Shoulder.CopyTo(Arms.Shoulder, 0);
             arms.Pole.CopyTo(Arms.Pole, 0);
             arms.OffPole.CopyTo(Arms.OffPole, 0);

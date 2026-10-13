@@ -50,6 +50,17 @@
           0
         ]
       ]
+    },
+    "fit": {
+      "fingerRadius": 0.008,
+      "thumbRadius": 0.0095,
+      "tip": 0.8,
+      "gap": 0.002,
+      "open": -40,
+      "closed": 110,
+      "step": 1,
+      "samples": 3,
+      "reach": 0.08
     }
   },
   "reach": {

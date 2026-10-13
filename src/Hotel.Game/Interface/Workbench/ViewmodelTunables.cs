@@ -54,7 +54,13 @@ internal static class ViewmodelTunables
         // How the look shapes each hand's digits on the grip clip, joint by joint; the keys' closure acts on top.
         if (model.Shape is { } shape)
         {
-            List<Tunable> digits = [];
+            // Fitting curls the hands onto the model from open (as hotel.dev.hands.fit); the sliders then show it unsaved.
+            string[] fits = model.Grips.Off is null ? ["-", "main"] : ["-", "main", "off", "both"];
+            List<Tunable> digits =
+            [
+                new(new("shape.fit", "fit to the model", TunableKind.Choice, 0, fits.Length - 1, 1, 0) { Options = fits, Reshapes = true },
+                    v => { if ((int)MathF.Round(v) is > 0 and var at && at < fits.Length) HandFitDebugCommands.Hands(view, held, look, fits[at], apply: true); })
+            ];
             string[] joints = ["base", "middle", "tip"];
             foreach (var (side, digitsOf) in new[] { ("main", shape.Main), ("off", shape.Off) })
             {

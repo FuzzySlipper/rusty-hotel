@@ -305,6 +305,7 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
             content.Supplies.Items.Where(i => i.Wear?.Look is not null).GroupBy(i => i.Wear!.Look!)
                 .ToDictionary(g => g.Key, g => g.SelectMany(i => i.Wear!.Actions).Distinct().ToArray())).Module());
         registrar.Register(new HeldStanceDebugCommands(() => world.CombatView, content.Combat.Held));
+        registrar.Register(new HandFitDebugCommands(() => world.CombatView, content.Combat.Held));
     }
 
     /// <summary>The world interaction reads whichever floor's route is current.</summary>

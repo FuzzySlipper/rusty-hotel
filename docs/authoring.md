@@ -213,6 +213,13 @@ when the look has an off grip. Each gives `fingers`, one `[base, middle, tip]` c
 palm) per finger of `combat/arms.json` `hands.fingers`, and `thumb`, three `[curl, swing]`. The motion keys' `hands`
 closure opens or squeezes the hand from that shape.
 
+The hand fit (`hotel.dev.hands.fit`, docs/development.md) gives a measured start for a shape: with the look at rest,
+each digit's joints curl together from open until a segment meets the model's own surface, then the joints past it
+curl on. It measures by `combat/arms.json` `hands.fit`: the finger and thumb radii about their joints, the tip past
+the last joint (a fraction of the joint before), the `gap` a digit stops short by, the `open` to `closed` curls it
+sweeps by `step`, the probes per segment (`samples`) and how far it looks for the surface (`reach`). A digit already
+in the model where the hand rests is reported; the fit cannot move the hand, so that is a grip or palm to correct.
+
 The first-person workbench (F3 in a developer session, docs/development.md) tunes all of these with sliders while
 the motion plays, and saves them into these files under `rusty dev`. The same work in the developer console, with a look shown (held,
 or through `hotel.dev.motion`):

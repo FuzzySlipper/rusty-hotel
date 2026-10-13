@@ -349,6 +349,39 @@ internal sealed class CombatView : IDisposable
     }
 
     /// <summary>
+    /// Fits a hand's shape on a look to its model (<see cref="HandFitting"/>), in the loaded content only, and shows it;
+    /// with <paramref name="apply"/> false, only reports how the hand meets the model now. Null when it cannot (see <see cref="HandHold"/>).
+    /// </summary>
+    internal List<string>? FitHand(string look, bool offHand, bool apply)
+    {
+        HeldModel model = heldLooks.Model(look);
+        if (HandHold(look, offHand) is not { } hold || (offHand ? model.Shape?.Off : model.Shape?.Main) is not { } shape) return null;
+        // Shown at rest, the drawn digits check the fit's posing.
+        bool atRest = ShownLook == look && Shown(look) is var (at, turn) && Vector3.Distance(at, hold.Placement.Translation) < 1e-4f
+            && MathF.Abs(Quaternion.Dot(turn, hold.Placement.Rotation)) > 0.99999f;
+        if (!apply) return HandFitting.Contact(engine, hold, shape, heldLooks.Arms.Hands, atRest ? arms.Drawn(offHand) : null);
+        List<string> lines = HandFitting.Fit(engine, hold, shape, heldLooks.Arms.Hands);
+        Publish();
+        return lines;
+    }
+
+    /// <summary>
+    /// How a hand holds a look at rest, for the developer hand fit: the look's model where it stands, the hand's wrist and
+    /// turn on its grip, and its digits as the arms draw them. Null when the look has no grip for that hand or the arms
+    /// have not yet been drawn holding still.
+    /// </summary>
+    private HandFitting.Hold? HandHold(string look, bool offHand)
+    {
+        HeldModel model = heldLooks.Model(look);
+        (Vector3 At, Quaternion Turn) placed = heldLooks.Motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest].Place(model);
+        (Vector3 main, Vector3? off, Quaternion item, float[]? hand) = HeldGrip.At(heldLooks, model, placed);
+        if ((offHand ? off : main) is not { } grip || arms.Chains(offHand) is not { } chains) return null;
+        (Vector3 wrist, Quaternion turn) = ArmsView.Wrist(grip, item, offHand ? heldLooks.Arms.OffHand : heldLooks.Arms.MainHand, hand);
+        RenderResource resource = models[Array.IndexOf(heldLooks.Looks, model)];
+        return new(resource, new(placed.At, placed.Turn, new(model.Scale)), wrist, turn, chains, offHand ? heldLooks.Arms.Off.Mirrored : heldLooks.Arms.Main.Mirrored);
+    }
+
+    /// <summary>
     /// Where a look's model is shown now (camera space): the viewer's held pose, or its rest placement under the offset
     /// its playing motion (an action, a settle, the viewer's playback or seek) shows.
     /// </summary>
