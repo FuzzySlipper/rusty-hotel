@@ -45,7 +45,7 @@ internal sealed class HeldMotionDebugCommands(Func<CombatView> view, HeldCatalog
         if (look is null) return Failure("Choose a look first: hotel.dev.motion <look> <action>.");
         if (n < -1 || n >= Keys.Length) return Failure($"Keys run from 0 to {Keys.Length - 1} (-1 is rest).");
         key = n;
-        view().Hold(n < 0 ? null : Motion.Poses[Keys[n].Pose], n < 0 ? null : (Keys[n].Hands[0], Keys[n].Hands[1]));
+        view().HoldKey(action!, n);
         return DebugCommandResult.Success(n < 0 ? "rest" : Line(n));
     }
 

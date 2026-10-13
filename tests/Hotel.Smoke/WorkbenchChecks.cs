@@ -54,6 +54,28 @@ internal static class WorkbenchChecks
             "a reload updates a pose in place, so a held pose shows it");
         Check(!live.Motion.Motions["swing"].Tracks.ContainsKey("prybar-shove"), "a track removed from the file is removed live");
         Check(restart.Length == 1 && restart[0].Contains("settleSeconds"), $"a settle change is reported as needing a restart: {string.Join("; ", restart)}");
+        HeldCatalog rigged = HeldCatalog.Load(engine);
+        rigged = rigged with { Arms = rigged.Arms with { Hands = rigged.Arms.Hands with { Fingers = [.. rigged.Arms.Hands.Fingers.SkipLast(1)] } } };
+        string[] digits = HeldCatalog.Load(engine).Refresh(rigged, new HashSet<string> { ArmsDefinition.Path });
+        Check(digits.Length == 1 && digits[0].Contains("finger"), $"a change to the hands' finger joints is reported as needing a restart: {string.Join("; ", digits)}");
+
+        // The viewer holds a key as its track is now: changing which pose the key reaches shows at once.
+        CombatView combat = product.World.CombatView;
+        HeldCatalog shown = product.Content.Combat.Held;
+        HeldModel prybarLook = shown.Model("prybar");
+        var swing = content.Combat.Actions.Action("prybar-swing")!;
+        MotionKey[] track = shown.Motion.Motions[prybarLook.Motion].Track(swing.Id)!;
+        MotionKey first = track[0];
+        combat.View("prybar");
+        combat.HoldKey(swing, 0);
+        var before = combat.Shown("prybar").At;
+        track[0] = first with { Pose = track[1].Pose };
+        var after = combat.Shown("prybar").At;
+        var expected = shown.Motion.Motions[prybarLook.Motion].Poses[track[1].Pose].Place(prybarLook).At;
+        track[0] = first;
+        combat.View(null);
+        Check(System.Numerics.Vector3.Distance(after, expected) < 1e-4f && System.Numerics.Vector3.Distance(before, after) > 1e-3f,
+            "a held key shows the pose its track now names, without reselecting it");
         Console.WriteLine($"Workbench checks passed: {controls} control sources across every look, action and key resolve in their content files; reload takes only changed files, in place.");
     }
 }

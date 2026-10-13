@@ -92,7 +92,7 @@ internal sealed class CombatView : IDisposable
         {
             // Published at rest: an action's motion is the Engine tween over it. The viewmodel layer is drawn in camera
             // space (right, up, back) under its own light rig. The viewer may hold a key's pose instead.
-            HeldPose pose = viewing is { Pose: { } shownPose } && viewing.Value.Look == kind ? shownPose : motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest];
+            HeldPose pose = viewing is { } view && view.Look == kind && Held().Pose is { } shownPose ? shownPose : motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest];
             (Vector3 at, Quaternion turn) = pose.Place(model);
             facts.Add(new(entity, false, 0, new(at, turn, new(model.Scale)), appearance, !combat.Defeated && look == kind, RenderLayer.Viewmodel));
         }
@@ -154,7 +154,7 @@ internal sealed class CombatView : IDisposable
     // its tween has got to, or a settle easing back to the grip.
     private (float Main, float Off) Closure(string look)
     {
-        if (viewing is { Pose: not null } held && held.Look == look) return viewingHands;
+        if (viewing is { } view && view.Look == look && Held() is { Pose: not null } held) return held.Hands;
         if (shown is not { } playing || playing.Look != look) return (0, 0);
         TweenReadout readout = engine.Tween.Read(playing.Tween);
         if (readout.State == TweenState.Ended) return (0, 0);
@@ -189,6 +189,32 @@ internal sealed class CombatView : IDisposable
 
     // The developer motion viewer: the look it shows, and the pose it holds (null while playing or at rest).
     private (string Look, HeldPose? Pose)? viewing;
+    // The key the viewer holds (an action and its key index), read from its track as it is now, so an edit to the
+    // key (its pose, its hands, from the workbench or a reloaded file) shows at once; null when it holds a pose or none.
+    private (ActionDefinition Action, int Key)? viewingKey;
+
+    // The pose the viewer holds and how closed the hands are: the held key's, as its track says now (rest once the key
+    // is gone), or the pose it was given.
+    private (HeldPose? Pose, (float Main, float Off) Hands) Held()
+    {
+        if (viewing is not { } view) return (null, (0, 0));
+        if (viewingKey is not { } key) return (view.Pose, viewingHands);
+        HeldMotion motion = heldLooks.Motion.Motions[heldLooks.Model(view.Look).Motion];
+        return motion.Track(key.Action.Id) is { } track && key.Key < track.Length && motion.Poses.TryGetValue(track[key.Key].Pose, out HeldPose? pose)
+            ? (pose, (track[key.Key].Hands[0], track[key.Key].Hands[1]))
+            : (null, (0, 0));
+    }
+
+    /// <summary>Developer motion viewer: holds the shown look exactly at one of an action's keys, as the key is now; -1 holds rest.</summary>
+    internal void HoldKey(ActionDefinition action, int key)
+    {
+        if (viewing is not { } view) return;
+        Stop();
+        viewingKey = key < 0 ? null : (action, key);
+        viewing = (view.Look, null);
+        viewingHands = (0, 0);
+        Publish();
+    }
 
     /// <summary>Developer motion viewer: shows a look in place of what the hands hold, at rest; null returns to play.</summary>
     internal void View(string? look)
@@ -196,6 +222,7 @@ internal sealed class CombatView : IDisposable
         Stop();
         startedSeen = combat.User.Started;
         viewing = look is null ? null : (look, null);
+        viewingKey = null;
         Publish();
     }
 
@@ -208,6 +235,7 @@ internal sealed class CombatView : IDisposable
         if (viewing is not { } view) return;
         Stop();
         viewing = (view.Look, pose);
+        viewingKey = null;
         viewingHands = pose is null ? (0, 0) : hands ?? viewingHands;
         Publish();
     }
@@ -217,6 +245,7 @@ internal sealed class CombatView : IDisposable
     {
         if (viewing is not { } view) return;
         viewing = (view.Look, null);
+        viewingKey = null;
         Publish();
         Begin(view.Look, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, speed), action: action, speed: speed);
         Publish();
@@ -297,6 +326,7 @@ internal sealed class CombatView : IDisposable
     {
         if (viewing is not { } view) return;
         viewing = (view.Look, null);
+        viewingKey = null;
         Publish();
         Begin(view.Look, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action), action: action);
         engine.Tween.Control(new TweenControlRequest(Motion, TweenControl.Pause));
@@ -325,7 +355,7 @@ internal sealed class CombatView : IDisposable
     internal (Vector3 At, Quaternion Turn) Shown(string look)
     {
         HeldModel model = heldLooks.Model(look);
-        if (viewing is { Pose: { } pose } && viewing.Value.Look == look) return pose.Place(model);
+        if (viewing is { } view && view.Look == look && Held().Pose is { } pose) return pose.Place(model);
         (Vector3 at, Quaternion turn) = heldLooks.Motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest].Place(model);
         (Vector3 move, Quaternion offset) = Offset(look);
         return (at + move, Quaternion.Normalize(turn * offset));

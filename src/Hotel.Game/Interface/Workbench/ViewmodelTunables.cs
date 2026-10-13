@@ -85,7 +85,8 @@ internal static class ViewmodelTunables
             string name = keys[key].Pose;
             HeldPose pose = motion.Poses[name];
             string posePointer = $"{motionPointer}/poses/{Escape(name)}";
-            void Show() => view.Hold(pose);
+            // The viewer holds this key and reads its pose as it is now.
+            void Show() => view.Publish();
             groups.Add(new($"pose.{model.Motion}.{name}", $"Pose · {name} ({model.Motion}, every look in it)",
             [
                 .. Vector("pose.position", "move", pose.Position, -0.5f, 0.5f, .005f, HeldMotionCatalog.Path, $"{posePointer}/position", Show),

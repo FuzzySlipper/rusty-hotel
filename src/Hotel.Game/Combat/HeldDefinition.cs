@@ -110,8 +110,9 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
         if (changed.Contains(ArmsDefinition.Path))
         {
             ArmsDefinition arms = fresh.Arms;
-            Same(Arms.Model == arms.Model && Arms.Clip == arms.Clip && Arms.Main == arms.Main && Arms.Off == arms.Off,
-                $"{ArmsDefinition.Path} model, clip or joint chains");
+            Same(Arms.Model == arms.Model && Arms.Clip == arms.Clip && Arms.Main == arms.Main && Arms.Off == arms.Off
+                && Arms.Hands.Fingers.SequenceEqual(arms.Hands.Fingers) && Arms.Hands.Thumb == arms.Hands.Thumb,
+                $"{ArmsDefinition.Path} model, clip, joint chains or the hands' finger and thumb joints");
             // How the hands close is taken in place too.
             arms.Hands.Close.Fingers.CopyTo(Arms.Hands.Close.Fingers, 0);
             arms.Hands.Open.Fingers.CopyTo(Arms.Hands.Open.Fingers, 0);
