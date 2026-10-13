@@ -45,6 +45,8 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
                     string key = $"{at}.tracks.{track}[{i}]";
                     Authored.Require(motion.Poses.ContainsKey(keys[i].Pose), Path, $"{key}.pose", $"unknown pose '{keys[i].Pose}'.");
                     Authored.Within(Path, $"{key}.at", keys[i].At, 0, 1);
+                    Authored.Require(keys[i].Hands is [var main, var off] && main is >= -1 and <= 1 && off is >= -1 and <= 1, Path, $"{key}.hands",
+                        "gives the main and off hands' closure, each from -1 (open) through 0 (the grip) to 1 (squeezed).");
                     Ease(Path, $"{key}.ease", keys[i].Ease);
                 }
         }
@@ -115,6 +117,30 @@ internal sealed record HeldMotionCatalog(float SettleSeconds, TweenEasingKind Se
         return segments.ToArray();
     }
 
+    /// <summary>
+    /// How closed each hand is <paramref name="time"/> seconds into an action on a look (main, off; -1 open, 0 the grip,
+    /// 1 squeezed): from the grip at the start, through each key's closure eased by the key's curve
+    /// (<paramref name="ease"/> evaluates it, as the Engine's tweens do), back to the grip by the end of recovery.
+    /// </summary>
+    internal (float Main, float Off) Hands(HeldModel look, ActionDefinition action, float time, Func<TweenEasingKind, float, float> ease)
+    {
+        MotionKey[] keys = Motions[look.Motion].Track(action.Id) ?? [];
+        float total = action.Timing.Windup + action.Timing.Commit + action.Timing.Recovery;
+        (float Main, float Off) from = (0, 0);
+        float start = 0;
+        foreach ((float at, (float, float) hands, TweenEasingKind curve) in keys.Select(k => (k.Time(action.Timing), (k.Hands[0], k.Hands[1]), k.Ease))
+            .Append((total, (0f, 0f), SettleEase)))
+        {
+            if (time <= at)
+            {
+                float t = at - start <= 0 ? 1 : ease(curve, Math.Clamp((time - start) / (at - start), 0, 1));
+                return (from.Main + (hands.Item1 - from.Main) * t, from.Off + (hands.Item2 - from.Off) * t);
+            }
+            (from, start) = (hands, at);
+        }
+        return (0, 0);
+    }
+
     /// <summary>The settle back to rest from <paramref name="from"/>, the offset a cut-short action left the model at.</summary>
     internal TweenSegment[] Settle((Vector3 Move, Quaternion Turn) from) =>
     [
@@ -155,8 +181,11 @@ internal sealed record HeldPose(float[] Position, float[] Rotation)
     }
 }
 
-/// <summary>A key: the hand reaches <see cref="Pose"/> at <see cref="At"/> (0 to 1) through <see cref="Phase"/>, easing in by <see cref="Ease"/>.</summary>
-internal sealed record MotionKey(string Pose, MotionPhase Phase, float At, TweenEasingKind Ease)
+/// <summary>
+/// A key: the look reaches <see cref="Pose"/> at <see cref="At"/> (0 to 1) through <see cref="Phase"/>, easing in by
+/// <see cref="Ease"/>, with the hands closed to <see cref="Hands"/> (main, off: -1 open, 0 the grip, 1 squeezed).
+/// </summary>
+internal sealed record MotionKey(string Pose, MotionPhase Phase, float At, TweenEasingKind Ease, float[] Hands)
 {
     /// <summary>Seconds from the action's start: windup, then commit (whose start is the strike), then recovery.</summary>
     internal float Time(ActionTiming timing) => Phase switch

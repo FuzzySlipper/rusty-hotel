@@ -153,7 +153,8 @@ A held look moves through each action by its motion in `combat/held-motion.json`
 look from where its stance seats it ("Held stances" below): its main grip moved by `position` (metres right, up, back
 in camera space) and the item turned about that grip by `rotation` (degrees about camera X, Y and Z). `rest` is no
 change, where the look sits between actions. A track lists keys for an action, by action id or `default`: at `at` (0
-to 1) through `phase` (`Windup`, `Commit` or `Recovery`), the look reaches `pose`, easing in by `ease`, a named Engine curve (`Linear`, or
+to 1) through `phase` (`Windup`, `Commit` or `Recovery`), the look reaches `pose` with the hands closed to `hands`
+(main, off: -1 open, 0 the grip, 1 squeezed), easing in by `ease`, a named Engine curve (`Linear`, or
 `Quad`, `Cubic`, `Quart`, `Quint`, `Sine`, `Expo`, `Circ`, `Back`, `Elastic` or `Bounce` followed by `In`, `Out` or
 `InOut`). Keys are timed from the action's own timing, so the end of windup is the strike whatever the weapon's
 speed; a key at `Windup` 1 lands its pose with the hit. Two keys on one pose hold it. The motion always returns to
@@ -167,9 +168,11 @@ far along (the Engine's start offset), so the keys stay on their moments; a fire
 the Engine's evaluation of the timeline puts it.
 
 The investigator's arms hold what the hands hold: `combat/arms.json` names the arms `model` (facing -Z, its right
-shoulder at the origin), the `clips` that pose the hands (`rest`, how the fingers close on what they hold, `grip`; `action`, tighter while an action winds up and commits, `squeeze`; eased between over `fade` seconds), where that `shoulder` sits in
+shoulder at the origin), the `clip` that poses the hands as they hold (`grip`), how a hand closes or opens from it (`hands`:
+the finger names and the thumb's, and the degrees each joint bends at full `close` and fully `open`), the arms'
+`reach` (shoulder to wrist with the elbow straight, and where the left shoulder is from the right), where that `shoulder` sits in
 camera space, each arm's joint chain (`main` and `off`:
-`upper`, `lower`, `hand`) and elbow pole (`pole`, `offPole`, camera space: each elbow bends toward its pole), where a
+`upper`, `lower`, `hand`, the `digits` prefix of its finger joints, and `mirrored` for the left) and elbow pole (`pole`, `offPole`, camera space: each elbow bends toward its pole), where a
 free off hand hangs (`offRest`), and how each hand holds (`mainHand`, `offHand`: `rotation` in degrees from the held
 item's turn, and the `palm` offset from the wrist in that turned frame, which puts the grip in the curl of the
 fingers). The hand joint's own axes run +Y along the fingers, +Z out of the back of the hand and +X toward the little
@@ -180,6 +183,9 @@ each hand's palm on its grip (a look's `grips.main`, and `grips.off` for a two-h
 hangs at `offRest`), where the Engine's evaluation of the held motion shows the item, and turns the hand with the item;
 only the item moves by authored motion. `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` tries a main-hand hold
 live and `hotel.dev.arms.reach <shoulder xyz> <pole xyz>` the shoulder and elbow pole; each prints its JSON.
+
+Every grip a look holds, at rest and at every key pose its items' actions use, must be within the arms' `reach`;
+smoke checks it (`HeldReachChecks`), and the held-motion preview flags frames where the drawn arm falls short.
 
 ### Held stances
 

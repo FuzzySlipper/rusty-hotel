@@ -50,48 +50,94 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
     internal static readonly string[] Files = [Path, StanceCatalog.Path, HeldMotionCatalog.Path, ArmsDefinition.Path];
 
     /// <summary>
-    /// Takes the tuned values of <paramref name="fresh"/> (stances, nudges, poses, keys, arm placement and holds) into
-    /// this catalog in place, so the views holding it show them, and seats every look again. Returns what it could not
-    /// take: changes to what exists (a look, model, motion, stance or the arms' rig), which need the product restarted.
+    /// Takes the values of <paramref name="fresh"/> from the files in <paramref name="changed"/> into this catalog in
+    /// place (unchanged files keep their live, possibly unsaved, values), so the views holding it, the motion viewer's
+    /// held pose included, show them; then seats every look again. Returns what it could not take: changes to what
+    /// exists or how it is drawn (looks, models, grips, motions' settle, stances, the arms' rig), which need the product
+    /// restarted; the rest of those files is still taken.
     /// </summary>
-    internal string[] Refresh(HeldCatalog fresh)
+    internal string[] Refresh(HeldCatalog fresh, IReadOnlySet<string> changed)
     {
         List<string> needRestart = [];
         void Same(bool same, string what) { if (!same) needRestart.Add(what); }
-        Same(Looks.Select(l => (l.Look, l.Model, l.Scale, l.Motion, l.Stance)).SequenceEqual(fresh.Looks.Select(l => (l.Look, l.Model, l.Scale, l.Motion, l.Stance))),
-            $"{Path} looks (ids, models, scales, motions or stances)");
-        Same(Stances.Stances.Keys.Order().SequenceEqual(fresh.Stances.Stances.Keys.Order()), $"{StanceCatalog.Path} stance ids");
-        Same(Motion.Motions.Keys.Order().SequenceEqual(fresh.Motion.Motions.Keys.Order()), $"{HeldMotionCatalog.Path} motion ids");
-        Same(Arms.Model == fresh.Arms.Model && Arms.Clips == fresh.Arms.Clips && Arms.Main == fresh.Arms.Main && Arms.Off == fresh.Arms.Off,
-            $"{ArmsDefinition.Path} model, clips or joint chains");
-        if (needRestart.Count > 0) return [.. needRestart];
 
-        foreach (var (id, stance) in fresh.Stances.Stances) Stances.Stances[id] = stance;
-        foreach (HeldModel look in Looks)
+        if (changed.Contains(Path))
         {
-            HeldModel now = fresh.Model(look.Look);
-            now.Adjust.Grip.CopyTo(look.Adjust.Grip, 0);
-            now.Adjust.Turn.CopyTo(look.Adjust.Turn, 0);
+            Same(FlashSize.SequenceEqual(fresh.FlashSize), $"{Path} flashSize");
+            Same(Looks.Length == fresh.Looks.Length && Looks.Zip(fresh.Looks).All(p => Drawn(p.First) == Drawn(p.Second)),
+                $"{Path} looks (ids, models, scales, motions, stances, grips, axes or muzzles)");
+            foreach (HeldModel look in Looks)
+                if (fresh.Looks.FirstOrDefault(l => l.Look == look.Look) is { } now)
+                {
+                    now.Adjust.Grip.CopyTo(look.Adjust.Grip, 0);
+                    now.Adjust.Turn.CopyTo(look.Adjust.Turn, 0);
+                }
         }
-        foreach (var (id, motion) in fresh.Motion.Motions)
+        if (changed.Contains(StanceCatalog.Path))
         {
-            HeldMotion held = Motion.Motions[id];
-            foreach (var (name, pose) in motion.Poses) held.Poses[name] = pose;
-            foreach (var (track, keys) in motion.Tracks) held.Tracks[track] = keys;
+            Same(Stances.Stances.Keys.Order().SequenceEqual(fresh.Stances.Stances.Keys.Order()), $"{StanceCatalog.Path} stance ids");
+            foreach (var (id, stance) in fresh.Stances.Stances)
+                if (Stances.Stances.TryGetValue(id, out HeldStance? live))
+                {
+                    stance.Grip.CopyTo(live.Grip, 0);
+                    stance.Toward.CopyTo(live.Toward, 0);
+                    stance.Up.CopyTo(live.Up, 0);
+                    if (live.Hand is { } hand && stance.Hand is { } next) next.CopyTo(hand, 0);
+                    else Stances.Stances[id] = live with { Hand = stance.Hand };
+                }
         }
-        ArmsDefinition arms = fresh.Arms;
-        arms.Shoulder.CopyTo(Arms.Shoulder, 0);
-        arms.Pole.CopyTo(Arms.Pole, 0);
-        arms.OffPole.CopyTo(Arms.OffPole, 0);
-        arms.OffRest.CopyTo(Arms.OffRest, 0);
-        foreach (var (into, from) in new[] { (Arms.MainHand, arms.MainHand), (Arms.OffHand, arms.OffHand) })
+        if (changed.Contains(HeldMotionCatalog.Path))
         {
-            from.Rotation.CopyTo(into.Rotation, 0);
-            from.Palm.CopyTo(into.Palm, 0);
+            Same(Motion.SettleSeconds == fresh.Motion.SettleSeconds && Motion.SettleEase == fresh.Motion.SettleEase,
+                $"{HeldMotionCatalog.Path} settleSeconds or settleEase");
+            Same(Motion.Motions.Keys.Order().SequenceEqual(fresh.Motion.Motions.Keys.Order()), $"{HeldMotionCatalog.Path} motion ids");
+            foreach (var (id, motion) in fresh.Motion.Motions)
+            {
+                if (!Motion.Motions.TryGetValue(id, out HeldMotion? live)) continue;
+                // Poses keep their identity (the motion viewer may hold one); tracks follow the file exactly.
+                foreach (var (name, pose) in motion.Poses)
+                    if (live.Poses.TryGetValue(name, out HeldPose? held))
+                    {
+                        pose.Position.CopyTo(held.Position, 0);
+                        pose.Rotation.CopyTo(held.Rotation, 0);
+                    }
+                    else live.Poses[name] = pose;
+                foreach (string gone in live.Poses.Keys.Except(motion.Poses.Keys).ToArray()) live.Poses.Remove(gone);
+                live.Tracks.Clear();
+                foreach (var (track, keys) in motion.Tracks) live.Tracks[track] = keys;
+            }
+        }
+        if (changed.Contains(ArmsDefinition.Path))
+        {
+            ArmsDefinition arms = fresh.Arms;
+            Same(Arms.Model == arms.Model && Arms.Clip == arms.Clip && Arms.Main == arms.Main && Arms.Off == arms.Off,
+                $"{ArmsDefinition.Path} model, clip or joint chains");
+            // How the hands close is taken in place too.
+            arms.Hands.Close.Fingers.CopyTo(Arms.Hands.Close.Fingers, 0);
+            arms.Hands.Open.Fingers.CopyTo(Arms.Hands.Open.Fingers, 0);
+            for (int i = 0; i < 3; i++)
+            {
+                arms.Hands.Close.Thumb[i].CopyTo(Arms.Hands.Close.Thumb[i], 0);
+                arms.Hands.Open.Thumb[i].CopyTo(Arms.Hands.Open.Thumb[i], 0);
+            }
+            arms.Shoulder.CopyTo(Arms.Shoulder, 0);
+            arms.Pole.CopyTo(Arms.Pole, 0);
+            arms.OffPole.CopyTo(Arms.OffPole, 0);
+            arms.OffRest.CopyTo(Arms.OffRest, 0);
+            foreach (var (into, from) in new[] { (Arms.MainHand, arms.MainHand), (Arms.OffHand, arms.OffHand) })
+            {
+                from.Rotation.CopyTo(into.Rotation, 0);
+                from.Palm.CopyTo(into.Palm, 0);
+            }
         }
         foreach (HeldModel look in Looks) Seat(look);
-        return [];
+        return [.. needRestart];
     }
+
+    // What a look is and how it is drawn, beyond the nudge a reload takes: a change needs a restart.
+    private static string Drawn(HeldModel look) => string.Join("|", look.Look, look.Model, look.Scale, look.Motion, look.Stance,
+        string.Join(",", look.Grips.Main), string.Join(",", look.Grips.Off ?? []), string.Join(",", look.Grips.Hand ?? []),
+        string.Join(",", look.Along.Tip), string.Join(",", look.Along.Up), string.Join(",", look.Muzzle ?? []));
 
     private void Validate()
     {

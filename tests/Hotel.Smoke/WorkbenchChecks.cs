@@ -38,6 +38,22 @@ internal static class WorkbenchChecks
                         controls++;
                     }
             }
-        Console.WriteLine($"Workbench checks passed: {controls} control sources across every look, action and key resolve in their content files.");
+        // A reload takes only the changed files: unsaved live tuning elsewhere stays, records keep their identity (the
+        // motion viewer may hold a pose), tracks follow the file, and what cannot be taken live is reported.
+        HeldCatalog live = HeldCatalog.Load(engine), disk = HeldCatalog.Load(engine);
+        live.Stances.Stances["melee"].Grip[0] = 0.5f;
+        disk.Model("prybar").Adjust.Grip[0] = 0.01f;
+        HeldPose raised = live.Motion.Motions["swing"].Poses["raised"];
+        disk.Motion.Motions["swing"].Poses["raised"].Position[0] = 0.09f;
+        disk.Motion.Motions["swing"].Tracks.Remove("prybar-shove");
+        disk = disk with { Motion = disk.Motion with { SettleSeconds = disk.Motion.SettleSeconds * 2 } };
+        string[] restart = live.Refresh(disk, new HashSet<string> { HeldCatalog.Path, HeldMotionCatalog.Path });
+        Check(live.Stances.Stances["melee"].Grip[0] == 0.5f, "a reload of held.json and held-motion.json keeps unsaved stance tuning");
+        Check(live.Model("prybar").Adjust.Grip[0] == 0.01f, "a reload takes held.json's nudge");
+        Check(ReferenceEquals(live.Motion.Motions["swing"].Poses["raised"], raised) && raised.Position[0] == 0.09f,
+            "a reload updates a pose in place, so a held pose shows it");
+        Check(!live.Motion.Motions["swing"].Tracks.ContainsKey("prybar-shove"), "a track removed from the file is removed live");
+        Check(restart.Length == 1 && restart[0].Contains("settleSeconds"), $"a settle change is reported as needing a restart: {string.Join("; ", restart)}");
+        Console.WriteLine($"Workbench checks passed: {controls} control sources across every look, action and key resolve in their content files; reload takes only changed files, in place.");
     }
 }

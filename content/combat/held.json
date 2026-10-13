@@ -279,7 +279,7 @@
         "off": [
           0.0,
           -0.02,
-          -0.24
+          -0.2
         ]
       },
       "muzzle": [
@@ -331,7 +331,7 @@
       "model": "models/held/fire-extinguisher.glb",
       "scale": 0.8,
       "motion": "raise",
-      "stance": "raised",
+      "stance": "carried",
       "grips": {
         "main": [
           -0.0901,
@@ -340,7 +340,7 @@
         ],
         "off": [
           0.0,
-          -0.27,
+          -0.16,
           0.0
         ]
       },

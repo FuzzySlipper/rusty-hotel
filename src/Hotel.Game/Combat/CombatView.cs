@@ -28,7 +28,8 @@ internal sealed class CombatView : IDisposable
     // The action whose motion is playing on a held look (no start for the viewer's), and the last action start seen.
     private (string Look, ulong Started, TweenHandle Tween)? moving;
     // The tween last started on a held look and the timeline it plays, so where it shows the model can be told.
-    private (string Look, TweenHandle Tween, TweenStartRequest Request)? shown;
+    // With it, what closes the hands: the action it plays (at a speed), or for a settle, the closure it eases back from.
+    private (string Look, TweenHandle Tween, TweenStartRequest Request, ActionDefinition? Action, float Speed, (float Main, float Off) From)? shown;
     private ulong startedSeen;
     private readonly Part muzzle;
     // Enough flare boxes for the shots one hand can have in flight at once.
@@ -125,7 +126,7 @@ internal sealed class CombatView : IDisposable
         ActionDefinition? current = combat.User.Current;
         if (moving is { } playing && (current is null || playing.Look != look) && playing.Started == combat.User.Started && Running(playing.Tween))
         {
-            Begin(playing.Look, motion.Settle(Offset(playing.Look)));
+            Begin(playing.Look, motion.Settle(Offset(playing.Look)), from: Closure(playing.Look));
             moving = null;
         }
         if (combat.User.Started == startedSeen) return;
@@ -134,19 +135,37 @@ internal sealed class CombatView : IDisposable
         if (moving is { } previous && previous.Look != look) engine.Tween.Control(new TweenControlRequest(previous.Tween, TweenControl.Cancel));
         // From the pose shown, so an action straight after another (or after a settle) carries on without a jump.
         // As far along as the action already is: one update can admit several steps after it began.
-        TweenHandle tween = Begin(look, heldLooks.Motion.Timeline(heldLooks.Model(look), current, from: Offset(look)), combat.User.Elapsed);
+        TweenHandle tween = Begin(look, heldLooks.Motion.Timeline(heldLooks.Model(look), current, from: Offset(look)), combat.User.Elapsed, current);
         moving = (look, combat.User.Started, tween);
     }
 
     // Starts a held look's motion tween from the offset it states (so what it shows can be sampled from it), replacing
     // the look's tweens.
-    private TweenHandle Begin(string look, TweenSegment[] segments, float elapsed = 0)
+    private TweenHandle Begin(string look, TweenSegment[] segments, float elapsed = 0, ActionDefinition? action = null, float speed = 1,
+        (float, float) from = default)
     {
         TweenStartRequest request = new(held[look].Entity, segments);
         Motion = engine.Tween.Start(request with { ElapsedSeconds = elapsed }).Tween;
-        shown = (look, Motion, request);
+        shown = (look, Motion, request, action, speed, from);
         return Motion;
     }
+
+    // How closed the hands are on a look now: the viewer's held key, the playing action's keys where the Engine reports
+    // its tween has got to, or a settle easing back to the grip.
+    private (float Main, float Off) Closure(string look)
+    {
+        if (viewing is { Pose: not null } held && held.Look == look) return viewingHands;
+        if (shown is not { } playing || playing.Look != look) return (0, 0);
+        TweenReadout readout = engine.Tween.Read(playing.Tween);
+        if (readout.State == TweenState.Ended) return (0, 0);
+        float elapsed = (float)readout.ElapsedSeconds * playing.Speed;
+        if (playing.Action is { } action)
+            return heldLooks.Motion.Hands(heldLooks.Model(look), action, elapsed, (curve, t) => engine.Tween.Evaluate(curve, t));
+        float left = 1 - engine.Tween.Evaluate(heldLooks.Motion.SettleEase, Math.Clamp(elapsed / heldLooks.Motion.SettleSeconds, 0, 1));
+        return (playing.From.Main * left, playing.From.Off * left);
+    }
+
+    private (float Main, float Off) viewingHands;
 
     // Ends the held models' motion: the viewer shows a pose or a look exactly.
     private void Stop()
@@ -180,12 +199,16 @@ internal sealed class CombatView : IDisposable
         Publish();
     }
 
-    /// <summary>Developer motion viewer: holds the shown look in a pose exactly (no tween), or at rest for null.</summary>
-    internal void Hold(HeldPose? pose)
+    /// <summary>
+    /// Developer motion viewer: holds the shown look in a pose exactly (no tween), or at rest for null, with the hands
+    /// closed as <paramref name="hands"/> says (a key's own closure; unchanged when null).
+    /// </summary>
+    internal void Hold(HeldPose? pose, (float Main, float Off)? hands = null)
     {
         if (viewing is not { } view) return;
         Stop();
         viewing = (view.Look, pose);
+        viewingHands = pose is null ? (0, 0) : hands ?? viewingHands;
         Publish();
     }
 
@@ -195,7 +218,7 @@ internal sealed class CombatView : IDisposable
         if (viewing is not { } view) return;
         viewing = (view.Look, null);
         Publish();
-        Begin(view.Look, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, speed));
+        Begin(view.Look, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action, speed), action: action, speed: speed);
         Publish();
     }
 
@@ -275,7 +298,7 @@ internal sealed class CombatView : IDisposable
         if (viewing is not { } view) return;
         viewing = (view.Look, null);
         Publish();
-        Begin(view.Look, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action));
+        Begin(view.Look, heldLooks.Motion.Timeline(heldLooks.Model(view.Look), action), action: action);
         engine.Tween.Control(new TweenControlRequest(Motion, TweenControl.Pause));
         engine.Tween.Control(TweenControlRequest.Seek(Motion, seconds));
         Publish();
@@ -291,14 +314,8 @@ internal sealed class CombatView : IDisposable
     private void Reach(string look)
     {
         HeldModel model = heldLooks.Model(look);
-        (Vector3 at, Quaternion turn) = Shown(look);
-        Vector3 Grip(float[] point) => at + Vector3.Transform(Authored.Vector(point) * model.Scale, turn);
-        // Hands hold a look along its own length and up side, so one hold suits every look: the hand turns with the
-        // look's axis frame, not its model's.
-        Quaternion along = Frames.Between(HeldAxis.Default.TipVector, HeldAxis.Default.UpVector, model.Along.TipVector, model.Along.UpVector);
-        arms.Reach(Grip(model.Grips.Main), model.Grips.Off is { } off ? Grip(off) : null, Quaternion.Normalize(turn * along),
-            model.Grips.Hand ?? heldLooks.Stances.Stances[model.Stance].Hand,
-            viewing is null && combat.Phase is AttackPhase.Windup or AttackPhase.Commit);
+        (Vector3 main, Vector3? off, Quaternion item, float[]? hand) = HeldGrip.At(heldLooks, model, Shown(look));
+        arms.Reach(main, off, item, hand, Closure(look));
     }
 
     /// <summary>

@@ -1,9 +1,64 @@
 {
   "model": "models/held/arms.glb",
-  "clips": {
-    "rest": "grip",
-    "action": "squeeze",
-    "fade": 0.12
+  "clip": "grip",
+  "hands": {
+    "fingers": [
+      "Index",
+      "Middle",
+      "Ring",
+      "Pinky"
+    ],
+    "thumb": "Thumb",
+    "close": {
+      "fingers": [
+        14,
+        14,
+        13
+      ],
+      "thumb": [
+        [
+          5,
+          -5
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          0
+        ]
+      ]
+    },
+    "open": {
+      "fingers": [
+        -62,
+        -70,
+        -45
+      ],
+      "thumb": [
+        [
+          0,
+          10
+        ],
+        [
+          -70,
+          0
+        ],
+        [
+          -70,
+          0
+        ]
+      ]
+    }
+  },
+  "reach": {
+    "length": 0.55,
+    "offShoulder": [
+      -0.4,
+      0,
+      0
+    ]
   },
   "shoulder": [
     0.2,
@@ -23,12 +78,15 @@
   "main": {
     "upper": "R_Upperarm",
     "lower": "R_Forearm",
-    "hand": "R_Hand"
+    "hand": "R_Hand",
+    "digits": "R_"
   },
   "off": {
     "upper": "L_Upperarm",
     "lower": "L_Forearm",
-    "hand": "L_Hand"
+    "hand": "L_Hand",
+    "digits": "L_",
+    "mirrored": true
   },
   "offRest": [
     -0.25,

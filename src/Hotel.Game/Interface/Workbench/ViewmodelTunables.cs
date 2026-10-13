@@ -69,6 +69,10 @@ internal static class ViewmodelTunables
                 timing.Add(new(new($"key.{i}.at", $"{i} {k.Pose} at", TunableKind.Slider, 0, 1, .01f, k.At)
                     { Reshapes = true, Source = new(HeldMotionCatalog.Path, $"{at}/at") },
                     v => { track[index] = track[index] with { At = v }; Redraw(); }));
+                foreach (var (side, label) in new[] { (0, "main"), (1, "off") })
+                    timing.Add(new(new($"key.{i}.hands.{label}", $"{i} {k.Pose} {label} hand closed", TunableKind.Slider, -1, 1, .05f, k.Hands[side])
+                        { Source = new(HeldMotionCatalog.Path, $"{at}/hands/{side}") },
+                        v => { track[index].Hands[side] = v; Redraw(); }));
                 timing.Add(new(new($"key.{i}.ease", $"{i} {k.Pose} ease", TunableKind.Choice, 0, Eases.Length - 1, 1, Array.IndexOf(Eases, k.Ease))
                     { Options = [.. Eases.Select(e => e.ToString())], Source = new(HeldMotionCatalog.Path, $"{at}/ease") },
                     v => { track[index] = track[index] with { Ease = Eases[(int)MathF.Round(v)] }; Redraw(); }));

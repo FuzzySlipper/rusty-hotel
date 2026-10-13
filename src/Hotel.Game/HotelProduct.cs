@@ -166,23 +166,24 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
     }
 
     // Under rusty dev an edited held-presentation file (declared live content) arrives here instead of a restart: read
-    // it again with the others, validated as at load, and take its values into the catalog the views hold.
+    // the files again, validated as at load, and take the changed ones' values into the catalog the views hold. Content
+    // that does not load is reported and the last usable values kept, so a corrected edit applies.
     private void ReloadHeld(ReadOnlySpan<ContentReferenceInfo> changes)
     {
-        bool changed = false;
-        foreach (ContentReferenceInfo change in changes) changed |= HeldCatalog.Files.Contains(change.Path);
-        if (!changed) return;
-        HeldCatalog held = content.Combat.Held;
+        HashSet<string> changed = [];
+        foreach (ContentReferenceInfo change in changes)
+            if (HeldCatalog.Files.Contains(change.Path)) changed.Add(change.Path);
+        if (changed.Count == 0) return;
         try
         {
             HeldCatalog fresh = HeldCatalog.Load(engine);
             fresh.Motion.Validate(HeldCatalog.Path, fresh.Looks, content.Supplies.Items.Where(i => i.Wear?.Look is not null)
                 .SelectMany(i => i.Wear!.Actions.Select(a => (i.Wear.Look!, content.Combat.Actions.Action(a)!))));
-            string[] needRestart = held.Refresh(fresh);
+            string[] needRestart = content.Combat.Held.Refresh(fresh, changed);
             if (needRestart.Length > 0)
-                Console.Error.WriteLine($"Held presentation not reloaded; restart to apply changes to {string.Join("; ", needRestart)}.");
+                Console.Error.WriteLine($"Held presentation reloaded except: {string.Join("; ", needRestart)} (restart to apply).");
         }
-        catch (InvalidDataException error)
+        catch (Exception error) when (error is InvalidOperationException or InvalidDataException or System.Text.Json.JsonException)
         {
             Console.Error.WriteLine($"Held presentation not reloaded: {error.Message}");
         }

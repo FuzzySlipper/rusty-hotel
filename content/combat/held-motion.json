@@ -30,9 +30,9 @@
         },
         "strike": {
           "position": [
-            -0.12,
-            0.04,
-            -0.06
+            -0.1,
+            0.06,
+            0.0
           ],
           "rotation": [
             -55,
@@ -42,9 +42,9 @@
         },
         "follow": {
           "position": [
-            -0.18,
-            -0.06,
-            0.0
+            -0.14,
+            -0.04,
+            0.04
           ],
           "rotation": [
             -75,
@@ -66,9 +66,9 @@
         },
         "jab": {
           "position": [
-            -0.08,
-            0.06,
-            -0.2
+            -0.06,
+            0.05,
+            -0.1
           ],
           "rotation": [
             -8,
@@ -90,9 +90,9 @@
         },
         "hooked": {
           "position": [
-            -0.26,
+            -0.2,
             0.04,
-            -0.15
+            -0.06
           ],
           "rotation": [
             0,
@@ -107,19 +107,31 @@
             "pose": "raised",
             "phase": "Windup",
             "at": 0.8,
-            "ease": "CubicOut"
+            "ease": "CubicOut",
+            "hands": [
+              0.4,
+              0.4
+            ]
           },
           {
             "pose": "strike",
             "phase": "Windup",
             "at": 1,
-            "ease": "QuadIn"
+            "ease": "QuadIn",
+            "hands": [
+              1,
+              1
+            ]
           },
           {
             "pose": "follow",
             "phase": "Commit",
             "at": 1,
-            "ease": "QuadOut"
+            "ease": "QuadOut",
+            "hands": [
+              0.8,
+              0.8
+            ]
           }
         ],
         "prybar-shove": [
@@ -127,19 +139,31 @@
             "pose": "drawn",
             "phase": "Windup",
             "at": 0.85,
-            "ease": "QuadOut"
+            "ease": "QuadOut",
+            "hands": [
+              0.4,
+              0.4
+            ]
           },
           {
             "pose": "jab",
             "phase": "Windup",
             "at": 1,
-            "ease": "QuadIn"
+            "ease": "QuadIn",
+            "hands": [
+              1,
+              1
+            ]
           },
           {
             "pose": "jab",
             "phase": "Commit",
             "at": 1,
-            "ease": "Linear"
+            "ease": "Linear",
+            "hands": [
+              1,
+              1
+            ]
           }
         ],
         "cane-hook": [
@@ -147,19 +171,31 @@
             "pose": "hookBack",
             "phase": "Windup",
             "at": 0.8,
-            "ease": "CubicOut"
+            "ease": "CubicOut",
+            "hands": [
+              0.4,
+              0.4
+            ]
           },
           {
             "pose": "hooked",
             "phase": "Windup",
             "at": 1,
-            "ease": "QuadIn"
+            "ease": "QuadIn",
+            "hands": [
+              1,
+              1
+            ]
           },
           {
             "pose": "hooked",
             "phase": "Commit",
             "at": 1,
-            "ease": "Linear"
+            "ease": "Linear",
+            "hands": [
+              1,
+              1
+            ]
           }
         ]
       }
@@ -192,9 +228,9 @@
         },
         "jab": {
           "position": [
-            -0.06,
-            0.05,
-            -0.1
+            -0.05,
+            0.04,
+            -0.06
           ],
           "rotation": [
             -6,
@@ -209,19 +245,31 @@
             "pose": "drawn",
             "phase": "Windup",
             "at": 0.8,
-            "ease": "QuadOut"
+            "ease": "QuadOut",
+            "hands": [
+              0.4,
+              0.4
+            ]
           },
           {
             "pose": "jab",
             "phase": "Windup",
             "at": 1,
-            "ease": "QuadIn"
+            "ease": "QuadIn",
+            "hands": [
+              1,
+              1
+            ]
           },
           {
             "pose": "jab",
             "phase": "Commit",
             "at": 1,
-            "ease": "Linear"
+            "ease": "Linear",
+            "hands": [
+              1,
+              1
+            ]
           }
         ]
       }
@@ -283,19 +331,31 @@
             "pose": "aim",
             "phase": "Windup",
             "at": 1,
-            "ease": "QuadOut"
+            "ease": "QuadOut",
+            "hands": [
+              0.6,
+              0.6
+            ]
           },
           {
             "pose": "kick",
             "phase": "Commit",
             "at": 0.3,
-            "ease": "ExpoOut"
+            "ease": "ExpoOut",
+            "hands": [
+              1,
+              1
+            ]
           },
           {
             "pose": "aim",
             "phase": "Commit",
             "at": 1,
-            "ease": "SineOut"
+            "ease": "SineOut",
+            "hands": [
+              0.6,
+              0.6
+            ]
           }
         ],
         "pistol-reload": [
@@ -303,13 +363,21 @@
             "pose": "lowered",
             "phase": "Windup",
             "at": 0.3,
-            "ease": "QuadOut"
+            "ease": "QuadOut",
+            "hands": [
+              0,
+              0
+            ]
           },
           {
             "pose": "lowered",
             "phase": "Windup",
             "at": 0.9,
-            "ease": "Linear"
+            "ease": "Linear",
+            "hands": [
+              0,
+              0
+            ]
           }
         ]
       }
@@ -359,13 +427,21 @@
             "pose": "raised",
             "phase": "Windup",
             "at": 1,
-            "ease": "CubicOut"
+            "ease": "CubicOut",
+            "hands": [
+              0.5,
+              0.5
+            ]
           },
           {
             "pose": "raised",
             "phase": "Commit",
             "at": 1,
-            "ease": "Linear"
+            "ease": "Linear",
+            "hands": [
+              0.5,
+              0.5
+            ]
           }
         ],
         "bell-ring": [
@@ -373,19 +449,31 @@
             "pose": "raised",
             "phase": "Windup",
             "at": 1,
-            "ease": "CubicOut"
+            "ease": "CubicOut",
+            "hands": [
+              0.5,
+              0.5
+            ]
           },
           {
             "pose": "rung",
             "phase": "Commit",
             "at": 0.5,
-            "ease": "ElasticOut"
+            "ease": "ElasticOut",
+            "hands": [
+              1,
+              1
+            ]
           },
           {
             "pose": "raised",
             "phase": "Commit",
             "at": 1,
-            "ease": "QuadOut"
+            "ease": "QuadOut",
+            "hands": [
+              0.5,
+              0.5
+            ]
           }
         ]
       }
@@ -418,9 +506,9 @@
         },
         "release": {
           "position": [
-            -0.12,
+            -0.1,
             0.08,
-            -0.18
+            -0.08
           ],
           "rotation": [
             -30,
@@ -430,9 +518,9 @@
         },
         "follow": {
           "position": [
-            -0.18,
-            -0.08,
-            -0.1
+            -0.14,
+            -0.06,
+            -0.02
           ],
           "rotation": [
             -50,
@@ -447,19 +535,31 @@
             "pose": "drawn",
             "phase": "Windup",
             "at": 0.85,
-            "ease": "CubicOut"
+            "ease": "CubicOut",
+            "hands": [
+              0.4,
+              0.4
+            ]
           },
           {
             "pose": "release",
             "phase": "Windup",
             "at": 1,
-            "ease": "QuadIn"
+            "ease": "QuadIn",
+            "hands": [
+              -1,
+              -1
+            ]
           },
           {
             "pose": "follow",
             "phase": "Commit",
             "at": 1,
-            "ease": "QuadOut"
+            "ease": "QuadOut",
+            "hands": [
+              -0.6,
+              -0.6
+            ]
           }
         ]
       }

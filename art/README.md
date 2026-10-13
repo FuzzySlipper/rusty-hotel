@@ -153,7 +153,8 @@ it moves through its actions is `content/combat/held-motion.json` (docs/authorin
 - dark heathered knit gloves with ribbed cuffs;
 - three-jointed fingers and thumbs on a finger rig;
 - generated colour, roughness and normal maps;
-- pose clips `idle`, `open`, `fist`, `grip` and `squeeze` (the grip closed tighter).
+- pose clips `idle`, `open`, `fist`, `grip` and `squeeze`; the game holds with `grip` and closes or opens each hand from it
+  by joint overrides (`combat/arms.json` `hands`).
 
 `provenance.json` records the generator commit, the command and the hashes.
 
