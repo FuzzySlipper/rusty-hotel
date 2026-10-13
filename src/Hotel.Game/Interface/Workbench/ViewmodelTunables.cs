@@ -51,6 +51,30 @@ internal static class ViewmodelTunables
             .. Vector("nudge.turn", "turn", model.Adjust.Turn, -60, 60, .5f, HeldCatalog.Path, $"{nudge}/turn", () => { held.Seat(model); Redraw(); })
         ]) { File = HeldCatalog.Path });
 
+        // How the look shapes each hand's digits on the grip clip, joint by joint; the keys' closure acts on top.
+        if (model.Shape is { } shape)
+        {
+            List<Tunable> digits = [];
+            string[] joints = ["base", "middle", "tip"];
+            foreach (var (side, digitsOf) in new[] { ("main", shape.Main), ("off", shape.Off) })
+            {
+                if (digitsOf is null) continue;
+                string at = $"/looks/{lookIndex}/shape/{side}";
+                for (int f = 0; f < digitsOf.Fingers.Length; f++)
+                    for (int i = 0; i < 3; i++)
+                        digits.Add(Angle($"shape.{side}.{f}.{i}", $"{side} {held.Arms.Hands.Fingers[f]} {joints[i]} curl", digitsOf.Fingers[f], i, -90, 120, $"{at}/fingers/{f}/{i}"));
+                for (int i = 0; i < 3; i++)
+                {
+                    digits.Add(Angle($"shape.{side}.thumb.{i}.curl", $"{side} {held.Arms.Hands.Thumb} {joints[i]} curl", digitsOf.Thumb[i], 0, -90, 120, $"{at}/thumb/{i}/0"));
+                    digits.Add(Angle($"shape.{side}.thumb.{i}.swing", $"{side} {held.Arms.Hands.Thumb} {joints[i]} swing", digitsOf.Thumb[i], 1, -90, 90, $"{at}/thumb/{i}/1"));
+                }
+            }
+            groups.Add(new($"shape.{look}", $"Hands · {look}", digits) { File = HeldCatalog.Path });
+        }
+        Tunable Angle(string id, string label, float[] values, int index, float min, float max, string pointer) =>
+            new(new(id, label, TunableKind.Slider, min, max, 1, values[index]) { Source = new(HeldCatalog.Path, pointer) },
+                v => { values[index] = v; Redraw(); });
+
         // The keys' timing and curves, for the action's track (its own, or the motion's default): each key's phase,
         // its moment through that phase, and the curve it eases in by. Moving a key moves the timeline.
         string motionPointer = $"/motions/{Escape(model.Motion)}";

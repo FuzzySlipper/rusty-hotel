@@ -58,8 +58,8 @@ panel traffic. Hotel owns its lifetime adapter, not its transport or parser.
 In a developer session, F3 opens the first-person workbench: the Engine tunables panel, docked at the left beside play
 (which keeps running).
 - **Pick and play:** choose a look and action, hold a key's pose, scrub to any moment or play at a speed.
-- **Sliders:** the look's stance (every look in it moves), its nudge, the held key's pose and the arms, with the stance
-  guide as a toggle.
+- **Sliders:** the look's stance (every look in it moves), its nudge, its hands' shape (each finger joint's curl and
+  each thumb joint's curl and swing), the held key's pose and the arms, with the stance guide as a toggle.
 - **Keys:** each key's phase, its moment through that phase and the curve it eases in by (for every look sharing the
   motion). The timeline follows, and a key moved out of time order is reported, since content refuses it.
 

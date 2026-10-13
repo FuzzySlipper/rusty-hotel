@@ -71,6 +71,7 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
                 {
                     now.Adjust.Grip.CopyTo(look.Adjust.Grip, 0);
                     now.Adjust.Turn.CopyTo(look.Adjust.Turn, 0);
+                    if (look.Shape is { } shape && now.Shape is { } fresher) shape.Take(fresher);
                 }
         }
         if (changed.Contains(StanceCatalog.Path))
@@ -157,6 +158,17 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
             Authored.Require(Motion.Motions.ContainsKey(model.Motion), Path, $"{at}.motion", $"unknown motion '{model.Motion}' in {HeldMotionCatalog.Path}.");
             Authored.Require(Stances.Stances.ContainsKey(model.Stance), Path, $"{at}.stance", $"unknown stance '{model.Stance}' in {StanceCatalog.Path}.");
             if (model.Grips.Hand is { } hand) Authored.Point(Path, $"{at}.grips.hand", hand);
+            Authored.Require(model.Shape is not null, Path, $"{at}.shape", "gives how each hand's fingers and thumb sit on this look (main, and off with an off grip).");
+            Authored.Require((model.Shape!.Off is null) == (model.Grips.Off is null), Path, $"{at}.shape.off",
+                model.Grips.Off is null ? "is only given for a look with an off grip." : "is required: the look has an off grip.");
+            foreach (var (side, shape) in new[] { ("main", model.Shape.Main), ("off", model.Shape.Off) })
+            {
+                if (shape is null) continue;
+                Authored.Require(shape.Fingers.Length == Arms.Hands.Fingers.Length && shape.Fingers.All(f => f.Length == 3), Path, $"{at}.shape.{side}.fingers",
+                    $"gives each of the arms' {Arms.Hands.Fingers.Length} fingers ({ArmsDefinition.Path} hands.fingers) three joints' curl, in degrees.");
+                Authored.Require(shape.Thumb.Length == 3 && shape.Thumb.All(j => j.Length == 2), Path, $"{at}.shape.{side}.thumb",
+                    "gives three thumb joints' [curl, swing], in degrees.");
+            }
             Authored.Point(Path, $"{at}.axis.tip", model.Along.Tip);
             Authored.Point(Path, $"{at}.axis.up", model.Along.Up);
             Authored.Require(System.Numerics.Vector3.Cross(model.Along.TipVector, model.Along.UpVector).Length() > 0.5f, Path, $"{at}.axis",
@@ -169,10 +181,10 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
 /// One held look, named for the items that show it: its model at a uniform scale; the <see cref="Motion"/> it moves
 /// by; the <see cref="Stance"/> it sits in at rest, its own length and up side (<see cref="Axis"/>, default -Z with +Y
 /// up) and an optional <see cref="Nudge"/> from that stance; where hands grip it (<see cref="Grips"/>, in the model's own
-/// space); and, for a firearm, its muzzle in the same space, where its flash appears.
+/// space); how each hand's digits sit on it (<see cref="Shape"/>); and, for a firearm, its muzzle in the same space, where its flash appears.
 /// </summary>
 internal sealed record HeldModel(string Look, string Model, float Scale, string Motion, string Stance, HeldGrips Grips,
-    float[]? Muzzle = null, HeldAxis? Axis = null, HeldNudge? Nudge = null)
+    float[]? Muzzle = null, HeldAxis? Axis = null, HeldNudge? Nudge = null, HeldShape? Shape = null)
 {
     /// <summary>Where its stance seats it (camera space): its main grip's place and the model's turn, set by <see cref="HeldCatalog.Seat"/>.</summary>
     [JsonIgnore] internal (Vector3 Grip, Quaternion Turn) Seated { get; set; }
@@ -189,3 +201,26 @@ internal sealed record HeldModel(string Look, string Model, float Scale, string 
 /// item turned further by <see cref="Turn"/> (degrees about camera X, Y, Z) about that grip.
 /// </summary>
 internal sealed record HeldNudge(float[] Grip, float[] Turn);
+
+/// <summary>How each hand's digits sit on a look, added to the arms' grip clip: the main hand, and the off hand when the look has an off grip.</summary>
+internal sealed record HeldShape(HandShape Main, HandShape? Off = null)
+{
+    internal void Take(HeldShape fresh)
+    {
+        Main.Take(fresh.Main);
+        if (Off is { } off && fresh.Off is { } next) off.Take(next);
+    }
+}
+
+/// <summary>
+/// Degrees added to a hand's digits on the grip clip, under the motion keys' closure: each finger's three joints' curl
+/// (base to tip, in the order of the arms' fingers; positive toward the palm) and each thumb joint's [curl, swing].
+/// </summary>
+internal sealed record HandShape(float[][] Fingers, float[][] Thumb)
+{
+    internal void Take(HandShape fresh)
+    {
+        for (int i = 0; i < Math.Min(Fingers.Length, fresh.Fingers.Length); i++) fresh.Fingers[i].CopyTo(Fingers[i], 0);
+        for (int i = 0; i < 3; i++) fresh.Thumb[i].CopyTo(Thumb[i], 0);
+    }
+}

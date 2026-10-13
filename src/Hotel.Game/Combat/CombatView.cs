@@ -345,7 +345,7 @@ internal sealed class CombatView : IDisposable
     {
         HeldModel model = heldLooks.Model(look);
         (Vector3 main, Vector3? off, Quaternion item, float[]? hand) = HeldGrip.At(heldLooks, model, Shown(look));
-        arms.Reach(main, off, item, hand, Closure(look));
+        arms.Reach(main, off, item, hand, model.Shape, Closure(look));
     }
 
     /// <summary>

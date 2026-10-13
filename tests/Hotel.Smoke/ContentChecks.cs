@@ -186,6 +186,8 @@ internal static class ContentChecks
             ("combat/held.json", root => root["looks"]![0]!["motion"] = "twirl", "content/combat/held.json looks[0].motion: unknown motion 'twirl'"),
             ("combat/held.json", root => root["looks"]![0]!["stance"] = "lounging", "content/combat/held.json looks[0].stance: unknown stance 'lounging'"),
             ("combat/held.json", root => root["looks"]![0]!["grips"]!["main"] = JsonNode.Parse("[0, 0]"), "content/combat/held.json looks[0].grips.main"),
+            ("combat/held.json", root => root["looks"]![0]!["shape"]!["main"]!["fingers"]!.AsArray().RemoveAt(3), "content/combat/held.json looks[0].shape.main.fingers"),
+            ("combat/held.json", root => root["looks"]![4]!["shape"]!.AsObject().Remove("off"), "content/combat/held.json looks[4].shape.off: is required"),
             ("combat/held-motion.json", root => root["motions"]!["swing"]!["tracks"]!["default"]![0]!["pose"] = "pirouette", "content/combat/held-motion.json motions.swing.tracks.default[0].pose"),
             ("combat/held-motion.json", root => root["motions"]!["swing"]!["tracks"]!["default"]![0]!["ease"] = "Spring", "content/combat/held-motion.json motions.swing.tracks.default[0].ease"),
             ("combat/held-motion.json", root => root["motions"]!["swing"]!["poses"]!.AsObject().Remove("rest"), "content/combat/held-motion.json motions.swing.poses: needs a 'rest' pose"),

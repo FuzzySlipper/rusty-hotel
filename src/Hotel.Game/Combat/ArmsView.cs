@@ -73,21 +73,27 @@ internal sealed class ArmsView : IDisposable
         return ([.. arms.Hands.Fingers.Select(Joints)], Joints(arms.Hands.Thumb));
     }
 
-    // A hand's closure as rotations added to the grip clip's finger and thumb joints: toward Close at 1, toward Open at -1.
-    // Fingers curl about their joints' X (negative toward the palm); a thumb also swings about Z, mirrored on the left.
-    private IEnumerable<JointOverride> Close((uint[][] Fingers, uint[] Thumb) digits, float closure, bool mirrored)
+    // A hand's digits as rotations added to the grip clip's finger and thumb joints: the look's shape for the hand, then
+    // its closure, toward Close at 1 and toward Open at -1. Fingers curl about their joints' X (negative toward the
+    // palm); a thumb also swings about Z, mirrored on the left.
+    private IEnumerable<JointOverride> Close((uint[][] Fingers, uint[] Thumb) digits, HandShape? shape, float closure, bool mirrored)
     {
-        if (closure == 0) yield break;
         DigitBend bend = closure > 0 ? arms.Hands.Close : arms.Hands.Open;
         float weight = MathF.Abs(closure), side = mirrored ? -1 : 1;
         const float Radians = MathF.PI / 180;
-        foreach (uint[] finger in digits.Fingers)
+        for (int f = 0; f < digits.Fingers.Length; f++)
             for (int i = 0; i < 3; i++)
-                yield return JointOverride.AddLocalRotation(finger[i], Quaternion.CreateFromAxisAngle(Vector3.UnitX, -bend.Fingers[i] * weight * Radians));
+            {
+                float curl = (shape?.Fingers[f][i] ?? 0) + bend.Fingers[i] * weight;
+                if (curl != 0) yield return JointOverride.AddLocalRotation(digits.Fingers[f][i], Quaternion.CreateFromAxisAngle(Vector3.UnitX, -curl * Radians));
+            }
         for (int i = 0; i < 3; i++)
-            yield return JointOverride.AddLocalRotation(digits.Thumb[i], Quaternion.Normalize(
-                Quaternion.CreateFromAxisAngle(Vector3.UnitZ, bend.Thumb[i][1] * side * weight * Radians) *
-                Quaternion.CreateFromAxisAngle(Vector3.UnitX, -bend.Thumb[i][0] * weight * Radians)));
+        {
+            float curl = (shape?.Thumb[i][0] ?? 0) + bend.Thumb[i][0] * weight, swing = (shape?.Thumb[i][1] ?? 0) + bend.Thumb[i][1] * weight;
+            if (curl != 0 || swing != 0)
+                yield return JointOverride.AddLocalRotation(digits.Thumb[i], Quaternion.Normalize(
+                    Quaternion.CreateFromAxisAngle(Vector3.UnitZ, swing * side * Radians) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -curl * Radians)));
+        }
     }
 
     /// <summary>The arms' fact for the combat snapshot: at the shoulder in camera space, shown while something is held.</summary>
@@ -98,8 +104,10 @@ internal sealed class ArmsView : IDisposable
     /// Reaches the hands for the grips (camera space) once the arms are in the published snapshot: the off hand hangs
     /// at its rest when <paramref name="offGrip"/> is null.
     /// </summary>
+    /// <param name="shape">How the look shapes each hand's digits on the grip clip.</param>
     /// <param name="closure">How closed each hand is (main, off): -1 open, 0 the grip clip, 1 squeezed.</param>
-    internal void Reach(Vector3 mainGrip, Vector3? offGrip, Quaternion item, float[]? lookHand = null, (float Main, float Off) closure = default)
+    internal void Reach(Vector3 mainGrip, Vector3? offGrip, Quaternion item, float[]? lookHand = null, HeldShape? shape = null,
+        (float Main, float Off) closure = default)
     {
         if (instance is null)
         {
@@ -118,9 +126,9 @@ internal sealed class ArmsView : IDisposable
         {
             (offWrist, Quaternion offTurn) = Hold(grip, arms.OffHand);
             hands.Add(JointOverride.Orient(off.Hand, PoseSpace.Model, offTurn));
-            hands.AddRange(Close(offDigits, closure.Off, arms.Off.Mirrored));
+            hands.AddRange(Close(offDigits, shape?.Off, closure.Off, arms.Off.Mirrored));
         }
-        hands.AddRange(Close(mainDigits, closure.Main, arms.Main.Mirrored));
+        hands.AddRange(Close(mainDigits, shape?.Main, closure.Main, arms.Main.Mirrored));
         // The arms drawn last time against where their wrists were asked to be then.
         if (asked is { } last && engine.Animation.ReadJointPose(instance) is { Reported: true } drawn)
         {

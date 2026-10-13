@@ -44,7 +44,7 @@ its own folder. Geometry is kept apart from tuning.
 | `actions/actions.json` | Every action a hand or a resident uses: delivery, cost, timing, damage packets and their stat scaling, effects, HUD phase labels; `ActionResolution`, `HotelCombat` |
 | `player/kit.json` | What the investigator wears and holds at the start and after a reset; `HotelSupplies` |
 | `combat/residents.json` | Resident kinds composed from parts: look, faction, stat block, perception, movement, action choices, body and eye height, the loot table its remains give and the experience felling it gives; `HotelCombat`, `ResidentSenses`, `ResidentConduct` |
-| `combat/held.json` | First-person held items: the muzzle flash size, and per held look (an id that held items name) its model and scale, the `motion` it moves by, its `stance` and optional `axis` and `nudge`, its `grips` and a firearm's `muzzle`; `HeldCatalog`. See "Held stances" below |
+| `combat/held.json` | First-person held items: the muzzle flash size, and per held look (an id that held items name) its model and scale, the `motion` it moves by, its `stance` and optional `axis` and `nudge`, its `grips`, its hands' `shape` and a firearm's `muzzle`; `HeldCatalog`. See "Held stances" below |
 | `combat/stances.json` | Where each kind of held thing sits at rest in first person: per stance a camera-space `grip`, a point its length heads `toward`, its `up` side and optional `hand` hold; `StanceCatalog` |
 | `combat/held-motion.json` | How held looks move through their actions: per motion, named `poses` moving the look from its stance (`position` of its grip in camera space, `rotation` in degrees about the grip; `rest` is no change) and `tracks` by action id (or `default`) of keys `{pose, phase, at, ease}`; `HeldMotionCatalog` builds each action's Engine tween timeline. See "Held motion" below |
 | `combat/looks.json` | Resident looks: the rigged model, its scale and turn, the clip for each state, the strike's moment in the attack clip and the tell light; `ResidentView` |
@@ -207,6 +207,11 @@ end) and `up` side; the default is -Z with +Y up, and a candelabra or extinguish
 seats every look on its stance: the offset and turn from its motion's `rest` hand that put its main grip on the
 stance's grip and its length and up side along the stance. A look's `nudge` (`grip`, metres in camera space, and
 `turn`, degrees about camera X, Y, Z) corrects it by eye. Changing a stance moves every look in it.
+
+A look's `shape` sets how each holding hand's digits sit on it, added to the arms' grip clip: `main`, and `off` exactly
+when the look has an off grip. Each gives `fingers`, one `[base, middle, tip]` curl in degrees (positive toward the
+palm) per finger of `combat/arms.json` `hands.fingers`, and `thumb`, three `[curl, swing]`. The motion keys' `hands`
+closure opens or squeezes the hand from that shape.
 
 The first-person workbench (F3 in a developer session, docs/development.md) tunes all of these with sliders while
 the motion plays, and saves them into these files under `rusty dev`. The same work in the developer console, with a look shown (held,
