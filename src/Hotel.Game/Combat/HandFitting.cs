@@ -33,9 +33,9 @@ internal static class HandFitting
         HandFit fit = digits.Fit;
         List<string> lines = [];
         for (int f = 0; f < shape.Fingers.Length; f++)
-            lines.Add(FitDigit(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, fit.FingerRadius, fit, digits.Fingers[f]));
+            lines.Add(FitDigit(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, digits.Open.Fingers, fit.FingerRadius, fit, digits.Fingers[f]));
         float[] curls = [.. shape.Thumb.Select(j => j[0])], swings = [.. shape.Thumb.Select(j => j[1])];
-        lines.Add(FitDigit(engine, hold, hold.Chains.Thumb, curls, swings, fit.ThumbRadius, fit, digits.Thumb));
+        lines.Add(FitDigit(engine, hold, hold.Chains.Thumb, curls, swings, [.. digits.Open.Thumb.Select(j => j[0])], fit.ThumbRadius, fit, digits.Thumb));
         for (int i = 0; i < 3; i++) shape.Thumb[i][0] = curls[i];
         return lines;
     }
@@ -59,16 +59,21 @@ internal static class HandFitting
             lines.Add($"posed digits lie within {worst * 1000:0.0} mm of the drawn ones");
         }
         for (int f = 0; f < shape.Fingers.Length; f++)
-            lines.Add($"{digits.Fingers[f]}: {Meets(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, fit.FingerRadius, fit)}");
-        lines.Add($"{digits.Thumb}: {Meets(engine, hold, hold.Chains.Thumb, [.. shape.Thumb.Select(j => j[0])], [.. shape.Thumb.Select(j => j[1])], fit.ThumbRadius, fit)}");
+            lines.Add($"{digits.Fingers[f]}: curl [{Angles(shape.Fingers[f])}]; {Meets(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, fit.FingerRadius, fit)}");
+        lines.Add($"{digits.Thumb}: curl [{Angles(shape.Thumb.Select(j => j[0]))}], swing [{Angles(shape.Thumb.Select(j => j[1]))}]; {Meets(engine, hold, hold.Chains.Thumb, [.. shape.Thumb.Select(j => j[0])], [.. shape.Thumb.Select(j => j[1])], fit.ThumbRadius, fit)}");
         return lines;
     }
 
+    private static string Angles(IEnumerable<float> values) => string.Join(", ", values.Select(v => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)));
+
     // The digit's free joints close together from open; when a segment meets the model, that joint and those before it
     // stop a step short, and the joints past it close on from there. Joints that meet nothing stop with the last that did.
-    private static string FitDigit(IEngineContext engine, Hold hold, DigitChain chain, float[] curls, float[]? swings, float radius, HandFit fit, string name)
+    private static string FitDigit(IEngineContext engine, Hold hold, DigitChain chain, float[] curls, float[]? swings, float[] open, float radius, HandFit fit, string name)
     {
-        for (int i = 0; i < 3; i++) curls[i] = fit.Open;
+        // The thumb's root is already open in the grip clip. A shared negative sweep must not hyperextend it (or
+        // a finger's tip) past the rig's authored open pose just to obtain an earlier surface contact.
+        float Curl(int joint, int step) => MathF.Max(open[joint], fit.Open + step * fit.Step);
+        for (int i = 0; i < 3; i++) curls[i] = Curl(i, 0);
         int steps = (int)MathF.Floor((fit.Closed - fit.Open) / fit.Step) + 1, free = 0, start = 0, per = 3 * fit.Samples;
         List<string> how = [];
         while (free < 3 && start < steps - 1)
@@ -77,7 +82,7 @@ internal static class HandFitting
             List<Vector3> probes = [];
             for (int s = start; s < steps; s++)
             {
-                for (int j = free; j < 3; j++) curls[j] = fit.Open + s * fit.Step;
+                for (int j = free; j < 3; j++) curls[j] = Curl(j, s);
                 probes.AddRange(Probes(Pose(hold, chain, curls, swings, fit.Tip), 0, fit.Samples));
             }
             ReadOnlySpan<ModelSurfacePoint> found = engine.Animation.QueryModelSurface(new(hold.Model, hold.Placement, probes.ToArray(), fit.Reach)).Span;
@@ -87,16 +92,21 @@ internal static class HandFitting
             int meets = -1, segment = -1;
             for (int s = 1; s < steps - start && meets < 0; s++)
                 for (int p = free * fit.Samples; p < per; p++)
-                    if (!resting[p] && Touches(found[s * per + p], radius, fit.Gap)) { meets = s; segment = p / fit.Samples; break; }
+                {
+                    bool touching = Touches(found[s * per + p], radius, fit.Gap);
+                    // A probe resting on the handle may move away as it curls. Its next contact then counts too;
+                    // ignoring it for the whole sweep lets it curl straight back through the model.
+                    if (!touching) resting[p] = false;
+                    else if (!resting[p]) { meets = s; segment = p / fit.Samples; break; }
+                }
             if (meets < 0)
             {
-                for (int j = free; j < 3; j++) curls[j] = fit.Open + start * fit.Step;
+                for (int j = free; j < 3; j++) curls[j] = Curl(j, start);
                 break;
             }
             start += meets - 1;
-            float at = MathF.Round(fit.Open + start * fit.Step);
-            for (int j = free; j < 3; j++) curls[j] = at;
-            how.Add($"{string.Join(", ", Joints[free..(segment + 1)])} stop at {at:0} on the {Joints[segment]}");
+            for (int j = free; j < 3; j++) curls[j] = Curl(j, start);
+            how.Add($"{string.Join(", ", Joints[free..(segment + 1)])} stop at [{Angles(curls[free..(segment + 1)])}] on the {Joints[segment]}");
             free = segment + 1;
         }
         if (how.Count == 0)

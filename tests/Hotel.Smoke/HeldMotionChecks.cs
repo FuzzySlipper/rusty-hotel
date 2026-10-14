@@ -29,6 +29,12 @@ internal static class HeldMotionChecks
                     $"{item.Id} {id}: the motion runs from the action's start to rest at its end ({total} s)");
                 timelines++;
             }
+        ActionDefinition throwing = content.Combat.Actions.Action("darts-throw")!;
+        HeldMotion thrown = motion.Motions[held.Model("bar-darts").Motion];
+        Check(thrown.Visible(throwing, 0) && !thrown.Visible(throwing, throwing.Timing.Windup + .01f) &&
+            !thrown.Visible(throwing, throwing.Timing.Windup + throwing.Timing.Commit + throwing.Timing.Recovery * .5f) &&
+            thrown.Visible(throwing, throwing.Timing.Windup + throwing.Timing.Commit + throwing.Timing.Recovery),
+            "darts leave the opening hand at release and return after the retrieval, by ready");
         // Every look without a nudge is seated on its stance: at rest its main grip is on the stance's grip, its length
         // heads toward the stance's point and its up side faces the stance's up.
         foreach (HeldModel look in held.Looks.Where(l => l.Adjust.Grip.All(v => v == 0) && l.Adjust.Turn.All(v => v == 0)))

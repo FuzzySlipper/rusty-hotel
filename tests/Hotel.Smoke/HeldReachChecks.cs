@@ -12,6 +12,15 @@ internal static class HeldReachChecks
     {
         var content = Owners.Content(engine);
         HeldCatalog held = content.Combat.Held;
+        HeldModel gun = held.Model("coach-gun");
+        var placement = held.Motion.Motions[gun.Motion].Poses[HeldMotionCatalog.Rest].Place(gun);
+        float supportBefore = HeldGrip.Beyond(held, gun, placement).Off;
+        float mainTurn = gun.Grips.Hand![2];
+        gun.Grips.Hand[2] += 45;
+        float supportAfter = HeldGrip.Beyond(held, gun, placement).Off;
+        gun.Grips.Hand[2] = mainTurn;
+        if (MathF.Abs(supportAfter - supportBefore) > 1e-6f)
+            throw new InvalidOperationException("changing the firing hand's turn must not rotate the support hand");
         List<string> beyond = [];
         int poses = 0;
         foreach (var looked in content.Supplies.Items.Where(i => i.Wear?.Look is not null).GroupBy(i => i.Wear!.Look!))

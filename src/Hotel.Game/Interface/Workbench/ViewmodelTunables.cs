@@ -39,7 +39,7 @@ internal static class ViewmodelTunables
             .. Vector("stance.toward", "toward", stance.Toward, -12, 12, .01f, StanceCatalog.Path, $"{stancePointer}/toward", () => Reseat(model.Stance)),
             .. Vector("stance.up", "up", stance.Up, -1, 1, .01f, StanceCatalog.Path, $"{stancePointer}/up", () => Reseat(model.Stance)),
             // A stance without its own hand holds as the arms' main hand does; the sliders then tune and save that.
-            .. (stance.Hand is { } hand
+            .. (model.Grips.Hand is not null ? [] : stance.Hand is { } hand
                 ? Vector("stance.hand", "hand", hand, -180, 180, 1, StanceCatalog.Path, $"{stancePointer}/hand", Redraw)
                 : Vector("stance.hand", "hand (arms' main hand)", held.Arms.MainHand.Rotation, -180, 180, 1, ArmsDefinition.Path, "/mainHand/rotation", Redraw))
         ]) { File = StanceCatalog.Path });
@@ -50,6 +50,20 @@ internal static class ViewmodelTunables
             .. Vector("nudge.grip", "grip", model.Adjust.Grip, -0.2f, 0.2f, .002f, HeldCatalog.Path, $"{nudge}/grip", () => { held.Seat(model); Redraw(); }),
             .. Vector("nudge.turn", "turn", model.Adjust.Turn, -60, 60, .5f, HeldCatalog.Path, $"{nudge}/turn", () => { held.Seat(model); Redraw(); })
         ]) { File = HeldCatalog.Path });
+
+        // Grip placement and each hand's own turn, before fitting the fingers. Moving the main grip re-seats the item.
+        string gripPointer = $"/looks/{lookIndex}/grips";
+        List<Tunable> grips =
+        [
+            .. Vector("grip.main", "main contact", model.Grips.Main, -1, 1, .001f, HeldCatalog.Path, $"{gripPointer}/main", () => { held.Seat(model); Redraw(); })
+        ];
+        if (model.Grips.Hand is { } mainHand)
+            grips.AddRange(Vector("grip.hand", "main turn", mainHand, -180, 180, 1, HeldCatalog.Path, $"{gripPointer}/hand", Redraw));
+        if (model.Grips.Off is { } offGrip)
+            grips.AddRange(Vector("grip.off", "support contact", offGrip, -1, 1, .001f, HeldCatalog.Path, $"{gripPointer}/off", Redraw));
+        if (model.Grips.OffHand is { } offHand)
+            grips.AddRange(Vector("grip.offHand", "support turn", offHand, -180, 180, 1, HeldCatalog.Path, $"{gripPointer}/offHand", Redraw));
+        groups.Add(new($"grips.{look}", $"Grip placement · {look} (model space)", grips) { File = HeldCatalog.Path });
 
         // How the look shapes each hand's digits on the grip clip, joint by joint; the keys' closure acts on top.
         if (model.Shape is { } shape)
@@ -99,6 +113,9 @@ internal static class ViewmodelTunables
                 timing.Add(new(new($"key.{i}.at", $"{i} {k.Pose} at", TunableKind.Slider, 0, 1, .01f, k.At)
                     { Reshapes = true, Source = new(HeldMotionCatalog.Path, $"{at}/at") },
                     v => { track[index] = track[index] with { At = v }; Redraw(); }));
+                timing.Add(new(new($"key.{i}.visible", $"{i} {k.Pose} item visible", TunableKind.Toggle, 0, 1, 1, k.Visible ? 1 : 0)
+                    { Source = new(HeldMotionCatalog.Path, $"{at}/visible") },
+                    v => { track[index] = track[index] with { Visible = v >= .5f }; Redraw(); }));
                 foreach (var (side, label) in new[] { (0, "main"), (1, "off") })
                     timing.Add(new(new($"key.{i}.hands.{label}", $"{i} {k.Pose} {label} hand closed", TunableKind.Slider, -1, 1, .05f, k.Hands[side])
                         { Source = new(HeldMotionCatalog.Path, $"{at}/hands/{side}") },

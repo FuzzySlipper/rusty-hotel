@@ -28,8 +28,17 @@ internal static class HandFitChecks
         List<string> fitted = HandFitting.Fit(engine, near, beside, held.Arms.Hands);
         Check(fitted.All(l => !l.Contains("meets nothing") && !l.Contains("into the model")), $"fingers beside the bar curl onto it without passing in:\n{string.Join("\n", fitted)}");
         Check(beside.Fingers.All(f => f.All(c => c > held.Arms.Hands.Fit.Open && c < held.Arms.Hands.Fit.Closed)), "each finger stops between open and closed");
+        Check(beside.Thumb.Select((joint, i) => joint[0] >= held.Arms.Hands.Open.Thumb[i][0]).All(v => v),
+            "fitting never bends the thumb farther back than its authored open pose");
         List<string> contact = HandFitting.Contact(engine, near, beside, held.Arms.Hands);
         Check(contact.All(l => !l.Contains("into the model")), $"the fitted hand reports no digit in the bar:\n{string.Join("\n", contact)}");
+        HandShape tuned = Shape();
+        tuned.Fingers[0][1] = 12.5f;
+        tuned.Thumb[1][1] = -7;
+        string before = System.Text.Json.JsonSerializer.Serialize(tuned);
+        contact = HandFitting.Contact(engine, near, tuned, held.Arms.Hands);
+        Check(contact[0].Contains("12.5") && contact[^1].Contains("swing [0, -7, 0]") &&
+            System.Text.Json.JsonSerializer.Serialize(tuned) == before, "contact includes tuned curls and thumb swings without changing the hand");
 
         HandShape far = Shape();
         List<string> away = HandFitting.Fit(engine, near with { Wrist = grip + new Vector3(0.5f, 0, 0) }, far, held.Arms.Hands);

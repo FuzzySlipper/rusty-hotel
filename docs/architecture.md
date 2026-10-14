@@ -243,7 +243,8 @@ the world does): idle or walk by its motion, the attack clip sampled at its acti
 interrupted, and the fall, whose last frame is its remains. Its tell is a light at the eye during windup and commit, and
 its hitscan beam shows while it lasts. `CombatView` adds flares in flight and the held item by its authored look. Held items are GLB models
 placed in camera space on the viewmodel layer, which the Engine lights with its neutral viewmodel rig, so they read
-in dim rooms. `HotelScene` publishes
+in dim rooms. The held motion also owns release/retrieval visibility; `CombatView` hides the item at those keys while
+the arms keep following the same sampled pose. `HotelScene` publishes
 one combined static/combat snapshot. The DOM receives what the hands hold, action state and
 brief hit/hurt notices; it does not render weapons or aim attacks. Actions live in `content/actions/`,
 resident kinds in `content/combat/`; resident placements in each excursion's `placements.json`. Zero health suppresses

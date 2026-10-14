@@ -45,6 +45,9 @@ internal static class WorkbenchChecks
         disk.Model("prybar").Adjust.Grip[0] = 0.01f;
         float[] prybarIndex = live.Model("prybar").Shape!.Main.Fingers[0];
         disk.Model("prybar").Shape!.Main.Fingers[0][1] = 30;
+        disk.Model("prybar").Grips.Main[1] = -0.025f;
+        disk.Model("coach-gun").Grips.Off![2] = -0.25f;
+        disk.Model("coach-gun").Grips.OffHand![2] = 165;
         HeldPose raised = live.Motion.Motions["swing"].Poses["raised"];
         disk.Motion.Motions["swing"].Poses["raised"].Position[0] = 0.09f;
         disk.Motion.Motions["swing"].Tracks.Remove("prybar-shove");
@@ -52,6 +55,8 @@ internal static class WorkbenchChecks
         string[] restart = live.Refresh(disk, new HashSet<string> { HeldCatalog.Path, HeldMotionCatalog.Path });
         Check(live.Stances.Stances["melee"].Grip[0] == 0.5f, "a reload of held.json and held-motion.json keeps unsaved stance tuning");
         Check(live.Model("prybar").Adjust.Grip[0] == 0.01f, "a reload takes held.json's nudge");
+        Check(live.Model("prybar").Grips.Main[1] == -0.025f && live.Model("coach-gun").Grips.Off![2] == -0.25f &&
+            live.Model("coach-gun").Grips.OffHand![2] == 165, "grip points and support-hand turns reload live");
         Check(ReferenceEquals(live.Model("prybar").Shape!.Main.Fingers[0], prybarIndex) && prybarIndex[1] == 30, "a reload takes a look's finger shape in place");
         Check(ReferenceEquals(live.Motion.Motions["swing"].Poses["raised"], raised) && raised.Position[0] == 0.09f,
             "a reload updates a pose in place, so a held pose shows it");

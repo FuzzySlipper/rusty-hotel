@@ -94,7 +94,7 @@ internal sealed class CombatView : IDisposable
             // space (right, up, back) under its own light rig. The viewer may hold a key's pose instead.
             HeldPose pose = viewing is { } view && view.Look == kind && Held().Pose is { } shownPose ? shownPose : motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest];
             (Vector3 at, Quaternion turn) = pose.Place(model);
-            facts.Add(new(entity, false, 0, new(at, turn, new(model.Scale)), appearance, !combat.Defeated && look == kind, RenderLayer.Viewmodel));
+            facts.Add(new(entity, false, 0, new(at, turn, new(model.Scale)), appearance, !combat.Defeated && look == kind && ItemVisible(kind), RenderLayer.Viewmodel));
         }
         // A firearm's flash shows while it commits, where its muzzle is in the pose the action holds then.
         ActionDefinition? current = combat.User.Current;
@@ -166,6 +166,17 @@ internal sealed class CombatView : IDisposable
     }
 
     private (float Main, float Off) viewingHands;
+
+    // The same visibility keys apply to ordinary attacks, a held viewer key and seeking/playback. Arms stay drawn.
+    private bool ItemVisible(string look)
+    {
+        HeldMotion motion = heldLooks.Motion.Motions[heldLooks.Model(look).Motion];
+        if (viewing is { } view && view.Look == look && viewingKey is { } key)
+            return motion.Track(key.Action.Id) is not { } track || key.Key >= track.Length || track[key.Key].Visible;
+        if (shown is not { Action: { } action } playing || playing.Look != look) return true;
+        TweenReadout readout = engine.Tween.Read(playing.Tween);
+        return readout.State == TweenState.Ended || motion.Visible(action, (float)readout.ElapsedSeconds * playing.Speed);
+    }
 
     // Ends the held models' motion: the viewer shows a pose or a look exactly.
     private void Stop()
@@ -345,7 +356,7 @@ internal sealed class CombatView : IDisposable
     {
         HeldModel model = heldLooks.Model(look);
         (Vector3 main, Vector3? off, Quaternion item, float[]? hand) = HeldGrip.At(heldLooks, model, Shown(look));
-        arms.Reach(main, off, item, hand, model.Shape, Closure(look));
+        arms.Reach(main, off, item, hand, model.Grips.OffHand, model.Shape, Closure(look));
     }
 
     /// <summary>
@@ -376,7 +387,8 @@ internal sealed class CombatView : IDisposable
         (Vector3 At, Quaternion Turn) placed = heldLooks.Motion.Motions[model.Motion].Poses[HeldMotionCatalog.Rest].Place(model);
         (Vector3 main, Vector3? off, Quaternion item, float[]? hand) = HeldGrip.At(heldLooks, model, placed);
         if ((offHand ? off : main) is not { } grip || arms.Chains(offHand) is not { } chains) return null;
-        (Vector3 wrist, Quaternion turn) = ArmsView.Wrist(grip, item, offHand ? heldLooks.Arms.OffHand : heldLooks.Arms.MainHand, hand);
+        (Vector3 wrist, Quaternion turn) = ArmsView.Wrist(grip, item, offHand ? heldLooks.Arms.OffHand : heldLooks.Arms.MainHand,
+            offHand ? model.Grips.OffHand : hand);
         RenderResource resource = models[Array.IndexOf(heldLooks.Looks, model)];
         return new(resource, new(placed.At, placed.Turn, new(model.Scale)), wrist, turn, chains, offHand ? heldLooks.Arms.Off.Mirrored : heldLooks.Arms.Main.Mirrored);
     }

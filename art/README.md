@@ -175,8 +175,17 @@ python3 art/held-motion/preview.py [--looks prybar,coach-gun] [--frames 8]
 Starts a playtest session (crew-services, profile `rusty-hotel-ui-debug`; `--session` reuses one), holds each look with
 `hotel.dev.hold`, fills the investigator's tracks with `hotel.dev.fill-tracks`, and starts each of its item's actions
 with the ordinary controls in held time, capturing world frames at even moments from start to end. Strips per look
-and action, labelled with time and phase, and `contact.png` go to `.runtime/held-motion/`. A frame where an arm cannot
-reach its grip (a wrist drawn more than a centimetre short) is labelled OUT OF REACH in red and listed. Linux tooling.
+and action, labelled with time and phase, and `contact.png` go to `.runtime/held-motion/`. They include the full viewport,
+rest before input, authored key moments and the settled result. `originals/` retains each unmodified frame;
+`manifest.json` indexes its Engine frame/step receipt, actual admitted time, inspection facts and authored source files.
+A frame where an arm cannot reach its grip (a wrist drawn more than a centimetre short) is labelled OUT OF REACH in red
+and listed. `--actions pistol-reload` narrows the action set; `--viewer` seeks the existing motion viewer without
+requiring carried supplies or admitting an attack. That mode is labelled presentation evidence, separate from ordinary
+input. Inspect original frames as well as the overview. Linux tooling.
+For repeat ordinary-input sweeps in an owned session, `--reset` resets the unsaved excursion before fixture grants,
+so repeated weapon grants do not fill the field case; it leaves the saved refuge checkpoint untouched. Long cooldowns
+are advanced in supported Engine windows. Command failures leave an explicitly incomplete manifest and retain frames
+already captured.
 `provenance.json` records hashes, run times and use limits.
 
 `held-02` adds eight weapons the same way (fire axe, letter opener, walking cane, candelabra, coach gun, bar darts,

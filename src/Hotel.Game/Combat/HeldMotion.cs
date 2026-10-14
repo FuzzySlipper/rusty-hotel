@@ -154,6 +154,13 @@ internal sealed record HeldMotion(Dictionary<string, HeldPose> Poses, Dictionary
 {
     internal MotionKey[]? Track(string action) =>
         Tracks.GetValueOrDefault(action) ?? Tracks.GetValueOrDefault(HeldMotionCatalog.DefaultTrack);
+
+    /// <summary>Discrete held-item visibility at the action's Engine time: a released item returns with a later key or at rest.</summary>
+    internal bool Visible(ActionDefinition action, float time)
+    {
+        if (time >= action.Timing.Windup + action.Timing.Commit + action.Timing.Recovery) return true;
+        return Track(action.Id)?.LastOrDefault(k => k.Time(action.Timing) <= time)?.Visible ?? true;
+    }
 }
 
 /// <summary>
@@ -184,8 +191,9 @@ internal sealed record HeldPose(float[] Position, float[] Rotation)
 /// <summary>
 /// A key: the look reaches <see cref="Pose"/> at <see cref="At"/> (0 to 1) through <see cref="Phase"/>, easing in by
 /// <see cref="Ease"/>, with the hands closed to <see cref="Hands"/> (main, off: -1 open, 0 the grip, 1 squeezed).
+/// <see cref="Visible"/> applies from this key until the next; arms remain drawn, and ready restores the held item.
 /// </summary>
-internal sealed record MotionKey(string Pose, MotionPhase Phase, float At, TweenEasingKind Ease, float[] Hands)
+internal sealed record MotionKey(string Pose, MotionPhase Phase, float At, TweenEasingKind Ease, float[] Hands, bool Visible = true)
 {
     /// <summary>Seconds from the action's start: windup, then commit (whose start is the strike), then recovery.</summary>
     internal float Time(ActionTiming timing) => Phase switch
@@ -202,7 +210,8 @@ internal enum MotionPhase { Windup, Commit, Recovery }
 
 /// <summary>
 /// Where hands hold a look's model, in the model's own space: the main hand's grip and, for two hands, the other's; and
-/// how the hands turn on it (<see cref="Hand"/>, degrees about X, Y, Z from the item's turn), when this look is not held as
-/// the arms' default hand holds (<see cref="ArmsDefinition.MainHand"/>).
+/// how the main hand turns on it (<see cref="Hand"/>, degrees about X, Y, Z in the item's axis frame). The support
+/// hand has its own <see cref="OffHand"/> turn, falling back to <see cref="ArmsDefinition.OffHand"/> independently of
+/// the main hand and stance.
 /// </summary>
-internal sealed record HeldGrips(float[] Main, float[]? Off = null, float[]? Hand = null);
+internal sealed record HeldGrips(float[] Main, float[]? Off = null, float[]? Hand = null, float[]? OffHand = null);

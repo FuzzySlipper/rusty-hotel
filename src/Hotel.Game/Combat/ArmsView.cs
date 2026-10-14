@@ -99,16 +99,19 @@ internal sealed class ArmsView : IDisposable
     {
         DigitBend bend = closure > 0 ? arms.Hands.Close : arms.Hands.Open;
         float weight = MathF.Abs(closure), side = mirrored ? -1 : 1;
+        // Opening reaches the authored open pose, independently of the fitted grip. Adding Open on top of a
+        // partially open fitted finger would bend it backwards on a throw. Squeezing remains relative to the fit.
+        float Bend(float shaped, float target) => closure < 0 ? shaped * (1 - weight) + target * weight : shaped + target * weight;
         const float Radians = MathF.PI / 180;
         for (int f = 0; f < digits.Fingers.Length; f++)
             for (int i = 0; i < 3; i++)
             {
-                float curl = (shape?.Fingers[f][i] ?? 0) + bend.Fingers[i] * weight;
+                float curl = Bend(shape?.Fingers[f][i] ?? 0, bend.Fingers[i]);
                 if (curl != 0) yield return (digits.Fingers[f][i], Quaternion.CreateFromAxisAngle(Vector3.UnitX, -curl * Radians));
             }
         for (int i = 0; i < 3; i++)
         {
-            float curl = (shape?.Thumb[i][0] ?? 0) + bend.Thumb[i][0] * weight, swing = (shape?.Thumb[i][1] ?? 0) + bend.Thumb[i][1] * weight;
+            float curl = Bend(shape?.Thumb[i][0] ?? 0, bend.Thumb[i][0]), swing = Bend(shape?.Thumb[i][1] ?? 0, bend.Thumb[i][1]);
             if (curl != 0 || swing != 0)
                 yield return (digits.Thumb[i], Quaternion.Normalize(
                     Quaternion.CreateFromAxisAngle(Vector3.UnitZ, swing * side * Radians) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -curl * Radians)));
@@ -149,7 +152,7 @@ internal sealed class ArmsView : IDisposable
     /// </summary>
     /// <param name="shape">How the look shapes each hand's digits on the grip clip.</param>
     /// <param name="closure">How closed each hand is (main, off): -1 open, 0 the grip clip, 1 squeezed.</param>
-    internal void Reach(Vector3 mainGrip, Vector3? offGrip, Quaternion item, float[]? lookHand = null, HeldShape? shape = null,
+    internal void Reach(Vector3 mainGrip, Vector3? offGrip, Quaternion item, float[]? lookHand = null, float[]? offHand = null, HeldShape? shape = null,
         (float Main, float Off) closure = default)
     {
         if (instance is null)
@@ -160,15 +163,14 @@ internal sealed class ArmsView : IDisposable
         }
         Vector3 shoulder = Authored.Vector(arms.Shoulder);
         // Each holding hand turns with the item, and its wrist sits so the palm, not the wrist, is on the grip.
-        // A look may turn the hands its own way on it (its grips' hand); the palm stays where the arms' hand puts it.
-        (Vector3 Wrist, Quaternion Turn) Hold(Vector3 grip, ArmHand hand) => Wrist(grip, item, hand, lookHand);
-        var (mainWrist, mainTurn) = Hold(mainGrip, arms.MainHand);
+        // Main and support hands have independent turns: a pistol grip must not turn the supporting palm over too.
+        var (mainWrist, mainTurn) = Wrist(mainGrip, item, arms.MainHand, lookHand);
         List<JointOverride> hands = [JointOverride.Orient(main.Hand, PoseSpace.Model, mainTurn)];
         Dictionary<uint, Quaternion> now = [];
         Vector3 offWrist = Authored.Vector(arms.OffRest);
         if (offGrip is { } grip)
         {
-            (offWrist, Quaternion offTurn) = Hold(grip, arms.OffHand);
+            (offWrist, Quaternion offTurn) = Wrist(grip, item, arms.OffHand, offHand);
             hands.Add(JointOverride.Orient(off.Hand, PoseSpace.Model, offTurn));
             foreach (var (joint, turn) in Close(offDigits, shape?.Off, closure.Off, arms.Off.Mirrored)) now[joint] = turn;
         }

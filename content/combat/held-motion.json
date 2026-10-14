@@ -106,12 +106,13 @@
           {
             "pose": "raised",
             "phase": "Windup",
-            "at": 0.8,
+            "at": 0.5,
             "ease": "CubicOut",
             "hands": [
               0.4,
               0.4
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "strike",
@@ -121,7 +122,8 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "follow",
@@ -131,19 +133,21 @@
             "hands": [
               0.8,
               0.8
-            ]
+            ],
+            "visible": true
           }
         ],
         "prybar-shove": [
           {
             "pose": "drawn",
             "phase": "Windup",
-            "at": 0.85,
+            "at": 0.45,
             "ease": "QuadOut",
             "hands": [
               0.4,
               0.4
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "jab",
@@ -153,7 +157,8 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "jab",
@@ -163,19 +168,21 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           }
         ],
         "cane-hook": [
           {
             "pose": "hookBack",
             "phase": "Windup",
-            "at": 0.8,
+            "at": 0.5,
             "ease": "CubicOut",
             "hands": [
               0.4,
               0.4
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "hooked",
@@ -185,7 +192,8 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "hooked",
@@ -195,7 +203,8 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           }
         ]
       }
@@ -218,7 +227,7 @@
           "position": [
             0.02,
             0.04,
-            0.14
+            0.08
           ],
           "rotation": [
             8,
@@ -244,12 +253,13 @@
           {
             "pose": "drawn",
             "phase": "Windup",
-            "at": 0.8,
+            "at": 0.4,
             "ease": "QuadOut",
             "hands": [
               0.4,
               0.4
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "jab",
@@ -259,7 +269,8 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "jab",
@@ -269,7 +280,8 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           }
         ]
       }
@@ -323,6 +335,30 @@
             15,
             30
           ]
+        },
+        "shouldered": {
+          "position": [
+            -0.03,
+            0.025,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "shoulderKick": {
+          "position": [
+            -0.03,
+            0.05,
+            0.045
+          ],
+          "rotation": [
+            10,
+            0,
+            0
+          ]
         }
       },
       "tracks": {
@@ -335,7 +371,8 @@
             "hands": [
               0.6,
               0.6
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "kick",
@@ -345,7 +382,8 @@
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "aim",
@@ -355,7 +393,8 @@
             "hands": [
               0.6,
               0.6
-            ]
+            ],
+            "visible": true
           }
         ],
         "pistol-reload": [
@@ -367,17 +406,65 @@
             "hands": [
               0,
               0
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "lowered",
             "phase": "Windup",
-            "at": 0.9,
+            "at": 0.72,
             "ease": "Linear",
             "hands": [
               0,
               0
-            ]
+            ],
+            "visible": true
+          },
+          {
+            "pose": "rest",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "SineInOut",
+            "hands": [
+              0,
+              0
+            ],
+            "visible": true
+          }
+        ],
+        "coach-gun-blast": [
+          {
+            "pose": "shouldered",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "SineOut",
+            "hands": [
+              0.6,
+              0.6
+            ],
+            "visible": true
+          },
+          {
+            "pose": "shoulderKick",
+            "phase": "Commit",
+            "at": 0.3,
+            "ease": "QuadOut",
+            "hands": [
+              1,
+              1
+            ],
+            "visible": true
+          },
+          {
+            "pose": "shouldered",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "SineOut",
+            "hands": [
+              0.6,
+              0.6
+            ],
+            "visible": true
           }
         ]
       }
@@ -419,6 +506,18 @@
             0,
             22
           ]
+        },
+        "spray": {
+          "position": [
+            -0.025,
+            0.02,
+            0.025
+          ],
+          "rotation": [
+            -6,
+            0,
+            0
+          ]
         }
       },
       "tracks": {
@@ -431,7 +530,8 @@
             "hands": [
               0.5,
               0.5
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "raised",
@@ -441,7 +541,8 @@
             "hands": [
               0.5,
               0.5
-            ]
+            ],
+            "visible": true
           }
         ],
         "bell-ring": [
@@ -453,17 +554,19 @@
             "hands": [
               0.5,
               0.5
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "rung",
             "phase": "Commit",
             "at": 0.5,
-            "ease": "ElasticOut",
+            "ease": "SineOut",
             "hands": [
               1,
               1
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "raised",
@@ -473,7 +576,32 @@
             "hands": [
               0.5,
               0.5
-            ]
+            ],
+            "visible": true
+          }
+        ],
+        "extinguisher-spray": [
+          {
+            "pose": "spray",
+            "phase": "Windup",
+            "at": 1,
+            "ease": "SineOut",
+            "hands": [
+              0.5,
+              0.5
+            ],
+            "visible": true
+          },
+          {
+            "pose": "spray",
+            "phase": "Commit",
+            "at": 1,
+            "ease": "Linear",
+            "hands": [
+              0.5,
+              0.5
+            ],
+            "visible": true
           }
         ]
       }
@@ -499,7 +627,7 @@
             0.12
           ],
           "rotation": [
-            35,
+            20,
             0,
             0
           ]
@@ -527,6 +655,18 @@
             0,
             0
           ]
+        },
+        "retrieve": {
+          "position": [
+            0,
+            -0.23,
+            0.08
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
         }
       },
       "tracks": {
@@ -534,12 +674,13 @@
           {
             "pose": "drawn",
             "phase": "Windup",
-            "at": 0.85,
+            "at": 0.45,
             "ease": "CubicOut",
             "hands": [
               0.4,
               0.4
-            ]
+            ],
+            "visible": true
           },
           {
             "pose": "release",
@@ -549,7 +690,8 @@
             "hands": [
               -1,
               -1
-            ]
+            ],
+            "visible": false
           },
           {
             "pose": "follow",
@@ -559,7 +701,30 @@
             "hands": [
               -0.6,
               -0.6
-            ]
+            ],
+            "visible": false
+          },
+          {
+            "pose": "retrieve",
+            "phase": "Recovery",
+            "at": 0.55,
+            "ease": "SineInOut",
+            "hands": [
+              0,
+              0
+            ],
+            "visible": false
+          },
+          {
+            "pose": "retrieve",
+            "phase": "Recovery",
+            "at": 0.6,
+            "ease": "Linear",
+            "hands": [
+              0,
+              0
+            ],
+            "visible": true
           }
         ]
       }

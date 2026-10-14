@@ -60,7 +60,9 @@ In a developer session, F3 opens the first-person workbench: the Engine tunables
 - **Pick and play:** choose a look and action, hold a key's pose, scrub to any moment or play at a speed.
 - **Sliders:** the look's stance (every look in it moves), its nudge, its hands' shape (each finger joint's curl and
   each thumb joint's curl and swing), the held key's pose and the arms, with the stance guide as a toggle.
-- **Keys:** each key's phase, its moment through that phase and the curve it eases in by (for every look sharing the
+- **Grip placement:** model-space contacts and separate main/support-hand turns. Seat the palm on the handle before
+  fitting the digits. These controls save and reload live along with the per-finger shape.
+- **Keys:** each key's phase, its moment through that phase, held-item visibility and the curve it eases in by (for every look sharing the
   motion). The timeline follows, and a key moved out of time order is reported, since content refuses it.
 
 Every control is bound to where it is saved (a content file and a JSON pointer). The panel marks what differs from
@@ -94,7 +96,7 @@ Use the generated catalog for argument help and current command availability.
 | `hotel.dev.arms.model <path>` | Show another arms model (a variant built from `art/arms`) with the same hold until the floor is rebuilt; `combat/arms.json` is unchanged |
 | `tunables.describe` / `tunables.select <chooser> <value>` / `tunables.set <id> <value>` | The first-person workbench's page (Engine `TunablesDebugModule`; F3 opens its panel). `engine.content.source.read <path>` and `engine.content.source.edit <path> <sha256> <edits>` save into source content under `rusty dev` |
 | `hotel.dev.stance`, `.set`, `.hand`, `hotel.dev.held.nudge` | The held stance guide: draw a look's stance beside it, change stances and nudge looks live (docs/authoring.md, "Held stances") |
-| `hotel.dev.hands.fit <look> <main\|off\|both>`, `hotel.dev.hands.contact <look> <hands>` | The hand fit: curl a look's hands onto its model at rest from open (Engine model surface query) and print each digit's angles, or report how near each digit comes and which pass into the model. A fit changes the loaded content only; the workbench's Hands group (its "fit to the model" choice does the same) shows it unsaved |
+| `hotel.dev.hands.fit <look> <main\|off\|both>`, `hotel.dev.hands.contact <look> <hands>` | The hand fit: curl a look's hands onto its model at rest from open (Engine model surface query), or inspect current curls, thumb swings, distance and penetration without changing the shape. A fit changes the loaded content only; the workbench's Hands group (its "fit to the model" choice does the same) shows it unsaved |
 | `hotel.dev.arms.offhand <rx> <ry> <rz> <px> <py> <pz>` | Try the off hand's hold on two-handed looks live; prints its JSON for `combat/arms.json` |
 | `hotel.dev.arms.reach <sx> <sy> <sz> <px> <py> <pz>` | Try the right shoulder's camera-space place and the elbow pole live; prints their JSON for `combat/arms.json` |
 | `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` | Try the main hand's hold (turn from the held item, palm offset) live; prints its JSON for `combat/arms.json` |

@@ -178,7 +178,8 @@ item's turn, and the `palm` offset from the wrist in that turned frame, which pu
 fingers). The hand joint's own axes run +Y along the fingers, +Z out of the back of the hand and +X toward the little
 finger. A hold is a turn in the item's axis frame (its length and up side, below), so one hold suits every look of a
 kind: a stance may give its own `hand` (a firearm is held round its pistol grip), and a look's `grips.hand` overrides
-both. Every update the Engine's two-bone IK puts
+both for the main hand. `grips.offHand` gives the support hand its own turn; without it, the arms' `offHand` applies,
+independently of the main hand or stance. Every update the Engine's two-bone IK puts
 each hand's palm on its grip (a look's `grips.main`, and `grips.off` for a two-handed look; without one the off hand
 hangs at `offRest`), where the Engine's evaluation of the held motion shows the item, and turns the hand with the item;
 only the item moves by authored motion. `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` tries a main-hand hold
@@ -212,16 +213,27 @@ A look's `shape` sets how each holding hand's digits sit on it, added to the arm
 when the look has an off grip. Each gives `fingers`, one `[base, middle, tip]` curl in degrees (positive toward the
 palm) per finger of `combat/arms.json` `hands.fingers`, and `thumb`, three `[curl, swing]`. The motion keys' `hands`
 closure opens or squeezes the hand from that shape.
+Opening blends to the rig's authored open pose; squeezing adds the small authored close bend to the fitted grip.
+Motion keys also carry `visible`: the held model takes that visibility at the key, while the arms remain drawn.
+Use it for release/retrieval, with the model restored while the hand is below the view; ready always shows the item.
 
 The hand fit (`hotel.dev.hands.fit`, docs/development.md) gives a measured start for a shape: with the look at rest,
 each digit's joints curl together from open until a segment meets the model's own surface, then the joints past it
 curl on. It measures by `combat/arms.json` `hands.fit`: the finger and thumb radii about their joints, the tip past
 the last joint (a fraction of the joint before), the `gap` a digit stops short by, the `open` to `closed` curls it
-sweeps by `step`, the probes per segment (`samples`) and how far it looks for the surface (`reach`). A digit already
+sweeps by `step`, bounded by each joint's authored `hands.open` curl so the thumb root cannot bend backward merely
+to find contact, the probes per segment (`samples`) and how far it looks for the surface (`reach`). A resting probe
+that moves clear participates in subsequent contact again. A digit already
 in the model where the hand rests is reported; the fit cannot move the hand, so that is a grip or palm to correct.
+Fit is a starting pose: inspect the wrap, thumb and recovery as well as the reported clearances. Probe radii approximate
+the glove; a small measured gap is not proof of mesh separation. Place contacts on the actual model's handle before
+fitting; neither a stance nudge nor curling the fingers corrects an off-surface grip point.
 
 The first-person workbench (F3 in a developer session, docs/development.md) tunes all of these with sliders while
-the motion plays, and saves them into these files under `rusty dev`. The same work in the developer console, with a look shown (held,
+the motion plays. Its Grip placement group edits model-space contact points and independent hand turns; moving the
+main contact re-seats the model around the stance's grip, while moving the support contact moves that hand on the model.
+These values reload in place; adding or removing a hand or rotation override changes structure and requires a restart.
+The panel saves scalar edits into these files under `rusty dev`. The same work in the developer console, with a look shown (held,
 or through `hotel.dev.motion`):
 
 | Command | Does |

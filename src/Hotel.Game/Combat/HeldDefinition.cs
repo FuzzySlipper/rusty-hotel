@@ -53,7 +53,7 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
     /// Takes the values of <paramref name="fresh"/> from the files in <paramref name="changed"/> into this catalog in
     /// place (unchanged files keep their live, possibly unsaved, values), so the views holding it, the motion viewer's
     /// held pose included, show them; then seats every look again. Returns what it could not take: changes to what
-    /// exists or how it is drawn (looks, models, grips, motions' settle, stances, the arms' rig), which need the product
+    /// exists or how it is drawn (looks, models, hand presence, motions' settle, stances, the arms' rig), which need the product
     /// restarted; the rest of those files is still taken.
     /// </summary>
     internal string[] Refresh(HeldCatalog fresh, IReadOnlySet<string> changed)
@@ -65,12 +65,15 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
         {
             Same(FlashSize.SequenceEqual(fresh.FlashSize), $"{Path} flashSize");
             Same(Looks.Length == fresh.Looks.Length && Looks.Zip(fresh.Looks).All(p => Drawn(p.First) == Drawn(p.Second)),
-                $"{Path} looks (ids, models, scales, motions, stances, grips, axes or muzzles)");
+                $"{Path} looks (ids, models, scales, motions, stances, hand presence, axes or muzzles)");
             foreach (HeldModel look in Looks)
                 if (fresh.Looks.FirstOrDefault(l => l.Look == look.Look) is { } now)
                 {
                     now.Adjust.Grip.CopyTo(look.Adjust.Grip, 0);
                     now.Adjust.Turn.CopyTo(look.Adjust.Turn, 0);
+                    now.Grips.Main.CopyTo(look.Grips.Main, 0);
+                    foreach (var (into, from) in new[] { (look.Grips.Off, now.Grips.Off), (look.Grips.Hand, now.Grips.Hand), (look.Grips.OffHand, now.Grips.OffHand) })
+                        if (into is not null && from is not null) from.CopyTo(into, 0);
                     if (look.Shape is { } shape && now.Shape is { } fresher) shape.Take(fresher);
                 }
         }
@@ -137,9 +140,9 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
         return [.. needRestart];
     }
 
-    // What a look is and how it is drawn, beyond the nudge a reload takes: a change needs a restart.
+    // Resource identities and structural hand presence, beyond the placement values a reload takes.
     private static string Drawn(HeldModel look) => string.Join("|", look.Look, look.Model, look.Scale, look.Motion, look.Stance,
-        string.Join(",", look.Grips.Main), string.Join(",", look.Grips.Off ?? []), string.Join(",", look.Grips.Hand ?? []),
+        look.Grips.Off is not null, look.Grips.Hand is not null, look.Grips.OffHand is not null,
         string.Join(",", look.Along.Tip), string.Join(",", look.Along.Up), string.Join(",", look.Muzzle ?? []));
 
     private void Validate()
@@ -159,6 +162,9 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
             Authored.Require(Motion.Motions.ContainsKey(model.Motion), Path, $"{at}.motion", $"unknown motion '{model.Motion}' in {HeldMotionCatalog.Path}.");
             Authored.Require(Stances.Stances.ContainsKey(model.Stance), Path, $"{at}.stance", $"unknown stance '{model.Stance}' in {StanceCatalog.Path}.");
             if (model.Grips.Hand is { } hand) Authored.Point(Path, $"{at}.grips.hand", hand);
+            if (model.Grips.OffHand is { } offHand) Authored.Point(Path, $"{at}.grips.offHand", offHand);
+            Authored.Point(Path, $"{at}.grips.main", model.Grips.Main);
+            if (model.Grips.Off is { } off) Authored.Point(Path, $"{at}.grips.off", off);
             Authored.Require(model.Shape is not null, Path, $"{at}.shape", "gives how each hand's fingers and thumb sit on this look (main, and off with an off grip).");
             Authored.Require((model.Shape!.Off is null) == (model.Grips.Off is null), Path, $"{at}.shape.off",
                 model.Grips.Off is null ? "is only given for a look with an off grip." : "is required: the look has an off grip.");

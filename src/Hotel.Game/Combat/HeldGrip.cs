@@ -30,6 +30,6 @@ internal static class HeldGrip
         float mainBeyond = Vector3.Distance(ArmsView.Wrist(main, item, arms.MainHand, hand).Wrist, shoulder) - arms.Reach.Length;
         if (off is not { } offGrip) return (mainBeyond, float.NegativeInfinity);
         Vector3 offShoulder = shoulder + Authored.Vector(arms.Reach.OffShoulder);
-        return (mainBeyond, Vector3.Distance(ArmsView.Wrist(offGrip, item, arms.OffHand, hand).Wrist, offShoulder) - arms.Reach.Length);
+        return (mainBeyond, Vector3.Distance(ArmsView.Wrist(offGrip, item, arms.OffHand, model.Grips.OffHand).Wrist, offShoulder) - arms.Reach.Length);
     }
 }
