@@ -23,10 +23,13 @@ internal sealed class ArmsView : IDisposable
     private AnimationInstance? instance;
     // Whether the off hand held a grip when the arms were last posed.
     private bool offHeld;
-    // Each joint's parent, and the turns added to the digits last call and the call before: the drawn arms are read for
-    // the last, so while the two agree the grip clip's digit chains can be read from them.
+    // Each joint's parent, the turns added to the digits last call, and for how many calls they have not changed: a
+    // drawn frame can lag several posings, so the grip clip's digit chains are read from the drawn arms only once the
+    // turns have held long enough that the frame was drawn with them.
     private readonly uint[] parents;
-    private Dictionary<uint, Quaternion> sent = [], sentBefore = [];
+    private Dictionary<uint, Quaternion> sent = [];
+    private int steady;
+    private const int SteadyCalls = 8;
     private HandChains? mainChains, offChains;
     private Vector3[][]? mainDrawn, offDrawn;
     // The wrist targets (camera space) the solve placed the drawn digits for.
@@ -190,7 +193,7 @@ internal sealed class ArmsView : IDisposable
             ReadOnlySpan<IkChainReach> reach = drawn.IkChains.Span;
             Shortfall = (reach[0].Shortfall, offHeld ? reach[1].Shortfall : -1);
             drawnFor = (reach[0].TargetModel + shoulder, reach[1].TargetModel + shoulder);
-            if (Same(sent, sentBefore))
+            if (steady >= SteadyCalls)
             {
                 mainChains = Read(joints, mainDigits);
                 offChains = Read(joints, offDigits);
@@ -203,7 +206,7 @@ internal sealed class ArmsView : IDisposable
             mainDrawn = At(mainDigits, joints);
             offDrawn = At(offDigits, joints);
         }
-        sentBefore = sent;
+        steady = Same(sent, now) ? steady + 1 : 0;
         sent = now;
         offHeld = offGrip is not null;
         engine.Animation.SetPose(new(instance,
