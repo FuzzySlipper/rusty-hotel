@@ -21,24 +21,31 @@ internal sealed class ArmsView : IDisposable
     // Each hand's finger joints (a row per finger, base to tip) and thumb joints, for closing it on what it holds.
     private readonly (uint[][] Fingers, uint[] Thumb) mainDigits, offDigits;
     private AnimationInstance? instance;
-    // The wrists' last targets (model space; the off one only while it holds), and how far the drawn arms fell short.
-    private (Vector3 Main, Vector3? Off)? asked;
+    // Whether the off hand held a grip when the arms were last posed.
+    private bool offHeld;
     // Each joint's parent, and the turns added to the digits last call and the call before: the drawn arms are read for
     // the last, so while the two agree the grip clip's digit chains can be read from them.
     private readonly uint[] parents;
     private Dictionary<uint, Quaternion> sent = [], sentBefore = [];
     private HandChains? mainChains, offChains;
     private Vector3[][]? mainDrawn, offDrawn;
+    // The wrist targets (camera space) the solve placed the drawn digits for.
+    private (Vector3 Main, Vector3 Off) drawnFor;
 
     /// <summary>A hand's digits as the grip clip draws them (null until the arms have been drawn holding still).</summary>
     internal HandChains? Chains(bool offHand) => offHand ? offChains : mainChains;
 
-    /// <summary>Where a hand's digit joints were last drawn (camera space; a row per finger, then the thumb), to check the fit's posing against.</summary>
-    internal Vector3[][]? Drawn(bool offHand) => offHand ? offDrawn : mainDrawn;
+    /// <summary>
+    /// Where a hand's digit joints were last drawn (camera space; a row per finger, then the thumb), to check the fit's
+    /// posing against; null unless the drawn frame's solve reached for <paramref name="wrist"/>, so a draw of another pose
+    /// is never compared.
+    /// </summary>
+    internal Vector3[][]? Drawn(bool offHand, Vector3 wrist) =>
+        Vector3.Distance(offHand ? drawnFor.Off : drawnFor.Main, wrist) < 1e-4f ? offHand ? offDrawn : mainDrawn : null;
 
     /// <summary>
-    /// How far each holding wrist was drawn from where it was asked to be (metres; the off hand's -1 when it holds
-    /// nothing): more than a centimetre or so is a grip out of the arm's reach.
+    /// How far each holding wrist was drawn from its target, as the Engine's solve reports it (metres; the off hand's
+    /// -1 when it holds nothing): more than a centimetre or so is a grip out of the arm's reach.
     /// </summary>
     internal (float Main, float Off) Shortfall { get; private set; } = (0, -1);
 
@@ -176,29 +183,29 @@ internal sealed class ArmsView : IDisposable
         }
         foreach (var (joint, turn) in Close(mainDigits, shape?.Main, closure.Main, arms.Main.Mirrored)) now[joint] = turn;
         hands.AddRange(now.Select(t => JointOverride.AddLocalRotation(t.Key, t.Value)));
-        // The arms drawn last time against where their wrists were asked to be then.
-        if (asked is { } last && engine.Animation.ReadJointPose(instance) is { Reported: true } drawn)
+        // The arms as last drawn: the solve's reach for each wrist (main, then off, as posed below) and the digits.
+        if (engine.Animation.ReadJointPose(instance) is { Reported: true } drawn && drawn.IkChains.Length == 2)
         {
             ReadOnlySpan<JointPose> joints = drawn.Joints.Span;
-            Shortfall = (Vector3.Distance(joints[(int)main.Hand].Model.Translation, last.Main),
-                last.Off is { } offAsked ? Vector3.Distance(joints[(int)off.Hand].Model.Translation, offAsked) : -1);
+            ReadOnlySpan<IkChainReach> reach = drawn.IkChains.Span;
+            Shortfall = (reach[0].Shortfall, offHeld ? reach[1].Shortfall : -1);
+            drawnFor = (reach[0].TargetModel + shoulder, reach[1].TargetModel + shoulder);
             if (Same(sent, sentBefore))
             {
                 mainChains = Read(joints, mainDigits);
                 offChains = Read(joints, offDigits);
             }
-            Vector3 origin = Authored.Vector(arms.Shoulder);
             Vector3[][] At((uint[][] Fingers, uint[] Thumb) digits, ReadOnlySpan<JointPose> all)
             {
                 JointPose[] drawn = all.ToArray();
-                return [.. digits.Fingers.Append(digits.Thumb).Select(d => d.Select(j => drawn[j].Model.Translation + origin).ToArray())];
+                return [.. digits.Fingers.Append(digits.Thumb).Select(d => d.Select(j => drawn[j].Model.Translation + shoulder).ToArray())];
             }
             mainDrawn = At(mainDigits, joints);
             offDrawn = At(offDigits, joints);
         }
         sentBefore = sent;
         sent = now;
-        asked = (mainWrist - shoulder, offGrip is null ? null : offWrist - shoulder);
+        offHeld = offGrip is not null;
         engine.Animation.SetPose(new(instance,
             new TwoBoneIk[]
             {

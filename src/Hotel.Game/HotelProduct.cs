@@ -301,11 +301,12 @@ public sealed class HotelProduct : IEngineProduct, IDebugCommandModuleSource
         registrar.Register(new SuppliesDebugCommands(() => world.Supplies, PublishInterface));
         HeldMotionDebugCommands motionViewer = new(() => world.CombatView, content.Combat.Held, content.Combat.Actions);
         registrar.Register(motionViewer);
-        registrar.Register(new Interface.Workbench.HotelWorkbench(() => world.CombatView, content.Combat.Held, motionViewer,
+        registrar.Register(new Interface.Workbench.HotelWorkbench(engine.ContentSource, () => world.CombatView, content.Combat.Held, motionViewer,
             content.Supplies.Items.Where(i => i.Wear?.Look is not null).GroupBy(i => i.Wear!.Look!)
                 .ToDictionary(g => g.Key, g => g.SelectMany(i => i.Wear!.Actions).Distinct().ToArray())).Module());
         registrar.Register(new HeldStanceDebugCommands(() => world.CombatView, content.Combat.Held));
         registrar.Register(new HandFitDebugCommands(() => world.CombatView, content.Combat.Held));
+        registrar.Register(new InspectionTargetsDebugModule(engine.Graphics, () => world.CombatView.InspectionTargets()));
     }
 
     /// <summary>The world interaction reads whichever floor's route is current.</summary>

@@ -4,7 +4,7 @@ A new first-person exploration game set in an impossible 1970s hotel: scrounge
 for supplies, approach fights deliberately, and call on brief demon summons.
 Read the [game design](docs/design.md) and [sibling reuse guidance](docs/reuse.md).
 The [UI contract](docs/ui.md) separates curated player flows from the opt-in
-Engine developer console.
+Engine developer shell.
 Tasks and implementation progress live in Den project `rusty-hotel`.
 
 ## Play

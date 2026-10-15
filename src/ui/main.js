@@ -3,10 +3,9 @@ import { mountMenuScreen } from './menu-screen.js';
 import { mountCaseScreen } from './case-screen.js';
 import { mountControlsScreen } from './controls-screen.js';
 import { mountReadingScreen } from './reading-screen.js';
-import { mountConsoleScreen } from './console-screen.js';
 import { mountTitleScreen } from './title-screen.js';
 import { createPauseFlow } from './pause.js';
-import { createWorkbench, developerAvailable } from './developer.js';
+import { createDeveloperShell, developerAvailable } from './developer.js';
 
 /** The window height, in CSS pixels, the interface is laid out for at UI scale 1. */
 const UI_HEIGHT = 1000;
@@ -21,8 +20,8 @@ export function mountProductUi(root, context) {
   layer.className = 'hotel-ui';
   layer.setAttribute('aria-label', 'Hotel Endless');
   layer.innerHTML = `<link rel="stylesheet" href="${new URL('./hotel.css', import.meta.url)}">`;
-  // The console is offered only where the Engine host runs its debug service (rusty dev --live-debug). The service may
-  // not answer while the product loads, so the menu and F2 ask again until it does.
+  // The developer shell is offered only where the Engine host runs its debug service (rusty dev --live-debug). The
+  // service may not answer while the product loads, so the menu and its key ask again until it does.
   let developerEnabled = false;
   const askDeveloper = async () => {
     if (developerEnabled) return true;
@@ -38,19 +37,27 @@ export function mountProductUi(root, context) {
   const reading = mountReadingScreen(document, { name: 'reading', eyebrow: 'Found in the hotel', closeLabel: 'Put down' });
   const refuge = mountReadingScreen(document, { name: 'refuge', eyebrow: 'Refuge ledger', closeLabel: 'Return to hotel' });
   const fieldCase = mountCaseScreen(document, context.intents);
-  const screens = Object.fromEntries([title, menu, fieldCase, mountControlsScreen(document), reading, refuge, mountConsoleScreen(document)]
+  const screens = Object.fromEntries([title, menu, fieldCase, mountControlsScreen(document), reading, refuge]
     .map(view => [view.name, view]));
   const foreground = document.createElement('div');
   foreground.className = 'foreground';
   foreground.hidden = true;
   foreground.setAttribute('data-rusty-ui-interactive', '');
   foreground.append(...Object.values(screens).map(view => view.element));
-  // The developer workbench docks beside play without pausing it, so motion plays while values are tuned.
-  const workbenchHost = document.createElement('div');
-  workbenchHost.className = 'workbench-host';
-  workbenchHost.setAttribute('data-rusty-ui-interactive', '');
-  const workbench = createWorkbench(workbenchHost);
-  layer.append(hud.element, foreground, workbenchHost);
+  // The developer shell docks beside play without pausing it, so motion plays while values are tuned. However it
+  // closes, input returns to play.
+  const developerHost = document.createElement('div');
+  developerHost.className = 'developer-host';
+  const developer = createDeveloperShell(developerHost, {
+    viewport: context.viewport,
+    onClose: () => {
+      if (disposed) return;
+      context.ui.setInteractionMode('gameplay');
+      context.ui.focusGameplay();
+      syncPointer();
+    }
+  });
+  layer.append(hud.element, foreground, developerHost);
   root.append(layer);
   let screen = null;
   let returnScreen = null;
@@ -60,22 +67,18 @@ export function mountProductUi(root, context) {
   let pause;
   let titleActive = false;
   // Screen shortcuts are browser key codes from the authored binding table; inert until the first facts arrive.
-  let keys = { fieldCase: null, menu: null, console: null, workbench: null };
-  const toggleWorkbench = async () => {
-    if (workbench.isOpen) {
-      workbench.close();
-      context.ui.setInteractionMode('gameplay');
-      context.ui.focusGameplay();
-    } else if (screen === null && await askDeveloper()) {
+  let keys = { fieldCase: null, menu: null, developer: null };
+  const toggleDeveloper = async () => {
+    if (developer.isOpen) developer.close();
+    else if (screen === null && await askDeveloper()) {
       context.ui.setInteractionMode('interface');
-      await workbench.open();
+      await developer.open();
     }
     syncPointer();
   };
 
-  const syncPointer = () => hud.setNavigationHidden(screen !== null || workbench.isOpen || document.pointerLockElement !== null);
+  const syncPointer = () => hud.setNavigationHidden(screen !== null || developer.isOpen || document.pointerLockElement !== null);
   const present = (next, parent = null) => {
-    if (next === 'console' && !developerEnabled) return;
     for (const view of Object.values(screens)) view.leave();
     screen = next;
     returnScreen = parent;
@@ -89,7 +92,7 @@ export function mountProductUi(root, context) {
     if (next === 'menu') void askDeveloper();
   };
   const show = async (next, parent = null) => {
-    if (disposed || pause.snapshot().pending || (next === 'console' && !developerEnabled)) return;
+    if (disposed || pause.snapshot().pending) return;
     if (next === null) {
       if (await pause.resume()) {
         if (!disposed) present(null);
@@ -103,7 +106,8 @@ export function mountProductUi(root, context) {
   const onClick = event => {
     const button = event.target.closest('button');
     if (!button || !layer.contains(button)) return;
-    if (button.hasAttribute('data-workbench-close')) void toggleWorkbench();
+    // The menu's developer entry resumes play, then docks the shell beside it.
+    if (button.hasAttribute('data-developer')) void show(null).then(() => { if (screen === null) void toggleDeveloper(); });
     else if (button.hasAttribute('data-return')) show(null);
     else if (button.hasAttribute('data-pause')) void pause.pause();
     else if (button.hasAttribute('data-close')) close();
@@ -117,7 +121,7 @@ export function mountProductUi(root, context) {
       event.preventDefault();
       event.stopPropagation();
       if (event.repeat || screen === 'title') return;
-      if (workbench.isOpen) void toggleWorkbench();
+      if (developer.isOpen) developer.close();
       else if (screen !== null) close(); else show('menu');
       return;
     }
@@ -127,17 +131,10 @@ export function mountProductUi(root, context) {
         event.preventDefault();
         event.stopPropagation();
         if (!event.repeat) { if (screen === 'case') close(); else show('case', screen === null ? null : { screen, back: returnScreen }); }
-      } else if (event.code === keys.workbench && !event.repeat && (screen === null || workbench.isOpen)) {
+      } else if (event.code === keys.developer && !event.repeat && (screen === null || developer.isOpen)) {
         event.preventDefault();
         event.stopPropagation();
-        void toggleWorkbench();
-      } else if (event.code === keys.console && screen === 'console') {
-        event.preventDefault();
-        event.stopPropagation();
-        if (!event.repeat) close();
-      } else if (event.code === keys.console && !event.repeat) {
-        const parent = screen === null ? null : { screen, back: returnScreen };
-        void askDeveloper().then(available => { if (available) show('console', parent); });
+        void toggleDeveloper();
       }
     }
     if (event.key === 'Tab' && screen !== null) {
@@ -209,7 +206,7 @@ export function mountProductUi(root, context) {
     unsubscribe?.();
     pause.dispose();
     for (const view of Object.values(screens)) view.dispose?.();
-    workbench.dispose();
+    developer.dispose();
     layer.removeEventListener('click', onClick);
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('pointerlockchange', syncPointer);

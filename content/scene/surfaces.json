@@ -230,18 +230,6 @@
       "emission": 1.2
     },
     {
-      "id": "dev-guide-target",
-      "color": [1, 0.62, 0.1],
-      "roughness": 1,
-      "emission": 3
-    },
-    {
-      "id": "dev-guide-actual",
-      "color": [0.15, 0.85, 1],
-      "roughness": 1,
-      "emission": 3
-    },
-    {
       "id": "stairwell",
       "color": [
         0.015,

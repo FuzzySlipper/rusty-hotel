@@ -11,79 +11,68 @@ export async function developerAvailable(loadPanel = () => import('@rusty-engine
   }
 }
 
-/** One opt-in Engine panel. No transport, catalog or diagnostics exists while closed. */
-export function createDeveloperConsole(host, loadPanel = () => import('@rusty-engine/live-debug')) {
-  let current = null;
-  const close = () => {
-    const previous = current;
-    current = null;
-    previous?.mount?.dispose();
-    previous?.element.remove();
-  };
-  return {
-    async open() {
-      close();
-      const element = host.ownerDocument.createElement('div');
-      const session = { element, mount: null };
-      current = session;
-      element.textContent = 'Opening developer console…';
-      host.append(element);
-      try {
-        const { mountLiveDebugPanel } = await loadPanel();
-        if (current !== session) return;
-        element.textContent = '';
-        const mounted = await mountLiveDebugPanel(element, { enabled: true, presentation: 'dock' });
-        if (current !== session) { mounted.dispose(); return; }
-        session.mount = mounted;
-        element.querySelector('input')?.focus();
-      } catch (error) {
-        if (current !== session) return;
-        element.textContent = `Developer console unavailable: ${error instanceof Error ? error.message : 'could not load Engine panel'}`;
-        element.setAttribute('role', 'alert');
-      }
-    },
-    close,
-    dispose: close
-  };
-}
+// The Hotel overlay sets the shell shows in the player view while open (C# HeldInspection): the stance guide and the
+// hand fit's contact probes. Each draws only once C# publishes it.
+const PLAYER_SETS = ['held.guide', 'hands.contact'];
 
 /**
- * The first-person workbench: the Engine tunables panel over Hotel's tunables page (HotelWorkbench), with Close.
- * Closed, it holds no panel and sends nothing; closing returns the hands to what they hold.
+ * The Engine developer shell, docked at the left beside play (which keeps running): the console, the first-person
+ * workbench (the tunables panel over Hotel's page, HotelWorkbench) and two inspection views of the held assembly, the
+ * main grip from the side and the support grip from underneath (C# inspection targets). Closed, it holds no panel and
+ * sends nothing. However it closes (its own Close, the key, Escape), the views close, the hands return to what they
+ * hold and `onClose` returns input to play.
  */
-export function createWorkbench(host, loadPanel = () => import('@rusty-engine/live-debug')) {
+export function createDeveloperShell(host, { viewport = null, onClose = () => {}, loadPanel = () => import('@rusty-engine/live-debug') } = {}) {
   let current = null;
   const close = () => {
     const previous = current;
     current = null;
     if (!previous) return;
-    previous.mount?.dispose();
-    previous.element.remove();
-    void previous.transport?.execute('hotel.dev.motion.off').catch(() => {});
+    previous.observer?.disconnect();
+    previous.shell?.close();
+    if (previous.transport) {
+      for (const set of PLAYER_SETS) void previous.transport.execute(`engine.inspect.overlay hide set ${set}`).catch(() => {});
+      void previous.transport.execute('hotel.dev.motion.off').catch(() => {});
+    }
+    previous.error?.remove();
+    onClose();
   };
   return {
     get isOpen() { return current !== null; },
     async open() {
-      close();
-      const element = host.ownerDocument.createElement('aside');
-      element.className = 'workbench';
-      element.setAttribute('aria-label', 'First-person workbench');
-      element.innerHTML = '<header><button type="button" data-workbench-close>Close</button></header><div class="workbench-panel">Opening workbench…</div>';
-      const session = { element, mount: null, transport: null };
+      if (current) return;
+      const session = { shell: null, transport: null, observer: null, error: null };
       current = session;
-      host.append(element);
       try {
-        const { mountTunablesPanel, createLiveDebugHttpTransport } = await loadPanel();
+        const { mountDeveloperShell, createLiveDebugHttpTransport } = await loadPanel();
         if (current !== session) return;
         session.transport = createLiveDebugHttpTransport();
-        const panel = element.querySelector('.workbench-panel');
-        panel.textContent = '';
-        session.mount = mountTunablesPanel(panel, { transport: session.transport });
+        session.shell = mountDeveloperShell(host, {
+          side: 'left',
+          presentation: 'dock',
+          transport: session.transport,
+          panels: [
+            ...(viewport ? [
+              { kind: 'view', title: 'Main grip', options: { viewport, id: 'side', subject: 'target main-grip', framings: ['side', 'front', 'top', 'close'] } },
+              { kind: 'view', title: 'Support grip', options: { viewport, id: 'grip', subject: 'target off-grip', framings: ['underside', 'side', 'close'] } }
+            ] : []),
+            { kind: 'tunables', title: 'Workbench' },
+            { kind: 'console' }
+          ]
+        });
+        await session.shell.open();
+        if (current !== session) { session.shell.close(); return; }
+        // The shell's own Close removes its element without telling the product: closing follows it.
+        session.observer = new host.ownerDocument.defaultView.MutationObserver(() => { if (current === session && !session.shell.isOpen) close(); });
+        session.observer.observe(host, { childList: true });
+        for (const set of PLAYER_SETS) void session.transport.execute(`engine.inspect.overlay show set ${set}`).catch(() => {});
       } catch (error) {
         if (current !== session) return;
-        element.querySelector('.workbench-panel').textContent =
-          `Workbench unavailable: ${error instanceof Error ? error.message : 'could not load the Engine panel'}`;
-        element.setAttribute('role', 'alert');
+        session.error = host.ownerDocument.createElement('p');
+        session.error.className = 'developer-error';
+        session.error.setAttribute('role', 'alert');
+        session.error.textContent = `Developer shell unavailable: ${error instanceof Error ? error.message : 'could not load the Engine panel'}`;
+        host.append(session.error);
       }
     },
     close,

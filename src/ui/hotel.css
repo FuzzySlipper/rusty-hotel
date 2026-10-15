@@ -74,13 +74,6 @@
 .hotel-ui .item-detail p { margin-top:0.75rem; color:var(--muted); }
 .hotel-ui .spirit-empty { min-height:15.9375rem; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:0.875rem; color:var(--muted); }
 .hotel-ui .pact-mark { font:4.375rem/1 Georgia,serif; color:#899b8e; }
-.hotel-ui .console-screen { align-self:start; width:min(70rem,100%); }
-.hotel-ui .console-help { flex:none; padding:0.75rem 1.5rem; color:var(--muted); font-size:0.75rem; }
-.hotel-ui .console-host { min-height:0; overflow:auto; padding:0 1.25rem 1.125rem; }
-.hotel-ui .console-host .rusty-live-debug-panel { max-width:100%; }
-/* Bound Engine-owned lists so command results remain beside the input. */
-.hotel-ui .console-host .rusty-live-debug-panel__completions { max-height:18vh; overflow:auto; }
-.hotel-ui .console-host .rusty-live-debug-panel__transcript { max-height:24vh; }
 @media (max-width:760px) {
   .hotel-ui .condition { display:none; }
   .hotel-ui .hud-bottom { left:1.25rem; right:1.25rem; }
@@ -162,10 +155,18 @@
 .hotel-ui .pocket-grid .pocket .item-icon { width:1.875rem; height:1.875rem; display:grid; margin:0 auto 2px; font-size:1.25rem; }
 .hotel-ui .quick-pocket .item-icon { width:1.25rem; height:1.25rem; display:grid; margin:0 auto; }
 .hotel-ui .empty-emblem .item-icon { width:4.5rem; height:4.5rem; margin:0; font-size:2.5rem; }
-/* Developer workbench: the Engine tunables panel in a scrolling column docked at the left, clear of what the right hand
-   holds (developer sessions only). */
-.hotel-ui .workbench-host { position:absolute; top:0; left:0; bottom:0; pointer-events:none; }
-.hotel-ui .workbench { pointer-events:auto; width:24rem; height:100%; overflow-y:auto; box-sizing:border-box; padding:0.75rem; background:#1b1d18ee; border-right:1px solid var(--edge); font-size:0.75rem;
-  --rusty-tunables-foreground:var(--ink); --rusty-tunables-muted:var(--muted); --rusty-tunables-border:var(--edge); --rusty-tunables-accent:var(--accent); --rusty-tunables-background:transparent; --rusty-tunables-font:inherit; }
-.hotel-ui .workbench header { display:flex; justify-content:flex-end; margin-bottom:0.25rem; }
-.hotel-ui .workbench button { padding:0.25rem 0.5rem; font-size:0.6875rem; }
+/* Developer shell (developer sessions only): the Engine shell docked at the left, clear of what the right hand holds,
+   with its console, workbench and inspection views in the Hotel palette. Between its panels it is see-through, so a
+   view pane shows the view the Engine draws under it. */
+.hotel-ui .developer-host { position:absolute; inset:0; pointer-events:none; }
+.hotel-ui .developer-host > * { pointer-events:auto; }
+.hotel-ui .rusty-developer-shell { --rusty-shell-width:28rem; --rusty-shell-background:#1b1d18ee; --rusty-shell-foreground:var(--ink); --rusty-shell-border:var(--edge);
+  --rusty-shell-accent:var(--accent); --rusty-shell-font:0.75rem/1.4 system-ui,sans-serif;
+  --rusty-tunables-foreground:var(--ink); --rusty-tunables-muted:var(--muted); --rusty-tunables-border:var(--edge); --rusty-tunables-accent:var(--accent); --rusty-tunables-background:#1b1d18ee; --rusty-tunables-font:inherit; }
+/* The shell's sizes are for a page of its own; beside play the views share the height with the workbench, which keeps
+   room for its controls. The column scrolls when the window is short. */
+.hotel-ui .rusty-developer-shell__panel--view { height:24vh; }
+.hotel-ui .rusty-developer-shell__panel--tunables { flex:none; height:34vh; }
+.hotel-ui .rusty-developer-shell .rusty-live-debug-panel__completions { max-height:18vh; overflow:auto; }
+.hotel-ui .rusty-developer-shell .rusty-live-debug-panel__transcript { max-height:24vh; }
+.hotel-ui .developer-error { position:absolute; top:0.75rem; left:0.75rem; max-width:24rem; padding:0.75rem; background:#1b1d18ee; border:1px solid var(--edge); font-size:0.75rem; }

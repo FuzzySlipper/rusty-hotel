@@ -76,7 +76,7 @@ internal sealed class ResidentSenses(IEngineContext engine, SpatialSession sessi
             new Vector3(MathF.Sin(r.Yaw), 0, -MathF.Cos(r.Yaw)), r.Kind.Perception.Range,
             r.Kind.Perception.FieldOfView >= 360 ? -1 : Math.Cos(r.Kind.Perception.FieldOfView * Math.PI / 360), 1)).ToArray();
         PerceptionTarget[] targets = living.Select(b => new PerceptionTarget(b.Entity, b.Eye)).ToArray();
-        PerceptionQueryRequest query = new(session, observers, targets, ReadOnlyMemory<SpatialEntityCollider>.Empty, 0, 0, PageSize);
+        PerceptionQueryRequest query = new(session, observers, targets, ReadOnlyMemory<SpatialEntityCollider>.Empty, 0, PageSize);
         PerceptionReadoutResult receipt;
         do
         {
@@ -84,7 +84,7 @@ internal sealed class ResidentSenses(IEngineContext engine, SpatialSession sessi
             foreach (PerceptionPair pair in receipt.Pairs.Span)
                 if (pair.Kind == PerceptionPairKind.Visible && pair.Observer != pair.Target) visible.Add((pair.Observer, pair.Target));
             if (receipt.HasNextPairCursor)
-                query = query with { PairCursor = receipt.NextPairCursor, ExpectedProjectionIdentity = receipt.ProjectionIdentity };
+                query = query with { PairCursor = receipt.NextPairCursor };
         } while (receipt.HasNextPairCursor);
         return visible;
     }

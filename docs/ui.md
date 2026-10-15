@@ -20,7 +20,7 @@ combat slab. Final sizes and colors should be tuned against the rendered scene.
 | Reading/inspection | One note, tape transcript or found object's content, with contextual navigation only where needed | Ordinary world use opens it; closing returns to the same situation. Do not turn it into a general command palette. |
 | Refuge | The current return/checkpoint interaction and its result | Use the refuge fixture to open a small contextual surface. Inventory remains in the field case; no duplicate state editor. |
 | Title menu | Centred: Continue (when the save can be continued), New expedition, Delete saved expedition (when one is saved), Options, Quit (in a desktop window); a line saying what is saved, or why it cannot be continued | A session opens here (or straight into the save, by `expedition/title.json` `start`); the pause menu's Title menu returns here. A choice closes it into play. Escape does nothing here. |
-| Pause | Resume, controls/settings that actually work, and appropriate session actions | Pause control opens it; resume uses Engine lifecycle. In a debug-enabled session, one labeled Developer console entry may lead to the Engine console. |
+| Pause | Resume, controls/settings that actually work, and appropriate session actions | Pause control opens it; resume uses Engine lifecycle. In a debug-enabled session, one labeled Developer shell entry resumes play and docks the Engine developer shell beside it. |
 
 These are a small set of product surfaces, not a generic screen framework.
 Implement working HUD, pause and field-case navigation first. Reserve reading
@@ -151,7 +151,7 @@ an unrelated test-button list does not satisfy this contract.
 
 `src/ui/main.js` exports `mountProductUi`. It composes `hud.js` and one module per
 foreground screen (`menu-screen.js`, `case-screen.js`, `controls-screen.js`,
-`reading-screen.js` for both readings and the refuge ledger, `console-screen.js`).
+`reading-screen.js` for both readings and the refuge ledger).
 Each module returns its element and `enter`/`leave` focus hooks, plus drawing
 where it needs it. Adding a screen means a new module and one entry in `main.js`'s
 screen list. Exploration shows a compact title and
@@ -197,16 +197,16 @@ Nested navigation retains pause; closing the final surface requests resume befor
 the Engine reports it. Pending transitions suppress duplicate navigation. A
 failed request keeps its error visible; a running menu offers Pause hotel to retry.
 
-F3 opens the developer workbench (docs/development.md) under the same condition; it docks beside play without
-pausing it and is closed by F3 or Escape.
-
-The menu's Developer console entry and F2 shortcut exist only when the Engine
+The menu's Developer shell entry and F2 shortcut exist only when the Engine
 host runs its debug service (`rusty dev --live-debug`), streamed or in a window.
 The UI asks through the Engine's own debug client at startup, and again when the
 menu opens or F2 is pressed until the service answers (it may not while the
-product loads). The
-`developer.js` adapter lazily imports and mounts the packaged Engine dock inside
-the bounded console screen, disposes it on close, and disposes stale async mounts.
+product loads). The shell is not a foreground screen: it docks at the left
+beside play without pausing it (docs/development.md), and F2, Escape or its own
+Close closes it and returns input to play. The
+`developer.js` adapter lazily imports and mounts the packaged Engine developer
+shell (console, workbench and inspection views), closes it however it is closed,
+and disposes stale async mounts.
 It owns no parser, transport, polling or command state. The generated C# catalog
 exposes `hotel.inspect` and the explicit developer excursion reset
 `hotel.dev.return-to-entrance`, both over existing product owners. The latter

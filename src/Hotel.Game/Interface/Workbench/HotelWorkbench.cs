@@ -1,4 +1,5 @@
 using Hotel.Game.Combat;
+using Rusty.Engine;
 using Rusty.Engine.Debugging;
 
 namespace Hotel.Game.Interface.Workbench;
@@ -10,9 +11,9 @@ namespace Hotel.Game.Interface.Workbench;
 /// panel renders it and saves each control where its source names.
 /// </summary>
 /// <param name="uses">Each look's actions, from the items that show it.</param>
-internal sealed class HotelWorkbench(Func<CombatView> view, HeldCatalog held, HeldMotionDebugCommands viewer, IReadOnlyDictionary<string, string[]> uses)
+internal sealed class HotelWorkbench(IContentSourceService source, Func<CombatView> view, HeldCatalog held, HeldMotionDebugCommands viewer, IReadOnlyDictionary<string, string[]> uses)
 {
-    internal TunablesDebugModule Module() => new(Page, Choose);
+    internal TunablesDebugModule Module() => new(source, Page, Choose);
 
     private TunablesPage Page()
     {

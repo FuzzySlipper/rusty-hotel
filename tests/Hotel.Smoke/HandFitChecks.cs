@@ -25,23 +25,30 @@ internal static class HandFitChecks
         // Beside the shaft: the wrist below and to +X of the grip, so the fingers rise past it and curl over it.
         HandShape beside = Shape();
         HandFitting.Hold near = new(model, placement, grip + new Vector3(0.03f, -0.045f, 0), turn, chains, false);
-        List<string> fitted = HandFitting.Fit(engine, near, beside, held.Arms.Hands);
+        List<string> fitted = HandFitting.Fit(engine, near, beside, held.Arms.Hands, [], "main");
         Check(fitted.All(l => !l.Contains("meets nothing") && !l.Contains("into the model")), $"fingers beside the bar curl onto it without passing in:\n{string.Join("\n", fitted)}");
         Check(beside.Fingers.All(f => f.All(c => c > held.Arms.Hands.Fit.Open && c < held.Arms.Hands.Fit.Closed)), "each finger stops between open and closed");
         Check(beside.Thumb.Select((joint, i) => joint[0] >= held.Arms.Hands.Open.Thumb[i][0]).All(v => v),
             "fitting never bends the thumb farther back than its authored open pose");
-        List<string> contact = HandFitting.Contact(engine, near, beside, held.Arms.Hands);
+        List<OverlayItem> marks = [];
+        List<string> contact = HandFitting.Contact(engine, near, beside, held.Arms.Hands, marks, "main");
         Check(contact.All(l => !l.Contains("into the model")), $"the fitted hand reports no digit in the bar:\n{string.Join("\n", contact)}");
+        // Each digit's line has its marker: a label with the line's distance at its tip, and a sphere per probe, none red.
+        OverlayItem[] labels = [.. marks.Where(m => m.Shape == OverlayShape.Label)];
+        Check(labels.Length == contact.Count && labels.Zip(contact).All(p => p.First.Text.StartsWith("main ") && p.Second.EndsWith(p.First.Text[(p.First.Text.IndexOf(": ") + 2)..])),
+            $"each contact line has a label with its words:\n{string.Join("\n", labels.Select(l => l.Text))}");
+        Check(marks.Count(m => m.Shape == OverlayShape.WireSphere) == contact.Count * 3 * held.Arms.Hands.Fit.Samples
+            && marks.All(m => m.Space == OverlaySpace.Camera), "every probe is marked in camera space");
         HandShape tuned = Shape();
         tuned.Fingers[0][1] = 12.5f;
         tuned.Thumb[1][1] = -7;
         string before = System.Text.Json.JsonSerializer.Serialize(tuned);
-        contact = HandFitting.Contact(engine, near, tuned, held.Arms.Hands);
+        contact = HandFitting.Contact(engine, near, tuned, held.Arms.Hands, [], "main");
         Check(contact[0].Contains("12.5") && contact[^1].Contains("swing [0, -7, 0]") &&
             System.Text.Json.JsonSerializer.Serialize(tuned) == before, "contact includes tuned curls and thumb swings without changing the hand");
 
         HandShape far = Shape();
-        List<string> away = HandFitting.Fit(engine, near with { Wrist = grip + new Vector3(0.5f, 0, 0) }, far, held.Arms.Hands);
+        List<string> away = HandFitting.Fit(engine, near with { Wrist = grip + new Vector3(0.5f, 0, 0) }, far, held.Arms.Hands, [], "main");
         Check(away.All(l => l.Contains("meets nothing")) && far.Fingers.All(f => f.All(c => c == 0)), $"a hand far from the bar keeps the clip:\n{string.Join("\n", away)}");
         Console.WriteLine($"Hand fit checks passed: four fingers curl onto the pry bar's own surface ({string.Join(", ", beside.Fingers.Select(f => string.Join("/", f)))}) and none passes in; a far hand keeps the clip.");
     }

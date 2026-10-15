@@ -14,7 +14,7 @@ internal sealed class HandFitDebugCommands(Func<CombatView> view, HeldCatalog he
     [DebugCommand("hotel.dev.hands.fit", Description = "Developer hand fit: curl a look's hands (main, off or both) onto its model at rest, joint by joint from open, and print the angles and how each digit meets it. Unsaved until the workbench saves it.")]
     public DebugCommandResult Fit(string look, string hands) => Run(look, hands, apply: true);
 
-    [DebugCommand("hotel.dev.hands.contact", Description = "Developer hand fit: report how near a look's model each digit of its hands (main, off or both) comes at rest, and which pass into it.")]
+    [DebugCommand("hotel.dev.hands.contact", Description = "Developer hand fit: report how near a look's model each digit of its hands (main, off or both) comes at rest, and which pass into it; marks each probe in the overlay set hands.contact.")]
     public DebugCommandResult Contact(string look, string hands) => Run(look, hands, apply: false);
 
     /// <summary>Fits or reports the hands of a look; the lines, or why it could not.</summary>
@@ -24,15 +24,18 @@ internal sealed class HandFitDebugCommands(Func<CombatView> view, HeldCatalog he
         bool[]? sides = hands switch { "main" => [false], "off" => [true], "both" => [false, true], _ => null };
         if (sides is null) return (false, "Hands are main, off or both.");
         List<string> lines = [];
+        // Every digit the report measures is marked, one set for the hands it names (HeldInspection.ContactSet).
+        List<Rusty.Engine.OverlayItem> marks = [];
         foreach (bool off in sides)
         {
             string side = off ? "off" : "main";
             if (off && held.Model(look).Grips.Off is null) { lines.Add($"{side}: {look} has no off grip."); continue; }
-            if (view.FitHand(look, off, apply) is not { } found)
+            if (view.FitHand(look, off, apply, marks) is not { } found)
                 return (false, "The arms have not been drawn holding still yet: hold something, or show a look (hotel.dev.motion), then try again.");
             lines.Add($"{side} hand on {look}:");
             lines.AddRange(found.Select(l => "  " + l));
         }
+        view.ShowContact(marks);
         return (true, string.Join("\n", lines));
     }
 

@@ -27,8 +27,8 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `src/Hotel.Game/Loot/` | The loot catalog (`LootCatalog`: qualities, affixes, tables), item generation and table rolls through one keyed-draw interface: floor generation's content draws, or `SearchLootDraws` under the run seed for searches made in play |
 | `src/Hotel.Game/Residents/` | Resident kinds composed from parts (`ResidentDefinition`: look, faction, perception, movement, action choices), `ResidentSenses` (one Engine visibility query a step for every resident, near sense and awareness memory) and `ResidentConduct` (the movement parts and action choice, as Engine character steps) |
 | `src/Hotel.Game/Combat/HotelEnemy.cs`, `PlayerActor.cs` | The two kinds of action actor: a placed resident (body, `ActorStats`, `ActionUser`) and the investigator (player body, supplies' stats, worn contributions) |
-| `src/Hotel.Game/Combat/ArmsView.cs` | The investigator's first-person arms (`content/combat/arms.json`) on the viewmodel layer, reaching the held look's grips by Engine two-bone IK each update with the hands turned to the item, over the clip that closes the fingers; `HandFitting.cs` fits a look's hand shape to its model's surface for developers |
-| `src/Hotel.Game/Combat/CombatView.cs` | The held-item models (`HeldDefinition.cs`, `content/combat/held.json`) on the Engine viewmodel layer, published at rest and moved through each action by an Engine tween timeline built from their motion (`HeldMotion.cs`, `content/combat/held-motion.json`), and flares in flight, contributed to the existing scene snapshot with the residents |
+| `src/Hotel.Game/Combat/ArmsView.cs` | The investigator's first-person arms (`content/combat/arms.json`) on the viewmodel layer, reaching the held look's grips by Engine two-bone IK each update with the hands turned to the item, over the clip that closes the fingers; `HandFitting.cs` fits a look's hand shape to its model's surface for developers; how far each wrist fell short is the Engine solve's `IkChains` |
+| `src/Hotel.Game/Combat/CombatView.cs` | The held-item models (`HeldDefinition.cs`, `content/combat/held.json`) on the Engine viewmodel layer, published at rest and moved through each action by an Engine tween timeline built from their motion (`HeldMotion.cs`, `content/combat/held-motion.json`), and flares in flight, contributed to the existing scene snapshot with the residents; `HeldInspection.cs` draws the developer stance guide and hand-fit contact probes as Engine overlay sets and names the shown look's grips as Engine inspection targets |
 | `src/Hotel.Game/Combat/ResidentView.cs`, `RagdollDefinition.cs` | Each resident's rigged model and Engine animation instance: the clip for its state, its attack clip sampled at the action's progress, the tell light, the hitscan beam; a felled resident's Engine ragdoll (`content/combat/ragdolls.json`) in a presentation Dynamics world over the floor's collision, pushed by the felling blow, whose rest moves its remains |
 | `src/Hotel.Game/Spirits/HotelSpirit.cs` | The roster's pacts: freeing spirits at bells, the pact slot, semantic equip claims, call eligibility through Combat's pact slot, and the transient visit |
 | `src/Hotel.Game/Spirits/SpiritView.cs` | Each spirit's body and hinged wing models (`content/models/spirits/`) and admitted-time entrance, wing poses and departure |
@@ -57,10 +57,10 @@ in [design.md](design.md); [reuse.md](reuse.md) records one-time donor provenanc
 | `content/` | Authored data by domain: player, route, interface, scene surfaces, supplies, combat, spirits, and one folder per excursion. See [authoring](authoring.md). |
 | `src/ui/main.js` | Composition, the single foreground-screen navigation, focus containment, lifecycle flow and Engine input-mode handoff |
 | `src/ui/hud.js` | Exploration HUD regions and their drawing from projected facts |
-| `src/ui/title-screen.js`, `menu-screen.js`, `case-screen.js`, `controls-screen.js`, `reading-screen.js`, `console-screen.js` | One foreground screen each: its markup, drawing, and what happens on entering and leaving it; `screen.js` holds their shared helpers |
+| `src/ui/title-screen.js`, `menu-screen.js`, `case-screen.js`, `controls-screen.js`, `reading-screen.js` | One foreground screen each: its markup, drawing, and what happens on entering and leaving it; `screen.js` holds their shared helpers |
 | `src/ui/field-case.js` | Supplies/Spirits tabs, pocket selection/details, use/move/drop claims (drag to a pocket or out of the grid), pact selection/equip claims and quick-pocket presentation |
 | `src/ui/item-icon.js`, `content/supplies/icons/` (opened to the UI) | Each item's line icon, masked in the surrounding text colour |
-| `src/ui/developer.js` | Lazy packaged Engine console mount, disposal and stale-mount cleanup |
+| `src/ui/developer.js` | Lazy packaged Engine developer shell mount (console, workbench, inspection views), its close however closed, and stale-mount cleanup |
 | `src/ui/pause.js` | Foreground lifecycle request lifetime and error presentation; Engine port owns actual lifecycle state |
 | `src/ui/hotel.css` | Product-authored responsive screen/HUD styling |
 | Engine SDK/runtime | Admitted time/input, FPS physical input, look integration, character collision, camera interpolation, renderer, generated interop, host and browser shell |
@@ -122,7 +122,7 @@ steps or runtime dependencies.
 The UI owns only presentation and semantic navigation. Click-to-lock and mouse
 delivery are handled by Engine. Escape opens the menu or closes the current
 screen; I opens the field case. Engine interface mode releases held gameplay
-input and pointer lock. Controls and the console use that same navigation owner. Return to hotel
+input and pointer lock. Controls use that same navigation owner. Return to hotel
 restores Engine gameplay mode/focus after a successful resume. Every foreground
 screen requests pause through the mounted Engine lifecycle port. Nested screen
 navigation stays paused; the final exit requests resume. UI labels observe the
@@ -333,16 +333,18 @@ do not save unsaved expedition changes. Dispose releases the Engine store.
 
 ## Developer access
 
-The developer console is offered only when the Engine host runs with
+The developer shell is offered only when the Engine host runs with
 `--live-debug`, in a streamed page or a window: the UI asks, through the
 Engine's own debug client, whether the catalog is available (at startup, then
 on opening the menu or pressing F2 until it is). Closed
-UI does not mount the debug panel. Opening imports the Engine-owned
+UI does not mount the debug panels. Opening imports the Engine-owned
 `@rusty-engine/live-debug` entry through the runtime's import map and mounts
-its dock presentation in a bounded dropdown. Closing disposes its requests and
-DOM. A mount that resolves after closing is immediately disposed. Hotel owns
-only this lifetime/navigation adapter, not the console parser, catalog,
-transcript or transport. A disabled debug host reports unavailable in the
+its developer shell beside play: the console, the tunables panel over
+`HotelWorkbench`, and two inspection view panes on the grips that
+`CombatView.InspectionTargets` names. Closing disposes its panels, views and
+requests and returns the hands to what they hold. A mount that resolves after
+closing is immediately disposed. Hotel owns only this lifetime/navigation
+adapter, not the console parser, catalog, transcript, views or transport. A disabled debug host reports unavailable in the
 Engine panel while the game and field case remain usable.
 
 ## Build and host

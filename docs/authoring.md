@@ -229,7 +229,7 @@ Fit is a starting pose: inspect the wrap, thumb and recovery as well as the repo
 the glove; a small measured gap is not proof of mesh separation. Place contacts on the actual model's handle before
 fitting; neither a stance nudge nor curling the fingers corrects an off-surface grip point.
 
-The first-person workbench (F3 in a developer session, docs/development.md) tunes all of these with sliders while
+The first-person workbench (in the developer shell, F2 in a developer session, docs/development.md) tunes all of these with sliders while
 the motion plays. Its Grip placement group edits model-space contact points and independent hand turns; moving the
 main contact re-seats the model around the stance's grip, while moving the support contact moves that hand on the model.
 These values reload in place; adding or removing a hand or rotation override changes structure and requires a restart.
@@ -238,19 +238,19 @@ or through `hotel.dev.motion`):
 
 | Command | Does |
 | --- | --- |
-| `hotel.dev.stance <true/false>` | Draws the shown look's stance (amber: grip marker, a line along its length, a short line along its up side) beside where the look is (blue) |
+| `hotel.dev.stance <true/false>` | Draws the shown look's stance (amber: grip marker, a line along its length, a short line along its up side) beside where the look is (blue), as the overlay set `held.guide` (the developer shell shows it; otherwise `engine.inspect.overlay show set held.guide`) |
 | `hotel.dev.stance.set <stance> <grip xyz> <toward xyz> <up xyz>` | Changes a stance in the loaded content, re-seats every look in it and prints its JSON for `stances.json` |
 | `hotel.dev.stance.hand <stance> <rx> <ry> <rz>` | Changes a stance's hand hold and prints its JSON |
 | `hotel.dev.held.nudge <grip xyz> <turn xyz>` | Nudges the shown look from its stance and prints the `nudge` for `held.json` |
 
-To work on a motion live, open the developer console (F2 in a developer session) and use the motion viewer:
+To work on a motion live, open the developer shell (F2 in a developer session) and use the motion viewer from its console:
 
 | Command | Does |
 | --- | --- |
 | `hotel.dev.motion <look> <action>` | Shows that look in first person at rest in place of what the hands hold, and lists the action's keys with their times and curves |
 | `hotel.dev.motion.key <n>`, `.next`, `.prev` | Holds the look exactly in a key's pose (`-1` is rest) |
 | `hotel.dev.motion.at <seconds>` | Shows the motion paused at any moment of the action, curves and all, as the Engine plays it (a seek); step it by repeating with other times |
-| `hotel.dev.motion.play <speed>` | Plays the action's motion from rest; `1` is as in play, `0.25` a quarter speed. Tweens follow world time, so it plays once the console is closed and the hotel resumes |
+| `hotel.dev.motion.play <speed>` | Plays the action's motion from rest; `1` is as in play, `0.25` a quarter speed. Tweens follow world time; the shell docks beside play, which keeps running |
 | `hotel.dev.motion.pose <name> <x> <y> <z> <rx> <ry> <rz>` | Changes a pose of the shown motion in the loaded content (play uses it too) and prints its JSON to paste into `held-motion.json`; nothing is written to disk |
 | `hotel.dev.motion.off` | Returns the hands to what they hold |
 

@@ -27,23 +27,31 @@ internal static class HandFitting
     /// <summary>Where the held model stands, the hand's wrist and turn on it, and what the hand's digits are.</summary>
     internal readonly record struct Hold(RenderResource Model, Transform Placement, Vector3 Wrist, Quaternion Turn, HandChains Chains, bool Mirrored);
 
-    /// <summary>Fits <paramref name="shape"/> in place and returns a line per digit: its angles and how it meets the model.</summary>
-    internal static List<string> Fit(IEngineContext engine, Hold hold, HandShape shape, ArmDigits digits)
+    /// <summary>
+    /// Fits <paramref name="shape"/> in place and returns a line per digit: its angles and how it meets the model. Each
+    /// digit's probes, as its line measured them, join <paramref name="marks"/> labelled with <paramref name="side"/>.
+    /// </summary>
+    internal static List<string> Fit(IEngineContext engine, Hold hold, HandShape shape, ArmDigits digits, List<OverlayItem> marks, string side)
     {
+        Mark mark = new(marks, side);
         HandFit fit = digits.Fit;
         List<string> lines = [];
         for (int f = 0; f < shape.Fingers.Length; f++)
-            lines.Add(FitDigit(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, digits.Open.Fingers, fit.FingerRadius, fit, digits.Fingers[f]));
+            lines.Add(FitDigit(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, digits.Open.Fingers, fit.FingerRadius, fit, digits.Fingers[f], mark));
         float[] curls = [.. shape.Thumb.Select(j => j[0])], swings = [.. shape.Thumb.Select(j => j[1])];
-        lines.Add(FitDigit(engine, hold, hold.Chains.Thumb, curls, swings, [.. digits.Open.Thumb.Select(j => j[0])], fit.ThumbRadius, fit, digits.Thumb));
+        lines.Add(FitDigit(engine, hold, hold.Chains.Thumb, curls, swings, [.. digits.Open.Thumb.Select(j => j[0])], fit.ThumbRadius, fit, digits.Thumb, mark));
         for (int i = 0; i < 3; i++) shape.Thumb[i][0] = curls[i];
         return lines;
     }
 
-    /// <summary>A line per digit of the hand as <paramref name="shape"/> holds it now: how near the model each comes, and which joints pass into it.</summary>
-    /// <param name="drawn">Where the digits' joints were drawn, when the look is shown at rest: the report then tells how far the fit's posing lies from them.</param>
-    internal static List<string> Contact(IEngineContext engine, Hold hold, HandShape shape, ArmDigits digits, Vector3[][]? drawn = null)
+    /// <summary>
+    /// A line per digit of the hand as <paramref name="shape"/> holds it now: how near the model each comes, and which
+    /// joints pass into it. Each digit's probes join <paramref name="marks"/> labelled with <paramref name="side"/>.
+    /// </summary>
+    /// <param name="drawn">Where the digits' joints were drawn, when the arms were drawn holding this hold: the report then tells how far the fit's posing lies from them.</param>
+    internal static List<string> Contact(IEngineContext engine, Hold hold, HandShape shape, ArmDigits digits, List<OverlayItem> marks, string side, Vector3[][]? drawn = null)
     {
+        Mark mark = new(marks, side);
         HandFit fit = digits.Fit;
         List<string> lines = [];
         if (drawn is not null)
@@ -59,8 +67,8 @@ internal static class HandFitting
             lines.Add($"posed digits lie within {worst * 1000:0.0} mm of the drawn ones");
         }
         for (int f = 0; f < shape.Fingers.Length; f++)
-            lines.Add($"{digits.Fingers[f]}: curl [{Angles(shape.Fingers[f])}]; {Meets(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, fit.FingerRadius, fit)}");
-        lines.Add($"{digits.Thumb}: curl [{Angles(shape.Thumb.Select(j => j[0]))}], swing [{Angles(shape.Thumb.Select(j => j[1]))}]; {Meets(engine, hold, hold.Chains.Thumb, [.. shape.Thumb.Select(j => j[0])], [.. shape.Thumb.Select(j => j[1])], fit.ThumbRadius, fit)}");
+            lines.Add($"{digits.Fingers[f]}: curl [{Angles(shape.Fingers[f])}]; {Meets(engine, hold, hold.Chains.Fingers[f], shape.Fingers[f], null, fit.FingerRadius, fit, mark, digits.Fingers[f])}");
+        lines.Add($"{digits.Thumb}: curl [{Angles(shape.Thumb.Select(j => j[0]))}], swing [{Angles(shape.Thumb.Select(j => j[1]))}]; {Meets(engine, hold, hold.Chains.Thumb, [.. shape.Thumb.Select(j => j[0])], [.. shape.Thumb.Select(j => j[1])], fit.ThumbRadius, fit, mark, digits.Thumb)}");
         return lines;
     }
 
@@ -68,7 +76,7 @@ internal static class HandFitting
 
     // The digit's free joints close together from open; when a segment meets the model, that joint and those before it
     // stop a step short, and the joints past it close on from there. Joints that meet nothing stop with the last that did.
-    private static string FitDigit(IEngineContext engine, Hold hold, DigitChain chain, float[] curls, float[]? swings, float[] open, float radius, HandFit fit, string name)
+    private static string FitDigit(IEngineContext engine, Hold hold, DigitChain chain, float[] curls, float[]? swings, float[] open, float radius, HandFit fit, string name, Mark mark)
     {
         // The thumb's root is already open in the grip clip. A shared negative sweep must not hyperextend it (or
         // a finger's tip) past the rig's authored open pose just to obtain an earlier surface contact.
@@ -112,27 +120,34 @@ internal static class HandFitting
         if (how.Count == 0)
         {
             for (int i = 0; i < 3; i++) curls[i] = 0;
-            return $"{name}: meets nothing, the clip's kept; {Meets(engine, hold, chain, curls, swings, radius, fit)}";
+            return $"{name}: meets nothing, the clip's kept; {Meets(engine, hold, chain, curls, swings, radius, fit, mark, name)}";
         }
         if (free < 3) how.Add($"{string.Join(", ", Joints[free..])} meet nothing more");
-        return $"{name}: {string.Join(", ", curls.Select(c => c.ToString("0")))} ({string.Join("; ", how)}); {Meets(engine, hold, chain, curls, swings, radius, fit)}";
+        return $"{name}: {string.Join(", ", curls.Select(c => c.ToString("0")))} ({string.Join("; ", how)}); {Meets(engine, hold, chain, curls, swings, radius, fit, mark, name)}";
     }
 
-    // How near the model the digit posed so comes (its skin, so negative is into it), and which joints' segments pass into it.
-    private static string Meets(IEngineContext engine, Hold hold, DigitChain chain, float[] curls, float[]? swings, float radius, HandFit fit)
+    // Where a report's probes are marked, and which hand they are on.
+    private readonly record struct Mark(List<OverlayItem> Marks, string Side);
+
+    // How near the model the digit posed so comes (its skin, so negative is into it), and which joints' segments pass
+    // into it; its probes are marked with the same words.
+    private static string Meets(IEngineContext engine, Hold hold, DigitChain chain, float[] curls, float[]? swings, float radius, HandFit fit, Mark mark, string name)
     {
         Vector3[] probes = Probes(Pose(hold, chain, curls, swings, fit.Tip), 0, fit.Samples);
         ReadOnlySpan<ModelSurfacePoint> found = engine.Animation.QueryModelSurface(new(hold.Model, hold.Placement, probes, fit.Reach)).Span;
         float nearest = float.PositiveInfinity;
+        float[] skins = new float[probes.Length];
         SortedSet<string> into = [];
         for (int p = 0; p < found.Length; p++)
         {
+            skins[p] = float.PositiveInfinity;
             if (!found[p].Found) continue;
-            float skin = found[p].Inside ? -found[p].Distance - radius : found[p].Distance - radius;
+            float skin = skins[p] = found[p].Inside ? -found[p].Distance - radius : found[p].Distance - radius;
             nearest = MathF.Min(nearest, skin);
             if (skin < 0) into.Add(Joints[p / fit.Samples]);
         }
         string near = float.IsPositiveInfinity(nearest) ? $"nothing within {fit.Reach * 100:0} cm" : $"nearest {nearest * 1000:0.0} mm";
+        HeldInspection.Probes(mark.Marks, probes, skins, radius, $"{mark.Side} {name}: {near}");
         return into.Count == 0 ? near : $"{near}, into the model at the {string.Join(", ", into)}";
     }
 

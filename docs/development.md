@@ -21,7 +21,7 @@ Choose checks for the changed behavior:
 | --- | --- |
 | `rusty build` | Compilation and ordinary CoreCLR product staging |
 | `Hotel.Smoke` | Product callbacks and real Engine service calls: collision/input, route eligibility, supplies, combat, spirit rules, loot rolls and searches, growth by use and relics, complete checkpoints, content errors naming their file and field, and floor generation (keyed draws, mission graphs, modules, layouts, content pacing, Engine confirmation, travel, keys, floor saves, shifts and golden fingerprints) |
-| DOM unit checks | Pause request failures/supersession/disposal and asynchronous console mount/cleanup |
+| DOM unit checks | Pause request failures/supersession/disposal and asynchronous developer shell mount/close/cleanup |
 | Ordinary hosted play | Rendered presentation, physical input, world/UI interaction, focus, pause and return to play |
 | `rusty build --aot` | Explicit NativeAOT publish/fidelity check; still separate from a visible run |
 
@@ -47,16 +47,23 @@ render, play audio, mount the browser or prove host pause admission. DOM unit
 checks do not prove pointer lock, drag gestures or layout. Keep those boundaries
 in evidence rather than making a green test stand for an entire player feature.
 
-## Developer console
+## Developer shell
 
 Run `rusty dev --live-debug` (add `--output window` for a window), then use F2
-or Menu → Developer console. Without `--live-debug` the host has no debug
-service and the UI offers no console.
-Closing the console disposes the packaged panel; the normal HUD has no debug
-panel traffic. Hotel owns its lifetime adapter, not its transport or parser.
+or Menu → Developer shell. Without `--live-debug` the host has no debug
+service and the UI offers no shell.
+The shell is the Engine's developer shell docked at the left beside play (which keeps running): two inspection views
+of the held assembly, the first-person workbench and the console. Closing it (F2, Escape or its Close) disposes every
+panel and view, returns the hands to what they hold and input to play; the normal HUD has no debug panel traffic.
+Hotel owns its lifetime adapter, not its transport, parser or views.
 
-In a developer session, F3 opens the first-person workbench: the Engine tunables panel, docked at the left beside play
-(which keeps running).
+**Inspection views.** The upper view frames the shown look's main grip from the side, the lower its support grip from
+underneath (C# inspection targets `main-grip` and `off-grip`, camera space, framed along the item's turn;
+`engine.inspect.target list`). Each pane's bar picks the subject and framing, captures the view and toggles overlays
+in that view; drag orbits, Shift-drag pans, the wheel zooms. While the shell is open the player view shows the stance
+guide (`held.guide`) and the hand fit's contact probes (`hands.contact`).
+
+**First-person workbench.** The Engine tunables panel over Hotel's page.
 - **Pick and play:** choose a look and action, hold a key's pose, scrub to any moment or play at a speed.
 - **Sliders:** the look's stance (every look in it moves), its nudge, its hands' shape (each finger joint's curl and
   each thumb joint's curl and swing), the held key's pose and the arms, with the stance guide as a toggle.
@@ -70,8 +77,7 @@ the file and gives each file **Save** and **Reset**. Save writes only the change
 file, one line per value (the Engine content source); the running game keeps going. Saving works only under `rusty
 dev`; elsewhere the panel tunes live without Save.
 
-Residents keep acting while it is open: tune in a quiet room, or alone with `hotel.dev.floor.module`. F3 or Escape
-closes it.
+Residents keep acting while it is open: tune in a quiet room, or alone with `hotel.dev.floor.module`.
 
 The held-presentation files (`combat/held.json`, `stances.json`, `held-motion.json`, `arms.json`) are declared live
 content (`RustyEngineLiveContent`): an edit made in an editor under `rusty dev` reloads into the running game
@@ -81,22 +87,22 @@ arms' rig) is reported as needing a restart.
 Hotel describes the page in `Interface/Workbench/HotelWorkbench.cs` (choosers, the motion viewer's timeline) and
 `ViewmodelTunables.cs` (each control, the owner call that applies it, and its source). The Engine's
 `TunablesDebugModule` serves it (`tunables.describe`, `tunables.select`, `tunables.set`), and its
-`mountTunablesPanel` draws it (`src/ui/developer.js`). The same commands, with `engine.content.source.read` and
+tunables panel draws it in the developer shell (`src/ui/developer.js`). The same commands, with `engine.content.source.read` and
 `engine.content.source.edit`, tune and save without a page.
 
 Use the generated catalog for argument help and current command availability.
 
 | Command | Effect and boundary |
 | --- | --- |
-| `hotel.inspect` | Observe current domain facts; does not change gameplay. `armsShortfall` is how far each holding wrist was drawn from its grip (metres; the off hand's -1 when it holds nothing): more than a centimetre is a grip out of the arm's reach |
+| `hotel.inspect` | Observe current domain facts; does not change gameplay. `armsShortfall` is how far each holding wrist was drawn from its grip, as the Engine IK solve reports it (metres; the off hand's -1 when it holds nothing): more than a centimetre is a grip out of the arm's reach |
 | `interaction.inspect` / `interaction.use` | Engine world-interaction inspection/assisted use, retaining reach, visibility, revision and eligibility checks |
 | `hotel.dev.hold <item>` | Give one of a held item and wear it in the main hand through the ordinary wear rules |
 | `hotel.dev.set-track <track> <value>` | Set one investigator track (for example `ammunition`) within its bounds |
 | `hotel.dev.motion <look> <action>` and `.key`, `.next`, `.prev`, `.at`, `.play`, `.pose`, `.off` | The held-motion viewer: step a look's action keys, play it at a speed, try pose changes (docs/authoring.md, "Held motion") |
 | `hotel.dev.arms.model <path>` | Show another arms model (a variant built from `art/arms`) with the same hold until the floor is rebuilt; `combat/arms.json` is unchanged |
-| `tunables.describe` / `tunables.select <chooser> <value>` / `tunables.set <id> <value>` | The first-person workbench's page (Engine `TunablesDebugModule`; F3 opens its panel). `engine.content.source.read <path>` and `engine.content.source.edit <path> <sha256> <edits>` save into source content under `rusty dev` |
+| `tunables.describe` / `tunables.select <chooser> <value>` / `tunables.set <id> <value>` | The first-person workbench's page (Engine `TunablesDebugModule`; the developer shell shows its panel). `engine.content.source.read <path>` and `engine.content.source.edit <path> <sha256> <edits>` save into source content under `rusty dev` |
 | `hotel.dev.stance`, `.set`, `.hand`, `hotel.dev.held.nudge` | The held stance guide: draw a look's stance beside it, change stances and nudge looks live (docs/authoring.md, "Held stances") |
-| `hotel.dev.hands.fit <look> <main\|off\|both>`, `hotel.dev.hands.contact <look> <hands>` | The hand fit: curl a look's hands onto its model at rest from open (Engine model surface query), or inspect current curls, thumb swings, distance and penetration without changing the shape. A fit changes the loaded content only; the workbench's Hands group (its "fit to the model" choice does the same) shows it unsaved |
+| `hotel.dev.hands.fit <look> <main\|off\|both>`, `hotel.dev.hands.contact <look> <hands>` | The hand fit: curl a look's hands onto its model at rest from open (Engine model surface query), or inspect current curls, thumb swings, distance and penetration without changing the shape; each probe is marked in the overlay set `hands.contact` (a wire sphere at the digit's radius, red past the skin, a label per digit with the report's words), cleared when the motion viewer shows another look. A fit changes the loaded content only; the workbench's Hands group (its "fit to the model" choice does the same) shows it unsaved |
 | `hotel.dev.arms.offhand <rx> <ry> <rz> <px> <py> <pz>` | Try the off hand's hold on two-handed looks live; prints its JSON for `combat/arms.json` |
 | `hotel.dev.arms.reach <sx> <sy> <sz> <px> <py> <pz>` | Try the right shoulder's camera-space place and the elbow pole live; prints their JSON for `combat/arms.json` |
 | `hotel.dev.arms.hand <rx> <ry> <rz> <px> <py> <pz>` | Try the main hand's hold (turn from the held item, palm offset) live; prints its JSON for `combat/arms.json` |

@@ -107,17 +107,11 @@
     "label": "Esc",
     "code": "Escape"
   },
-  "console": {
-    "name": "Developer console",
-    "shortName": "Console",
+  "developer": {
+    "name": "Developer shell",
+    "shortName": "Developer",
     "label": "F2",
     "code": "F2"
-  },
-  "workbench": {
-    "name": "First-person workbench (developer)",
-    "shortName": "Workbench",
-    "label": "F3",
-    "code": "F3"
   },
   "text": {
     "hint": "{key} · {action}",

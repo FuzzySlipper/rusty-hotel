@@ -35,8 +35,8 @@ internal sealed class CombatView : IDisposable
     // Enough flare boxes for the shots one hand can have in flight at once.
     private const int ShownProjectiles = 6;
     private readonly Part[] flares;
-    // The developer stance guide: the target grip, length and up side, then the shown look's own.
-    private readonly Part[] guide;
+    // Developer inspection of the held assembly: the stance guide (while guiding), contact probes and grip targets.
+    private readonly HeldInspection inspection;
     private bool guiding;
 
     internal CombatView(IEngineContext engine, HotelScene scene, HotelPlayer player, HotelCombat combat, CombatDefinition definition)
@@ -59,8 +59,7 @@ internal sealed class CombatView : IDisposable
             }
             muzzle = Box("tell-amber", default, Authored.Vector(heldLooks.FlashSize));
             flares = Enumerable.Range(0, ShownProjectiles).Select(_ => Box("tell-amber", default, new(.16f))).ToArray();
-            guide = [.. Enumerable.Range(0, 3).Select(_ => Box("dev-guide-target", default, Vector3.One)),
-                .. Enumerable.Range(0, 3).Select(_ => Box("dev-guide-actual", default, Vector3.One))];
+            inspection = new HeldInspection(engine, heldLooks);
         }
         catch { Dispose(); throw; }
     }
@@ -111,7 +110,7 @@ internal sealed class CombatView : IDisposable
         for (int i = 0; i < flares.Length; i++)
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         facts.Add(arms.Fact(!combat.Defeated && look is not null));
-        Guide(facts, combat.Defeated ? null : look);
+        inspection.Guide(guiding && !combat.Defeated ? look : null, guiding && look is not null ? Shown(look) : default);
         scene.PublishCombat(facts.ToArray());
         if (viewing is null) Move(look);
         if (!combat.Defeated && look is not null) Reach(look);
@@ -232,6 +231,7 @@ internal sealed class CombatView : IDisposable
     {
         Stop();
         startedSeen = combat.User.Started;
+        if (viewing?.Look != look) inspection.ClearContact();
         viewing = look is null ? null : (look, null);
         viewingKey = null;
         Publish();
@@ -292,42 +292,12 @@ internal sealed class CombatView : IDisposable
     /// <summary>The look the hands show now: the motion viewer's, or what they hold.</summary>
     internal string? ShownLook => viewing?.Look ?? combat.Holding?.Item.Wear!.Look;
 
-    // The stance's grip, length and up side (amber), and the shown look's (blue): a marker at each grip, a line along each
-    // length and a short one along each up side.
-    private void Guide(List<AppearanceFact> facts, string? look)
-    {
-        const float Marker = .016f, Width = .003f, Length = .25f, Across = .07f;
-        bool shown = guiding && look is not null;
-        Vector3 grip = default, along = Vector3.UnitZ, up = Vector3.UnitY, gripNow = default, alongNow = Vector3.UnitZ, upNow = Vector3.UnitY;
-        if (shown)
-        {
-            HeldModel model = heldLooks.Model(look!);
-            HeldStance stance = heldLooks.Stances.Stances[model.Stance];
-            grip = Authored.Vector(stance.Grip);
-            Quaternion target = stance.Turn(model.Along);
-            (along, up) = (Vector3.Transform(model.Along.TipVector, target), Vector3.Transform(model.Along.UpVector, target));
-            (Vector3 at, Quaternion turn) = Shown(look!);
-            gripNow = at + Vector3.Transform(Authored.Vector(model.Grips.Main) * model.Scale, turn);
-            (alongNow, upNow) = (Vector3.Transform(model.Along.TipVector, turn), Vector3.Transform(model.Along.UpVector, turn));
-        }
-        facts.Add(Segment(guide[0], grip, grip, Marker, shown));
-        facts.Add(Segment(guide[1], grip, grip + along * Length, Width, shown));
-        facts.Add(Segment(guide[2], grip, grip + up * Across, Width, shown));
-        facts.Add(Segment(guide[3], gripNow, gripNow, Marker * .8f, shown));
-        facts.Add(Segment(guide[4], gripNow, gripNow + alongNow * Length, Width, shown));
-        facts.Add(Segment(guide[5], gripNow, gripNow + upNow * Across, Width, shown));
-    }
+    /// <summary>The shown look's grips as Engine inspection targets (see <see cref="HeldInspection.Targets"/>); none while nothing is shown.</summary>
+    internal IReadOnlyList<Rusty.Engine.Debugging.InspectionTarget> InspectionTargets() =>
+        ShownLook is { } look && !combat.Defeated ? inspection.Targets(look, Shown(look)) : [];
 
-    // A box from one camera-space point to another, a cube of the width when they meet, on the viewmodel layer.
-    private static AppearanceFact Segment(Part part, Vector3 from, Vector3 to, float width, bool visible)
-    {
-        Vector3 d = to - from;
-        float length = d.Length();
-        Quaternion turn = length < 1e-5f ? Quaternion.Identity
-            : Frames.Between(Vector3.UnitZ, Vector3.UnitY, d / length, MathF.Abs(d.Y) > .9f * length ? Vector3.UnitZ : Vector3.UnitY);
-        return new(part.Entity, false, 0, new((from + to) / 2, turn, new(width, width, MathF.Max(length, width))), part.Appearance, visible,
-            RenderLayer.Viewmodel);
-    }
+    /// <summary>Publishes the hand fit's last report as contact markers (see <see cref="HeldInspection.Contact"/>).</summary>
+    internal void ShowContact(List<OverlayItem> marks) => inspection.Contact(marks);
 
     /// <summary>Developer arms tuning: the main hand's turn from the held item and its palm offset, in the loaded content.</summary>
     internal ArmsDefinition Arms => heldLooks.Arms;
@@ -361,17 +331,17 @@ internal sealed class CombatView : IDisposable
 
     /// <summary>
     /// Fits a hand's shape on a look to its model (<see cref="HandFitting"/>), in the loaded content only, and shows it;
-    /// with <paramref name="apply"/> false, only reports how the hand meets the model now. Null when it cannot (see <see cref="HandHold"/>).
+    /// with <paramref name="apply"/> false, only reports how the hand meets the model now. Each digit's probes join
+    /// <paramref name="marks"/>. Null when it cannot (see <see cref="HandHold"/>).
     /// </summary>
-    internal List<string>? FitHand(string look, bool offHand, bool apply)
+    internal List<string>? FitHand(string look, bool offHand, bool apply, List<OverlayItem> marks)
     {
         HeldModel model = heldLooks.Model(look);
         if (HandHold(look, offHand) is not { } hold || (offHand ? model.Shape?.Off : model.Shape?.Main) is not { } shape) return null;
-        // Shown at rest, the drawn digits check the fit's posing.
-        bool atRest = ShownLook == look && Shown(look) is var (at, turn) && Vector3.Distance(at, hold.Placement.Translation) < 1e-4f
-            && MathF.Abs(Quaternion.Dot(turn, hold.Placement.Rotation)) > 0.99999f;
-        if (!apply) return HandFitting.Contact(engine, hold, shape, heldLooks.Arms.Hands, atRest ? arms.Drawn(offHand) : null);
-        List<string> lines = HandFitting.Fit(engine, hold, shape, heldLooks.Arms.Hands);
+        string side = offHand ? "off" : "main";
+        // Drawn reaching for this hold (the look shown at rest), the drawn digits check the fit's posing.
+        if (!apply) return HandFitting.Contact(engine, hold, shape, heldLooks.Arms.Hands, marks, side, ShownLook == look ? arms.Drawn(offHand, hold.Wrist) : null);
+        List<string> lines = HandFitting.Fit(engine, hold, shape, heldLooks.Arms.Hands, marks, side);
         Publish();
         return lines;
     }
