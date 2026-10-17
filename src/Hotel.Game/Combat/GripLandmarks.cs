@@ -46,4 +46,32 @@ internal static class GripLandmarks
         }
         return [.. pairs];
     }
+
+    // What each pair's ends are, in a report's words: the hand's point and the look's landmark.
+    private static readonly Dictionary<string, (string Hand, string Landmark)> Words = new(StringComparer.Ordinal)
+    {
+        ["trigger"] = ("main index pad", "trigger"),
+        ["backstrap"] = ("main web", "back strap's top"),
+        ["butt"] = ("main pinky", "butt"),
+        ["main-facing"] = ("main", "the handle"),
+        ["fore-end"] = ("off palm", "fore-end"),
+        ["off-facing"] = ("off", "the fore-end"),
+    };
+
+    /// <summary>
+    /// A report line for one pair as the Engine measured it: within or off, the distance (or a palm's facing angle) and
+    /// its tolerance, and where the hand point lies from the landmark along the look's own axes.
+    /// </summary>
+    internal static string Line(LandmarkMeasure pair)
+    {
+        (string hand, string landmark) = Words.TryGetValue(pair.Name, out var words) ? words : (pair.Name, "its landmark");
+        if (!pair.Drawn) return $"--  {hand}: not drawn";
+        string mark = pair.Within ? "ok " : "OFF";
+        if (pair.Aim != LandmarkAim.None)
+            return $"{mark} {hand} palm faces {landmark} {(pair.HasAngle ? $"{pair.Angle:0}°" : "(no angle)")} off (within {pair.AngleTolerance:0})";
+        static string Part(float v, string plus, string minus) => $"{MathF.Abs(v) * 1000:0} {(v >= 0 ? plus : minus)}";
+        Vector3 d = pair.Offset;
+        return $"{mark} {hand} {pair.Distance * 1000:0.0} mm from the {landmark} (within {pair.Tolerance * 1000:0}): " +
+            $"{Part(d.Y, "above", "below")}, {Part(d.Z, "behind", "ahead")}, {Part(d.X, "right", "left")}";
+    }
 }

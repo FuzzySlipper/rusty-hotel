@@ -304,6 +304,9 @@ internal sealed class CombatView : IDisposable
         return GripLandmarks.Pairs(model, held[look].Entity, arms.Rig(false), model.Grips.Off is null ? null : arms.Rig(true), heldLooks.Arms.Hands);
     }
 
+    /// <summary>The grip landmark pairs on the shown look (<see cref="GripLandmarks"/>) as the Engine last measured them on the drawn hands.</summary>
+    internal LandmarkReadResult GripMeasures() => engine.Graphics.ReadLandmarks(HeldInspection.LandmarkSet);
+
     /// <summary>Publishes the hand fit's last report as contact markers (see <see cref="HeldInspection.Contact"/>).</summary>
     internal void ShowContact(List<OverlayItem> marks) => inspection.Contact(marks);
 

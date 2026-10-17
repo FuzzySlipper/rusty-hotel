@@ -232,7 +232,8 @@ fitting; neither a stance nudge nor curling the fingers corrects an off-surface 
 Clearance alone does not make a hold right. A firearm look names **landmarks** in `held.json` (`landmarks`, model
 space like its grips): `trigger`, `backstrapTop` (the top of the back strap under the hammer), `butt`, and on a long
 gun `foreEnd` where the off palm goes. They are declared as Engine landmark pairs (`GripLandmarks`), which the Engine
-measures on the hands as drawn: `engine.inspect.landmarks held.landmarks` answers each pair's distance, angle, whether
+measures on the hands as drawn. `hotel.dev.hands.contact` reports them for the look shown (as does
+`engine.inspect.landmarks held.landmarks`): each pair's distance, angle, whether
 it is within tolerance, and its `offset` along the look's own axes (x right, y up, z back):
 - the main index pad to the trigger;
 - the main web to the back strap's top;

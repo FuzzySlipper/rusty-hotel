@@ -36,9 +36,19 @@ internal sealed class HandFitDebugCommands(Func<CombatView> view, HeldCatalog he
             lines.AddRange(found.Select(l => "  " + l));
         }
         view.ShowContact(marks);
-        // How the hold meets the look's landmarks is the Engine's to measure on the drawn hands (GripLandmarks).
+        // How the hold meets the look's landmarks, as the Engine measured them on the hands drawn now (the look must be
+        // the one shown).
         if (held.Model(look).Landmarks is not null)
-            lines.Add($"grip landmarks: engine.inspect.landmarks {HeldInspection.LandmarkSet} measures them on {(view.ShownLook == look ? look : $"the look shown (now {view.ShownLook ?? "none"})")} as drawn");
+        {
+            Rusty.Engine.LandmarkReadResult read = view.GripMeasures();
+            if (view.ShownLook != look) lines.Add($"grip landmarks: show {look} (hotel.dev.motion) to measure them; {view.ShownLook ?? "nothing"} is shown.");
+            else if (!read.Measured || read.Pairs.Length == 0) lines.Add("grip landmarks: not measured yet; the renderer has not drawn them.");
+            else
+            {
+                lines.Add($"grip landmarks on {look}, as drawn at step {read.Step}:");
+                foreach (Rusty.Engine.LandmarkMeasure pair in read.Pairs.Span) lines.Add("  " + GripLandmarks.Line(pair));
+            }
+        }
         return (true, string.Join("\n", lines));
     }
 
