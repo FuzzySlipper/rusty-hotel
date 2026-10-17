@@ -3,40 +3,50 @@ using Hotel.Game.Combat;
 using Hotel.Game.Content;
 using Rusty.Engine;
 
-// The grip check measures a drawn hand against a look's landmarks: a hand whose index pad sits on the survey pistol's
-// trigger and whose web sits on its back strap's top passes those; moved 3 cm up it fails both and says which way.
+// The grip check declares Engine landmark pairs; the Engine measures them on the drawn hands (the headless host draws
+// nothing, so this checks what is declared). The survey pistol pairs its trigger, back strap top and butt with the main
+// hand's index pad, web and pinky, its palm facing the handle; the coach gun adds the off palm on the fore-end; a hand on
+// a look without landmarks pairs nothing.
 internal static class GripLandmarkChecks
 {
     internal static void Run(IEngineContext engine)
     {
         HeldCatalog held = Owners.Content(engine).Combat.Held;
+        ArmsDefinition arms = held.Arms;
+        HandLandmarks tuning = arms.Hands.Landmarks;
+        using ContentReference content = engine.Content.OpenReference(new(arms.Model));
+        using RenderResource model = engine.Animation.OpenAnimatedMeshFromContent(new(content));
+        AnimationJointInfo[] joints = engine.Animation.ReadJoints(model).ToArray();
+        string[] Joints(ArmChain chain, string digit) => [.. Enumerable.Range(1, 3).Select(i => $"{chain.Digits}{digit}{i}")];
+        HandRig Rig(ArmChain chain, HandSide side, ulong entity) => HandRig.FromJoints(joints, entity, side, chain.Hand, Joints(chain, arms.Hands.Thumb),
+            Joints(chain, tuning.Index), Joints(chain, tuning.Middle), Joints(chain, tuning.Ring), Joints(chain, tuning.Pinky));
+        const ulong Arms = 7, Pistol = 11, Gun = 13;
+        HandRig main = Rig(arms.Main, HandSide.Right, Arms), off = Rig(arms.Off, HandSide.Left, Arms);
+
         HeldModel pistol = held.Model("survey-pistol");
-        HandLandmarks tuning = held.Arms.Hands.Landmarks;
-        Check(pistol.Landmarks is { Trigger: not null, BackstrapTop: not null, Butt: not null }, "the survey pistol names its trigger, back strap top and butt");
-        (Vector3, Quaternion) placed = (Vector3.Zero, Quaternion.Identity);
-        Vector3 At(float[] point) => Authored.Vector(point) * pistol.Scale;
-        Vector3 trigger = At(pistol.Landmarks!.Trigger!), top = At(pistol.Landmarks.BackstrapTop!);
-        // A drawn hand built backwards from where its points should land: the index's joints run straight to a pad on the
-        // trigger, the thumb's first joint and the index's first put the web on the back strap's top.
-        (Vector3 Wrist, Vector3[][] Digits) Hand(Vector3 shift)
-        {
-            Vector3 indexBase = top + new Vector3(0.01f, -0.01f, 0) + shift, step = (trigger + shift - indexBase) / (2 + held.Arms.Hands.Fit.Tip);
-            Vector3[] index = [indexBase, indexBase + step, indexBase + step * 2];
-            Vector3 thumbBase = (top + shift - indexBase * tuning.Web) / (1 - tuning.Web);
-            Vector3 wrist = indexBase + new Vector3(0.02f, -0.06f, 0.06f);
-            Vector3[] Finger(float down) => [index[0] + new Vector3(0, -down, 0), index[1] + new Vector3(0, -down, 0), index[2] + new Vector3(0, -down, 0)];
-            Vector3[][] digits = [.. held.Arms.Hands.Fingers.Select((f, i) => f == tuning.Index ? index : Finger(0.02f * i)), [thumbBase, thumbBase, thumbBase]];
-            return (wrist, digits);
-        }
-        List<GripLandmarks.Pairing> on = GripLandmarks.Measure(pistol, placed, held.Arms, Hand(Vector3.Zero), null);
-        GripLandmarks.Pairing Find(List<GripLandmarks.Pairing> all, string name) => all.Single(p => p.Name == name);
-        Check(Find(on, "trigger").Measure < 1e-4f && Find(on, "trigger").Within, $"an index pad on the trigger passes: {Find(on, "trigger").Text}");
-        Check(Find(on, "backstrap").Measure < 1e-4f && Find(on, "backstrap").Within, $"a web on the back strap's top passes: {Find(on, "backstrap").Text}");
-        List<GripLandmarks.Pairing> high = GripLandmarks.Measure(pistol, placed, held.Arms, Hand(new(0, 0.03f, 0)), null);
-        Check(!Find(high, "trigger").Within && Find(high, "trigger").Text.Contains("30 above"), $"3 cm high fails and says so: {Find(high, "trigger").Text}");
-        Check(!Find(high, "backstrap").Within, $"3 cm high misses the back strap: {Find(high, "backstrap").Text}");
-        Check(on.Any(p => p.Facing) && GripLandmarks.Measure(pistol, placed, held.Arms, null, null).Count == 0, "a facing is measured, and nothing without a drawn hand");
-        Console.WriteLine($"Grip landmark checks passed: an index pad on the survey pistol's trigger and a web on its back strap's top pass; 3 cm high fails both ({Find(high, "trigger").Measure * 1000:0} mm, {Find(high, "backstrap").Measure * 1000:0} mm).");
+        LandmarkPair[] pairs = GripLandmarks.Pairs(pistol, Pistol, main, null, arms.Hands);
+        Check(pairs.Select(p => p.Name).SequenceEqual(["trigger", "backstrap", "butt", "main-facing"]), $"the survey pistol's pairs: {string.Join(", ", pairs.Select(p => p.Name))}");
+        LandmarkPair Find(LandmarkPair[] all, string name) => all.Single(p => p.Name == name);
+        bool On(Landmark mark, ulong entity, float[] point) =>
+            mark is { Kind: LandmarkKind.At, Space: OverlaySpace.Model } && mark.Entity == entity && mark.Point == Authored.Vector(point);
+        LandmarkPair trigger = Find(pairs, "trigger"), backstrap = Find(pairs, "backstrap"), butt = Find(pairs, "butt"), facing = Find(pairs, "main-facing");
+        Check(On(trigger.To, Pistol, pistol.Landmarks!.Trigger!) && trigger.From.Kind == LandmarkKind.Beyond && trigger.From.Entity == Arms
+            && trigger.Tolerance == tuning.Trigger, "the index pad pairs with the trigger on the pistol's model, within the trigger tolerance");
+        Check(On(backstrap.To, Pistol, pistol.Landmarks.BackstrapTop!) && backstrap.From.Kind == LandmarkKind.Between && backstrap.From.Amount == tuning.Web,
+            "the web pairs with the back strap's top");
+        Check(On(butt.To, Pistol, pistol.Landmarks.Butt!) && butt.Tolerance == tuning.Butt, "the pinky pairs with the butt");
+        Vector3 handle = Vector3.Normalize(Authored.Vector(pistol.Landmarks.Butt!) - Authored.Vector(pistol.Landmarks.BackstrapTop!));
+        Check(facing is { Aim: LandmarkAim.Line } && facing.From.Kind == LandmarkKind.Palm && facing.AngleTolerance == tuning.Facing
+            && Vector3.Distance(facing.To.Axis, handle) < 1e-5f && On(facing.To, Pistol, pistol.Grips.Main), "the palm faces the handle's line through the main grip");
+
+        HeldModel coach = held.Model("coach-gun");
+        LandmarkPair[] two = GripLandmarks.Pairs(coach, Gun, main, off, arms.Hands);
+        Check(coach.Landmarks?.ForeEnd is not null && Find(two, "fore-end").From.Kind == LandmarkKind.Palm && Find(two, "fore-end").From.Left
+            && Find(two, "off-facing").Aim == LandmarkAim.Point, $"the coach gun pairs the off palm with its fore-end: {string.Join(", ", two.Select(p => p.Name))}");
+        Check(!GripLandmarks.Pairs(coach, Gun, main, null, arms.Hands).Any(p => p.Name.StartsWith("off") || p.Name == "fore-end"), "an off hand that does not hold pairs nothing");
+        HeldModel plain = held.Looks.First(l => l.Landmarks is null);
+        Check(GripLandmarks.Pairs(plain, Gun, main, off, arms.Hands).Length == 0, $"{plain.Look} has no landmarks and pairs nothing");
+        Console.WriteLine($"Grip landmark checks passed: the survey pistol declares {pairs.Length} Engine landmark pairs on its model and the main hand's rig, the coach gun {two.Length} with its fore-end, a look without landmarks none.");
     }
 
     private static void Check(bool value, string reason)

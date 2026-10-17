@@ -231,16 +231,19 @@ fitting; neither a stance nudge nor curling the fingers corrects an off-surface 
 
 Clearance alone does not make a hold right. A firearm look names **landmarks** in `held.json` (`landmarks`, model
 space like its grips): `trigger`, `backstrapTop` (the top of the back strap under the hammer), `butt`, and on a long
-gun `foreEnd` where the off palm goes. `hotel.dev.hands.contact` then reports, for the look shown, how the drawn hands
-meet them, each with its offset along the look's own axes:
+gun `foreEnd` where the off palm goes. They are declared as Engine landmark pairs (`GripLandmarks`), which the Engine
+measures on the hands as drawn: `engine.inspect.landmarks held.landmarks` answers each pair's distance, angle, whether
+it is within tolerance, and its `offset` along the look's own axes (x right, y up, z back):
 - the main index pad to the trigger;
 - the main web to the back strap's top;
 - the main pinky to the butt;
 - the off palm to the fore-end;
 - each palm's facing (the main palm toward the handle's centre line, the off palm toward the fore-end).
 
-The developer shell draws them as the overlay set `held.landmarks`, and each landmark is an inspection target. The
-points a hand is measured at and the tolerances are `combat/arms.json` `hands.landmarks`. Place landmarks from the
+The developer shell draws them as the overlay set `held.landmarks` (green within tolerance, red outside), and each
+landmark is an inspection target. The fingers the hand's landmarks use (`index`, `middle`, `ring`, `pinky`), the
+fractions that place the web, palm and pad, and the tolerances are `combat/arms.json` `hands.landmarks`; the pad runs
+`hands.fit.tip` of the last segment past the index finger's last joint, along that joint's own bone. Place landmarks from the
 model's own geometry (a side view of the GLB), then tune Grip placement and the Hands group until they pass, with the
 contact still clear. A grip longer than the hand's four fingers cannot also put the pinky at the butt, so read that
 one with the model's scale in mind.

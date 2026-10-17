@@ -36,12 +36,9 @@ internal sealed class HandFitDebugCommands(Func<CombatView> view, HeldCatalog he
             lines.AddRange(found.Select(l => "  " + l));
         }
         view.ShowContact(marks);
-        // How the hold meets the look's landmarks, on the hands as drawn now (the look must be the one shown).
-        if (view.ShownLook == look && view.Landmarks(look) is { Count: > 0 } pairings)
-        {
-            lines.Add($"grip landmarks on {look}, as drawn now:");
-            lines.AddRange(pairings.Select(p => $"  {(p.Within ? "ok " : "OFF")} {p.Text}"));
-        }
+        // How the hold meets the look's landmarks is the Engine's to measure on the drawn hands (GripLandmarks).
+        if (held.Model(look).Landmarks is not null)
+            lines.Add($"grip landmarks: engine.inspect.landmarks {HeldInspection.LandmarkSet} measures them on {(view.ShownLook == look ? look : $"the look shown (now {view.ShownLook ?? "none"})")} as drawn");
         return (true, string.Join("\n", lines));
     }
 

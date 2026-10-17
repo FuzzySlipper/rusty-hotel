@@ -295,11 +295,14 @@ internal sealed class CombatView : IDisposable
 
     /// <summary>The shown look's grips as Engine inspection targets (see <see cref="HeldInspection.Targets"/>); none while nothing is shown.</summary>
     internal IReadOnlyList<Rusty.Engine.Debugging.InspectionTarget> InspectionTargets() =>
-        ShownLook is { } look && !combat.Defeated ? inspection.Targets(look, Shown(look)) : [];
+        ShownLook is { } look && !combat.Defeated ? inspection.Targets(look, held[look].Entity, Shown(look)) : [];
 
-    /// <summary>The grip check on a look as shown now (<see cref="GripLandmarks"/>), on the hands as last drawn.</summary>
-    internal List<GripLandmarks.Pairing> Landmarks(string look) =>
-        GripLandmarks.Measure(heldLooks.Model(look), Shown(look), heldLooks.Arms, arms.DrawnHand(false), arms.DrawnHand(true));
+    // The grip check's landmark pairs on a look the hands show (GripLandmarks): the off hand's only while it holds it.
+    private LandmarkPair[] Landmarks(string look)
+    {
+        HeldModel model = heldLooks.Model(look);
+        return GripLandmarks.Pairs(model, held[look].Entity, arms.Rig(false), model.Grips.Off is null ? null : arms.Rig(true), heldLooks.Arms.Hands);
+    }
 
     /// <summary>Publishes the hand fit's last report as contact markers (see <see cref="HeldInspection.Contact"/>).</summary>
     internal void ShowContact(List<OverlayItem> marks) => inspection.Contact(marks);

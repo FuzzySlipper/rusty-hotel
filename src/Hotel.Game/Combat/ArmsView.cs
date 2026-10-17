@@ -31,9 +31,9 @@ internal sealed class ArmsView : IDisposable
     private int steady;
     private const int SteadyCalls = 8;
     private HandChains? mainChains, offChains;
+    // Each hand's rig joints, named once for the Engine's grip landmarks (GripLandmarks).
+    private readonly HandRig mainRig, offRig;
     private Vector3[][]? mainDrawn, offDrawn;
-    // Each wrist (hand joint) as last drawn, camera space.
-    private Vector3 mainWristDrawn, offWristDrawn;
     // The wrist targets (camera space) the solve placed the drawn digits for.
     private (Vector3 Main, Vector3 Off) drawnFor;
 
@@ -52,8 +52,7 @@ internal sealed class ArmsView : IDisposable
     /// A hand as last drawn, whatever it held (camera space): its wrist and its digit joints (a row per finger, then the
     /// thumb); null before the arms are first drawn. What the grip landmarks measure.
     /// </summary>
-    internal (Vector3 Wrist, Vector3[][] Digits)? DrawnHand(bool offHand) =>
-        (offHand ? offDrawn : mainDrawn) is { } digits ? (offHand ? offWristDrawn : mainWristDrawn, digits) : null;
+    internal HandRig Rig(bool offHand) => offHand ? offRig : mainRig;
 
     /// <summary>
     /// How far each holding wrist was drawn from its target, as the Engine's solve reports it (metres; the off hand's
@@ -83,9 +82,21 @@ internal sealed class ArmsView : IDisposable
                     for (int i = 0; i < 3; i++)
                         if (parents[digit[i]] != (i == 0 ? hand : digit[i - 1]))
                             throw new InvalidDataException($"content/{ArmsDefinition.Path} hands: in the arms model '{arms.Model}', '{joints[(int)digit[i]].Id}' does not hang from {(i == 0 ? $"'{chain.Hand}'" : $"'{joints[(int)digit[i - 1]].Id}'")}.");
+            mainRig = Rig(joints, arms.Main, HandSide.Right);
+            offRig = Rig(joints, arms.Off, HandSide.Left);
             appearance = engine.Animation.CreateAnimatedMeshAppearance(new(model));
         }
         catch { model.Dispose(); throw; }
+    }
+
+    // A hand's rig joints named once for the Engine's hand landmarks: the hand joint and each digit's joints 1 to 3, the
+    // fingers as the landmark tuning names them.
+    private HandRig Rig(ReadOnlySpan<AnimationJointInfo> joints, ArmChain chain, HandSide side)
+    {
+        HandLandmarks names = arms.Hands.Landmarks;
+        string[] Joints(string digit) => [.. Enumerable.Range(1, 3).Select(i => $"{chain.Digits}{digit}{i}")];
+        return HandRig.FromJoints(joints, entity, side, chain.Hand, Joints(arms.Hands.Thumb), Joints(names.Index), Joints(names.Middle),
+            Joints(names.Ring), Joints(names.Pinky));
     }
 
     private (uint, uint, uint) Chain(ReadOnlySpan<AnimationJointInfo> joints, ArmChain chain, string field)
@@ -214,7 +225,6 @@ internal sealed class ArmsView : IDisposable
             }
             mainDrawn = At(mainDigits, joints);
             offDrawn = At(offDigits, joints);
-            (mainWristDrawn, offWristDrawn) = (joints[(int)main.Hand].Model.Translation + shoulder, joints[(int)off.Hand].Model.Translation + shoulder);
         }
         steady = Same(sent, now) ? steady + 1 : 0;
         sent = now;
@@ -275,7 +285,7 @@ internal sealed record ArmsDefinition(string Model, string Clip, ArmDigits Hands
         Authored.Require(fit.Open < fit.Closed, Path, "hands.fit.closed", "must curl further than hands.fit.open.");
         Authored.Require(fit.Samples >= 1, Path, "hands.fit.samples", "probes each segment at least once.");
         HandLandmarks marks = arms.Hands.Landmarks;
-        foreach (var (field, finger) in new[] { ("index", marks.Index), ("middle", marks.Middle), ("pinky", marks.Pinky) })
+        foreach (var (field, finger) in new[] { ("index", marks.Index), ("middle", marks.Middle), ("ring", marks.Ring), ("pinky", marks.Pinky) })
             Authored.Require(arms.Hands.Fingers.Contains(finger), Path, $"hands.landmarks.{field}", $"names one of hands.fingers ({string.Join(", ", arms.Hands.Fingers)}).");
         foreach (var (field, value) in new[] { ("web", marks.Web), ("palm", marks.Palm) })
             Authored.Within(Path, $"hands.landmarks.{field}", value, 0, 1);
@@ -349,9 +359,10 @@ internal sealed record HandFit
 }
 
 /// <summary>
-/// Where the grip landmarks (<see cref="GripLandmarks"/>) find a drawn hand's own points, and how near a look's landmarks
-/// they must come: which fingers are the index, middle and pinky; the web, a fraction of the way from the thumb's first
-/// joint to the index finger's first (both fixed to the hand, so the web stays put however the thumb turns); the palm centre, a fraction of the way from the wrist to the middle finger's first
+/// Where the grip landmarks (<see cref="GripLandmarks"/>, measured by the Engine on the drawn hands) find a hand's own
+/// points, and how near a look's landmarks they must come: which fingers are the index, middle, ring and pinky; the web,
+/// a fraction of the way from the thumb's first joint to the index finger's first (both fixed to the hand, so the web
+/// stays put however the thumb turns); the palm centre, a fraction of the way from the wrist to the middle finger's first
 /// joint and <see cref="PalmDepth"/> metres out along the palm's normal; then the tolerances, metres from the trigger,
 /// the back strap's top, the butt and the fore-end, and degrees between the palm's normal and the side it should face.
 /// </summary>
@@ -359,6 +370,7 @@ internal sealed record HandLandmarks
 {
     public required string Index { get; set; }
     public required string Middle { get; set; }
+    public required string Ring { get; set; }
     public required string Pinky { get; set; }
     public required float Web { get; set; }
     public required float Palm { get; set; }

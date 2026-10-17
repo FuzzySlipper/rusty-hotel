@@ -65,6 +65,7 @@
     "landmarks": {
       "index": "Index",
       "middle": "Middle",
+      "ring": "Ring",
       "pinky": "Pinky",
       "web": 0.5,
       "palm": 0.55,
