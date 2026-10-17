@@ -229,6 +229,22 @@ Fit is a starting pose: inspect the wrap, thumb and recovery as well as the repo
 the glove; a small measured gap is not proof of mesh separation. Place contacts on the actual model's handle before
 fitting; neither a stance nudge nor curling the fingers corrects an off-surface grip point.
 
+Clearance alone does not make a hold right. A firearm look names **landmarks** in `held.json` (`landmarks`, model
+space like its grips): `trigger`, `backstrapTop` (the top of the back strap under the hammer), `butt`, and on a long
+gun `foreEnd` where the off palm goes. `hotel.dev.hands.contact` then reports, for the look shown, how the drawn hands
+meet them, each with its offset along the look's own axes:
+- the main index pad to the trigger;
+- the main web to the back strap's top;
+- the main pinky to the butt;
+- the off palm to the fore-end;
+- each palm's facing (the main palm toward the handle's centre line, the off palm toward the fore-end).
+
+The developer shell draws them as the overlay set `held.landmarks`, and each landmark is an inspection target. The
+points a hand is measured at and the tolerances are `combat/arms.json` `hands.landmarks`. Place landmarks from the
+model's own geometry (a side view of the GLB), then tune Grip placement and the Hands group until they pass, with the
+contact still clear. A grip longer than the hand's four fingers cannot also put the pinky at the butt, so read that
+one with the model's scale in mind.
+
 The first-person workbench (in the developer shell, F2 in a developer session, docs/development.md) tunes all of these with sliders while
 the motion plays. Its Grip placement group edits model-space contact points and independent hand turns; moving the
 main contact re-seats the model around the stance's grip, while moving the support contact moves that hand on the model.

@@ -75,6 +75,7 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
                     foreach (var (into, from) in new[] { (look.Grips.Off, now.Grips.Off), (look.Grips.Hand, now.Grips.Hand), (look.Grips.OffHand, now.Grips.OffHand) })
                         if (into is not null && from is not null) from.CopyTo(into, 0);
                     if (look.Shape is { } shape && now.Shape is { } fresher) shape.Take(fresher);
+                    if (look.Landmarks is { } marks && now.Landmarks is { } newer) marks.Take(newer);
                 }
         }
         if (changed.Contains(StanceCatalog.Path))
@@ -126,6 +127,7 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
                 arms.Hands.Open.Thumb[i].CopyTo(Arms.Hands.Open.Thumb[i], 0);
             }
             Arms.Hands.Fit.Take(arms.Hands.Fit);
+            Arms.Hands.Landmarks.Take(arms.Hands.Landmarks);
             arms.Shoulder.CopyTo(Arms.Shoulder, 0);
             arms.Pole.CopyTo(Arms.Pole, 0);
             arms.OffPole.CopyTo(Arms.OffPole, 0);
@@ -176,6 +178,13 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
                 Authored.Require(shape.Thumb.Length == 3 && shape.Thumb.All(j => j.Length == 2), Path, $"{at}.shape.{side}.thumb",
                     "gives three thumb joints' [curl, swing], in degrees.");
             }
+            if (model.Landmarks is { } landmarks)
+            {
+                foreach (var (field, point) in landmarks.Named)
+                    Authored.Point(Path, $"{at}.landmarks.{field}", point);
+                Authored.Require(landmarks.ForeEnd is null || model.Grips.Off is not null, Path, $"{at}.landmarks.foreEnd",
+                    "is where the off hand holds: the look needs an off grip.");
+            }
             Authored.Point(Path, $"{at}.axis.tip", model.Along.Tip);
             Authored.Point(Path, $"{at}.axis.up", model.Along.Up);
             Authored.Require(System.Numerics.Vector3.Cross(model.Along.TipVector, model.Along.UpVector).Length() > 0.5f, Path, $"{at}.axis",
@@ -188,10 +197,12 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
 /// One held look, named for the items that show it: its model at a uniform scale; the <see cref="Motion"/> it moves
 /// by; the <see cref="Stance"/> it sits in at rest, its own length and up side (<see cref="Axis"/>, default -Z with +Y
 /// up) and an optional <see cref="Nudge"/> from that stance; where hands grip it (<see cref="Grips"/>, in the model's own
-/// space); how each hand's digits sit on it (<see cref="Shape"/>); and, for a firearm, its muzzle in the same space, where its flash appears.
+/// space); how each hand's digits sit on it (<see cref="Shape"/>); for a firearm, its muzzle in the same space, where its
+/// flash appears; and the points a correct hold puts the hand on (<see cref="Landmarks"/>, same space), which the
+/// developer grip check measures.
 /// </summary>
 internal sealed record HeldModel(string Look, string Model, float Scale, string Motion, string Stance, HeldGrips Grips,
-    float[]? Muzzle = null, HeldAxis? Axis = null, HeldNudge? Nudge = null, HeldShape? Shape = null)
+    float[]? Muzzle = null, HeldAxis? Axis = null, HeldNudge? Nudge = null, HeldShape? Shape = null, HeldLandmarks? Landmarks = null)
 {
     /// <summary>Where its stance seats it (camera space): its main grip's place and the model's turn, set by <see cref="HeldCatalog.Seat"/>.</summary>
     [JsonIgnore] internal (Vector3 Grip, Quaternion Turn) Seated { get; set; }
@@ -208,6 +219,25 @@ internal sealed record HeldModel(string Look, string Model, float Scale, string 
 /// item turned further by <see cref="Turn"/> (degrees about camera X, Y, Z) about that grip.
 /// </summary>
 internal sealed record HeldNudge(float[] Grip, float[] Turn);
+
+/// <summary>
+/// Points on a look (its model's own space) that a correct hold puts parts of the hand on, each optional: the trigger
+/// (the main index finger's pad), the back strap's top under the hammer (the main hand's web), the butt (the main pinky)
+/// and the fore-end (the off palm). <see cref="GripLandmarks"/> measures the drawn hands against them.
+/// </summary>
+internal sealed record HeldLandmarks(float[]? Trigger = null, float[]? BackstrapTop = null, float[]? Butt = null, float[]? ForeEnd = null)
+{
+    /// <summary>The landmarks the look gives, by their field name.</summary>
+    [JsonIgnore] internal IEnumerable<(string Field, float[] Point)> Named =>
+        new[] { ("trigger", Trigger), ("backstrapTop", BackstrapTop), ("butt", Butt), ("foreEnd", ForeEnd) }
+            .Where(p => p.Item2 is not null).Select(p => (p.Item1, p.Item2!));
+
+    internal void Take(HeldLandmarks fresh)
+    {
+        foreach (var (into, from) in new[] { (Trigger, fresh.Trigger), (BackstrapTop, fresh.BackstrapTop), (Butt, fresh.Butt), (ForeEnd, fresh.ForeEnd) })
+            if (into is not null && from is not null) from.CopyTo(into, 0);
+    }
+}
 
 /// <summary>How each hand's digits sit on a look, added to the arms' grip clip: the main hand, and the off hand when the look has an off grip.</summary>
 internal sealed record HeldShape(HandShape Main, HandShape? Off = null)

@@ -111,6 +111,7 @@ internal sealed class CombatView : IDisposable
             Place(flares[i], i < combat.Projectiles.Count ? combat.Projectiles[i].Position : Vector3.Zero, Quaternion.Identity, i < combat.Projectiles.Count);
         facts.Add(arms.Fact(!combat.Defeated && look is not null));
         inspection.Guide(guiding && !combat.Defeated ? look : null, guiding && look is not null ? Shown(look) : default);
+        inspection.Landmarks(combat.Defeated || look is null ? [] : Landmarks(look));
         scene.PublishCombat(facts.ToArray());
         if (viewing is null) Move(look);
         if (!combat.Defeated && look is not null) Reach(look);
@@ -295,6 +296,10 @@ internal sealed class CombatView : IDisposable
     /// <summary>The shown look's grips as Engine inspection targets (see <see cref="HeldInspection.Targets"/>); none while nothing is shown.</summary>
     internal IReadOnlyList<Rusty.Engine.Debugging.InspectionTarget> InspectionTargets() =>
         ShownLook is { } look && !combat.Defeated ? inspection.Targets(look, Shown(look)) : [];
+
+    /// <summary>The grip check on a look as shown now (<see cref="GripLandmarks"/>), on the hands as last drawn.</summary>
+    internal List<GripLandmarks.Pairing> Landmarks(string look) =>
+        GripLandmarks.Measure(heldLooks.Model(look), Shown(look), heldLooks.Arms, arms.DrawnHand(false), arms.DrawnHand(true));
 
     /// <summary>Publishes the hand fit's last report as contact markers (see <see cref="HeldInspection.Contact"/>).</summary>
     internal void ShowContact(List<OverlayItem> marks) => inspection.Contact(marks);

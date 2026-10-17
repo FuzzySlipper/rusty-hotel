@@ -228,6 +228,7 @@ host.Call(HeldMotionChecks.Run);
 host.Call(WorkbenchChecks.Run);
 host.Call(HeldReachChecks.Run);
 host.Call(HandFitChecks.Run);
+host.Call(GripLandmarkChecks.Run);
 host.Call(CombatChecks.Run);
 host.Call(SpiritChecks.Run);
 host.Call(PactChecks.Run);

@@ -11,9 +11,9 @@ export async function developerAvailable(loadPanel = () => import('@rusty-engine
   }
 }
 
-// The Hotel overlay sets the shell shows in the player view while open (C# HeldInspection): the stance guide and the
-// hand fit's contact probes. Each draws only once C# publishes it.
-const PLAYER_SETS = ['held.guide', 'hands.contact'];
+// The Hotel overlay sets the shell shows in the player view while open (C# HeldInspection): the stance guide, the
+// hand fit's contact probes and the grip landmarks. Each draws only once C# publishes it.
+const PLAYER_SETS = ['held.guide', 'hands.contact', 'held.landmarks'];
 
 /**
  * The Engine developer shell, docked at the left beside play (which keeps running): the console, the first-person

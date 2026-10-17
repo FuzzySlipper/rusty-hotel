@@ -14,7 +14,7 @@ internal sealed class HandFitDebugCommands(Func<CombatView> view, HeldCatalog he
     [DebugCommand("hotel.dev.hands.fit", Description = "Developer hand fit: curl a look's hands (main, off or both) onto its model at rest, joint by joint from open, and print the angles and how each digit meets it. Unsaved until the workbench saves it.")]
     public DebugCommandResult Fit(string look, string hands) => Run(look, hands, apply: true);
 
-    [DebugCommand("hotel.dev.hands.contact", Description = "Developer hand fit: report how near a look's model each digit of its hands (main, off or both) comes at rest, and which pass into it; marks each probe in the overlay set hands.contact.")]
+    [DebugCommand("hotel.dev.hands.contact", Description = "Developer hand fit: report how near a look's model each digit of its hands (main, off or both) comes at rest, and which pass into it; marks each probe in the overlay set hands.contact; then, for the shown look, how the drawn hands meet its grip landmarks (held.json landmarks), drawn as the overlay set held.landmarks.")]
     public DebugCommandResult Contact(string look, string hands) => Run(look, hands, apply: false);
 
     /// <summary>Fits or reports the hands of a look; the lines, or why it could not.</summary>
@@ -36,6 +36,12 @@ internal sealed class HandFitDebugCommands(Func<CombatView> view, HeldCatalog he
             lines.AddRange(found.Select(l => "  " + l));
         }
         view.ShowContact(marks);
+        // How the hold meets the look's landmarks, on the hands as drawn now (the look must be the one shown).
+        if (view.ShownLook == look && view.Landmarks(look) is { Count: > 0 } pairings)
+        {
+            lines.Add($"grip landmarks on {look}, as drawn now:");
+            lines.AddRange(pairings.Select(p => $"  {(p.Within ? "ok " : "OFF")} {p.Text}"));
+        }
         return (true, string.Join("\n", lines));
     }
 

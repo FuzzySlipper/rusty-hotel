@@ -61,6 +61,19 @@
       "step": 1,
       "samples": 3,
       "reach": 0.08
+    },
+    "landmarks": {
+      "index": "Index",
+      "middle": "Middle",
+      "pinky": "Pinky",
+      "web": 0.5,
+      "palm": 0.55,
+      "palmDepth": 0.012,
+      "trigger": 0.015,
+      "backstrap": 0.02,
+      "butt": 0.03,
+      "foreEnd": 0.03,
+      "facing": 65
     }
   },
   "reach": {

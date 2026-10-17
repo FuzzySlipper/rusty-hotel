@@ -32,6 +32,8 @@ internal sealed class ArmsView : IDisposable
     private const int SteadyCalls = 8;
     private HandChains? mainChains, offChains;
     private Vector3[][]? mainDrawn, offDrawn;
+    // Each wrist (hand joint) as last drawn, camera space.
+    private Vector3 mainWristDrawn, offWristDrawn;
     // The wrist targets (camera space) the solve placed the drawn digits for.
     private (Vector3 Main, Vector3 Off) drawnFor;
 
@@ -45,6 +47,13 @@ internal sealed class ArmsView : IDisposable
     /// </summary>
     internal Vector3[][]? Drawn(bool offHand, Vector3 wrist) =>
         Vector3.Distance(offHand ? drawnFor.Off : drawnFor.Main, wrist) < 1e-4f ? offHand ? offDrawn : mainDrawn : null;
+
+    /// <summary>
+    /// A hand as last drawn, whatever it held (camera space): its wrist and its digit joints (a row per finger, then the
+    /// thumb); null before the arms are first drawn. What the grip landmarks measure.
+    /// </summary>
+    internal (Vector3 Wrist, Vector3[][] Digits)? DrawnHand(bool offHand) =>
+        (offHand ? offDrawn : mainDrawn) is { } digits ? (offHand ? offWristDrawn : mainWristDrawn, digits) : null;
 
     /// <summary>
     /// How far each holding wrist was drawn from its target, as the Engine's solve reports it (metres; the off hand's
@@ -205,6 +214,7 @@ internal sealed class ArmsView : IDisposable
             }
             mainDrawn = At(mainDigits, joints);
             offDrawn = At(offDigits, joints);
+            (mainWristDrawn, offWristDrawn) = (joints[(int)main.Hand].Model.Translation + shoulder, joints[(int)off.Hand].Model.Translation + shoulder);
         }
         steady = Same(sent, now) ? steady + 1 : 0;
         sent = now;
@@ -264,6 +274,13 @@ internal sealed record ArmsDefinition(string Model, string Clip, ArmDigits Hands
         Authored.Require(fit.Gap >= 0, Path, "hands.fit.gap", "is how far short of the surface a digit stops, 0 or more metres.");
         Authored.Require(fit.Open < fit.Closed, Path, "hands.fit.closed", "must curl further than hands.fit.open.");
         Authored.Require(fit.Samples >= 1, Path, "hands.fit.samples", "probes each segment at least once.");
+        HandLandmarks marks = arms.Hands.Landmarks;
+        foreach (var (field, finger) in new[] { ("index", marks.Index), ("middle", marks.Middle), ("pinky", marks.Pinky) })
+            Authored.Require(arms.Hands.Fingers.Contains(finger), Path, $"hands.landmarks.{field}", $"names one of hands.fingers ({string.Join(", ", arms.Hands.Fingers)}).");
+        foreach (var (field, value) in new[] { ("web", marks.Web), ("palm", marks.Palm) })
+            Authored.Within(Path, $"hands.landmarks.{field}", value, 0, 1);
+        foreach (var (field, value) in new[] { ("palmDepth", marks.PalmDepth), ("trigger", marks.Trigger), ("backstrap", marks.Backstrap), ("butt", marks.Butt), ("foreEnd", marks.ForeEnd), ("facing", marks.Facing) })
+            Authored.Positive(Path, $"hands.landmarks.{field}", value);
         Authored.Positive(Path, "reach.length", arms.Reach.Length);
         Authored.Point(Path, "reach.offShoulder", arms.Reach.OffShoulder);
         Authored.Point(Path, "shoulder", arms.Shoulder);
@@ -306,7 +323,7 @@ internal sealed record ArmChain(string Upper, string Lower, string Hand, string 
 /// at full closure (<see cref="Close"/>, closure 1) and fully open (<see cref="Open"/>, closure -1); closure in
 /// between scales them.
 /// </summary>
-internal sealed record ArmDigits(string[] Fingers, string Thumb, DigitBend Close, DigitBend Open, HandFit Fit);
+internal sealed record ArmDigits(string[] Fingers, string Thumb, DigitBend Close, DigitBend Open, HandFit Fit, HandLandmarks Landmarks);
 
 /// <summary>
 /// How the developer hand fit (<see cref="HandFitting"/>) measures a digit against a held model: the digits' radii
@@ -329,6 +346,32 @@ internal sealed record HandFit
     internal void Take(HandFit fresh) =>
         (FingerRadius, ThumbRadius, Tip, Gap, Open, Closed, Step, Samples, Reach) =
         (fresh.FingerRadius, fresh.ThumbRadius, fresh.Tip, fresh.Gap, fresh.Open, fresh.Closed, fresh.Step, fresh.Samples, fresh.Reach);
+}
+
+/// <summary>
+/// Where the grip landmarks (<see cref="GripLandmarks"/>) find a drawn hand's own points, and how near a look's landmarks
+/// they must come: which fingers are the index, middle and pinky; the web, a fraction of the way from the thumb's first
+/// joint to the index finger's first (both fixed to the hand, so the web stays put however the thumb turns); the palm centre, a fraction of the way from the wrist to the middle finger's first
+/// joint and <see cref="PalmDepth"/> metres out along the palm's normal; then the tolerances, metres from the trigger,
+/// the back strap's top, the butt and the fore-end, and degrees between the palm's normal and the side it should face.
+/// </summary>
+internal sealed record HandLandmarks
+{
+    public required string Index { get; set; }
+    public required string Middle { get; set; }
+    public required string Pinky { get; set; }
+    public required float Web { get; set; }
+    public required float Palm { get; set; }
+    public required float PalmDepth { get; set; }
+    public required float Trigger { get; set; }
+    public required float Backstrap { get; set; }
+    public required float Butt { get; set; }
+    public required float ForeEnd { get; set; }
+    public required float Facing { get; set; }
+
+    internal void Take(HandLandmarks fresh) =>
+        (Web, Palm, PalmDepth, Trigger, Backstrap, Butt, ForeEnd, Facing) =
+        (fresh.Web, fresh.Palm, fresh.PalmDepth, fresh.Trigger, fresh.Backstrap, fresh.Butt, fresh.ForeEnd, fresh.Facing);
 }
 
 /// <summary>Degrees added to each finger joint's curl (base to tip, the same for every finger) and each thumb joint's [curl, swing].</summary>
