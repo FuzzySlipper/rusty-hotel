@@ -75,7 +75,9 @@ internal sealed record HeldCatalog(float[] FlashSize, HeldModel[] Looks)
                     foreach (var (into, from) in new[] { (look.Grips.Off, now.Grips.Off), (look.Grips.Hand, now.Grips.Hand), (look.Grips.OffHand, now.Grips.OffHand) })
                         if (into is not null && from is not null) from.CopyTo(into, 0);
                     if (look.Shape is { } shape && now.Shape is { } fresher) shape.Take(fresher);
+                    // Landmarks follow the file: points edited in place, a point or the whole set added or removed taken too.
                     if (look.Landmarks is { } marks && now.Landmarks is { } newer) marks.Take(newer);
+                    else look.Landmarks = now.Landmarks;
                 }
         }
         if (changed.Contains(StanceCatalog.Path))
@@ -206,6 +208,8 @@ internal sealed record HeldModel(string Look, string Model, float Scale, string 
 {
     /// <summary>Where its stance seats it (camera space): its main grip's place and the model's turn, set by <see cref="HeldCatalog.Seat"/>.</summary>
     [JsonIgnore] internal (Vector3 Grip, Quaternion Turn) Seated { get; set; }
+    /// <summary>The points a correct hold puts the hand on; a live reload adds, removes or edits them.</summary>
+    public HeldLandmarks? Landmarks { get; set; } = Landmarks;
     /// <summary>This look's nudge from its stance (none when it has none).</summary>
     [JsonIgnore] internal HeldNudge Adjust { get; } = Nudge ?? new([0, 0, 0], [0, 0, 0]);
 
@@ -227,15 +231,26 @@ internal sealed record HeldNudge(float[] Grip, float[] Turn);
 /// </summary>
 internal sealed record HeldLandmarks(float[]? Trigger = null, float[]? BackstrapTop = null, float[]? Butt = null, float[]? ForeEnd = null)
 {
+    public float[]? Trigger { get; set; } = Trigger;
+    public float[]? BackstrapTop { get; set; } = BackstrapTop;
+    public float[]? Butt { get; set; } = Butt;
+    public float[]? ForeEnd { get; set; } = ForeEnd;
+
     /// <summary>The landmarks the look gives, by their field name.</summary>
     [JsonIgnore] internal IEnumerable<(string Field, float[] Point)> Named =>
         new[] { ("trigger", Trigger), ("backstrapTop", BackstrapTop), ("butt", Butt), ("foreEnd", ForeEnd) }
             .Where(p => p.Item2 is not null).Select(p => (p.Item1, p.Item2!));
 
+    /// <summary>Takes a reloaded file's landmarks: a point on both edited in place (live controls hold it), one added or removed taken as is.</summary>
     internal void Take(HeldLandmarks fresh)
     {
-        foreach (var (into, from) in new[] { (Trigger, fresh.Trigger), (BackstrapTop, fresh.BackstrapTop), (Butt, fresh.Butt), (ForeEnd, fresh.ForeEnd) })
-            if (into is not null && from is not null) from.CopyTo(into, 0);
+        static float[]? Point(float[]? live, float[]? file)
+        {
+            if (live is null || file is null) return file;
+            file.CopyTo(live, 0);
+            return live;
+        }
+        (Trigger, BackstrapTop, Butt, ForeEnd) = (Point(Trigger, fresh.Trigger), Point(BackstrapTop, fresh.BackstrapTop), Point(Butt, fresh.Butt), Point(ForeEnd, fresh.ForeEnd));
     }
 }
 

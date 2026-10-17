@@ -51,6 +51,13 @@ internal static class WorkbenchChecks
         HeldPose raised = live.Motion.Motions["swing"].Poses["raised"];
         disk.Motion.Motions["swing"].Poses["raised"].Position[0] = 0.09f;
         disk.Motion.Motions["swing"].Tracks.Remove("prybar-shove");
+        // Landmarks follow the file: an edited point in place, a removed point and a removed or added set taken too.
+        float[] pistolTop = live.Model("survey-pistol").Landmarks!.BackstrapTop!;
+        disk.Model("survey-pistol").Landmarks!.BackstrapTop![1] = 0.05f;
+        disk.Model("survey-pistol").Landmarks!.Trigger = null;
+        disk.Model("flare-pistol").Landmarks = null;
+        HeldModel plain = disk.Looks.First(l => l.Landmarks is null && l.Look != "flare-pistol");
+        plain.Landmarks = new(Butt: [0, -0.03f, 0]);
         disk = disk with { Motion = disk.Motion with { SettleSeconds = disk.Motion.SettleSeconds * 2 } };
         string[] restart = live.Refresh(disk, new HashSet<string> { HeldCatalog.Path, HeldMotionCatalog.Path });
         Check(live.Stances.Stances["melee"].Grip[0] == 0.5f, "a reload of held.json and held-motion.json keeps unsaved stance tuning");
@@ -61,6 +68,10 @@ internal static class WorkbenchChecks
         Check(ReferenceEquals(live.Motion.Motions["swing"].Poses["raised"], raised) && raised.Position[0] == 0.09f,
             "a reload updates a pose in place, so a held pose shows it");
         Check(!live.Motion.Motions["swing"].Tracks.ContainsKey("prybar-shove"), "a track removed from the file is removed live");
+        Check(ReferenceEquals(live.Model("survey-pistol").Landmarks!.BackstrapTop, pistolTop) && pistolTop[1] == 0.05f
+            && live.Model("survey-pistol").Landmarks!.Trigger is null, "a landmark reloads in place and a removed one is gone");
+        Check(live.Model("flare-pistol").Landmarks is null && live.Model(plain.Look).Landmarks?.Butt is [0, -0.03f, 0],
+            $"a look's landmarks removed or added in the file follow it live ({plain.Look})");
         Check(restart.Length == 1 && restart[0].Contains("settleSeconds"), $"a settle change is reported as needing a restart: {string.Join("; ", restart)}");
         HeldCatalog rigged = HeldCatalog.Load(engine);
         rigged = rigged with { Arms = rigged.Arms with { Hands = rigged.Arms.Hands with { Fingers = [.. rigged.Arms.Hands.Fingers.SkipLast(1)] } } };

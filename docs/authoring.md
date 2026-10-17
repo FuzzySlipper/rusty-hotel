@@ -246,8 +246,9 @@ landmark is an inspection target. The fingers the hand's landmarks use (`index`,
 fractions that place the web, palm and pad, and the tolerances are `combat/arms.json` `hands.landmarks`; the pad runs
 `hands.fit.tip` of the last segment past the index finger's last joint, along that joint's own bone. Place landmarks from the
 model's own geometry (a side view of the GLB), then tune Grip placement and the Hands group until they pass, with the
-contact still clear. A grip longer than the hand's four fingers cannot also put the pinky at the butt, so read that
-one with the model's scale in mind.
+contact still clear. A grip longer than the hand's four fingers cannot also put the pinky at the butt: check the
+look's `scale` first (back strap top to butt about the hand's breadth, 85 to 90 mm), then refit. Landmark points are
+in the model's own units, so a scale change keeps them on the model; it needs a restart to take.
 
 The first-person workbench (in the developer shell, F2 in a developer session, docs/development.md) tunes all of these with sliders while
 the motion plays. Its Grip placement group edits model-space contact points and independent hand turns; moving the
