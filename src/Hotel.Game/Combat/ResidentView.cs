@@ -116,8 +116,6 @@ internal sealed class ResidentView : IDisposable
             if (body.Instance is null)
             {
                 body.Instance = engine.Animation.CreateInstance(new(body.Appearance, body.Entity));
-                // A resident that can fall as a ragdoll reports its joints, so the ragdoll spawns in the pose it was drawn in.
-                if (body.Look.Ragdoll is not null && enemy.Alive) engine.Animation.SetPose(AnimationPoseRequest.ReportOnly(body.Instance));
             }
             // A resident restored to life (a recovered checkpoint) leaves its ragdoll for its clips, ready to fall again.
             if (enemy.Alive && body.Ragdoll is not null)
@@ -126,7 +124,6 @@ internal sealed class ResidentView : IDisposable
                 body.Ragdoll = null;
                 body.Rested = false;
                 body.Clip = null;
-                engine.Animation.SetPose(AnimationPoseRequest.ReportOnly(body.Instance));
             }
             // Felled while this view watched: it falls as a ragdoll; one restored fallen plays its fall clip below.
             if (!enemy.Alive && body.Ragdoll is null && body.Clip is not null && body.Clip != body.Look.Clips.Fall && Fall(enemy, body))

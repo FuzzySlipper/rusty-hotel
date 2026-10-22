@@ -235,7 +235,7 @@ internal sealed class ArmsView : IDisposable
                 new(main.Upper, main.Lower, main.Hand, PoseSpace.Model, mainWrist - shoulder, Authored.Vector(arms.Pole) - shoulder, 1),
                 new(off.Upper, off.Lower, off.Hand, PoseSpace.Model, offWrist - shoulder, Authored.Vector(arms.OffPole) - shoulder, 1),
             },
-            hands.ToArray(), true));
+            hands.ToArray()));
     }
 
     /// <summary>
