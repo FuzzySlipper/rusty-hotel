@@ -24,6 +24,8 @@
          casts; the budget (in shadow layers, six per lamp) is a safety cap a floor's lamps stay well under. -->
     <RustyEngineProductSceneShadows>enabled</RustyEngineProductSceneShadows>
     <RustyEngineProductShadowBudget>1024</RustyEngineProductShadowBudget>
+    <!-- Turns on the Engine's occlusion culling of hidden opaque parts and splats; disabled is the off switch. -->
+    <RustyEngineProductOcclusionCulling>enabled</RustyEngineProductOcclusionCulling>
     <!-- A generated floor lights itself with 80 or more ranged lamps: bin them per screen cluster. -->
     <RustyEngineProductClusteredLighting>enabled</RustyEngineProductClusteredLighting>
     <RustyEngineProductDefaultWorldLights>disabled</RustyEngineProductDefaultWorldLights>
